@@ -21,6 +21,7 @@
 //  Change History:
 //
 //  2009-12-28  initial release
+//  2010-01-15  added 'const' to op_str[]
 //
 
 #include <stdio.h>
@@ -135,7 +136,7 @@ void test_item_stack(void)
 }
 
 enum Operator {ADD, SUB, MUL, DIV};
-char *op_str[] = {"+", "-", "*", "/"};
+const char *op_str[] = {"+", "-", "*", "/"};
 
 void print_stack(const char *str, List<Operator> &OpStack)
 {
