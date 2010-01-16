@@ -1,0 +1,51 @@
+Interactive BASIC Compiler Project
+File: rel_notes.txt - contains release notes for each version posted
+Copyright (C) 2009-2010  Thunder422
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+For a copy of the GNU General Public License,
+see <http://www.gnu.org/licenses/>.
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+Release 0.0.2 (2010-01-15)
+
+	Contains files from Release 0.0.1 except for Makefile.v (VIDE2
+	will rebuild Makefile after loading first project, after this
+	user Project/Rebuild Makefile menu command to create Makefile.v
+	for project loaded) plus new files for String class, source file
+	to test the functionality of the String class, and a source file
+	to test the conversion of strings to numbers.  Project files now
+	setup to run with GCC 4.4.0 (using MinGw).  New files included:
+
+	rel_notes.txt   - this file
+	string.h        - string class definition file
+	string.cpp      - string class functions
+	test_string.cpp - string test source file
+	test_string.vpj - VIDE2 project file for test_string program
+	test_nums.cpp   - numbers test source file
+	test_nums.vpj   - VIDE2 project file for test_nums program
+
+
+Release 0.0.1 (2009-12-29)
+
+	Contains List template class along with source file to test the
+	functionality of the List class.  Makefile and VIDE2 project
+	file setup to run with free Borland C++ 5.5 Command Line Tools.
+	Files included:
+
+	list.h         - list template class definition file
+	test_stack.cpp - stack test source file
+	test_stack.vpj - VIDE2 project file for test_stack program
+	Makefile.v     - VIDE2 generated Borland C++ 5.5 makefile
