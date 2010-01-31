@@ -22,6 +22,8 @@
 //
 //  2010-01-15  initial release
 //
+//  2010-01-17  added length of zero check to constructors
+//
 
 #include <ctype.h>
 #include "string.h"
@@ -59,8 +61,16 @@ String::String(String &s)
 String::String(const char *s, const char *p)
 {
 	len = p - s;
-	str = new char[len];
-	strncpy(str, s, len);
+	// 2010-01-17: only allocate if length is non-zero
+	if (len <= 0)
+	{
+		str = NULL;
+	}
+	else
+	{
+		str = new char[len];
+		strncpy(str, s, len);
+	}
 }
 
 
@@ -69,19 +79,36 @@ String::String(const char *s, const char *p)
 String::String(const char *s, int l)
 {
 	len = l;
-	str = new char[len];
-	strncpy(str, s, l);
+	// 2010-01-17: only allocate if length is non-zero
+	if (len <= 0)
+	{
+		str = NULL;
+	}
+	else
+	{
+		str = new char[len];
+		strncpy(str, s, l);
+	}
 }
 
 
 // constructor for creating allocated string
 //
 //     - the string is allocated but not initialized
+//     - no string is allocated is length is zero
 
 String::String(int l)
 {
 	len = l;
-	str = new char[len];
+	// 2010-01-17: only allocate if length is non-zero
+	if (len <= 0)
+	{
+		str = NULL;
+	}
+	else
+	{
+		str = new char[len];
+	}
 }
 
 
