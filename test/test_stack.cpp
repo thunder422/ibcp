@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_stack.cpp - contains test code for testing list class
-//	Copyright (C) 2009  Thunder422
+//	Copyright (C) 2009-2010  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -21,11 +21,16 @@
 //  Change History:
 //
 //  2009-12-28  initial release
+//
 //  2010-01-15  added 'const' to op_str[]
+//
+//  2010-01-30  added test_list() function;
+//              renamed print_stack functions to print_list
 //
 
 #include <stdio.h>
 #include "list.h"
+
 
 void print_gpl_header(void)
 {
@@ -35,82 +40,96 @@ void print_gpl_header(void)
     printf("redistribute it under certain conditions.\n\n");
 }
 
-void print_stack(const char *str, List<int> &IntStack)
+
+// 2010-01-30: renamed from print_stack, renamed argument
+void print_list(const char *str, List<int> &IntList)
 {
 	List<int>::Element *element;
 
 	printf("%s: ", str);
-	for (IntStack.first(element); IntStack.not_end(element);
-		IntStack.next(element))
+	for (element = IntList.first(); IntList.not_end(element);
+		IntList.next(element))
 	{
 		printf("%d ", element->value);
 	}
-	printf("EOS\n");
+	printf("EOL\n");
 }
+
 
 void test_int_stack(void)
 {
 	List<int> IntStack;
 
-	print_stack("Begin", IntStack);
+	print_list("Begin", IntStack);
 
 	IntStack.push(1);
 	IntStack.push(2);
-	print_stack("1&2", IntStack);
+	print_list("1&2", IntStack);
 
 	IntStack.push(8);
-	print_stack("1&2&8", IntStack);
+	print_list("1&2&8", IntStack);
 
 	int a = IntStack.pop();
 	int b = IntStack.pop();
 	printf("a=%d b=%d\n", a, b);
 	IntStack.push(a+b);
-	print_stack("1&(2+8)", IntStack);
+	print_list("1&(2+8)", IntStack);
 
 	IntStack.push(3);
-	print_stack("1&(2+8)&3", IntStack);
+	print_list("1&(2+8)&3", IntStack);
 
 	a = IntStack.pop();
 	b = IntStack.pop();
 	printf("a=%d b=%d\n", a, b);
 	IntStack.push(a+b);
-	print_stack("1&((2+8)+3)", IntStack);
+	print_list("1&((2+8)+3)", IntStack);
 
 	IntStack.push(4);
-	print_stack("1&((2+8)+3)&4", IntStack);
+	print_list("1&((2+8)+3)&4", IntStack);
 
 	while (!IntStack.empty())
 	{
 		printf(" %d", IntStack.pop());
 	}
 	printf("\n");
-	print_stack("End", IntStack);
+	pstring class functionsrint_list("End", IntStack);
 }
+
 
 struct Item {
 	int num;
 	const char *str;
+
+	Item(void) {}
+	Item(int n, const char *s)
+	{
+		num = n;
+		str = s;
+	}
 };
 
-void print_stack(const char *str, List<Item> &ItemStack)
+
+// 2010-01-30: renamed from print_stack, renamed argument
+void print_list(const char *str, List<Item> &ItemList)
 {
 	List<Item>::Element *element;
 
 	printf("%s: ", str);
-	for (ItemStack.first(element); ItemStack.not_end(element);
-		ItemStack.next(element))
+	for (element = ItemList.first(); ItemList.not_end(element);
+		ItemList.next(element))
 	{
 		printf("<%d,%s> ", element->value.num, element->value.str);
 	}
-	printf("EOS\n");
+	printf("EOL\n");
 }
+
 
 void test_item_stack(void)
 {
 	Item item;
 	List<Item> ItemStack;
 
-	print_stack("Begin", ItemStack);
+	print_list("Begin", ItemStack);
 
 	item.num = 1;
 	item.str = "PRINT";
@@ -121,68 +140,118 @@ void test_item_stack(void)
 	item.num = 8;
 	item.str = ";";
 	ItemStack.push(&item);
-	print_stack("PRINT A;", ItemStack);
+	print_list("PRINT A;", ItemStack);
 
 	item = ItemStack.pop();
 	printf("item=<%d,%s>\n", item.num, item.str);
-	print_stack("PRINT A", ItemStack);
+	print_list("PRINT A", ItemStack);
 
 	while (ItemStack.pop(&item))
 	{
 		printf(" <%d,%s>", item.num, item.str);
 	}
 	printf("\n");
-	print_stack("End", ItemStack);
+	print_list("End", ItemStack);
 }
+
 
 enum Operator {ADD, SUB, MUL, DIV};
 const char *op_str[] = {"+", "-", "*", "/"};
 
-void print_stack(const char *str, List<Operator> &OpStack)
+void print_list(const char *str, List<Operator> &OpStack)
 {
 	List<Operator>::Element *element;
 
 	printf("%s: ", str);
-	for (OpStack.first(element); OpStack.not_end(element);
+	for (element = OpStack.first(); OpStack.not_end(element);
 		OpStack.next(element))
 	{
 		printf("%s ", op_str[element->value]);
 	}
-	printf("EOS\n");
+	printf("EOL\n");
 }
+
 
 void test_enum_stack(void)
 {
 	List<Operator> OpStack;
 
-	print_stack("Begin", OpStack);
+	print_list("Begin", OpStack);
 
 	OpStack.push(ADD);
 	OpStack.push(SUB);
-	print_stack("ADD&SUB", OpStack);
+	print_list("ADD&SUB", OpStack);
 
 	OpStack.push(MUL);
-	print_stack("ADD&SUB&MUL", OpStack);
+	print_list("ADD&SUB&MUL", OpStack);
 
 	Operator a = OpStack.pop();
-	printf("poped=%s\n", op_str[a]);
+	printf("popped=%s\n", op_str[a]);
 
 	OpStack.push(DIV);
-	print_stack("ADD&SUB&DIV", OpStack);
+	print_list("ADD&SUB&DIV", OpStack);
 
 	while (OpStack.pop(&a))
 	{
 		printf(" %s", op_str[a]);
 	}
 	printf("\n");
-	print_stack("End", OpStack);
+	print_list("End", OpStack);
 }
+
+
+void test_list(void)
+{
+	Item item;
+	List<Item>::Element *element;
+	List<Item> ItemList;
+
+	item = Item(1, "AAA");
+	ItemList.append(&item);
+	item = Item(2, "BBB");
+	element = ItemList.append(&item);
+	item = Item(3, "CCC");
+	ItemList.append(&item);
+	print_list("append-end 123", ItemList);
+
+	item = Item(25, "BCD");
+	ItemList.append(element, &item);
+	print_list("append after 2", ItemList);
+
+	item = Item(15, "ABC");
+	ItemList.insert(element, &item);
+	print_list("insert before 2", ItemList);
+
+	item = Item(0, "000");
+	ItemList.insert(&item);
+	print_list("insert begin", ItemList);
+
+	bool flag = ItemList.remove(&item);
+	printf("remove item: <%d,%s> (%d)\n", item.num, item.str, flag);
+	print_list("remove end", ItemList);
+
+	flag = ItemList.remove(element, &item);
+	printf("remove item 2: <%d,%s> (%d)\n", item.num, item.str, flag);
+	print_list("remove 2", ItemList);
+
+	printf("remove all items from begin of list...\n");
+	do
+	{
+		element = ItemList.first();
+		flag = ItemList.remove(element, &item);
+		printf(" <%d,%s>", item.num, item.str);
+	}
+	while (flag);
+	printf("\n");
+	print_list("End", ItemList);
+}
+
 
 int main(void)
 {
 	print_gpl_header();
 
-	printf("-- Interger Stack Test --\n");
+	printf("-- Integer Stack Test --\n");
 	test_int_stack();
 	printf("\n");
 	printf("-- Struct Stack Test --\n");
@@ -190,4 +259,7 @@ int main(void)
 	printf("\n");
 	printf("-- Enum Stack Test --\n");
 	test_enum_stack();
+	printf("\n");
+	printf("-- List Test --\n");
+	test_list();
 }
