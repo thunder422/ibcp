@@ -19,6 +19,18 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.0.3 (2010-01-30)
+
+	Contains files from Release 0.0.2.  The List class has been
+	updated to have more list-like functions.  The test_stack
+	program has been updated to include a new test list function.
+	Updated files:
+
+	list.h         - made member functions more list like
+	string.cpp     - added length of zero check to constructors
+	test_stack.cpp - added additional list tests
+
+
 Release 0.0.2 (2010-01-15)
 
 	Contains files from Release 0.0.1 except for Makefile.v (VIDE2
