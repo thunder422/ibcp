@@ -24,6 +24,9 @@
 //
 //  2010-01-17  added length of zero check to constructors
 //
+//  2010-02-01  changed delete to delete[] because new[] used
+//  2010-02-09  allow string to hold generic data
+//
 
 #include <ctype.h>
 #include "string.h"
@@ -88,6 +91,24 @@ String::String(const char *s, int l)
 	{
 		str = new char[len];
 		strncpy(str, s, l);
+	}
+}
+
+
+// constructor for creating string for holding generic data
+
+String::String(void *s, int l)
+{
+	len = l;
+	// 2010-01-17: only allocate if length is non-zero
+	if (len <= 0)
+	{
+		str = NULL;
+	}
+	else
+	{
+		str = new char[len];
+		memcpy(str, s, l);
 	}
 }
 
@@ -291,7 +312,7 @@ void String::copy(String *s)
 {
 	if (len > 0)  // only delete allocated strings
 	{
-		delete str;
+		delete[] str;
 	}
 	len = s->len;
 	if (len <= 0)  // < 0 prevents copy of special const char * holders
@@ -318,7 +339,7 @@ void String::move(String *s)
 {
 	if (len > 0)  // only delete allocated strings
 	{
-		delete str;
+		delete[] str;
 	}
 	len = s->len;
 	str = s->str;
@@ -337,7 +358,7 @@ void String::cat(String *s)
 	char *p = new char[len + s->len];
 	memcpy(p, str, len);
 	memcpy(p + len, s->str, s->len);
-	delete str;
+	delete[] str;
 	str = p;
 	len += s->len;
 }
