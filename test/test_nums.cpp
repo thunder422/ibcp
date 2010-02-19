@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
-//	File: test_nums.cpp - contains test code for testing list class
+//	File: test_nums.cpp - contains test code for testing number conversions
 //	Copyright (C) 2010  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
