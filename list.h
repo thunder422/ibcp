@@ -30,7 +30,13 @@
 //              changed first() to return report;
 //              renamed top() to last();
 //              implemented top()
-
+//
+//  2010-02-13  allow NULL for element pointer of remove to remove the first
+//              element of the list
+//  2010-02-15  added constructor for element to initialize value from a
+//              pointer, added value argument to new Element and removed
+//              setting of element->value in append and insert functions
+//
 
 #ifndef LIST_H
 #define LIST_H
@@ -63,6 +69,11 @@ public:
 		Element *prev;
 		Element *next;
 		T value;
+
+		Element(T *v)
+		{
+			value = *v;
+		}
 	};
 private:
 	Element *master;
@@ -186,10 +197,9 @@ public:
 // 2010-01-29: renamed from push, added return value
 template <class T> typename List<T>::Element *List<T>::append(T *value)
 {
-	Element *element = new Element;
+	Element *element = new Element(value);
 	element->next = master;
 	element->prev = master->prev;
-	element->value = *value;
 	master->prev->next = element;
 	master->prev = element;
 	return element;
@@ -205,10 +215,9 @@ template <class T> typename List<T>::Element *List<T>::append(T *value)
 template <class T>
 typename List<T>::Element *List<T>::append(List<T>::Element *element, T *value)
 {
-	Element *new_elem = new Element;
+	Element *new_elem = new Element(value);
 	new_elem->next = element->next;
 	new_elem->prev = element;
-	new_elem->value = *value;
 	element->next = new_elem;
 	new_elem->next->prev = new_elem;
 	return new_elem;
@@ -222,10 +231,9 @@ typename List<T>::Element *List<T>::append(List<T>::Element *element, T *value)
 
 template <class T> typename List<T>::Element *List<T>::insert(T *value)
 {
-	Element *new_elem = new Element;
+	Element *new_elem = new Element(value);
 	new_elem->next = master->next;
 	new_elem->prev = master;
-	new_elem->value = *value;
 	master->next = new_elem;
 	new_elem->next->prev = new_elem;
 	return new_elem;
@@ -240,10 +248,9 @@ template <class T> typename List<T>::Element *List<T>::insert(T *value)
 template <class T>
 typename List<T>::Element *List<T>::insert(List<T>::Element *element, T *value)
 {
-	Element *new_elem = new Element;
+	Element *new_elem = new Element(value);
 	new_elem->next = element;
 	new_elem->prev = element->prev;
-	new_elem->value = *value;
 	element->prev = new_elem;
 	new_elem->prev->next = new_elem;
 	return new_elem;
@@ -284,6 +291,11 @@ template <class T> bool List<T>::remove(T *value)
 
 template <class T> bool List<T>::remove(Element *element, T *value)
 {
+	// 2010-02-13: get first element if argument is NULL
+	if (element == NULL)
+	{
+		element = first();
+	}
 	*value = element->value;
 	element->prev->next = element->next;
 	element->next->prev = element->prev;
