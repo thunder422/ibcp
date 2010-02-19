@@ -19,6 +19,26 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.0.4 (2010-02-18)
+
+	Contains files from Release 0.0.3.  The Table class has been
+	implemented.  New file ibcp.h is the main include file for the
+	project and for now contains enumerations, structures and
+	classes needed for the Table class.  Test programs include
+	test_cons for testing exception throwing from constructors (but
+	otherwise unrelated to the project) and test_table for testing
+	the various Table functions.  New and updated files include:
+
+	codes.txt       - file listed codes and their values
+	ibcp.h          - main include file
+	list.h          - updated with minor changes
+	table.cpp       - contains entries and Table class functions
+	test_cons.cpp   - source file for the test_cons program
+	test_cons.vpj   - project file for the test_cons program
+	test_table.cpp  - source file for the test_table program
+	test_table.vpj  - project file for the test_table program
+
+
 Release 0.0.3 (2010-01-30)
 
 	Contains files from Release 0.0.2.  The List class has been
