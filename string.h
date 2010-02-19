@@ -20,7 +20,10 @@
 //
 //  Change History:
 //
-//  1.0  2010-01-15  initial release
+//  2010-01-15  initial release
+//
+//  2010-02-01  changed delete to delete[] because new[] used
+//  2010-02-09  allow string to hold generic data
 //
 
 #ifndef STRING_H
@@ -50,6 +53,7 @@ public:
 	String(String &s);
 	String(const char *s, const char *p);
 	String(const char *s, int l);
+	String(void *s, int l);  // for generic data
 	String(int l);
 	String(const char *s)  // special holder for C const char * strings
 	{
@@ -60,12 +64,16 @@ public:
 	{
 		if (len > 0)  // only delete allocated strings
 		{
-			delete str;
+			delete[] str;
 		}
 	}
 	char *get_str(void)
 	{
 		return str;
+	}
+	void *get_data(void)  // return generic data pointer
+	{
+		return (void *)str;
 	}
 	int get_len(void)
 	{
