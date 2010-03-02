@@ -19,6 +19,25 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.0.5 (2010-03-01)
+
+	Contains files from Release 0.0.4 plus the initial
+	implementation of the Parser class (all parser routines are
+	implemented, but only the immediate command parsing has been
+	fully tested) along with the test program test_parser.  The
+	previous test programs and binaries are no longer included to
+	reduce the size of the file (obtain them from the 0.0.4
+	release).  New (listed first) and updated files include:
+
+	parser.cpp      - contains the Parser class functions
+	parser1.txt     - output from the test_parser program
+	test_parser.cpp - source file for the test_parser program
+	test_parser.vpj - project file for the test_parser program
+
+	ibcp.h          - added Parser class and other structures
+	table.cpp       - minor editing changes
+
+
 Release 0.0.4 (2010-02-18)
 
 	Contains files from Release 0.0.3.  The Table class has been
