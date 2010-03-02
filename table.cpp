@@ -22,6 +22,8 @@
 //
 //  2010-02-18  initial release
 //
+//  2010-03-01  renamed ImCommand_TokenType to ImmCmd_TokenType
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -36,47 +38,47 @@ static TableEntry table_entries[] = {
 	// these match with fewest charaters
 	// (these will go away once gui interface is implemented)
 	{
-		List_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		List_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"L", NULL, Blank_Flag | Line_Flag | Range_Flag
 	},
 	{
-		Edit_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Edit_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"E", NULL, Blank_Flag | Line_Flag
 	},
 	{
-		Delete_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Delete_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"D", NULL, Line_Flag | Range_Flag
 	},
 	{
-		Run_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Run_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"R", NULL, Blank_Flag
 	},
 	{
-		Renum_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Renum_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"R", NULL, Range_Flag | RangeIncr_Flag
 	},
 	{
-		Save_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Save_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"S", NULL, Blank_Flag | String_Flag
 	},
 	{
-		Load_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Load_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"L", NULL, String_Flag
 	},
 	{
-		New_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		New_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"N", NULL, Blank_Flag
 	},
 	{
-		Auto_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Auto_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"A", NULL, Blank_Flag | Line_Flag | LineIncr_Flag
 	},
 	{
-		Cont_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Cont_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"C", NULL, Blank_Flag
 	},
 	{
-		Quit_Code, ImCommand_TokenType, None_DataType, OneWord_Multiple,
+		Quit_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
 		"Q", NULL, Blank_Flag
 	},
 	// end of immediate commands marked by NULL name (next entry)
@@ -571,12 +573,12 @@ Table::Table(void)
 //
 //     - returns -1 if the letter (and flags) is not found
 
-int Table::search(char letter, int flags)
+int Table::search(char letter, int flag)
 {
 	for (int i = 0; entry[i].name != NULL; i++)
 	{
 		if (toupper(letter) == entry[i].name[0]
-			&& (flags == Null_Flag || flags & entry[i].flags))
+			&& (flag == Null_Flag || flag & entry[i].flags))
 		{
 			return i;
 		}
