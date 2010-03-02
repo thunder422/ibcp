@@ -22,6 +22,11 @@
 //
 //  2010-02-18  initial release
 //
+//  2010-03-01  support for Parser class added, which includes:
+//                Token and CmdArgs structures; Parser class
+//                new CmdArgs_DataType and Error_Flag
+//                renamed ImCommand_TokenType to ImmCmd_TokenType
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -151,7 +156,7 @@ enum Code {
 
 
 enum TokenType {
-	ImCommand_TokenType,
+	ImmCmd_TokenType,
 	Command_TokenType,
 	Operator_TokenType,
 	IntFunc_TokenType,
@@ -170,6 +175,7 @@ enum DataType {
 	Double_DataType,
 	Integer_DataType,
 	String_DataType,
+	CmdArgs_DataType,	// 10-02-27: for immediate commands
 	sizeof_DataType
 };
 
@@ -185,8 +191,47 @@ enum Multiple {
 };
 
 
+struct Token {
+	int column;				// start column of token
+	TokenType type;			// type of the token
+	DataType datatype;		// data type of token
+	String *string;			// pointer to string of token
+	int code;	 			// internal code of token (index into Table)
+	union {
+		double dbl_value;	// value for double constant token
+		int int_value;		// value for integer constant token
+	};
+	Token(int col)
+	{
+		column = col;
+		string = NULL;
+	}
+	~Token(void)
+	{
+		if (string != NULL)
+		{
+			delete string;
+		}
+	}
+	void set_error(const char *msg)
+	{
+		type = Error_TokenType;
+		datatype = None_DataType;
+		string = new String(msg);
+	}
+	void set_error(int col, const char *msg)
+	{
+		column = col;
+		type = Error_TokenType;
+		datatype = None_DataType;
+		string = new String(msg);
+	}
+};
+
+
 // bit definitions for flags field
-const int Null_Flag         = 0x00;  // entry has no flags
+const int Null_Flag           = 0x00000000;  // entry has no flags
+const int Error_Flag          = -1;          // error return code
 // immediate command flags (each must have unique bit set)
 const int Blank_Flag          = 0x00000001;
 const int Line_Flag           = 0x00000002;  // xxx
@@ -316,9 +361,50 @@ public:
 	{
 		return entry[index].multiple;
 	}
-	int search(char letter, int flags);
+	int search(char letter, int flag);
 	int search(TableSearch type, const char *string, int len);
 	int search(const char *word1, int len1, const char *word2, int len2);
+};
+
+
+struct CmdArgs {
+	int begin;				// begin line number (Line, Range)
+	int end;				// end line number (Range)
+	int start;				// start line number (RangeIncr)
+	int incr;				// increment (LineIncr, RangeIncr)
+
+	CmdArgs(void)
+	{
+		begin = end = start = incr = -1;
+	}
+};
+
+
+class Parser {
+	Table *table;			// pointer to the table object
+	char *input;			// pointer to input line being parsed
+	char *pos;				// pointer to current position in input string
+	Token *token;			// pointer to working token (to be returned)
+
+	// main functions
+	bool get_command(void);
+	bool get_identifier(void);
+	bool get_number(void);
+	bool get_string(void);
+	bool get_operator(void);
+
+	// support functions
+	void skip_whitespace();
+	int scan_command(CmdArgs &args);
+	char *scan_word(char *p, DataType &datatype, bool &paren);
+	int scan_string(char *&p, String *s);
+public:
+	Parser(Table *t): table(t) {}
+	void start(char *i)
+	{
+		pos = input = i;
+	}
+	Token *get_token();
 };
 
 
