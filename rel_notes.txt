@@ -19,6 +19,20 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.0.6 (2010-03-06)
+
+	Contains files from Release 0.0.5 updated after testing the
+	parser identifier routines.  New (listed first) and updated
+	files include:
+
+	parser2.txt     - identifier output from the test_parser program
+
+	ibcp.h          - corrected problem with define functions
+	parser.cpp      - corrected problem with define functions
+	test_parser.cpp - command line argument, identifier tests
+	test_parser.cpp - command line argument, added identifier tests
+
+
 Release 0.0.5 (2010-03-01)
 
 	Contains files from Release 0.0.4 plus the initial
