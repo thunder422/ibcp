@@ -22,6 +22,11 @@
 //
 //  2010-03-01  initial release
 //
+//  2010-03-06  added support for a command line argument to indicate which test
+//              to run, added test input lines for testing identifiers, split
+//              DefFunc_TokenType into DefFuncN_TokenType and
+//              DefFuncP_TokenType
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,10 +41,112 @@ void print_gpl_header(void)
 }
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
-	print_gpl_header();
+	const char *tokentype_name[] = {
+		"ImmCmd",
+		"Command",
+		"Operator",
+		"IntFunc",
+		"Remark",
+		"Constant",
+		"DefFuncN",
+		"DefFuncP",
+		"NoParen",
+		"Paren",
+		"Error"
+	};
+	const char *datatype_name[] = {
+		"None",
+		"Double",
+		"Integer",
+		"String"
+	};
+	const char *code_name[] = {
+		"Add", "Sub", "Mul", "Div", "IntDiv", "Mod", "Power",
+		"Eq", "Gt", "GtEq", "Lt", "LtEq", "NotEq",
+		"And", "Or", "Not", "Eqv", "Imp", "Xor",
+		"Abs", "Fix", "Int", "Rnd", "RndArg", "Sgn", "Cint",
+		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
+		"Asc", "Chr", "Instr", "Left", "Len", "Mid", "Repeat", "Right", "Space",
+		"Str", "Val",
+		"OpenParen", "CloseParen", "Comma", "SemiColon", "Colon", "RemOp",
+		"Tab", "Spc",
+		"Let", "Print", "Input", "Dim", "Def", "Rem",
+		"If", "Then", "Else", "EndIf",
+		"For", "To", "Step", "Next",
+		"Do", "DoWhile", "DoUntil", "While", "Until", "Loop",
+		"LoopWhile", "LoopUntil", "End",
+		"List", "Edit", "Delete", "Run", "Renum", "Save", "Load", "New", "Auto",
+		"Cont", "Quit",
+	};
 
+	const char *testinput1[] = {  // immediate commands
+		"L500=1000",
+		" L500 = 1000 ",
+		" L 500 = 1000 ",
+		"L500-1000",
+		" L 500 - 1000 ",
+		"10L500-1000",
+		" 10 L500 - 1000 ",
+		" 10 L 500 - 1000 ",
+		"l\"file",
+		" l \"file\" ",
+		" l ",
+		"a", "A500,1000", "A,1000", "A500,", "A,", "A500;1000",
+		"L500,1000",
+		"  L500,1000",
+		"  L500,L1000=5",
+		"r", "r100", "R100,",
+		"r100-", "r-200", "r-", "r100-200",
+		"r100-,", "r-200,", "r-,", "r100-200,",
+		"r100-,10", "r-200,10", "r-,10", "r100-200,10",
+		"r100-,400,", "r-200,400,", "r-,400,", "r100-200,400,",
+		"r100-,400,10", "r-200,400,10", "r-,400,10", "r100-200,400,10",
+		"s\"file\",a",				// error: something after string
+		"l444444444444",			// error: begin too big
+		"l100-444444444444",		// error: end too big
+		"l100-200;",				// error: wrong character after range
+		"r100-200,4444444444",		// error: number after range too big
+		"r100-200,4444444444,10",	// error: number after range too big
+		"r100-200,l100",			// error: something invalid afer range
+		"r100-200,400,0",			// error: invalid zero increment
+		"a100,0",					// error: invalid zero increment
+		"a100,10;L100",				// error: something after increment
+		"r100,200,10",				// error: unexpected character
+		"r100-200,400,10,20",		// error: something after increment
+		"r100-200,400,4444444444",	// error: increment too big
+		"r100-200,-10", 			// error: unexpected character
+		"r100-200,400,-10",			// error: unexpected character
+		NULL
+	};
+
+	const char *testinput2[] = {  // identifiers
+		"fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%",
+		"fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%",
+		"a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(",
+		"LET PRINT end then xor Abs(CHR$(val( end if left$ left$(",
+		"rem this should be a comment",
+		"rem:this should be a comment",
+		"rem-this should be a comment",
+		NULL
+	};
+
+	const char **test[] = {
+		testinput1, testinput2
+	};
+	const int ntests = sizeof(test) / sizeof(test[0]);
+
+	int testno;  // logic here good for a maximum of 9 tests
+	if (argc != 2 || (testno = argv[1][0] - '1') < 0 || testno >= ntests
+		|| argv[1][1] != '\0')
+	{
+		printf("usage: test_parser <test number 1-%d>\n", ntests);
+		return 0;
+	}
+
+	print_gpl_header();
+	
 	Table *table;
 	try
 	{
@@ -86,86 +193,11 @@ int main(void)
 		exit(1);
 	}
 	printf("Table initialization successful.\n");
-	
-	const char *tokentype_name[] = {
-		"ImmCmd",
-		"Command",
-		"Operator",
-		"IntFunc",
-		"Remark",
-		"Constant",
-		"DefFunc",
-		"NoParen",
-		"Paren",
-		"Error"
-	};
-	const char *datatype_name[] = {
-		"None",
-		"Double",
-		"Integer",
-		"String"
-	};
-	const char *code_name[] = {
-		"Add", "Sub", "Mul", "Div", "IntDiv", "Mod", "Power",
-		"Eq", "Gt", "GtEq", "Lt", "LtEq", "NotEq",
-		"And", "Or", "Not", "Eqv", "Imp", "Xor",
-		"Abs", "Fix", "Int", "Rnd", "RndArg", "Sgn", "Cint",
-		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
-		"Asc", "Chr", "Instr", "Left", "Len", "Mid", "Repeat", "Right", "Space",
-		"Str", "Val",
-		"OpenParen", "CloseParen", "Comma", "SemiColon", "Colon", "RemOp",
-		"Tab", "Spc",
-		"Let", "Print", "Input", "Dim", "Def", "Rem",
-		"If", "Then", "Else", "EndIf",
-		"For", "To", "Step", "Next",
-		"Do", "DoWhile", "DoUntil", "While", "Until", "Loop",
-		"LoopWhile", "LoopUntil", "End",
-		"List", "Edit", "Delete", "Run", "Renum", "Save", "Load", "New", "Auto",
-		"Cont", "Quit",
-	};
-
+		
 	Parser parser(table);
-	const char *testinput[] = {
-		"L500=1000",
-		" L500 = 1000 ",
-		" L 500 = 1000 ",
-		"L500-1000",
-		" L 500 - 1000 ",
-		"10L500-1000",
-		" 10 L500 - 1000 ",
-		" 10 L 500 - 1000 ",
-		"l\"file",
-		" l \"file\" ",
-		" l ",
-		"a", "A500,1000", "A,1000", "A500,", "A,", "A500;1000",
-		"L500,1000",
-		"  L500,1000",
-		"  L500,L1000=5",
-		"r", "r100", "R100,",
-		"r100-", "r-200", "r-", "r100-200",
-		"r100-,", "r-200,", "r-,", "r100-200,",
-		"r100-,10", "r-200,10", "r-,10", "r100-200,10",
-		"r100-,400,", "r-200,400,", "r-,400,", "r100-200,400,",
-		"r100-,400,10", "r-200,400,10", "r-,400,10", "r100-200,400,10",
-		"s\"file\",a",			// error: something after string
-		"l444444444444",		// error: begin too big
-		"l100-444444444444",	// error: end too big
-		"l100-200;",			// error: wrong character after range
-		"r100-200,4444444444",	// error: number after range too big
-		"r100-200,4444444444,10",	// error: number after range too big
-		"r100-200,l100",		// error: something invalid afer range
-		"r100-200,400,0",		// error: invalid zero increment
-		"a100,0",				// error: invalid zero increment
-		"a100,10;L100",			// error: something after increment
-		"r100,200,10",			// error: unexpected character
-		"r100-200,400,10,20",	// error: something after increment
-		"r100-200,400,4444444444",	// error: increment too big
-		"r100-200,-10", 		// error: unexpected character
-		"r100-200,400,-10",		// error: unexpected character
-		NULL
-	};
 	Token *token;
 	CmdArgs *args;
+	const char **testinput = test[testno];
 	for (int i = 0; testinput[i] != NULL; i++)
 	{
 		printf("\nInput: %s\n", testinput[i]);
@@ -205,7 +237,8 @@ int main(void)
 				printf(" %d-%s", token->code,
 					code_name[table->code(token->code)]);
 				// fall thru
-			case DefFunc_TokenType:
+			case DefFuncN_TokenType:
+			case DefFuncP_TokenType:
 			case NoParen_TokenType:
 			case Paren_TokenType:
 				printf(" %-7s", datatype_name[token->datatype]);
@@ -236,6 +269,12 @@ int main(void)
 			case Command_TokenType:
 				printf(" %d-%s", token->code,
 					code_name[table->code(token->code)]);
+				if (table->code(token->code) == Rem_Code
+					|| table->code(token->code) == RemOp_Code)
+				{
+					printf(" |%.*s|", token->string->get_len(),
+						token->string->get_str());
+				}
 				break;
 			default:
 				// nothing more to output
