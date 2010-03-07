@@ -22,6 +22,10 @@
 //
 //  2010-03-01  initial release
 //
+//  2010-03-06  split DefFunc_TokenType into DefFuncN_TokenType and
+//              DefFuncP_TokenType so that it can be determined if define
+//              function name has a parentheses or not
+//
 
 #include <stdio.h>
 
@@ -263,7 +267,7 @@ int Parser::scan_command(CmdArgs &args)
 	{
 		if (flag == Range_Flag || flag == RangeIncr_Flag)
 		{
-			// already have a range, so this would probably be an invalid command
+			// already have range, so this would probably be an invalid command
 			token->set_error(col, UnexpChr);
 			return Error_Flag;
 		}
@@ -358,7 +362,8 @@ bool Parser::get_identifier(void)
 	int len = p - pos;
 	if (strncasecmp(pos, "FN", 2) == 0)  // defined function?
 	{
-		token->type = DefFunc_TokenType;
+		// 2010-03-06: split DefFunc_TokenType
+		token->type = paren ? DefFuncP_TokenType : DefFuncN_TokenType;
 		token->datatype = datatype;
 		token->string = new String(pos, p);
 		pos = p;  // move position past defined function identifier

@@ -27,6 +27,10 @@
 //                new CmdArgs_DataType and Error_Flag
 //                renamed ImCommand_TokenType to ImmCmd_TokenType
 //
+//  2010-03-06  replaced DefFunc_TokenType with DefFuncN_TokenType and
+//                DefFuncP_TokenType so that it can be determined if the define
+//                function name has a parentheses or not
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -162,7 +166,8 @@ enum TokenType {
 	IntFunc_TokenType,
 	Remark_TokenType,
 	Constant_TokenType,
-	DefFunc_TokenType,
+	DefFuncN_TokenType,  // 2010-03-06: replaces DefFunc_TokenType
+	DefFuncP_TokenType,  // 2010-03-06: replaces DefFunc_TokenType
 	NoParen_TokenType,
 	Paren_TokenType,
 	Error_TokenType,
