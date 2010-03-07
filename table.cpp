@@ -24,6 +24,9 @@
 //
 //  2010-03-01  renamed ImCommand_TokenType to ImmCmd_TokenType
 //
+//  2010-03-06  changed None_DataType to String_DataType for the internal string
+//              functions
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -304,7 +307,7 @@ static TableEntry table_entries[] = {
 		"ASC(", NULL, Null_Flag
 	},
 	{
-		Chr_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Chr_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
 		"CHR$(", NULL, Null_Flag
 	},
 	{
@@ -312,7 +315,7 @@ static TableEntry table_entries[] = {
 		"INSTR(", NULL, Null_Flag
 	},
 	{
-		Left_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Left_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
 		"LEFT$(", NULL, Null_Flag
 	},
 	{
@@ -320,23 +323,23 @@ static TableEntry table_entries[] = {
 		"LEN(", NULL, Null_Flag
 	},
 	{
-		Mid_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Mid_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
 		"MID$(", NULL, Null_Flag
 	},
 	{
-		Repeat_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Repeat_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
 		"REPEAT$(", NULL, Null_Flag
 	},
 	{
-		Right_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Right_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
 		"RIGHT$(", NULL, Null_Flag
 	},
 	{
-		Space_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Space_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
 		"SPACE$(", NULL, Null_Flag
 	},
 	{
-		Str_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Str_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
 		"STR$(", NULL, Null_Flag
 	},
 	{
