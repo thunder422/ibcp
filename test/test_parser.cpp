@@ -27,6 +27,9 @@
 //              DefFunc_TokenType into DefFuncN_TokenType and
 //              DefFuncP_TokenType
 //
+//  2010-03-07  added test input lines for testing numbers,
+//              changed error display to use new length value in token
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -132,8 +135,21 @@ int main(int argc, char *argv[])
 		NULL
 	};
 
+	const char *testinput3[] = {  // numbers
+		"00", "01", ".A", ".e",	"..01",			// error tests
+		"0.1 .1 .01 0.01 0.01000,1000A100.001",
+		"100e10 100E+10 100e-10",
+		"100er", "100E+r", "100E-r", "100+200", "100..001", "100e0",
+		"2147483647 -2147483647 2147483648",	// integer limits tests
+		"1.23456e308 1.234e309",				// double limits tests
+		"1.2345e-307 1.234e-308",
+		"1.23456e3081234",						// double limits tests
+		"14234453464575678567846434234234534566",
+		NULL
+	};
+
 	const char **test[] = {
-		testinput1, testinput2
+		testinput1, testinput2, testinput3
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -206,8 +222,13 @@ int main(int argc, char *argv[])
 		{
 			if (token->type == Error_TokenType)
 			{
-				printf("       %*s^-- %s\n", token->column, "",
-					token->string->get_str());
+				// 2010-03-07: modified to use new error length
+				printf("       %*s", token->column, "");
+				for (int j = 0; j < token->length; j++)
+				{
+					putchar('^');
+				}
+				printf("-- %s\n", token->string->get_str());
 				delete token;
 				break;  // stop processing input
 			}
