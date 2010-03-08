@@ -26,6 +26,12 @@
 //              DefFuncP_TokenType so that it can be determined if define
 //              function name has a parentheses or not
 //
+//  2010-03-07  in get_number() changed situation of 0 leading another digit
+//                from terminating the number at the first 0 to a leading zero
+//                error (no legal BASIC would have this situation;
+//              changed several set_error() calls to have a length
+//                argument for the new length of token error field in Token
+//
 
 #include <stdio.h>
 
@@ -183,7 +189,7 @@ int Parser::scan_command(CmdArgs &args)
 		if (errno == ERANGE)
 		{
 			errno = 0;
-			token->set_error(pos - input, BadLineNo);
+			token->set_error(pos - input, BadLineNo, end - pos);
 			return Error_Flag;  // let rest of parser process it
 		}
 		flag = Line_Flag;
@@ -213,7 +219,7 @@ int Parser::scan_command(CmdArgs &args)
 			if (errno == ERANGE)
 			{
 				errno = 0;
-				token->set_error(pos - input, BadLineNo);
+				token->set_error(pos - input, BadLineNo, end - pos);
 				return Error_Flag;
 			}
 			args.end = num;
@@ -260,7 +266,7 @@ int Parser::scan_command(CmdArgs &args)
 	if (errno == ERANGE)  // bad number?
 	{
 		errno = 0;
-		token->set_error(col, *end == '\0' ? BadIncr : BadLineNo);
+		token->set_error(col, *end == '\0' ? BadIncr : BadLineNo, end - pos);
 		return Error_Flag;
 	}
 	if (end == pos)  // no number?
@@ -316,7 +322,7 @@ int Parser::scan_command(CmdArgs &args)
 	if (errno == ERANGE || end == pos)  // bad or no number?
 	{
 		errno = 0;
-		token->set_error(col, BadIncr);
+		token->set_error(col, BadIncr, end - pos);
 		return Error_Flag;
 	}
 	if (num == 0)
@@ -544,8 +550,11 @@ bool Parser::get_number(void)
 					// if didn't find a decimal point
 					// and first character is a zero
 					// and second character is not a decimal point,
-					// terminate the number (only a "0")
-					break;  // exit loop to process string
+					// this is in invalid number
+					// 2010-03-07: changed to error
+					token->set_error("invalid leading zero in numeric "
+						"constant");
+					return true;
 				}
 				digits = true;
 			}
@@ -556,7 +565,8 @@ bool Parser::get_number(void)
 			{
 				if (!digits)  // no digits found?
 				{
-					token->set_error("constant Only contains a decimal point");
+					token->set_error("constant only contains a decimal point "
+						"or has two decimal points", 2);
 					return true;
 				}
 				break;  // exit loop to process string
@@ -570,8 +580,8 @@ bool Parser::get_number(void)
 			{
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				token->set_error("mantissa of constant may not contain only "
-					"a decimal point");
+				token->set_error("mantissa of constant only contains a "
+					"decimal point");
 				return true;
 			}
 			p++;  // move past 'e' or 'E'
@@ -602,8 +612,7 @@ bool Parser::get_number(void)
 			}
 			if (!digits)  // only a decimal point found?
 			{
-				token->set_error("constant may not contain only a decimal "
-					"point");
+				token->set_error("constant only contains a decimal point");
 				return true;
 			}
 			break;  // no more valid number characters, go process what we got
@@ -635,7 +644,7 @@ bool Parser::get_number(void)
 		{
 			// overflow or underflow, constant is not valid
 			errno = 0;  // reset error number
-			token->set_error("constant is out of range");
+			token->set_error("constant is out of range", end - pos);
 			return true;
 		}
 		token->type = Constant_TokenType;
@@ -645,7 +654,7 @@ bool Parser::get_number(void)
 	if (end != p)
 	{
 		// point to where error actual is
-		token->set_error(end - input, "error in constant");
+		token->set_error(end - input, "BUG: error in constant");
 		return true;
 	}
 	// create string of number so it later can be reproduced
