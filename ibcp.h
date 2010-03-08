@@ -31,6 +31,9 @@
 //                DefFuncP_TokenType so that it can be determined if the define
 //                function name has a parentheses or not
 //
+//  2010-03-07  added length of token with error to Token along with two new
+//              set_error() functions
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -196,6 +199,7 @@ enum Multiple {
 };
 
 
+// 2010-03-07: added error length and two new set_error()
 struct Token {
 	int column;				// start column of token
 	TokenType type;			// type of the token
@@ -205,6 +209,7 @@ struct Token {
 	union {
 		double dbl_value;	// value for double constant token
 		int int_value;		// value for integer constant token
+		int length;			// length of error
 	};
 	Token(int col)
 	{
@@ -220,6 +225,7 @@ struct Token {
 	}
 	void set_error(const char *msg)
 	{
+		length = 1;
 		type = Error_TokenType;
 		datatype = None_DataType;
 		string = new String(msg);
@@ -227,6 +233,22 @@ struct Token {
 	void set_error(int col, const char *msg)
 	{
 		column = col;
+		length = 1;
+		type = Error_TokenType;
+		datatype = None_DataType;
+		string = new String(msg);
+	}
+	void set_error(const char *msg, int len)
+	{
+		length = len;
+		type = Error_TokenType;
+		datatype = None_DataType;
+		string = new String(msg);
+	}
+	void set_error(int col, const char *msg, int len)
+	{
+		column = col;
+		length = len;
 		type = Error_TokenType;
 		datatype = None_DataType;
 		string = new String(msg);
