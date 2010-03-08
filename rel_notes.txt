@@ -19,6 +19,20 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.0.7 (2010-03-07)
+
+	Contains files from Release 0.0.6 updated after testing the
+	parser number routines.  New (listed first) and updated
+	files include:
+
+	parser3.txt     - number output from the test_parser program
+
+	ibcp.h          - added token error length
+	parser.cpp      - added token error length
+	parser1.txt     - updated for change in error output
+	test_parser.cpp - changed error output, added number tests
+
+
 Release 0.0.6 (2010-03-06)
 
 	Contains files from Release 0.0.5 updated after testing the
