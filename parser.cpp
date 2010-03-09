@@ -32,6 +32,9 @@
 //              changed several set_error() calls to have a length
 //                argument for the new length of token error field in Token
 //
+//  2010-03-08  removed no closing quote check from get_string() since this
+//              condition was made acceptable in scan_string()
+//
 
 #include <stdio.h>
 
@@ -682,11 +685,7 @@ bool Parser::get_string(void)
 
 	char *p = pos + 1;
 	int len = scan_string(p, NULL);  // get length of string
-	if (len < 0)  // no closing quote?
-	{
-		token->set_error("missing closing quote");
-		return true;
-	}
+	// 2010-03-08: removed no closing quote error check - now valid
 	token->type = Constant_TokenType;
 	token->datatype = String_DataType;
 	token->string = new String(len);  // allocate space only
