@@ -30,6 +30,8 @@
 //  2010-03-07  added test input lines for testing numbers,
 //              changed error display to use new length value in token
 //
+//  2010-03-07  added test input lines for testing strings
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,8 +150,23 @@ int main(int argc, char *argv[])
 		NULL
 	};
 
+	const char *testinput4[] = {  // strings
+		"A$ = \"this is a test\"",
+		"A$ = \"this is a test",			// no closing quote
+		"A$ = \"this is a \"\"test\"\"\"",	// embedded quotes end
+		"A$ = \"\"\"this\"\" is a test\"",	// embedded quotes begin
+		"A$ = \"this is \"\"a\"\" test\"",	// embedded quotes middle
+		"A$ = \"this is \"\" a test\"",		// single embedded quote
+		"A$ = \"\"",						// empty string
+		"A$ = \"",							// empty string/no closing quote
+		"A$ = \"\"\"\"",					// single embedded quote
+		"A$ = \"\"\"",						// embedded quote/no closing quote
+		"A$ = LEFT$(\"TEST\", 1)",			// something after string
+		NULL
+	};
+
 	const char **test[] = {
-		testinput1, testinput2, testinput3
+		testinput1, testinput2, testinput3, testinput4
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
