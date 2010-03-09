@@ -1,0 +1,65 @@
+test_parser.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: A$ = "this is a test"
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |this is a test|
+
+Input: A$ = "this is a test
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |this is a test|
+
+Input: A$ = "this is a ""test"""
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |this is a "test"|
+
+Input: A$ = """this"" is a test"
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |"this" is a test|
+
+Input: A$ = "this is ""a"" test"
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |this is "a" test|
+
+Input: A$ = "this is "" a test"
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |this is " a test|
+
+Input: A$ = ""
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  ||
+
+Input: A$ = "
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  ||
+
+Input: A$ = """"
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |"|
+
+Input: A$ = """
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: Constant  String  |"|
+
+Input: A$ = LEFT$("TEST", 1)
+	 0: NoParen   String  |A$|
+	 3: Operator  None    81-Eq
+	 5: IntFunc   String  63-Left
+	11: Constant  String  |TEST|
+	17: Operator  None    89-Comma
+	19: Constant  Integer 1 |1|
+	20: Operator  None    88-CloseParen
