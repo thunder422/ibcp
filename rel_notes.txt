@@ -19,6 +19,18 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.0.8 (2010-03-08)
+
+	Contains files from Release 0.0.7 updated after testing the
+	parser string routines.  New (listed first) and updated
+	files include:
+
+	parser4.txt     - string output from the test_parser program
+
+	parser.cpp      - removed no closing quote check
+	test_parser.cpp - added string tests
+
+
 Release 0.0.7 (2010-03-07)
 
 	Contains files from Release 0.0.6 updated after testing the
@@ -43,7 +55,7 @@ Release 0.0.6 (2010-03-06)
 
 	ibcp.h          - corrected problem with define functions
 	parser.cpp      - corrected problem with define functions
-	test_parser.cpp - command line argument, identifier tests
+	table.cpp       - fixed data type for internal string functions
 	test_parser.cpp - command line argument, added identifier tests
 
 
