@@ -35,6 +35,9 @@
 //  2010-03-08  removed no closing quote check from get_string() since this
 //              condition was made acceptable in scan_string()
 //
+//  2010-03-10  rewrote get_operator() to properly handle two character
+//              operators
+//
 
 #include <stdio.h>
 
@@ -741,60 +744,58 @@ int Parser::scan_string(char *&p, String *s)
 //     - returns false if no operator (position not changed)
 //     - returns true if there is and token is filled
 //     - returns true for errors setting special error token
+//
+// 2010-03-10: rewrote to properly handle two character operators
 
 bool Parser::get_operator(void)
 {
 	// search table for current character to see if it is a valid operator
 	int index = table->search(Symbol_TableSearch, pos, 1);
-	if (index < 0)
+	if (index > 0)
 	{
-		return false;  // not an operator
-	}
+		// current character is a valid single character operator
 
-	// setup token in case this is only one character
-	token->type = table->type(index);
-	token->datatype = table->datatype(index);
-	token->string = NULL;  // string not needed
-	token->code = index;
+		// setup token in case this is only one character
+		token->type = table->type(index);
+		token->datatype = table->datatype(index);
+		token->code = index;
 
-	if (table->multiple(index) == OneChar_Multiple)
-	{
-		// operator can only be a single character
-		pos++;  // move past operator
-		if (table->code(index) == RemOp_Code)
+		if (table->multiple(index) == OneChar_Multiple)
 		{
-			// remark requires special handling
-			// remark string is to end of line
-			int len = strlen(pos);
-			token->string = new String(pos, len);
-			pos += len;  // move position to end of line
+			// operator can only be a single character
+			pos++;  // move past operator
+			if (table->code(index) == RemOp_Code)
+			{
+				// remark requires special handling
+				// remark string is to end of line
+				int len = strlen(pos);
+				token->string = new String(pos, len);
+				pos += len;  // move position to end of line
+			}
+			return true;
 		}
-		return true;
 	}
-	
+		
 	// operator could be a two character operator
 	// search table again for two characters at current position
-	index = table->search(Symbol_TableSearch, pos, 2);
-	if (index < 0)
+	int index2 = table->search(Symbol_TableSearch, pos, 2);
+	if (index2 < 0)
 	{
-		// two characters not found, see if single character is valid
-		if (token->type == Error_TokenType)
+		if (index > 0)  // was first character a valid operator?
 		{
-			// first character by itself is not valid
-			token->string = new String("Invalid Two Character Operator");
+			pos++;  // move past first character
+			// token already setup
+			return true;
 		}
-		// single word is valid command,
-		// token already setup, move position past single character
-		pos++;
-		return true;
+		return false;  // character(s) as current position not a valid operator
 	}
 
 	// valid two character operator
 	pos += 2;  // move past two characters
 	// get information from two character operator
-	token->type = table->type(index);
-	token->datatype = table->datatype(index);
-	token->code = index;
+	token->type = table->type(index2);
+	token->datatype = table->datatype(index2);
+	token->code = index2;
 	return true;
 }
 
