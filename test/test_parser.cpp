@@ -30,7 +30,9 @@
 //  2010-03-07  added test input lines for testing numbers,
 //              changed error display to use new length value in token
 //
-//  2010-03-07  added test input lines for testing strings
+//  2010-03-08  added test input lines for testing strings
+//
+//  2010-03-10  added test input lines for testing operators
 //
 
 #include <stdio.h>
@@ -165,8 +167,16 @@ int main(int argc, char *argv[])
 		NULL
 	};
 
+	const char *testinput5[] = {  // strings
+		"A$ = mid$(\"b\",A+B*2,index)+LEFT$(\"TEST\", 1)",
+		"if index>5 and subindex<=10 then",
+		"var = 5'initialize variable + ",
+		"if index<<5 && index><4 || n<4 then",					// error
+		NULL
+	};
+
 	const char **test[] = {
-		testinput1, testinput2, testinput3, testinput4
+		testinput1, testinput2, testinput3, testinput4, testinput5
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
