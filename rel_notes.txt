@@ -19,6 +19,19 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.0 (2010-03-10)
+
+	parser operator routines.  The Parser is fully implemented and tested.
+	New (listed first) and updated files include:
+	tested.  New (listed first) and updated files include:
+
+	parser5.txt     - string output from the test_parser program
+
+	parser.cpp      - rewrote operator parser code
+	table.cpp       - corrected 2 character operator table entries
+	test_parser.cpp - added operators tests
+
+
 Release 0.0.8 (2010-03-08)
 
 	Contains files from Release 0.0.7 updated after testing the
