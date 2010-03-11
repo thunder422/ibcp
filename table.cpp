@@ -27,6 +27,9 @@
 //  2010-03-06  changed None_DataType to String_DataType for the internal string
 //              functions
 //
+//  2010-03-10  corrected multiple entry for operators <, <=, and <>
+//              (was OneChar, changed to TwoChar)
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -416,15 +419,15 @@ static TableEntry table_entries[] = {
 		">=", NULL, Null_Flag
 	},
 	{
-		Lt_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
+		Lt_Code, Operator_TokenType, None_DataType, TwoChar_Multiple,
 		"<", NULL, Null_Flag
 	},
 	{
-		LtEq_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
+		LtEq_Code, Operator_TokenType, None_DataType, TwoChar_Multiple,
 		"<=", NULL, Null_Flag
 	},
 	{
-		NotEq_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
+		NotEq_Code, Operator_TokenType, None_DataType, TwoChar_Multiple,
 		"<>", NULL, Null_Flag
 	},
 	{
