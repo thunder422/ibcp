@@ -34,6 +34,9 @@
 //
 //  2010-03-10  added test input lines for testing operators
 //
+//  2010-03-11  added command line option to input lines interactively,
+//              separated code into new parse_input() function
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,46 +51,11 @@ void print_gpl_header(void)
 }
 
 
+void parse_input(Parser &parser, Table *table, const char *testinput);
+
+
 int main(int argc, char *argv[])
 {
-	const char *tokentype_name[] = {
-		"ImmCmd",
-		"Command",
-		"Operator",
-		"IntFunc",
-		"Remark",
-		"Constant",
-		"DefFuncN",
-		"DefFuncP",
-		"NoParen",
-		"Paren",
-		"Error"
-	};
-	const char *datatype_name[] = {
-		"None",
-		"Double",
-		"Integer",
-		"String"
-	};
-	const char *code_name[] = {
-		"Add", "Sub", "Mul", "Div", "IntDiv", "Mod", "Power",
-		"Eq", "Gt", "GtEq", "Lt", "LtEq", "NotEq",
-		"And", "Or", "Not", "Eqv", "Imp", "Xor",
-		"Abs", "Fix", "Int", "Rnd", "RndArg", "Sgn", "Cint",
-		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
-		"Asc", "Chr", "Instr", "Left", "Len", "Mid", "Repeat", "Right", "Space",
-		"Str", "Val",
-		"OpenParen", "CloseParen", "Comma", "SemiColon", "Colon", "RemOp",
-		"Tab", "Spc",
-		"Let", "Print", "Input", "Dim", "Def", "Rem",
-		"If", "Then", "Else", "EndIf",
-		"For", "To", "Step", "Next",
-		"Do", "DoWhile", "DoUntil", "While", "Until", "Loop",
-		"LoopWhile", "LoopUntil", "End",
-		"List", "Edit", "Delete", "Run", "Renum", "Save", "Load", "New", "Auto",
-		"Cont", "Quit",
-	};
-
 	const char *testinput1[] = {  // immediate commands
 		"L500=1000",
 		" L500 = 1000 ",
@@ -180,11 +148,16 @@ int main(int argc, char *argv[])
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
-	int testno;  // logic here good for a maximum of 9 tests
-	if (argc != 2 || (testno = argv[1][0] - '1') < 0 || testno >= ntests
-		|| argv[1][1] != '\0')
+	int testno;
+	int inputmode;
+	if (argc == 2)
 	{
-		printf("usage: test_parser <test number 1-%d>\n", ntests);
+		testno = atoi(argv[1]) - 1;
+		inputmode = strcmp(argv[1], "-i") == 0;
+	}
+	if (argc != 2 || (testno < 0 || testno >= ntests) && inputmode == 0)
+	{ 
+		printf("usage: test_parser <test number 1-%d>|-i\n", ntests);
 		return 0;
 	}
 
@@ -238,98 +211,155 @@ int main(int argc, char *argv[])
 	printf("Table initialization successful.\n");
 		
 	Parser parser(table);
-	Token *token;
-	CmdArgs *args;
+
+	if (inputmode)
+	{
+		char inputline[200];
+		do {
+			printf("\nInput: ");
+			gets(inputline);
+			parse_input(parser, table, inputline);
+		} while (inputline[0] != '\0');
+	}
+
 	const char **testinput = test[testno];
 	for (int i = 0; testinput[i] != NULL; i++)
 	{
 		printf("\nInput: %s\n", testinput[i]);
-		parser.start((char *)testinput[i]);
-		while ((token = parser.get_token()) != NULL)
+		parse_input(parser, table, testinput[i]);
+	}
+}
+
+
+// 2010-03-11: created from parts of main
+void parse_input(Parser &parser, Table *table, const char *testinput)
+{
+	const char *tokentype_name[] = {
+		"ImmCmd",
+		"Command",
+		"Operator",
+		"IntFunc",
+		"Remark",
+		"Constant",
+		"DefFuncN",
+		"DefFuncP",
+		"NoParen",
+		"Paren",
+		"Error"
+	};
+	const char *datatype_name[] = {
+		"None",
+		"Double",
+		"Integer",
+		"String"
+	};
+	const char *code_name[] = {
+		"Add", "Sub", "Mul", "Div", "IntDiv", "Mod", "Power",
+		"Eq", "Gt", "GtEq", "Lt", "LtEq", "NotEq",
+		"And", "Or", "Not", "Eqv", "Imp", "Xor",
+		"Abs", "Fix", "Int", "Rnd", "RndArg", "Sgn", "Cint",
+		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
+		"Asc", "Chr", "Instr", "Left", "Len", "Mid", "Repeat", "Right", "Space",
+		"Str", "Val",
+		"OpenParen", "CloseParen", "Comma", "SemiColon", "Colon", "RemOp",
+		"Tab", "Spc",
+		"Let", "Print", "Input", "Dim", "Def", "Rem",
+		"If", "Then", "Else", "EndIf",
+		"For", "To", "Step", "Next",
+		"Do", "DoWhile", "DoUntil", "While", "Until", "Loop",
+		"LoopWhile", "LoopUntil", "End",
+		"List", "Edit", "Delete", "Run", "Renum", "Save", "Load", "New", "Auto",
+		"Cont", "Quit",
+	};
+
+	Token *token;
+	CmdArgs *args;
+
+	parser.start((char *)testinput);
+	while ((token = parser.get_token()) != NULL)
+	{
+		if (token->type == Error_TokenType)
 		{
-			if (token->type == Error_TokenType)
+			// 2010-03-07: modified to use new error length
+			printf("       %*s", token->column, "");
+			for (int j = 0; j < token->length; j++)
 			{
-				// 2010-03-07: modified to use new error length
-				printf("       %*s", token->column, "");
-				for (int j = 0; j < token->length; j++)
-				{
-					putchar('^');
-				}
-				printf("-- %s\n", token->string->get_str());
-				delete token;
-				break;  // stop processing input
+				putchar('^');
 			}
-			printf("\t%2d: %-9s", token->column, tokentype_name[token->type]);
-			switch (token->type)
+			printf("-- %s\n", token->string->get_str());
+			delete token;
+			break;  // stop processing input
+		}
+		printf("\t%2d: %-9s", token->column, tokentype_name[token->type]);
+		switch (token->type)
+		{
+		case ImmCmd_TokenType:
+			printf(" %3d-%s", token->code,
+				code_name[table->code(token->code)]);
+			if (token->datatype == CmdArgs_DataType)
 			{
-			case ImmCmd_TokenType:
-				printf(" %3d-%s", token->code,
-					code_name[table->code(token->code)]);
-				if (token->datatype == CmdArgs_DataType)
-				{
-					args = (CmdArgs *)token->string->get_data();
-					printf(" Args: begin=%d end=%d start=%d incr=%d",
-						args->begin, args->end, args->start, args->incr);
-				}
-				else if (token->datatype == String_DataType)
-				{
-					printf(" String Arg: |%.*s|", token->string->get_len(),
-						token->string->get_str());
-				}
-				else
-				{
-					printf(" !Invalid Data Type!");
-				}
+				args = (CmdArgs *)token->string->get_data();
+				printf(" Args: begin=%d end=%d start=%d incr=%d",
+					args->begin, args->end, args->start, args->incr);
+			}
+			else if (token->datatype == String_DataType)
+			{
+				printf(" String Arg: |%.*s|", token->string->get_len(),
+					token->string->get_str());
+			}
+			else
+			{
+				printf(" !Invalid Data Type!");
+			}
+			break;
+		case Remark_TokenType:
+			printf(" %d-%s", token->code,
+				code_name[table->code(token->code)]);
+			// fall thru
+		case DefFuncN_TokenType:
+		case DefFuncP_TokenType:
+		case NoParen_TokenType:
+		case Paren_TokenType:
+			printf(" %-7s", datatype_name[token->datatype]);
+			printf(" |%.*s|", token->string->get_len(),
+				token->string->get_str());
+			break;
+		case Constant_TokenType:
+			printf(" %-7s", datatype_name[token->datatype]);
+			switch (token->datatype)
+			{
+			case Integer_DataType:
+				printf(" %d |%.*s|", token->int_value,
+					token->string->get_len(), token->string->get_str());
 				break;
-			case Remark_TokenType:
-				printf(" %d-%s", token->code,
-					code_name[table->code(token->code)]);
-				// fall thru
-			case DefFuncN_TokenType:
-			case DefFuncP_TokenType:
-			case NoParen_TokenType:
-			case Paren_TokenType:
-				printf(" %-7s", datatype_name[token->datatype]);
+			case Double_DataType:
+				printf(" %g |%.*s|", token->dbl_value,
+					token->string->get_len(), token->string->get_str());
+				break;
+			case String_DataType:
 				printf(" |%.*s|", token->string->get_len(),
 					token->string->get_str());
 				break;
-			case Constant_TokenType:
-				printf(" %-7s", datatype_name[token->datatype]);
-				switch (token->datatype)
-				{
-				case Integer_DataType:
-					printf(" %d |%.*s|", token->int_value,
-						token->string->get_len(), token->string->get_str());
-					break;
-				case Double_DataType:
-					printf(" %g |%.*s|", token->dbl_value,
-						token->string->get_len(), token->string->get_str());
-					break;
-				case String_DataType:
-					printf(" |%.*s|", token->string->get_len(),
-						token->string->get_str());
-					break;
-				}
-				break;
-			case Operator_TokenType:
-			case IntFunc_TokenType:
-				printf(" %-7s", datatype_name[token->datatype]);
-			case Command_TokenType:
-				printf(" %d-%s", token->code,
-					code_name[table->code(token->code)]);
-				if (table->code(token->code) == Rem_Code
-					|| table->code(token->code) == RemOp_Code)
-				{
-					printf(" |%.*s|", token->string->get_len(),
-						token->string->get_str());
-				}
-				break;
-			default:
-				// nothing more to output
-				break;
 			}
-			printf("\n");
-			delete token;
+			break;
+		case Operator_TokenType:
+		case IntFunc_TokenType:
+			printf(" %-7s", datatype_name[token->datatype]);
+		case Command_TokenType:
+			printf(" %d-%s", token->code,
+				code_name[table->code(token->code)]);
+			if (table->code(token->code) == Rem_Code
+				|| table->code(token->code) == RemOp_Code)
+			{
+				printf(" |%.*s|", token->string->get_len(),
+					token->string->get_str());
+			}
+			break;
+		default:
+			// nothing more to output
+			break;
 		}
+		printf("\n");
+		delete token;
 	}
 }
