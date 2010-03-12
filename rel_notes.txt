@@ -19,10 +19,21 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.1 (2010-03-11)
+
+	Contains files from Release 0.1.0 updated for new command line
+	-i option to test_parser program to allow interactive input (so
+	compiling the program is unnecessary to test the parser code).
+	Updated files include:
+
+	parser.cpp      - modified to allow tab character as whitespace
+	test_parser.cpp - new command line option for interactive input
+
+
 Release 0.1.0 (2010-03-10)
 
-	parser operator routines.  The Parser is fully implemented and tested.
-	New (listed first) and updated files include:
+	Contains files from Release 0.0.8 updated after testing the
+	parser operator routines.  The Parser is fully implemented and
 	tested.  New (listed first) and updated files include:
 
 	parser5.txt     - string output from the test_parser program
