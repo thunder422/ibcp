@@ -38,6 +38,8 @@
 //  2010-03-10  rewrote get_operator() to properly handle two character
 //              operators
 //
+//  2010-03-11  allow tabs to be white space in skip_whitespace()
+//
 
 #include <stdio.h>
 
@@ -517,7 +519,8 @@ char *Parser::scan_word(char *p, DataType &datatype, bool &paren)
 
 void Parser::skip_whitespace(void)
 {
-	while (*pos == ' ')
+	// 2010-03-11: replaced space check with isblank() to allow tabs
+	while (isblank(*pos))
 	{
 		pos++;
 	}
