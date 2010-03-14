@@ -1,4 +1,5 @@
-test_parser.exe  Copyright (C) 2010  Thunder422
+
+ibcp.exe  Copyright (C) 2010  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -21,20 +22,20 @@ Input: ..01
        ^^-- constant only contains a decimal point or has two decimal points
 
 Input: 0.1 .1 .01 0.01 0.01000,1000A100.001
-	 0: Constant  Double  0.1 |0.1|
-	 4: Constant  Double  0.1 |.1|
-	 7: Constant  Double  0.01 |.01|
-	11: Constant  Double  0.01 |0.01|
-	16: Constant  Double  0.01 |0.01000|
-	23: Operator  None    89-Comma
-	24: Constant  Integer 1000 |1000|
-	28: NoParen   None    |A100|
-	32: Constant  Double  0.001 |.001|
+	 0: Constant     Double  0.1 |0.1|
+	 4: Constant     Double  0.1 |.1|
+	 7: Constant     Double  0.01 |.01|
+	11: Constant     Double  0.01 |0.01|
+	16: Constant     Double  0.01 |0.01000|
+	23: Operator  Op None    89-Comma
+	24: Constant     Integer 1000 |1000|
+	28: NoParen      None    |A100|
+	32: Constant     Double  0.001 |.001|
 
 Input: 100e10 100E+10 100e-10
-	 0: Constant  Double  1e+012 |100e10|
-	 7: Constant  Double  1e+012 |100E+10|
-	15: Constant  Double  1e-008 |100e-10|
+	 0: Constant     Double  1e+012 |100e10|
+	 7: Constant     Double  1e+012 |100E+10|
+	15: Constant     Double  1e-008 |100e-10|
 
 Input: 100er
            ^-- exponent contains no digits
@@ -46,33 +47,33 @@ Input: 100E-r
             ^-- exponent contains no digits
 
 Input: 100+200
-	 0: Constant  Integer 100 |100|
-	 3: Operator  None    75-Add
-	 4: Constant  Integer 200 |200|
+	 0: Constant     Integer 100 |100|
+	 3: Operator  Op None    75-Add
+	 4: Constant     Integer 200 |200|
 
 Input: 100..001
-	 0: Constant  Double  100 |100.|
-	 4: Constant  Double  0.001 |.001|
+	 0: Constant     Double  100 |100.|
+	 4: Constant     Double  0.001 |.001|
 
 Input: 100e0
-	 0: Constant  Double  100 |100e0|
+	 0: Constant     Double  100 |100e0|
 
 Input: 2147483647 -2147483647 2147483648
-	 0: Constant  Integer 2147483647 |2147483647|
-	11: Operator  None    76-Sub
-	12: Constant  Integer 2147483647 |2147483647|
-	23: Constant  Double  2.14748e+009 |2147483648|
+	 0: Constant     Integer 2147483647 |2147483647|
+	11: Operator  Op None    76-Sub
+	12: Constant     Integer 2147483647 |2147483647|
+	23: Constant     Double  2.14748e+009 |2147483648|
 
 Input: 1.23456e308 1.234e309
-	 0: Constant  Double  1.23456e+308 |1.23456e308|
+	 0: Constant     Double  1.23456e+308 |1.23456e308|
                    ^^^^^^^^^-- constant is out of range
 
 Input: 1.2345e-307 1.234e-308
-	 0: Constant  Double  1.2345e-307 |1.2345e-307|
+	 0: Constant     Double  1.2345e-307 |1.2345e-307|
                    ^^^^^^^^^^-- constant is out of range
 
 Input: 1.23456e3081234
        ^^^^^^^^^^^^^^^-- constant is out of range
 
 Input: 14234453464575678567846434234234534566
-	 0: Constant  Double  1.42345e+037 |14234453464575678567846434234234534566|
+	 0: Constant     Double  1.42345e+037 |14234453464575678567846434234234534566|

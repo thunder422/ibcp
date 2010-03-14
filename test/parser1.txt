@@ -1,4 +1,5 @@
-test_parser.exe  Copyright (C) 2010  Thunder422
+
+ibcp.exe  Copyright (C) 2010  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -6,74 +7,74 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: L500=1000
-	 0: NoParen   None    |L500|
-	 4: Operator  None    81-Eq
-	 5: Constant  Integer 1000 |1000|
+	 0: NoParen      None    |L500|
+	 4: Operator  Op None    81-Eq
+	 5: Constant     Integer 1000 |1000|
 
 Input:  L500 = 1000 
-	 1: NoParen   None    |L500|
-	 6: Operator  None    81-Eq
-	 8: Constant  Integer 1000 |1000|
+	 1: NoParen      None    |L500|
+	 6: Operator  Op None    81-Eq
+	 8: Constant     Integer 1000 |1000|
 
 Input:  L 500 = 1000 
-	 1: NoParen   None    |L|
-	 3: Constant  Integer 500 |500|
-	 7: Operator  None    81-Eq
-	 9: Constant  Integer 1000 |1000|
+	 1: NoParen      None    |L|
+	 3: Constant     Integer 500 |500|
+	 7: Operator  Op None    81-Eq
+	 9: Constant     Integer 1000 |1000|
 
 Input: L500-1000
-	 0: ImmCmd      0-List Args: begin=500 end=1000 start=-1 incr=-1
+	 0: ImmCmd         0-List Args: begin=500 end=1000 start=-1 incr=-1
 
 Input:  L 500 - 1000 
-	 1: ImmCmd      0-List Args: begin=500 end=1000 start=-1 incr=-1
+	 1: ImmCmd         0-List Args: begin=500 end=1000 start=-1 incr=-1
 
 Input: 10L500-1000
-	 0: Constant  Integer 10 |10|
-	 2: NoParen   None    |L500|
-	 6: Operator  None    76-Sub
-	 7: Constant  Integer 1000 |1000|
+	 0: Constant     Integer 10 |10|
+	 2: NoParen      None    |L500|
+	 6: Operator  Op None    76-Sub
+	 7: Constant     Integer 1000 |1000|
 
 Input:  10 L500 - 1000 
-	 1: Constant  Integer 10 |10|
-	 4: NoParen   None    |L500|
-	 9: Operator  None    76-Sub
-	11: Constant  Integer 1000 |1000|
+	 1: Constant     Integer 10 |10|
+	 4: NoParen      None    |L500|
+	 9: Operator  Op None    76-Sub
+	11: Constant     Integer 1000 |1000|
 
 Input:  10 L 500 - 1000 
-	 1: Constant  Integer 10 |10|
-	 4: NoParen   None    |L|
-	 6: Constant  Integer 500 |500|
-	10: Operator  None    76-Sub
-	12: Constant  Integer 1000 |1000|
+	 1: Constant     Integer 10 |10|
+	 4: NoParen      None    |L|
+	 6: Constant     Integer 500 |500|
+	10: Operator  Op None    76-Sub
+	12: Constant     Integer 1000 |1000|
 
 Input: l"file
-	 0: ImmCmd      6-Load String Arg: |file|
+	 0: ImmCmd         6-Load String Arg: |file|
 
 Input:  l "file" 
-	 1: ImmCmd      6-Load String Arg: |file|
+	 1: ImmCmd         6-Load String Arg: |file|
 
 Input:  l 
-	 1: ImmCmd      0-List Args: begin=-1 end=-1 start=-1 incr=-1
+	 1: ImmCmd         0-List Args: begin=-1 end=-1 start=-1 incr=-1
 
 Input: a
-	 0: ImmCmd      8-Auto Args: begin=-1 end=-1 start=-1 incr=-1
+	 0: ImmCmd         8-Auto Args: begin=-1 end=-1 start=-1 incr=-1
 
 Input: A500,1000
-	 0: ImmCmd      8-Auto Args: begin=500 end=-1 start=-1 incr=1000
+	 0: ImmCmd         8-Auto Args: begin=500 end=-1 start=-1 incr=1000
 
 Input: A,1000
-	 0: ImmCmd      8-Auto Args: begin=-1 end=-1 start=-1 incr=1000
+	 0: ImmCmd         8-Auto Args: begin=-1 end=-1 start=-1 incr=1000
 
 Input: A500,
-	 0: ImmCmd      8-Auto Args: begin=500 end=-1 start=-1 incr=0
+	 0: ImmCmd         8-Auto Args: begin=500 end=-1 start=-1 incr=0
 
 Input: A,
-	 0: ImmCmd      8-Auto Args: begin=-1 end=-1 start=-1 incr=0
+	 0: ImmCmd         8-Auto Args: begin=-1 end=-1 start=-1 incr=0
 
 Input: A500;1000
-	 0: NoParen   None    |A500|
-	 4: Operator  None    90-SemiColon
-	 5: Constant  Integer 1000 |1000|
+	 0: NoParen      None    |A500|
+	 4: Operator  Op None    90-SemiColon
+	 5: Constant     Integer 1000 |1000|
 
 Input: L500,1000
         ^-- invalid arguments for command
@@ -85,7 +86,7 @@ Input:   L500,L1000=5
               ^-- unexpected character
 
 Input: r
-	 0: ImmCmd      3-Run Args: begin=-1 end=-1 start=-1 incr=-1
+	 0: ImmCmd         3-Run Args: begin=-1 end=-1 start=-1 incr=-1
 
 Input: r100
         ^-- invalid arguments for command
@@ -94,64 +95,64 @@ Input: R100,
         ^-- invalid arguments for command
 
 Input: r100-
-	 0: ImmCmd      4-Renum Args: begin=100 end=2147483647 start=-1 incr=-1
+	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=-1 incr=-1
 
 Input: r-200
-	 0: ImmCmd      4-Renum Args: begin=-1 end=200 start=-1 incr=-1
+	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=-1 incr=-1
 
 Input: r-
-	 0: ImmCmd      4-Renum Args: begin=-1 end=2147483647 start=-1 incr=-1
+	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=-1 incr=-1
 
 Input: r100-200
-	 0: ImmCmd      4-Renum Args: begin=100 end=200 start=-1 incr=-1
+	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=-1 incr=-1
 
 Input: r100-,
-	 0: ImmCmd      4-Renum Args: begin=100 end=2147483647 start=-1 incr=0
+	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=-1 incr=0
 
 Input: r-200,
-	 0: ImmCmd      4-Renum Args: begin=-1 end=200 start=-1 incr=0
+	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=-1 incr=0
 
 Input: r-,
-	 0: ImmCmd      4-Renum Args: begin=-1 end=2147483647 start=-1 incr=0
+	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=-1 incr=0
 
 Input: r100-200,
-	 0: ImmCmd      4-Renum Args: begin=100 end=200 start=-1 incr=0
+	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=-1 incr=0
 
 Input: r100-,10
-	 0: ImmCmd      4-Renum Args: begin=100 end=2147483647 start=-1 incr=10
+	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=-1 incr=10
 
 Input: r-200,10
-	 0: ImmCmd      4-Renum Args: begin=-1 end=200 start=-1 incr=10
+	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=-1 incr=10
 
 Input: r-,10
-	 0: ImmCmd      4-Renum Args: begin=-1 end=2147483647 start=-1 incr=10
+	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=-1 incr=10
 
 Input: r100-200,10
-	 0: ImmCmd      4-Renum Args: begin=100 end=200 start=-1 incr=10
+	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=-1 incr=10
 
 Input: r100-,400,
-	 0: ImmCmd      4-Renum Args: begin=100 end=2147483647 start=400 incr=0
+	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=400 incr=0
 
 Input: r-200,400,
-	 0: ImmCmd      4-Renum Args: begin=-1 end=200 start=400 incr=0
+	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=400 incr=0
 
 Input: r-,400,
-	 0: ImmCmd      4-Renum Args: begin=-1 end=2147483647 start=400 incr=0
+	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=400 incr=0
 
 Input: r100-200,400,
-	 0: ImmCmd      4-Renum Args: begin=100 end=200 start=400 incr=0
+	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=400 incr=0
 
 Input: r100-,400,10
-	 0: ImmCmd      4-Renum Args: begin=100 end=2147483647 start=400 incr=10
+	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=400 incr=10
 
 Input: r-200,400,10
-	 0: ImmCmd      4-Renum Args: begin=-1 end=200 start=400 incr=10
+	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=400 incr=10
 
 Input: r-,400,10
-	 0: ImmCmd      4-Renum Args: begin=-1 end=2147483647 start=400 incr=10
+	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=400 incr=10
 
 Input: r100-200,400,10
-	 0: ImmCmd      4-Renum Args: begin=100 end=200 start=400 incr=10
+	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=400 incr=10
 
 Input: s"file",a
               ^-- unexpected character

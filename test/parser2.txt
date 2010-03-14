@@ -1,4 +1,5 @@
-test_parser.exe  Copyright (C) 2010  Thunder422
+
+ibcp.exe  Copyright (C) 2010  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -6,58 +7,58 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
-	 0: DefFuncN  None    |fna|
-	 4: DefFuncN  None    |FnB|
-	 8: DefFuncN  None    |fNc|
-	12: DefFuncN  None    |FND|
-	16: DefFuncN  String  |fna$|
-	21: DefFuncN  Integer |fna%|
-	26: DefFuncN  Double  |fnword#|
-	34: DefFuncN  String  |fnhello$|
-	43: DefFuncN  Integer |fnindex%|
+	 0: DefFuncN     None    |fna|
+	 4: DefFuncN     None    |FnB|
+	 8: DefFuncN     None    |fNc|
+	12: DefFuncN     None    |FND|
+	16: DefFuncN     String  |fna$|
+	21: DefFuncN     Integer |fna%|
+	26: DefFuncN     Double  |fnword#|
+	34: DefFuncN     String  |fnhello$|
+	43: DefFuncN     Integer |fnindex%|
 
 Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
-	 0: DefFuncP  None    |fna(|
-	 5: DefFuncP  None    |FnB(|
-	10: DefFuncP  None    |fNc(|
-	14: DefFuncP  None    |FND(|
-	19: DefFuncP  String  |fna$(|
-	24: DefFuncP  Integer |fna%(|
-	30: DefFuncP  Double  |fnword#(|
-	39: DefFuncP  String  |fnhello$(|
-	49: DefFuncN  Integer |fnindex%|
+	 0: DefFuncP  () None    |fna(|
+	 5: DefFuncP  () None    |FnB(|
+	10: DefFuncP  () None    |fNc(|
+	14: DefFuncP  () None    |FND(|
+	19: DefFuncP  () String  |fna$(|
+	24: DefFuncP  () Integer |fna%(|
+	30: DefFuncP  () Double  |fnword#(|
+	39: DefFuncP  () String  |fnhello$(|
+	49: DefFuncN     Integer |fnindex%|
 
 Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
-	 0: NoParen   None    |a|
-	 2: Paren     None    |b(|
-	 4: NoParen   String  |c$|
-	 7: NoParen   Double  |D#|
-	10: NoParen   String  |asdf$|
-	16: Paren     None    |qwer(|
-	22: NoParen   None    |zxcv|
-	27: NoParen   Integer |Asdf%|
-	33: Paren     Integer |QWER%(|
-	40: Paren     String  |Nbb_34$(|
-	49: Paren     Double  |h_544_4#(|
+	 0: NoParen      None    |a|
+	 2: Paren     () None    |b(|
+	 4: NoParen      String  |c$|
+	 7: NoParen      Double  |D#|
+	10: NoParen      String  |asdf$|
+	16: Paren     () None    |qwer(|
+	22: NoParen      None    |zxcv|
+	27: NoParen      Integer |Asdf%|
+	33: Paren     () Integer |QWER%(|
+	40: Paren     () String  |Nbb_34$(|
+	49: Paren     () Double  |h_544_4#(|
 
 Input: LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
-	 0: Command   12-Let
-	 4: Command   13-Print
-	10: Command   21-End
-	14: Command   19-Then
-	19: Operator  None    42-Xor
-	23: IntFunc   None    45-Abs
-	27: IntFunc   String  61-Chr
-	32: IntFunc   None    70-Val
-	37: Command   22-EndIf
-	44: NoParen   String  |left$|
-	50: IntFunc   String  63-Left
+	 0: Command   Op 12-Let
+	 4: Command   Op 13-Print
+	10: Command   Op 21-End
+	14: Command   Op 19-Then
+	19: Operator  Op None    42-Xor
+	23: IntFuncP  () None    45-Abs
+	27: IntFuncP  () String  61-Chr
+	32: IntFuncP  () None    70-Val
+	37: Command   Op 22-EndIf
+	44: NoParen      String  |left$|
+	50: IntFuncP  () String  63-Left
 
 Input: rem this should be a comment
-	 0: Command   17-Rem | this should be a comment|
+	 0: Command   Op 17-Rem | this should be a comment|
 
 Input: rem:this should be a comment
-	 0: Command   17-Rem |:this should be a comment|
+	 0: Command   Op 17-Rem |:this should be a comment|
 
 Input: rem-this should be a comment
-	 0: Command   17-Rem |-this should be a comment|
+	 0: Command   Op 17-Rem |-this should be a comment|

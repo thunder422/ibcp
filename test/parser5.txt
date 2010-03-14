@@ -1,4 +1,5 @@
-test_parser.exe  Copyright (C) 2010  Thunder422
+
+ibcp.exe  Copyright (C) 2010  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -6,47 +7,47 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
-	 0: NoParen   String  |A$|
-	 3: Operator  None    81-Eq
-	 5: IntFunc   String  65-Mid
-	10: Constant  String  |b|
-	13: Operator  None    89-Comma
-	14: NoParen   None    |A|
-	15: Operator  None    75-Add
-	16: NoParen   None    |B|
-	17: Operator  None    77-Mul
-	18: Constant  Integer 2 |2|
-	19: Operator  None    89-Comma
-	20: NoParen   None    |index|
-	25: Operator  None    88-CloseParen
-	26: Operator  None    75-Add
-	27: IntFunc   String  63-Left
-	33: Constant  String  |TEST|
-	39: Operator  None    89-Comma
-	41: Constant  Integer 1 |1|
-	42: Operator  None    88-CloseParen
+	 0: NoParen      String  |A$|
+	 3: Operator  Op None    81-Eq
+	 5: IntFuncP  () String  65-Mid
+	10: Constant     String  |b|
+	13: Operator  Op None    89-Comma
+	14: NoParen      None    |A|
+	15: Operator  Op None    75-Add
+	16: NoParen      None    |B|
+	17: Operator  Op None    77-Mul
+	18: Constant     Integer 2 |2|
+	19: Operator  Op None    89-Comma
+	20: NoParen      None    |index|
+	25: Operator  Op None    88-CloseParen
+	26: Operator  Op None    75-Add
+	27: IntFuncP  () String  63-Left
+	33: Constant     String  |TEST|
+	39: Operator  Op None    89-Comma
+	41: Constant     Integer 1 |1|
+	42: Operator  Op None    88-CloseParen
 
 Input: if index>5 and subindex<=10 then
-	 0: Command   18-If
-	 3: NoParen   None    |index|
-	 8: Operator  None    82-Gt
-	 9: Constant  Integer 5 |5|
-	11: Operator  None    37-And
-	15: NoParen   None    |subindex|
-	23: Operator  None    85-LtEq
-	25: Constant  Integer 10 |10|
-	28: Command   19-Then
+	 0: Command   Op 18-If
+	 3: NoParen      None    |index|
+	 8: Operator  Op None    82-Gt
+	 9: Constant     Integer 5 |5|
+	11: Operator  Op None    37-And
+	15: NoParen      None    |subindex|
+	23: Operator  Op None    85-LtEq
+	25: Constant     Integer 10 |10|
+	28: Command   Op 19-Then
 
 Input: var = 5'initialize variable + 
-	 0: NoParen   None    |var|
-	 4: Operator  None    81-Eq
-	 6: Constant  Integer 5 |5|
-	 7: Operator  None    92-RemOp |initialize variable + |
+	 0: NoParen      None    |var|
+	 4: Operator  Op None    81-Eq
+	 6: Constant     Integer 5 |5|
+	 7: Operator  Op None    92-RemOp |initialize variable + |
 
 Input: if index<<5 && index><4 || n<4 then
-	 0: Command   18-If
-	 3: NoParen   None    |index|
-	 8: Operator  None    84-Lt
-	 9: Operator  None    84-Lt
-	10: Constant  Integer 5 |5|
+	 0: Command   Op 18-If
+	 3: NoParen      None    |index|
+	 8: Operator  Op None    84-Lt
+	 9: Operator  Op None    84-Lt
+	10: Constant     Integer 5 |5|
                    ^-- unrecognizable character
