@@ -34,6 +34,10 @@
 //  2010-03-07  added length of token with error to Token along with two new
 //              set_error() functions
 //
+//  2010-03-11  support for Translator class initiated, which includes:
+//              replaced IntFunc_TokenType With IntFuncN_TokenType and
+//              IntFuncP_TokenType; and added new static members to Token
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -162,11 +166,13 @@ enum Code {
 };
 
 
+// changes to TokenType may require changes to ibcp.cpp: Token::initialize()
 enum TokenType {
 	ImmCmd_TokenType,
 	Command_TokenType,
 	Operator_TokenType,
-	IntFunc_TokenType,
+	IntFuncN_TokenType,  // 2010-03-11: replaces IntFunc_TokenType
+	IntFuncP_TokenType,  // 2010-03-11: replaces IntFunc_TokenType
 	Remark_TokenType,
 	Constant_TokenType,
 	DefFuncN_TokenType,  // 2010-03-06: replaces DefFunc_TokenType
@@ -201,6 +207,11 @@ enum Multiple {
 
 // 2010-03-07: added error length and two new set_error()
 struct Token {
+	static bool paren[sizeof_TokenType];
+	static bool op[sizeof_TokenType];
+
+	static void initialize(void);
+
 	int column;				// start column of token
 	TokenType type;			// type of the token
 	DataType datatype;		// data type of token
@@ -252,6 +263,14 @@ struct Token {
 		type = Error_TokenType;
 		datatype = None_DataType;
 		string = new String(msg);
+	}
+	bool is_operator(void)
+	{
+		return op[type];
+	}
+	bool has_paren(void)
+	{
+		return paren[type];
 	}
 };
 
