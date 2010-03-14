@@ -19,6 +19,22 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.2 (2010-03-13)
+
+	Contains files from Release 0.1.1, where Translator development
+	initiated.  Only contains minor changes, but now the new ibcp.cpp
+	contains the main function and for now calls test_parser().  New
+	(listed first) and updated files include:
+
+	ibcp.cpp        - contains main(), calls test_parser()
+	ibcp.vpj        - project file for ibcp
+
+	ibcp.h          - new Token static member functions
+	parser1-5.txt   - files updated for new Token static functions
+	table.cpp       - updated internal function entry's token type
+	test_parser.cpp - changed from being main file, ibcp updates
+
+
 Release 0.1.1 (2010-03-11)
 
 	Contains files from Release 0.1.0 updated for new command line
