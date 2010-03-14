@@ -37,24 +37,23 @@
 //  2010-03-11  added command line option to input lines interactively,
 //              separated code into new parse_input() function
 //
+//  2010-03-13  replaced IncFunc with IntFuncN and IntFuncP token types
+//              added new Token static functions that indicate whether token
+//                has a parentheses or is and operator
+//              changed main() to test_parser(), moved print_gpl_header, and
+//                table initialization to new ibcp.cpp source file
+//
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "../ibcp.h"
 
-void print_gpl_header(void)
-{
-	printf("test_parser.exe  Copyright (C) 2010  Thunder422\n");
-    printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
-    printf("This is free software, and you are welcome to\n");
-    printf("redistribute it under certain conditions.\n\n");
-}
-
 
 void parse_input(Parser &parser, Table *table, const char *testinput);
 
 
-int main(int argc, char *argv[])
+// 2010-03-13: changed from main()
+bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 {
 	const char *testinput1[] = {  // immediate commands
 		"L500=1000",
@@ -161,57 +160,10 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	print_gpl_header();
 	
-	Table *table;
-	try
-	{
-		table = new Table();
-	}
-	catch (List<TableError> *error_list)
-	{
-		TableError error;
 
-		fprintf(stderr, "Error(s) found in Table:\n");
-		int n = 0;
-		bool more;
-		do
-		{
-			more = error_list->remove(NULL, &error);
-			fprintf(stderr, "Error #%d: ", ++n);
-			switch (error.type)
-			{
-			case Duplicate_TableErrType:
-				fprintf(stderr, "Code %d in table more than once "
-					"at entries %d and %d\n", error.duplicate.code,
-					error.duplicate.ifirst, error.duplicate.idup);
-				break;
-			case Missing_TableErrType:
-				fprintf(stderr, "Code %d missing from table\n",
-					error.missing.code);
-				break;
-			case Range_TableErrType:
-				fprintf(stderr, "Search type %d indexes (%d, %d) not correct\n",
-					error.range.type, error.range.ibeg, error.range.iend);
-				break;
-			case Overlap_TableErrType:
-				fprintf(stderr, "Search type %d indexes (%d, %d) overlap with "
-					"search type %d\n", error.overlap.type1, error.overlap.ibeg,
-					error.overlap.iend, error.overlap.type2);
-				break;
-			default:
-				fprintf(stderr, "Unknown error %d\n", error.type);
-				break;
-			}
-		}
-		while (more);
-		fprintf(stderr, "Program aborting!\n");
-		exit(1);
-	}
-	printf("Table initialization successful.\n");
-		
-	Parser parser(table);
-
+	// 2010-03-13: removed Table initialization code
+	
 	if (inputmode)
 	{
 		char inputline[200];
@@ -221,13 +173,16 @@ int main(int argc, char *argv[])
 			parse_input(parser, table, inputline);
 		} while (inputline[0] != '\0');
 	}
-
-	const char **testinput = test[testno];
-	for (int i = 0; testinput[i] != NULL; i++)
+	else
 	{
-		printf("\nInput: %s\n", testinput[i]);
-		parse_input(parser, table, testinput[i]);
+		const char **testinput = test[testno];
+		for (int i = 0; testinput[i] != NULL; i++)
+		{
+			printf("\nInput: %s\n", testinput[i]);
+			parse_input(parser, table, testinput[i]);
+		}
 	}
+	return true;
 }
 
 
@@ -238,7 +193,8 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 		"ImmCmd",
 		"Command",
 		"Operator",
-		"IntFunc",
+		"IntFuncN",  // 2010-03-13: replaced IncFunc entry
+		"IntFuncP",
 		"Remark",
 		"Constant",
 		"DefFuncN",
@@ -290,7 +246,18 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 			delete token;
 			break;  // stop processing input
 		}
-		printf("\t%2d: %-9s", token->column, tokentype_name[token->type]);
+		// 2010-03-13: test new Token static functions
+		const char *info = "  ";
+		if (token->has_paren())
+		{
+			info = token->is_operator() ? "??" : "()";
+		}
+		else if (token->is_operator())
+		{
+			info = "Op";
+		}
+		printf("\t%2d: %-9s %s", token->column, tokentype_name[token->type],
+			info);
 		switch (token->type)
 		{
 		case ImmCmd_TokenType:
@@ -343,7 +310,8 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 			}
 			break;
 		case Operator_TokenType:
-		case IntFunc_TokenType:
+		case IntFuncN_TokenType:  // 2010-03-13: replaced IncFunc entry
+		case IntFuncP_TokenType:
 			printf(" %-7s", datatype_name[token->datatype]);
 		case Command_TokenType:
 			printf(" %d-%s", token->code,
