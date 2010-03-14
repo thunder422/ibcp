@@ -30,6 +30,9 @@
 //  2010-03-10  corrected multiple entry for operators <, <=, and <>
 //              (was OneChar, changed to TwoChar)
 //
+//  2010-03-11  split IntFunc_TokenType into IntFuncN_TokenType and
+//              IntFuncP_TokenType; changed tables entries accordingly
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -194,7 +197,7 @@ static TableEntry table_entries[] = {
 	//   Internal Functions (No Parentheses)
 	//-----------------------------------------
 	{
-		Rnd_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Rnd_Code, IntFuncN_TokenType, Double_DataType, OneWord_Multiple,
 		"RND", NULL, Null_Flag
 	},
 	//--------------------
@@ -246,107 +249,107 @@ static TableEntry table_entries[] = {
 	//   INTERNAL FUNCTIONS (Parentheses)
 	//--------------------------------------
 	{
-		Abs_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Abs_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"ABS(", NULL, Null_Flag
 	},
 	{
-		Fix_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Fix_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"FIX(", NULL, Null_Flag
 	},
 	{
-		Int_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Int_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"INT(", NULL, Null_Flag
 	},
 	{
-		RndArg_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		RndArg_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"RND(", NULL, Null_Flag
 	},
 	{
-		Sgn_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Sgn_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"SGN(", NULL, Null_Flag
 	},
 	{
-		Cint_Code, IntFunc_TokenType, Integer_DataType, OneWord_Multiple,
+		Cint_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
 		"CINT(", NULL, Null_Flag
 	},
 	{
-		Sqr_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Sqr_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"SQR(", NULL, Null_Flag
 	},
 	{
-		Atn_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Atn_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"ATN(", NULL, Null_Flag
 	},
 	{
-		Cos_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Cos_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"COS(", NULL, Null_Flag
 	},
 	{
-		Sin_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Sin_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"SIN(", NULL, Null_Flag
 	},
 	{
-		Tan_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Tan_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"TAN(", NULL, Null_Flag
 	},
 	{
-		Exp_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Exp_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"EXP(", NULL, Null_Flag
 	},
 	{
-		Log_Code, IntFunc_TokenType, Double_DataType, OneWord_Multiple,
+		Log_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
 		"LOG(", NULL, Null_Flag
 	},
 	{
-		Tab_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Tab_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"TAB(", NULL, Null_Flag
 	},
 	{
-		Spc_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Spc_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"SPC(", NULL, Null_Flag
 	},
 	{
-		Asc_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Asc_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"ASC(", NULL, Null_Flag
 	},
 	{
-		Chr_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
+		Chr_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
 		"CHR$(", NULL, Null_Flag
 	},
 	{
-		Instr_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Instr_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"INSTR(", NULL, Null_Flag
 	},
 	{
-		Left_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
+		Left_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
 		"LEFT$(", NULL, Null_Flag
 	},
 	{
-		Len_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Len_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"LEN(", NULL, Null_Flag
 	},
 	{
-		Mid_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
+		Mid_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
 		"MID$(", NULL, Null_Flag
 	},
 	{
-		Repeat_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
+		Repeat_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
 		"REPEAT$(", NULL, Null_Flag
 	},
 	{
-		Right_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
+		Right_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
 		"RIGHT$(", NULL, Null_Flag
 	},
 	{
-		Space_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
+		Space_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
 		"SPACE$(", NULL, Null_Flag
 	},
 	{
-		Str_Code, IntFunc_TokenType, String_DataType, OneWord_Multiple,
+		Str_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
 		"STR$(", NULL, Null_Flag
 	},
 	{
-		Val_Code, IntFunc_TokenType, None_DataType, OneWord_Multiple,
+		Val_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
 		"Val(", NULL, Null_Flag
 	},
 	//***************************
