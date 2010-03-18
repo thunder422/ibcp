@@ -26,10 +26,15 @@
 //              output, Token initialization call, Table initialization code,
 //              and a call to the test_parser() function
 //
+//  2010-03-17  changed return value of test_parser from int to bool (the
+//                command line options are passed to each test routine and if
+//                the options are not for them, they return false so the next
+//                test routine can be called)
+//              removed includes that weren't needed,
+//              changed exit() to a return
+//
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "ibcp.h"
 
 void print_gpl_header(char *name)
@@ -58,7 +63,7 @@ void Token::initialize(void)
 }
 
 
-int test_parser(Parser &parser, Table *table, int argc, char *argv[]);
+bool test_parser(Parser &parser, Table *table, int argc, char *argv[]);
 
 
 int main(int argc, char *argv[])
@@ -109,13 +114,17 @@ int main(int argc, char *argv[])
 		}
 		while (more);
 		fprintf(stderr, "Program aborting!\n");
-		exit(1);
+		return 1;
 	}
 	printf("Table initialization successful.\n");
 		
 	Parser parser(table);
 
-	return test_parser(parser, table, argc, argv);
+	if (!test_parser(parser, table, argc, argv))
+	{
+		printf("usage: %s -p <options>\n", strrchr(argv[0], '\\') + 1);
+	}
+	return 0;
 }
 	
 
