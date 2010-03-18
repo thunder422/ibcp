@@ -19,6 +19,23 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.3 (2010-03-17)
+
+	Contains files from Release 0.1.2, changed for incremental
+	Translator development, plus command line option handling
+	changed to allow additional test routines.  Note the 0.1.1
+	release was missing the test_parser.cpp file.  New (listed
+	first) and updated files include:
+
+	test_ibcp.cpp   - renamed from test_parser.cpp, few changes
+
+	ibcp.cpp        - allowance for additional test routines
+	ibcp.h          - new codes, changes Token and TableEntry
+	parser.cpp      - changed to return EOL instead of null pointer
+	parser1-5.txt   - files updated for new EOL Token
+	table.cpp       - added unary_code field, added new entries
+
+
 Release 0.1.2 (2010-03-13)
 
 	Contains files from Release 0.1.1, where Translator development
