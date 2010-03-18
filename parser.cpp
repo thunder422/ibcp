@@ -40,6 +40,10 @@
 //
 //  2010-03-11  allow tabs to be white space in skip_whitespace()
 //
+//  2010-03-17  modified get_token() to return special end-of-line token
+//                instead of a NULL pointer
+//              changed all token->code to token->index
+//
 
 #include <stdio.h>
 
@@ -61,11 +65,16 @@ Token *Parser::get_token(void)
 {
 	bool first = pos == input;
 	skip_whitespace();
+	token = new Token(pos - input);  // allocate new token to return
 	if (*pos == '\0')
 	{
-		return NULL;  // at end of line, no more tokens to return
+		// 2010-03-17: changed to return special end-of-line (last) token
+		int index = table->index(EOL_Code);
+		token->type = table->type(index);
+		token->datatype = table->datatype(index);
+		token->index = index;
+		return token;
 	}
-	token = new Token(pos - input);  // allocate new token to return
 
 	if (first)
 	{
@@ -121,7 +130,7 @@ bool Parser::get_command(void)
 		return true;
 	}
 	// search table again for the proper form
-	if ((token->code = table->search(letter, flag)) == -1)
+	if ((token->index = table->search(letter, flag)) == -1)
 	{
 		token->set_error(col, "invalid arguments for command");
 	}
@@ -416,7 +425,7 @@ bool Parser::get_identifier(void)
 	token->type = table->type(index);
 	token->datatype = table->datatype(index);
 	token->string = NULL;  // string not needed
-	token->code = index;
+	token->index = index;
 
 	if (table->multiple(index) == OneWord_Multiple)
 	{
@@ -451,7 +460,7 @@ bool Parser::get_identifier(void)
 	// get information from two word command
 	token->type = table->type(index);
 	token->datatype = table->datatype(index);
-	token->code = index;
+	token->index = index;
 	return true;
 }
 
@@ -761,7 +770,7 @@ bool Parser::get_operator(void)
 		// setup token in case this is only one character
 		token->type = table->type(index);
 		token->datatype = table->datatype(index);
-		token->code = index;
+		token->index = index;
 
 		if (table->multiple(index) == OneChar_Multiple)
 		{
@@ -798,7 +807,7 @@ bool Parser::get_operator(void)
 	// get information from two character operator
 	token->type = table->type(index2);
 	token->datatype = table->datatype(index2);
-	token->code = index2;
+	token->index = index2;
 	return true;
 }
 
