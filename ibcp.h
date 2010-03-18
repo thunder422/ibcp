@@ -38,6 +38,10 @@
 //              replaced IntFunc_TokenType With IntFuncN_TokenType and
 //              IntFuncP_TokenType; and added new static members to Token
 //
+//  2010-03-17  added codes Null_Code, Neq_Code, and EOL_Code
+//              added unary_code to TableEntry
+//              renamed code to index in Token to avoid confusion
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -47,9 +51,12 @@
 
 
 enum Code {
+	Null_Code,	// 2010-03-17: added to indicated no code
+
 	// math operators
 	Add_Code,
 	Sub_Code,
+	Neg_Code,  // 2010-03-17: added unary operator
 	Mul_Code,
 	Div_Code,
 	IntDiv_Code,
@@ -139,6 +146,9 @@ enum Code {
 	LoopWhile_Code,
 	LoopUntil_Code,
 	End_Code,
+
+	// other codes
+	EOL_Code,  // 2010-03-17: added end-of-line code
 	
 	// immediate commands (will go away once gui implemented)
 	List_Code,
@@ -216,7 +226,8 @@ struct Token {
 	TokenType type;			// type of the token
 	DataType datatype;		// data type of token
 	String *string;			// pointer to string of token
-	int code;	 			// internal code of token (index into Table)
+	// 2010-03-17: changed variable from code to index
+	int index;	 			// index into Table (internal code of token)
 	union {
 		double dbl_value;	// value for double constant token
 		int int_value;		// value for integer constant token
@@ -295,6 +306,8 @@ struct TableEntry {
 	const char *name;			// name for table entry
 	const char *name2;			// name of second word of command
 	int flags;					// flags for entry
+	// 2010-03-17: added unary code flag
+	Code unary_code;			// unary code for operator (Null_Code if none)
 };
 
 
