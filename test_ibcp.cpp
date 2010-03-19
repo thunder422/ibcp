@@ -50,12 +50,17 @@
 //              added string for new Code values to print_token
 //              changed all token->code to token->index
 //
+//  2010-03-18  fixed loop since get_token() no longer returns null
+//              added new functions test_translator() and translate_input() for
+//                testing translator
+//
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "ibcp.h"
 
 void parse_input(Parser &parser, Table *table, const char *testinput);
+void translate_input(Parser &parser, Table *table, const char *testinput);
 bool print_token(Token *token, Table *table);
 
 
@@ -201,23 +206,100 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 void parse_input(Parser &parser, Table *table, const char *testinput)
 {
 	Token *token;
-	CmdArgs *args;
+	bool more;
 
 	parser.start((char *)testinput);
-	while ((token = parser.get_token()) != NULL)
-	{
-		bool more = print_token(token, table);
+	// 2010-03-18: fix loop since get_token() no longer returns null
+	do {
+		token = parser.get_token();
+		more = print_token(token, table);
 		if (more && token->type == Operator_TokenType
 			&& table->code(token->index) == EOL_Code)
 		{
 			more = false;
 		}
-
 		delete token;
-		if (!more)
+	}
+	while (more);
+}
+
+
+// 2010-03-18: added new function for testing translator
+bool test_translator(Parser &parser, Table *table, int argc, char *argv[])
+{
+	const char *testinput1[] = {  // expressions
+		NULL
+	};
+
+	const char **test[] = {
+		testinput1
+	};
+	const int ntests = sizeof(test) / sizeof(test[0]);
+
+	int testno;
+	int inputmode;
+	if (argc < 2 || strcmp(argv[1], "-t") != 0)
+	{
+		return false;  // not our options
+	}
+	if (argc == 3)
+	{
+		testno = atoi(argv[2]) - 1;
+		inputmode = strcmp(argv[2], "i") == 0;
+	}
+	if (argc != 3 || (testno < 0 || testno >= ntests) && inputmode == 0)
+	{ 
+		// 2010-03-13: changed to output actual program name
+		printf("usage: %s -t <test number 1-%d>|i\n", strrchr(argv[0], '\\') + 1,
+			ntests);
+		return true;  // our options are bad
+	}
+
+	if (inputmode)
+	{
+		char inputline[200];
+		do {
+			printf("\nInput: ");
+			gets(inputline);
+			translate_input(parser, table, inputline);
+		} while (inputline[0] != '\0');
+	}
+	else
+	{
+		const char **testinput = test[testno];
+		for (int i = 0; testinput[i] != NULL; i++)
 		{
-			return;
+			printf("\nInput: %s\n", testinput[i]);
+			translate_input(parser, table, testinput[i]);
 		}
+	}
+	return true;
+}
+
+
+// 2010-03-18: new function for testing translator
+void translate_input(Parser &parser, Table *table, const char *testinput)
+{
+	Token *token;
+	Translator::Status status;
+
+	Translator translator(table);
+	translator.start((char *)testinput);
+	do {
+		token = parser.get_token();
+		print_token(token, table);
+		status = translator.add_token(token);
+	}
+	while (status == Translator::Good);
+	if (status == Translator::Done)
+	{
+		List<Token *> *rpn_list = translator.get_result();
+		printf("RPN List:");
+		// TODO print rpn list and deallocate
+	}
+	else  // error occurred, output it
+	{
+		// TODO print error information here
 	}
 }
 
