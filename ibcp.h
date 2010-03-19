@@ -42,6 +42,10 @@
 //              added unary_code to TableEntry
 //              renamed code to index in Token to avoid confusion
 //
+//  2010-03-18  added Translator class;
+//              added default to Token constructor
+//              added set_token() function to Table class
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -233,7 +237,8 @@ struct Token {
 		int int_value;		// value for integer constant token
 		int length;			// length of error
 	};
-	Token(int col)
+	// 2010-03-18: added default value to constructor
+	Token(int col = -1)
 	{
 		column = col;
 		string = NULL;
@@ -423,6 +428,13 @@ public:
 	int search(char letter, int flag);
 	int search(TableSearch type, const char *string, int len);
 	int search(const char *word1, int len1, const char *word2, int len2);
+	// 2010-03-18: add function to set token for code
+	void set_token(Token *token, Code code)
+	{
+		token->index = index(code);
+		token->type = type(token->index);
+		token->datatype = datatype(token->index);
+	}
 };
 
 
@@ -464,6 +476,41 @@ public:
 		pos = input = i;
 	}
 	Token *get_token();
+};
+
+
+// 2010-03-18: added Translator class
+class Translator {
+	Table *table;					// pointer to the table object
+	List<Token *> *rpn_list;		// pointer to RPN list
+	List<Token *> op_stack;			// operator stack
+	List<List<Token *>::Element *> operand_stack;	// operand stack
+	enum State {
+		Initial,					// initial state
+		BinOp,						// expecting binary operator
+		Operand,					// expecting unary operator or operand
+		sizeof_State
+	} state;						// current state of translator
+	char *input;					// pointer to input line being translated
+
+public:
+	Translator(Table *t): table(t), rpn_list(NULL) {}
+	void start(char *i);
+	enum Status {
+		Good,
+		Done,
+		ExpectedOperator,
+		ExpectedOperand,
+		sizeof_status
+	};
+	Status add_token(Token *token);
+	List<Token *> *get_result(void)	// only called when add_token returns Done
+	{
+		List<Token *> *list = rpn_list;
+		rpn_list = NULL;
+		return list;
+	}
+	void clean_up(void);			// only called when add_token returns error
 };
 
 
