@@ -44,6 +44,8 @@
 //                instead of a NULL pointer
 //              changed all token->code to token->index
 //
+//  2010-03-18  replaced code with call to set_token()
+//
 
 #include <stdio.h>
 
@@ -69,10 +71,8 @@ Token *Parser::get_token(void)
 	if (*pos == '\0')
 	{
 		// 2010-03-17: changed to return special end-of-line (last) token
-		int index = table->index(EOL_Code);
-		token->type = table->type(index);
-		token->datatype = table->datatype(index);
-		token->index = index;
+		// 2010-03-18: replaced code with function call
+		table->set_token(token, EOL_Code);
 		return token;
 	}
 
