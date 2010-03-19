@@ -19,6 +19,27 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.4-dev-1 (2010-03-18)
+
+	Interim developmental release - Translator implementation is
+	underway.  The main purpose of this release is to make sure
+	changes compile.  The test_stack program was updated to test
+	list of pointers (of structures allocated and deallocated
+	outside of List class).  The parser test output files have been
+	removed.  New (listed first) and updated files include:
+
+	translator.cpp  - initial implementation (incomplete)
+
+	ibcp.cpp        - added support for test translator code
+	ibcp.h          - added Translator class, set_token() to Table
+	parser.cpp      - replace some code with call to set_token()
+	test_ibcp.cpp   - added translator test functions
+
+	test/stack.txt      - output of test_stack program
+	test/test_stack.cpp - added pointer list test
+	test/test_stack.vpj - modified for test subdirectory
+
+
 Release 0.1.3 (2010-03-17)
 
 	Contains files from Release 0.1.2, changed for incremental
