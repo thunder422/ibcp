@@ -33,6 +33,8 @@
 //              removed includes that weren't needed,
 //              changed exit() to a return
 //
+//  2010-03-18  added support for test_translator
+//
 
 #include <stdio.h>
 #include "ibcp.h"
@@ -64,6 +66,7 @@ void Token::initialize(void)
 
 
 bool test_parser(Parser &parser, Table *table, int argc, char *argv[]);
+bool test_translator(Parser &parser, Table *table, int argc, char *argv[]);
 
 
 int main(int argc, char *argv[])
@@ -120,7 +123,9 @@ int main(int argc, char *argv[])
 		
 	Parser parser(table);
 
-	if (!test_parser(parser, table, argc, argv))
+	// 2010-03-18: added call to test_translator
+	if (!test_parser(parser, table, argc, argv)
+		&& !test_translator(parser, table, argc, argv))
 	{
 		printf("usage: %s -p <options>\n", strrchr(argv[0], '\\') + 1);
 	}
