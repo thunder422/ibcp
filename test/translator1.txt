@@ -1,0 +1,47 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: A - B
+Output: A B - 
+
+Input: A + B
+Output: A B + 
+
+Input: A + B * C
+Output: A B C * + 
+
+Input: A * B + C
+Output: A B * C + 
+
+Input: A * -B + -C^D
+Output: A B Neg * C D ^ Neg + 
+
+Input: Value1 + Value2 - Value3 - Value4
+Output: Value1 Value2 + Value3 - Value4 - 
+
+Input: var_A * Var_A + Var_B * Var_B
+Output: var_A Var_A * Var_B Var_B * + 
+
+Input: not A < 5 = B > 2
+Output: A 5 < B 2 > = NOT 
+
+Input: not A < 5 and B > 2 or C < 1 and D <> 2
+Output: A 5 < NOT B 2 > AND C 1 < D 2 <> AND OR 
+
+Input: A * B / c \ D MOD E
+Output: A B * c / D \ E MOD 
+
+Input: A mod B \ c / D * E
+Output: A B c D / E * \ MOD 
+
+Input: A * B ^ 2
+Output: A B 2 ^ * 
+
+Input: a$ = "this" + "test"
+Output: a$ "this" "test" + = 
+
