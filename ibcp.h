@@ -50,6 +50,10 @@
 //              added more access functions to Table
 //              made numerous changes to Translator class
 //
+//  2010-03-21  initialized length field in Token to 1
+//              added is_unary_operator() to Table
+//              added additional diagnostic errors to Translator
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -246,6 +250,7 @@ struct Token {
 	{
 		column = col;
 		string = NULL;
+		length = 1;  // 2010-03-21: initialize length
 	}
 	~Token(void)
 	{
@@ -452,6 +457,11 @@ public:
 	{
 		return entry[index].precedence;
 	}
+	// 2010-03-21: added convenience function to avoid confusion
+	bool is_unary_operator(int index)
+	{
+		return entry[index].code == entry[index].unary_code;
+	}
 	int search(char letter, int flag);
 	int search(TableSearch type, const char *string, int len);
 	int search(const char *word1, int len1, const char *word2, int len2);
@@ -532,8 +542,10 @@ public:
 		NotYetImplemented,		// somethings is not implemented
 		StackEmpty,				// diagnostic message
 		StackNotEmpty,			// diagnostic message
+		StackNotEmpty2,			// diagnostic message
 		StackEmpty1,			// diagnostic error
 		StackEmpty2,			// diagnostic error
+		StackEmpty3,			// diagnostic error
 		sizeof_status
 	};
 
