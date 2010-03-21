@@ -39,6 +39,9 @@
 //
 //  2010-03-20  added precedence values to the table entries
 //
+//  2010-03-21  for Neg_Code temporarily replaced "-" with "Neq" for testing
+//              and changed unary_code from Null_Code to Neq_Code
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -480,7 +483,9 @@ static TableEntry table_entries[] = {
 	},
 	{
 		Neg_Code, Operator_TokenType, None_DataType, OneWord_Multiple,
-		"-", NULL, Null_Flag, Null_Code, 48
+		// 2010-03-21: temporarily replaced "-" with "Neq" for testing
+		// 2010-03-21: changed unary_code from Null_Code to Neg_Code
+		"Neg", NULL, Null_Flag, Neg_Code, 48
 	},
 	{
 		EOL_Code, Operator_TokenType, None_DataType, OneWord_Multiple,
