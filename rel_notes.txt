@@ -19,6 +19,20 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.4-dev-2 (2010-03-20)
+
+	Interim developmental release - Simple expressions has been
+	implementation in the Translator and it is partially working but
+	does not terminate correctly (must stopped program manually).
+	Updated files include (test stack code has been removed):
+
+	ibcp.cpp        - minor updates for test translator code
+	ibcp.h          - updated Table and Translator
+	parser.cpp      - set length for token for non-string tokens
+	test_ibcp.cpp   - updates to translator test code
+	translator.cpp  - implementation for simple expressions
+
+
 Release 0.1.4-dev-1 (2010-03-18)
 
 	Interim developmental release - Translator implementation is
