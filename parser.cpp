@@ -46,6 +46,9 @@
 //
 //  2010-03-18  replaced code with call to set_token()
 //
+//  2010-03-20  set length of token field for words, two words, string
+//              constants, one and two character operators
+//
 
 #include <stdio.h>
 
@@ -426,6 +429,7 @@ bool Parser::get_identifier(void)
 	token->datatype = table->datatype(index);
 	token->string = NULL;  // string not needed
 	token->index = index;
+	token->length = len;  // 2010-03-20: set length of token
 
 	if (table->multiple(index) == OneWord_Multiple)
 	{
@@ -456,11 +460,14 @@ bool Parser::get_identifier(void)
 		// token already setup, position already set past word
 		return true;
 	}
-	pos = p;  // move position past second word
 	// get information from two word command
 	token->type = table->type(index);
 	token->datatype = table->datatype(index);
 	token->index = index;
+	token->length += p - pos + 1;  // 2010-03-20: set length of token
+
+	// 2010-03-20: moved to here so pos can be used to set length
+	pos = p;  // move position past second word
 	return true;
 }
 
@@ -704,6 +711,7 @@ bool Parser::get_string(void)
 	token->type = Constant_TokenType;
 	token->datatype = String_DataType;
 	token->string = new String(len);  // allocate space only
+	token->length = p - pos;  // 2010-03-19: set length of token
 	// advance pos past quote, pos will point after string upon return
 	scan_string(++pos, token->string);  // copy string to token
 	return true;
@@ -771,6 +779,7 @@ bool Parser::get_operator(void)
 		token->type = table->type(index);
 		token->datatype = table->datatype(index);
 		token->index = index;
+		token->length = 1;  // 2010-03-20: set length of token
 
 		if (table->multiple(index) == OneChar_Multiple)
 		{
@@ -808,6 +817,7 @@ bool Parser::get_operator(void)
 	token->type = table->type(index2);
 	token->datatype = table->datatype(index2);
 	token->index = index2;
+	token->length = 2;  // 2010-03-20: set length of token
 	return true;
 }
 
