@@ -19,6 +19,22 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.4 (2010-03-21)
+
+	Translator developmental release - Simple expressions have been
+	implemented, debugged and tested in the Translator.  New (listed
+	first) and updated files include:
+
+	codes.awk       - script to automatically generate codes.txt
+	translator1.txt - test output for simple expressions
+
+	codes.txt       - updated for current codes
+	ibcp.h          - minor updates to Token, Table and Translator
+	parser.cpp      - temporarily removed a immediate command check
+	test_ibcp.cpp   - minor corrections, added test inputs
+	translator.cpp  - pop final result, EOL check, unary op checks
+
+
 Release 0.1.4-dev-2 (2010-03-20)
 
 	Interim developmental release - Simple expressions has been
