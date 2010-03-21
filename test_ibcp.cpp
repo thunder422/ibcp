@@ -54,14 +54,20 @@
 //              added new functions test_translator() and translate_input() for
 //                testing translator
 //
+//  2010-03-20  implemented test translator code, made print_small_token() so
+//              that RPN list could be output in a compact form
+//
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "ibcp.h"
 
 void parse_input(Parser &parser, Table *table, const char *testinput);
-void translate_input(Parser &parser, Table *table, const char *testinput);
+void translate_input(Translator &translator, Parser &parser, Table *table,
+	const char *testinput);
 bool print_token(Token *token, Table *table);
+bool print_small_token(Token *token, Table *table);
+void print_error(Token *token, const char *error);
 
 
 // 2010-03-13: changed from main()
@@ -225,9 +231,13 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 
 
 // 2010-03-18: added new function for testing translator
-bool test_translator(Parser &parser, Table *table, int argc, char *argv[])
+bool test_translator(Translator &translator, Parser &parser, Table *table,
+	int argc, char *argv[])
 {
 	const char *testinput1[] = {  // expressions
+		"A+B",
+		"A+B*C",
+		"A*B+C",
 		NULL
 	};
 
@@ -261,7 +271,7 @@ bool test_translator(Parser &parser, Table *table, int argc, char *argv[])
 		do {
 			printf("\nInput: ");
 			gets(inputline);
-			translate_input(parser, table, inputline);
+			translate_input(translator, parser, table, inputline);
 		} while (inputline[0] != '\0');
 	}
 	else
@@ -270,7 +280,7 @@ bool test_translator(Parser &parser, Table *table, int argc, char *argv[])
 		for (int i = 0; testinput[i] != NULL; i++)
 		{
 			printf("\nInput: %s\n", testinput[i]);
-			translate_input(parser, table, testinput[i]);
+			translate_input(translator, parser, table, testinput[i]);
 		}
 	}
 	return true;
@@ -278,33 +288,79 @@ bool test_translator(Parser &parser, Table *table, int argc, char *argv[])
 
 
 // 2010-03-18: new function for testing translator
-void translate_input(Parser &parser, Table *table, const char *testinput)
+void translate_input(Translator &translator, Parser &parser, Table *table,
+	const char *testinput)
 {
 	Token *token;
 	Translator::Status status;
 
-	Translator translator(table);
-	translator.start((char *)testinput);
+	translator.start();
+	parser.start((char *)testinput);
 	do {
 		token = parser.get_token();
-		print_token(token, table);
+		//print_token(token, table);
 		status = translator.add_token(token);
 	}
 	while (status == Translator::Good);
 	if (status == Translator::Done)
 	{
 		List<Token *> *rpn_list = translator.get_result();
-		printf("RPN List:");
-		// TODO print rpn list and deallocate
+		printf("Output: ");
+		int more;
+		do
+		{
+			more = rpn_list->remove(NULL, &token);
+			//print_token(token, table);
+			print_small_token(token, table);
+			delete token;
+			printf(" ");
+		}
+		while (more);
 	}
 	else  // error occurred, output it
 	{
-		// TODO print error information here
+		const char *error;
+
+		switch (status)
+		{
+		case Translator::ExpectedOperand:
+			error = "expected operand";
+			break;
+		case Translator::ExpectedOperator:
+			error = "expected operator";
+			break;
+		case Translator::ExpectedBinOp:
+			error = "expected binary operator";
+			break;
+		case Translator::NotYetImplemented:
+			error = "not yet implemented";
+			break;
+		case Translator::StackEmpty:
+			error = "hold stack empty, expected Null";
+			break;
+		case Translator::StackNotEmpty:
+			error = "hold stack not empty";
+			break;
+		case Translator::StackEmpty1:
+			error = "expected operand 1 on done stack";
+			break;
+		case Translator::StackEmpty2:
+			error = "expected operand 2 on done stack";
+			break;
+		default:
+			error = "UNEXPECTED ERROR";
+			break;
+		}
+		// token pointer is set to cause of error
+		print_error(token, error);
+		delete token;
+		translator.clean_up();
 	}
+	printf("\n");
 }
 
 
-// 2010-03-11: created from parts parse_input
+// 2010-03-11: created from parts parse_input()
 bool print_token(Token *token, Table *table)
 {
 	const char *tokentype_name[] = {
@@ -352,13 +408,8 @@ bool print_token(Token *token, Table *table)
 
 	if (token->type == Error_TokenType)
 	{
-		// 2010-03-07: modified to use new error length
-		printf("       %*s", token->column, "");
-		for (int j = 0; j < token->length; j++)
-		{
-			putchar('^');
-		}
-		printf("-- %s\n", token->string->get_str());
+		// 2010-03-20: moved code to print_error()
+		print_error(token, token->string->get_str());
 		return false;
 	}
 	// 2010-03-13: test new Token static functions
@@ -443,4 +494,104 @@ bool print_token(Token *token, Table *table)
 	}
 	printf("\n");
 	return true;
+}
+
+
+// 2010-03-20: reimplemented print_token for small output
+bool print_small_token(Token *token, Table *table)
+{
+	CmdArgs *args;
+
+	// 2010-03-13: test new Token static functions
+	switch (token->type)
+	{
+	case ImmCmd_TokenType:
+		printf("%s:", table->name(token->index));
+		if (token->datatype == CmdArgs_DataType)
+		{
+			args = (CmdArgs *)token->string->get_data();
+			printf("%d,%d,%d,%d", args->begin, args->end, args->start,
+				args->incr);
+		}
+		else if (token->datatype == String_DataType)
+		{
+			printf("\"%.*s\"", token->string->get_len(),
+				token->string->get_str());
+		}
+		else
+		{
+			printf("?");
+		}
+		break;
+	case Remark_TokenType:
+		// fall thru
+	case DefFuncN_TokenType:
+	case DefFuncP_TokenType:
+	case NoParen_TokenType:
+	case Paren_TokenType:
+		printf("%.*s", token->string->get_len(), token->string->get_str());
+		break;
+	case Constant_TokenType:
+		switch (token->datatype)
+		{
+		case Integer_DataType:
+			printf("%d", token->int_value);
+			break;
+		case Double_DataType:
+			printf("%g", token->dbl_value);
+			break;
+		case String_DataType:
+			printf("\"%.*s\"", token->string->get_len(),
+				token->string->get_str());
+			break;
+		}
+		break;
+	case Operator_TokenType:
+		if (table->code(token->index) == RemOp_Code)
+		{
+			printf("%s|%.*s|", table->name(token->index),
+				token->string->get_len(), token->string->get_str());
+		}
+		else
+		{
+			printf("%s", table->name(token->index));
+		}
+		break;
+	case IntFuncN_TokenType:
+	case IntFuncP_TokenType:
+		printf("%s", table->name(token->index));
+		break;
+	case Command_TokenType:
+		if (table->code(token->index) == Rem_Code)
+		{
+			printf("%s|%.*s|", table->name(token->index),
+				token->string->get_len(), token->string->get_str());
+		}
+		else
+		{
+			printf("%s", table->name(token->index));
+			if (table->name(token->index) != NULL)
+			{
+				printf("-%s", table->name2(token->index));
+			}
+		}
+		break;
+	default:
+		// nothing more to output
+		break;
+	}
+	return true;
+}
+
+
+// 2010-03-20: created from parts print_token()
+void print_error(Token *token, const char *error)
+{
+	// 2010-03-07: modified to use new error length
+	printf("       %*s", token->column, "");
+	for (int j = 0; j < token->length; j++)
+	{
+		putchar('^');
+	}
+	printf("-- %s\n", error);
 }
