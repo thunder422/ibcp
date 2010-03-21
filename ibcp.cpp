@@ -35,6 +35,9 @@
 //
 //  2010-03-18  added support for test_translator
 //
+//  2010-03-20  added translator instantiation to main() and translator
+//              argument to translator function calls
+//
 
 #include <stdio.h>
 #include "ibcp.h"
@@ -66,7 +69,8 @@ void Token::initialize(void)
 
 
 bool test_parser(Parser &parser, Table *table, int argc, char *argv[]);
-bool test_translator(Parser &parser, Table *table, int argc, char *argv[]);
+bool test_translator(Translator &translator, Parser &parser, Table *table,
+	int argc, char *argv[]);
 
 
 int main(int argc, char *argv[])
@@ -121,11 +125,12 @@ int main(int argc, char *argv[])
 	}
 	printf("Table initialization successful.\n");
 		
+	Translator translator(table);
 	Parser parser(table);
 
 	// 2010-03-18: added call to test_translator
 	if (!test_parser(parser, table, argc, argv)
-		&& !test_translator(parser, table, argc, argv))
+		&& !test_translator(translator, parser, table, argc, argv))
 	{
 		printf("usage: %s -p <options>\n", strrchr(argv[0], '\\') + 1);
 	}
