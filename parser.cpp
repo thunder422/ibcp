@@ -49,6 +49,9 @@
 //  2010-03-20  set length of token field for words, two words, string
 //              constants, one and two character operators
 //
+//  2010-03-21  FIXME removed an error check for translator simple expression
+//              testing
+//
 
 #include <stdio.h>
 
@@ -263,8 +266,9 @@ int Parser::scan_command(CmdArgs &args)
 		}
 		// otherwise, it's probably a malformed command, so return an error
 		// (no valid BASIC immediate command starts this way)
-		token->set_error(pos - input, UnexpChr);
-		return Error_Flag;
+		return Null_Flag;  // 2010-03-21: TODO temporarily ignore this
+		//TODO token->set_error(pos - input, UnexpChr);
+		//TODO return Error_Flag;
 	}
 	pos++;  // advance past comma
 	flag = flag != Range_Flag ? LineIncr_Flag : RangeIncr_Flag;
