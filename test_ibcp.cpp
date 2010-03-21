@@ -57,6 +57,12 @@
 //  2010-03-20  implemented test translator code, made print_small_token() so
 //              that RPN list could be output in a compact form
 //
+//  2010-03-21  added check for parser errors in translator test code
+//              corrected output rpn list to handle an empty list
+//              added bad length check to print_error()
+//              corrected print_error() to handle error tokens
+//              added more simple expressions test inputs
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -235,9 +241,19 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 	int argc, char *argv[])
 {
 	const char *testinput1[] = {  // expressions
-		"A+B",
-		"A+B*C",
-		"A*B+C",
+		"A - B",
+		"A + B",
+		"A + B * C",
+		"A * B + C",
+		"A * -B + -C^D",
+		"Value1 + Value2 - Value3 - Value4",
+		"var_A * Var_A + Var_B * Var_B",
+		"not A < 5 = B > 2",
+		"not A < 5 and B > 2 or C < 1 and D <> 2",
+		"A * B / c \\ D MOD E",
+		"A mod B \\ c / D * E",
+		"A * B ^ 2",
+		"a$ = \"this\" + \"test\"",
 		NULL
 	};
 
@@ -283,6 +299,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 			translate_input(translator, parser, table, testinput[i]);
 		}
 	}
+	printf("\n");
 	return true;
 }
 
@@ -298,6 +315,15 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 	parser.start((char *)testinput);
 	do {
 		token = parser.get_token();
+		// 2010-03-18: need to check for a parser error
+		if (token->type == Error_TokenType)
+		{
+			print_error(token, token->string->get_str());
+			delete token;
+			translator.clean_up();
+			printf("\n");
+			return;
+		}
 		//print_token(token, table);
 		status = translator.add_token(token);
 	}
@@ -306,16 +332,15 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 	{
 		List<Token *> *rpn_list = translator.get_result();
 		printf("Output: ");
-		int more;
-		do
+		// 2010-03-21: corrected to handle an empty rpn list
+		while (!rpn_list->empty())
 		{
-			more = rpn_list->remove(NULL, &token);
+			rpn_list->remove(NULL, &token);
 			//print_token(token, table);
 			print_small_token(token, table);
 			delete token;
 			printf(" ");
 		}
-		while (more);
 	}
 	else  // error occurred, output it
 	{
@@ -346,6 +371,12 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			break;
 		case Translator::StackEmpty2:
 			error = "expected operand 2 on done stack";
+			break;
+		case Translator::StackNotEmpty2:
+			error = "done stack not empty";
+			break;
+		case Translator::StackEmpty3:
+			error = "done stack empty, expected result";
 			break;
 		default:
 			error = "UNEXPECTED ERROR";
@@ -587,9 +618,23 @@ bool print_small_token(Token *token, Table *table)
 // 2010-03-20: created from parts print_token()
 void print_error(Token *token, const char *error)
 {
+	int len;
+
 	// 2010-03-07: modified to use new error length
 	printf("       %*s", token->column, "");
-	for (int j = 0; j < token->length; j++)
+	if (token->type == Error_TokenType || token->string == NULL)
+	{
+		len = token->length;
+		if (len > 20)  // should not happed
+		{
+			len = 1;
+		}
+	}
+	else
+	{
+		len = token->string->get_len();
+	}
+	for (int j = 0; j < len; j++)
 	{
 		putchar('^');
 	}
