@@ -1,4 +1,4 @@
-// vim:ts=4:sw=4
+// vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
 //	File: translator.cpp - contains code for the translator class
@@ -18,7 +18,13 @@
 //	see <http://www.gnu.org/licenses/>.
 // 
 //
-//  1.0  2010-03-01  initial release
+//  Change History:
+//
+//  2010-03-01  initial release
+//
+//  2010-03-20  continued development - functions now implemented for
+//              handling simple expressions (basic operands and operators)
+//
 
 #include "ibcp.h"
 
@@ -26,16 +32,8 @@
 // function to get a token at the current position
 //
 //     - a pointer to the token if returned
-//     - the token must be dellocated when it is no longer needed
+//     - the token must be deallocated when it is no longer needed
 //     - the token may contain an error message if an error was found
-
-void Translator::start(char *i)
-{
-	rpn_list = new List<Token *>;
-	state = Initial;
-	input = i;
-}
-
 
 Translator::Status Translator::add_token(Token *token)
 {
@@ -44,14 +42,141 @@ Translator::Status Translator::add_token(Token *token)
 		// push null token to be last operator on stack
 		// to prevent from popping past bottom of stack
 		Token *null_token = new Token();
-		table->set_token(token, Null_Code);
-		op_stack.push(&token);
+		table->set_token(null_token, Null_Code);
+		hold_stack.push(&null_token);
 
 		state = Operand;
 	}
+	if (state == Operand)
+	{
+		if (!token->is_operator())
+		{
+			if (token->has_paren())
+			{
+				// token is an array or a function
+				// TODO
+				return NotYetImplemented;
+			}
+			// token is a variable or a function with no arguments
+			// add token directly output list
+			// and push element pointer on done stack
+			done_stack.push(output->append(&token));
+			state = BinOp;  // next token must be a binary operator
+			return Good;
+		}
+		else  // operator when expecting operand, must be a unary operator
+		{
+			Code unary_code = table->unary_code(token->index);
+			if (unary_code == Null_Code)
+			{
+				// oops, not a valid unary operator
+				return ExpectedOperand;
+			}
+			// change token to unary operator
+			token->index = table->index(unary_code);
+			// fall thru to operator code
+		}
+	}
+	else  // a binary operator is expected
+	{
+		if (!token->is_operator())
+		{
+			// state == BinOp, but token is not an operator
+			return ExpectedOperator;
+		}
+		if (table->code(token->index) == table->unary_code(token->index))
+		{
+			return ExpectedBinOp;
+		}
+	}
 
+	// process all operators
+	while (table->precedence(hold_stack.top()->index)
+		>= table->precedence(token->index))
+	{
+		// pop operator on top of stack and add it to the output
+		Status status = add_operator(hold_stack.pop());
+		if (status != Good)
+		{
+			return status;
+		}
+	}
+
+	// check for last token
+	if (table->code(token->index) != EOL_Code)
+	{
+		// now operator can be pushed in the holding stack
+		hold_stack.push(&token);
+		state = Operand;
+	}
+	else  // do end of line processing
+	{
+		if (hold_stack.empty())
+		{
+			// oops, stack is empty
+			return StackEmpty;
+		}
+		token = hold_stack.pop();
+		if (table->code(token->index) == Null_Code)
+		{
+			delete token;
+			// TODO do end of line processing here, but for now...
+			// nothing is on the stack that's not suppose to be there
+			return Done;
+		}
+		else
+		{
+			// this is a diagnostic error, should not occur
+			return StackNotEmpty;
+		}
+	}
+	return Good;
 }
 
+
+Translator::Status Translator::add_operator(Token *token)
+{
+	List<Token *>::Element *operand1;
+	List<Token *>::Element *operand2;
+
+	// TODO process data types of operands
+	// for now just pop the operands off of the stack
+	if (!done_stack.pop(&operand1))
+	{
+		return StackEmpty1;
+	}
+	if (table->unary_code(token->index) == Null_Code)
+	{
+		if (!done_stack.pop(&operand2))
+		{
+			return StackEmpty2;
+		}
+	}
+	// add token to output list and push element pointer on done stack
+	done_stack.push(output->append(&token));
+
+	return Good;
+}
+
+
+void Translator::clean_up(void)
+{
+	// clean up from error
+	while (!output->empty())
+	{
+		output->pop();  // using pop doesn't require pointer variable
+	}
+	delete output;
+	output = NULL;
+	while (!hold_stack.empty())
+	{
+		hold_stack.pop();
+	}
+	while (!done_stack.empty())
+	{
+		done_stack.pop();
+	}
+}
 
 
 // end: translator.cpp
