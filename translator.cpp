@@ -25,6 +25,10 @@
 //  2010-03-20  continued development - functions now implemented for
 //              handling simple expressions (basic operands and operators)
 //
+//  2010-03-21  needed to pop final result off of done stack, added checks
+//              added check for EOL at begin of line
+//              changed unary operator check, corrected in add_operator()
+//
 
 #include "ibcp.h"
 
@@ -39,6 +43,13 @@ Translator::Status Translator::add_token(Token *token)
 {
 	if (state == Initial)
 	{
+		// 2010-03-21: check for end of line at begin of input
+		if (token->type == Operator_TokenType
+			&& table->code(token->index) == EOL_Code)
+		{
+			return Done;
+		}
+		
 		// push null token to be last operator on stack
 		// to prevent from popping past bottom of stack
 		Token *null_token = new Token();
@@ -84,7 +95,8 @@ Translator::Status Translator::add_token(Token *token)
 			// state == BinOp, but token is not an operator
 			return ExpectedOperator;
 		}
-		if (table->code(token->index) == table->unary_code(token->index))
+		// 2010-03-21: changed unary operator check
+		if (table->is_unary_operator(token->index))
 		{
 			return ExpectedBinOp;
 		}
@@ -111,6 +123,8 @@ Translator::Status Translator::add_token(Token *token)
 	}
 	else  // do end of line processing
 	{
+		Translator::Status status;
+
 		if (hold_stack.empty())
 		{
 			// oops, stack is empty
@@ -119,16 +133,33 @@ Translator::Status Translator::add_token(Token *token)
 		token = hold_stack.pop();
 		if (table->code(token->index) == Null_Code)
 		{
-			delete token;
 			// TODO do end of line processing here, but for now...
 			// nothing is on the stack that's not suppose to be there
-			return Done;
+			status = Done;
 		}
 		else
 		{
 			// this is a diagnostic error, should not occur
-			return StackNotEmpty;
+			status = StackNotEmpty;
 		}
+		delete token;
+		if (status != Done)
+		{
+			return status;
+		}
+		// 2010-03-21: check if there is a result on the done_stack
+		// there should be one value on the done stack, need to pop it off
+		List<Token *>::Element *result;
+		if (!done_stack.pop(&result))
+		{
+			return StackEmpty3;
+		}
+		if (!done_stack.empty())
+		{
+			return StackNotEmpty2;
+		}
+		return Done;
+
 	}
 	return Good;
 }
@@ -145,7 +176,8 @@ Translator::Status Translator::add_operator(Token *token)
 	{
 		return StackEmpty1;
 	}
-	if (table->unary_code(token->index) == Null_Code)
+	// 2010-03-21: corrected unary operator check
+	if (!table->is_unary_operator(token->index))
 	{
 		if (!done_stack.pop(&operand2))
 		{
