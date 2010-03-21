@@ -46,6 +46,10 @@
 //              added default to Token constructor
 //              added set_token() function to Table class
 //
+//  2010-03-20  added precedence to TableEntry
+//              added more access functions to Table
+//              made numerous changes to Translator class
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -235,7 +239,7 @@ struct Token {
 	union {
 		double dbl_value;	// value for double constant token
 		int int_value;		// value for integer constant token
-		int length;			// length of error
+		int length;			// length of token
 	};
 	// 2010-03-18: added default value to constructor
 	Token(int col = -1)
@@ -313,6 +317,8 @@ struct TableEntry {
 	int flags;					// flags for entry
 	// 2010-03-17: added unary code flag
 	Code unary_code;			// unary code for operator (Null_Code if none)
+	// 2010-03-20: added precedence
+	int precedence;				// precedence of code
 };
 
 
@@ -425,6 +431,27 @@ public:
 	{
 		return entry[index].multiple;
 	}
+	// 2010-03-20: added more access functions
+	const char *name(int index)
+	{
+		return entry[index].name;
+	}
+	const char *name2(int index)
+	{
+		return entry[index].name2;
+	}
+	int flags(int index)
+	{
+		return entry[index].flags;
+	}
+	Code unary_code(int index)
+	{
+		return entry[index].unary_code;
+	}
+	int precedence(int index)
+	{
+		return entry[index].precedence;
+	}
 	int search(char letter, int flag);
 	int search(TableSearch type, const char *string, int len);
 	int search(const char *word1, int len1, const char *word2, int len2);
@@ -480,11 +507,12 @@ public:
 
 
 // 2010-03-18: added Translator class
+// 2010-03-20: renamed members
 class Translator {
 	Table *table;					// pointer to the table object
-	List<Token *> *rpn_list;		// pointer to RPN list
-	List<Token *> op_stack;			// operator stack
-	List<List<Token *>::Element *> operand_stack;	// operand stack
+	List<Token *> *output;			// pointer to RPN list output
+	List<Token *> hold_stack;		// holding stack
+	List<List<Token *>::Element *> done_stack;	// tokens processed stack
 	enum State {
 		Initial,					// initial state
 		BinOp,						// expecting binary operator
@@ -494,23 +522,37 @@ class Translator {
 	char *input;					// pointer to input line being translated
 
 public:
-	Translator(Table *t): table(t), rpn_list(NULL) {}
-	void start(char *i);
 	enum Status {
 		Good,
 		Done,
-		ExpectedOperator,
 		ExpectedOperand,
+		ExpectedOperator,
+		ExpectedBinOp,
+		// the following statuses used during development
+		NotYetImplemented,		// somethings is not implemented
+		StackEmpty,				// diagnostic message
+		StackNotEmpty,			// diagnostic message
+		StackEmpty1,			// diagnostic error
+		StackEmpty2,			// diagnostic error
 		sizeof_status
 	};
-	Status add_token(Token *token);
-	List<Token *> *get_result(void)	// only called when add_token returns Done
+
+	Translator(Table *t): table(t), output(NULL) {}
+	void start(void)
 	{
-		List<Token *> *list = rpn_list;
-		rpn_list = NULL;
+		output = new List<Token *>;
+		state = Initial;
+	}
+	Status add_token(Token *token);
+	List<Token *> *get_result(void)	// only call when add_token returns Done
+	{
+		List<Token *> *list = output;
+		output = NULL;
 		return list;
 	}
-	void clean_up(void);			// only called when add_token returns error
+	void clean_up(void);			// only call when add_token returns an error
+private:
+	Status add_operator(Token *token);
 };
 
 
