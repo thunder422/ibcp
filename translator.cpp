@@ -29,6 +29,9 @@
 //              added check for EOL at begin of line
 //              changed unary operator check, corrected in add_operator()
 //
+//  2010-03-25  added parentheses support
+//              added switch for special operator token processing
+//
 
 #include "ibcp.h"
 
@@ -69,6 +72,26 @@ Translator::Status Translator::add_token(Token *token)
 				return NotYetImplemented;
 			}
 			// token is a variable or a function with no arguments
+			// 2010-03-25: added parentheses support BEGIN
+			if (pending_paren != NULL)
+			{
+				// may need to add a dummy token
+				// if the precedence of the last operator is higher than
+				// or same as the operator on top of the hold stack
+				if (last_precedence
+					>= table->precedence(hold_stack.top()->index))
+				{
+					// add dummy token
+					output->append(&pending_paren);
+					// TODO something needed on done stack?
+				}
+				else  // don't need pending token
+				{
+					delete pending_paren;  // release it's memory
+				}
+				pending_paren = NULL;  // reset pending token					
+			}
+			// 2010-03-25: added parentheses support END
 			// add token directly output list
 			// and push element pointer on done stack
 			done_stack.push(output->append(&token));
@@ -85,6 +108,16 @@ Translator::Status Translator::add_token(Token *token)
 			}
 			// change token to unary operator
 			token->index = table->index(unary_code);
+			// 2010-03-25: added check for opening parentheses
+			if (unary_code == OpenParen_Code)
+			{
+				// set last precedence to highest in case no operators in parens
+				last_precedence = Highest_Precedence;
+				// push open parentheses right on stack and return
+				hold_stack.push(&token);
+				state = Operand;
+				return Good;
+			}
 			// fall thru to operator code
 		}
 	}
@@ -114,17 +147,39 @@ Translator::Status Translator::add_token(Token *token)
 		}
 	}
 
-	// check for last token
-	if (table->code(token->index) != EOL_Code)
+	// check for special token processing
+	// 2010-03-25: change code to switch and added closing parentheses support
+	Translator::Status status;
+	Token *top_token;
+	switch (table->code(token->index))
 	{
-		// now operator can be pushed in the holding stack
-		hold_stack.push(&token);
-		state = Operand;
-	}
-	else  // do end of line processing
-	{
-		Translator::Status status;
+	case CloseParen_Code:
+		// do closing parentheses processing
+		if (hold_stack.empty())
+		{
+			// oops, stack is empty
+			return StackEmpty4;
+		}
+		top_token = hold_stack.pop();
+		if (table->code(top_token->index) != OpenParen_Code)
+		{
+			// oops, no open parentheses
+			return MissingOpenParen;
+		}
+		delete top_token;  // delete open parentheses token
 
+		if (pending_paren != NULL)  // already have a pending close paren?
+		{
+			// need to add it directly to output list
+			output->append(&pending_paren);
+			// TODO for now nothing needs to be done with done_stack
+		}
+		// set pending parentheses token pointer
+		pending_paren = token;
+		break;
+
+	case EOL_Code:
+		// do end of line processing
 		if (hold_stack.empty())
 		{
 			// oops, stack is empty
@@ -137,12 +192,28 @@ Translator::Status Translator::add_token(Token *token)
 			// nothing is on the stack that's not suppose to be there
 			status = Done;
 		}
+		// 2010-03-25: added missing opening parentheses check
+		else if (table->code(token->index) == OpenParen_Code)
+		{
+			// oops, open paren without a close paren
+			return MissingCloseParen;
+		}
 		else
 		{
 			// this is a diagnostic error, should not occur
 			status = StackNotEmpty;
 		}
-		delete token;
+		delete token;  // delete EOL token
+
+		// 2010-03-25: check if there is a pending closing parentheses
+		if (pending_paren != NULL)  // have a pending close paren?
+		{
+			// need to add it to output list
+			output->append(&pending_paren);
+			// TODO for now nothing needs to be done with done_stack
+			pending_paren = NULL;
+		}
+
 		if (status != Done)
 		{
 			return status;
@@ -160,6 +231,9 @@ Translator::Status Translator::add_token(Token *token)
 		}
 		return Done;
 
+	default:  // no special operator, push it onto the holding stack
+		hold_stack.push(&token);
+		state = Operand;
 	}
 	return Good;
 }
@@ -184,6 +258,30 @@ Translator::Status Translator::add_operator(Token *token)
 			return StackEmpty2;
 		}
 	}
+	// 2010-03-25: added parentheses support BEGIN
+	if (pending_paren != NULL)
+	{
+		// may need to add a dummy token
+		// if the precedence of the last operator is higher than
+		// the operator on top of the hold stack
+		if (last_precedence > table->precedence(token->index))
+		{
+			// add dummy token
+			output->append(&pending_paren);
+			// TODO something needed on done stack?
+		}
+		else  // don't need pending token
+		{
+			delete pending_paren;  // release it's memory
+		}
+		pending_paren = NULL;  // reset pending token					
+	}
+	// save precedence of operator being added
+	// (doesn't matter if not currently within parentheses,
+	// it will be reset upon next open parentheses)
+	last_precedence = table->precedence(token->index);
+	// 2010-03-25: added parentheses support END
+
 	// add token to output list and push element pointer on done stack
 	done_stack.push(output->append(&token));
 
@@ -207,6 +305,12 @@ void Translator::clean_up(void)
 	while (!done_stack.empty())
 	{
 		done_stack.pop();
+	}
+	// 2010-03-25: parentheses support - need to delete pending parentheses
+	if (pending_paren != NULL)
+	{
+		delete pending_paren;
+		pending_paren = NULL;
 	}
 }
 
