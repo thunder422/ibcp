@@ -54,6 +54,9 @@
 //              added is_unary_operator() to Table
 //              added additional diagnostic errors to Translator
 //
+//  2010-03-25  added variables to Table and Translator to support parentheses,
+//              added Highest_Precedence constant
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -311,6 +314,11 @@ const int Range_Flag          = 0x00000008;  // xxx-yyy
 const int RangeIncr_Flag      = 0x00000010;  // xxx-yyy,zz  xxx-yyy,nnn,zz
 const int String_Flag         = 0x00000020;
 
+// 2010-03-25: added highest precedence value
+const int Highest_Precedence = 127;
+	// this value was selected as the highest value because it is the highest
+	// one-byte signed value (in case the precedence member is changed to an
+	// char); all precedences in the table must be below this value
 
 struct TableEntry {
 	Code code;					// enumeration code of entry
@@ -529,7 +537,9 @@ class Translator {
 		Operand,					// expecting unary operator or operand
 		sizeof_State
 	} state;						// current state of translator
-	char *input;					// pointer to input line being translated
+	// 2010-03-25: added variables to support parentheses
+	Token *pending_paren;			// closing parentheses token is pending
+	int last_precedence;			// precedence of last op added during paren
 
 public:
 	enum Status {
@@ -538,6 +548,8 @@ public:
 		ExpectedOperand,
 		ExpectedOperator,
 		ExpectedBinOp,
+		MissingOpenParen,		// 2010-03-25: added
+		MissingCloseParen,		// 2010-03-25: added
 		// the following statuses used during development
 		NotYetImplemented,		// somethings is not implemented
 		StackEmpty,				// diagnostic message
@@ -546,10 +558,11 @@ public:
 		StackEmpty1,			// diagnostic error
 		StackEmpty2,			// diagnostic error
 		StackEmpty3,			// diagnostic error
+		StackEmpty4,			// diagnostic error (2010-03-25)
 		sizeof_status
 	};
 
-	Translator(Table *t): table(t), output(NULL) {}
+	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
 	void start(void)
 	{
 		output = new List<Token *>;
