@@ -63,6 +63,9 @@
 //              corrected print_error() to handle error tokens
 //              added more simple expressions test inputs
 //
+//  2010-03-25  added expressions for testing expressions with parentheses
+//              added additional errors for parentheses errors
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -240,7 +243,7 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 bool test_translator(Translator &translator, Parser &parser, Table *table,
 	int argc, char *argv[])
 {
-	const char *testinput1[] = {  // expressions
+	const char *testinput1[] = {  // simple expressions tests
 		"A - B",
 		"A + B",
 		"A + B * C",
@@ -256,9 +259,40 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"a$ = \"this\" + \"test\"",
 		NULL
 	};
+	const char *testinput2[] = {  // parentheses expressions tests
+		"(A + B) + C",
+		"(A * B) + C",
+		"(A + B) * C",
+		"A + (B + C)",
+		"A + (B + C) + D",
+		"A + (B + C) * D",
+		"(A + (B + C)) + D",
+		"(A + (B + C)) * D",
+		"A + (B * C)",
+		"A + (B * C) + D",
+		"A + (B * C) * D",
+		"A + ((B * C) + D)",
+		"A + ((B * C) * D)",
+		"A * (B + C)",
+		"A * (B + C) + D",
+		"A * (B + C) * D",
+		"A + (B) + C",
+		"A + ((B)) + C",
+		"A + B + ((C))",
+		"(A + B + C)",
+		"((A + B)) + C",
+		"A + ((B * C))",
+		"A + B * C ^ D",
+		"((A + B) * C) ^ D",
+		"-A ^ 2 + (-B) ^ 3",
+		"(A + B) * (C + D)",
+		"(A + B",			// test missing close parentheses
+		"A + B)",			// test missing open parentheses
+		NULL
+	};
 
 	const char **test[] = {
-		testinput1
+		testinput1, testinput2
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -357,6 +391,13 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		case Translator::ExpectedBinOp:
 			error = "expected binary operator";
 			break;
+		// 2010-03-25: added missing parentheses errors
+		case Translator::MissingOpenParen:
+			error = "missing opening parentheses";
+			break;
+		case Translator::MissingCloseParen:
+			error = "missing closing parentheses";
+			break;
 		case Translator::NotYetImplemented:
 			error = "not yet implemented";
 			break;
@@ -377,6 +418,10 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			break;
 		case Translator::StackEmpty3:
 			error = "done stack empty, expected result";
+			break;
+		// 2010-03-25: added error for parentheses support
+		case Translator::StackEmpty4:
+			error = "done stack empty, expected token for ')'";
 			break;
 		default:
 			error = "UNEXPECTED ERROR";
