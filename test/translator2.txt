@@ -39,11 +39,17 @@ Output: A B C * ) + D +
 Input: A + (B * C) * D
 Output: A B C * ) D * + 
 
+Input: A + (B * C) ^ D
+Output: A B C * D ^ + 
+
 Input: A + ((B * C) + D)
 Output: A B C * ) D + + 
 
 Input: A + ((B * C) * D)
 Output: A B C * ) D * ) + 
+
+Input: A + ((B * C) ^ D)
+Output: A B C * D ^ ) + 
 
 Input: A * (B + C)
 Output: A B C + * 
@@ -82,7 +88,22 @@ Input: -A ^ 2 + (-B) ^ 3
 Output: A 2 ^ Neg B Neg 3 ^ + 
 
 Input: (A + B) * (C + D)
-Output: A B + ) C D + * 
+Output: A B + C D + * 
+
+Input: (A + B) + (C + D)
+Output: A B + ) C D + + 
+
+Input: A + B + (C + D)
+Output: A B + C D + + 
+
+Input: (A * B) + (C * D)
+Output: A B * ) C D * ) + 
+
+Input: (A + (B * (C ^ D))) + E
+Output: A B C D ^ ) * ) + ) E + 
+
+Input: (A ^ (B * (C + D))) + E
+Output: A B C D + * ^ ) E + 
 
 Input: (A + B
              ^-- missing closing parentheses
