@@ -42,6 +42,8 @@
 //  2010-03-21  for Neg_Code temporarily replaced "-" with "Neq" for testing
 //              and changed unary_code from Null_Code to Neq_Code
 //
+//  2010-03-25  added unary code for (, changed precedence values for ( & )
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -443,12 +445,14 @@ static TableEntry table_entries[] = {
 		"<>", NULL, Null_Flag, Null_Code, 30
 	},
 	{
+		// 2010-01-25: set unary code, changed precedence value
 		OpenParen_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		"(", NULL, Null_Flag, Null_Code, 0
+		"(", NULL, Null_Flag, OpenParen_Code, 2
 	},
 	{
+		// 2010-01-25: changed precedence value
 		CloseParen_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		")", NULL, Null_Flag, Null_Code, 0
+		")", NULL, Null_Flag, Null_Code, 4
 	},
 	{
 		Comma_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
