@@ -19,6 +19,17 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.5 (2010-03-26)
+
+	Translator developmental release - Parentheses support has been
+	implemented, debugged and tested.  Updated files include:
+
+	ibcp.h          - added new function to Translator
+	test_ibcp.cpp   - added some more test parentheses expressions
+	translator.cpp  - corrected problems with pending parentheses
+	translator2.txt - updated for correct output, added new tests
+
+
 Release 0.1.5-dev-1 (2010-03-25)
 
 	Translator developmental release - Parentheses support has been
