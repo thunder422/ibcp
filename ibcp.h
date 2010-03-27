@@ -57,6 +57,8 @@
 //  2010-03-25  added variables to Table and Translator to support parentheses,
 //              added Highest_Precedence constant
 //
+//  2010-03-26  added do_pending_paren() to Translator class
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -578,6 +580,7 @@ public:
 	void clean_up(void);			// only call when add_token returns an error
 private:
 	Status add_operator(Token *token);
+	void do_pending_paren(int index);  // 2010-03-26: added for parentheses
 };
 
 
