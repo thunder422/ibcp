@@ -66,6 +66,8 @@
 //  2010-03-25  added expressions for testing expressions with parentheses
 //              added additional errors for parentheses errors
 //
+//  2010-03-26  added more parentheses test expressions 
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -271,8 +273,10 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A + (B * C)",
 		"A + (B * C) + D",
 		"A + (B * C) * D",
+		"A + (B * C) ^ D",
 		"A + ((B * C) + D)",
 		"A + ((B * C) * D)",
+		"A + ((B * C) ^ D)",
 		"A * (B + C)",
 		"A * (B + C) + D",
 		"A * (B + C) * D",
@@ -286,6 +290,11 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"((A + B) * C) ^ D",
 		"-A ^ 2 + (-B) ^ 3",
 		"(A + B) * (C + D)",
+		"(A + B) + (C + D)",
+		"A + B + (C + D)",
+		"(A * B) + (C * D)",
+		"(A + (B * (C ^ D))) + E",
+		"(A ^ (B * (C + D))) + E",
 		"(A + B",			// test missing close parentheses
 		"A + B)",			// test missing open parentheses
 		NULL
