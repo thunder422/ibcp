@@ -38,6 +38,9 @@
 //  2010-03-20  added translator instantiation to main() and translator
 //              argument to translator function calls
 //
+//  2010-04-02  added support for obtaining precedence from token types that
+//              don't have table entries (DefFuncP and Paren)
+//
 
 #include <stdio.h>
 #include "ibcp.h"
@@ -54,6 +57,7 @@ void print_gpl_header(char *name)
 // Token
 bool Token::paren[sizeof_TokenType];
 bool Token::op[sizeof_TokenType];
+int Token::prec[sizeof_TokenType];  // 2010-04-02
 
 void Token::initialize(void)
 {
@@ -65,6 +69,13 @@ void Token::initialize(void)
 	// set true for types that are considered an operator
 	op[Command_TokenType] = true;
 	op[Operator_TokenType] = true;
+
+	// 2010-04-02: set precedence for non-table token types
+	prec[Command_TokenType] = -1;  // use table precedence
+	prec[Operator_TokenType] = -1;
+	prec[IntFuncP_TokenType] = -1;
+	prec[DefFuncP_TokenType] = 2;  // same as open parentheses
+	prec[Paren_TokenType] = 2;
 }
 
 
