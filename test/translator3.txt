@@ -1,0 +1,29 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: MID$(A$+B$,(C+5)*D,4)+" Test"
+Output: A$ B$ + C 5 + D * 4 MID$( " Test" + 
+
+Input: int(Arr(A,B*(C+2))+(D))
+Output: A B C 2 + * Arr( D ) + INT( 
+
+Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
+Output: X Y I Neg J + * I FNZ( B( INT( NUM$ VAL( Array( 
+
+Input: INT(A+B
+              ^-- missing closing parentheses
+
+
+Input: B,F+G
+        ^-- unexpected comma
+
+
+Input: Arr(B,,C)
+             ^-- operand expected
+
+
