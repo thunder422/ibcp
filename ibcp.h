@@ -59,12 +59,20 @@
 //
 //  2010-03-26  added do_pending_paren() to Translator class
 //
+//  2010-04-02  add support to Token and Table to get precedence values for
+//                token types that don't have table entries (DefFuncP and Paren)
+//              added count_stack of new type SimpleStack to Translator to
+//                support commas (for subscripts in arrays and arguments in
+//                functions)
+//              added more errors to Translator
+//
 
 #ifndef IBCP_H
 #define IBCP_H
 
 #include "string.h"
 #include "list.h"
+#include "stack.h"  // 2010-04-02: added for SimpleStack
 
 
 enum Code {
@@ -216,7 +224,7 @@ enum DataType {
 	Double_DataType,
 	Integer_DataType,
 	String_DataType,
-	CmdArgs_DataType,	// 10-02-27: for immediate commands
+	CmdArgs_DataType,	// 2010-02-27: for immediate commands
 	sizeof_DataType
 };
 
@@ -236,6 +244,7 @@ enum Multiple {
 struct Token {
 	static bool paren[sizeof_TokenType];
 	static bool op[sizeof_TokenType];
+	static int prec[sizeof_TokenType];  // 2010-04-02
 
 	static void initialize(void);
 
@@ -301,6 +310,11 @@ struct Token {
 	bool has_paren(void)
 	{
 		return paren[type];
+	}
+	// 2010-04-02: new function for arrays/functions in Translator
+	int precedence(void)
+	{
+		return prec[type];
 	}
 };
 
@@ -467,7 +481,13 @@ public:
 	{
 		return entry[index].precedence;
 	}
-	// 2010-03-21: added convenience function to avoid confusion
+	// 2010-04-02: added new precedence of token function
+	int precedence(Token *token)
+	{
+		int prec = token->precedence();
+		return prec != -1 ? prec : precedence(token->index);
+	}
+	// 2010-04-02: added convenience function to avoid confusion
 	bool is_unary_operator(int index)
 	{
 		return entry[index].code == entry[index].unary_code;
@@ -542,6 +562,8 @@ class Translator {
 	// 2010-03-25: added variables to support parentheses
 	Token *pending_paren;			// closing parentheses token is pending
 	int last_precedence;			// precedence of last op added during paren
+	// 2010-04-02: added variables to support arrays and functions
+	SimpleStack<char> count_stack;	// number of operands counter stack
 
 public:
 	enum Status {
@@ -552,6 +574,7 @@ public:
 		ExpectedBinOp,
 		MissingOpenParen,		// 2010-03-25: added
 		MissingCloseParen,		// 2010-03-25: added
+		UnexpectedComma,		// 2010-04-02: added
 		// the following statuses used during development
 		NotYetImplemented,		// somethings is not implemented
 		StackEmpty,				// diagnostic message
@@ -561,6 +584,9 @@ public:
 		StackEmpty2,			// diagnostic error
 		StackEmpty3,			// diagnostic error
 		StackEmpty4,			// diagnostic error (2010-03-25)
+		StackEmpty5,			// diagnostic error (2010-04-02)
+		UnexpectedCloseParen,	// diagnostic error (2010-04-02)
+		UnexpectedToken,		// diagnostic error (2010-04-02)
 		sizeof_status
 	};
 
