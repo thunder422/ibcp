@@ -44,6 +44,11 @@
 //
 //  2010-03-25  added unary code for (, changed precedence values for ( & )
 //
+//  2010-04-02  changed precedence value in comma entry
+//              corrected name for VAL( from "Val(" to "VAL("
+//              for operators, name is actual (recreator) output string,
+//                name2 is debug output string (only affects Neg for now)
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -52,10 +57,9 @@
 
 
 static TableEntry table_entries[] = {
-	//*****************************
-	//   IMMEDIATE COMMAND FIRST
-	//*****************************
-	// these match with fewest charaters
+	//******************************
+	//   IMMEDIATE COMMANDS FIRST
+	//******************************
 	// (these will go away once gui interface is implemented)
 	{
 		List_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
@@ -360,8 +364,9 @@ static TableEntry table_entries[] = {
 		"STR$(", NULL, Null_Flag, Null_Code, 0
 	},
 	{
+		// 2010-04-02: changed name to all upper case
 		Val_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
-		"Val(", NULL, Null_Flag, Null_Code, 0
+		"VAL(", NULL, Null_Flag, Null_Code, 0
 	},
 	//***************************
 	//   END PARENTHESES WORDS
@@ -445,18 +450,19 @@ static TableEntry table_entries[] = {
 		"<>", NULL, Null_Flag, Null_Code, 30
 	},
 	{
-		// 2010-01-25: set unary code, changed precedence value
+		// 2010-03-25: set unary code, changed precedence value
 		OpenParen_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
 		"(", NULL, Null_Flag, OpenParen_Code, 2
 	},
 	{
-		// 2010-01-25: changed precedence value
+		// 2010-03-25: changed precedence value
 		CloseParen_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
 		")", NULL, Null_Flag, Null_Code, 4
 	},
 	{
+		// 2010-04-02: changed precedence value
 		Comma_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		",", NULL, Null_Flag, Null_Code, 0
+		",", NULL, Null_Flag, Null_Code, 4
 	},
 	{
 		SemiColon_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
@@ -489,7 +495,8 @@ static TableEntry table_entries[] = {
 		Neg_Code, Operator_TokenType, None_DataType, OneWord_Multiple,
 		// 2010-03-21: temporarily replaced "-" with "Neq" for testing
 		// 2010-03-21: changed unary_code from Null_Code to Neg_Code
-		"Neg", NULL, Null_Flag, Neg_Code, 48
+		// 2010-04-02: set name to correct output, name2 to debug output name
+		"-", "Neg", Null_Flag, Neg_Code, 48
 	},
 	{
 		EOL_Code, Operator_TokenType, None_DataType, OneWord_Multiple,
