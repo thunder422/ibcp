@@ -68,6 +68,11 @@
 //
 //  2010-03-26  added more parentheses test expressions 
 //
+//  2010-04-02  added expressions for testing expressions with arrays functions
+//              added additional errors for arrays/function errors
+//              in print_small_token() for operators, use name2 for output if
+//                set, otherwise use name
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -299,9 +304,18 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A + B)",			// test missing open parentheses
 		NULL
 	};
+	const char *testinput3[] = {  // parentheses expressions tests
+		"MID$(A$+B$,(C+5)*D,4)+\" Test\"",
+		"int(Arr(A,B*(C+2))+(D))",
+		"Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))",
+		"INT(A+B",
+		"B,F+G",
+		"Arr(B,,C)",
+		NULL
+	};
 
 	const char **test[] = {
-		testinput1, testinput2
+		testinput1, testinput2, testinput3
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -319,8 +333,9 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 	if (argc != 3 || (testno < 0 || testno >= ntests) && inputmode == 0)
 	{ 
 		// 2010-03-13: changed to output actual program name
-		printf("usage: %s -t <test number 1-%d>|i\n", strrchr(argv[0], '\\') + 1,
-			ntests);
+		// 2010-04-02: added + 1 so that '\' is no output
+		printf("usage: %s -t <test number 1-%d>|i\n", strrchr(argv[0], '\\')
+			+ 1, ntests);
 		return true;  // our options are bad
 	}
 
@@ -392,13 +407,13 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		switch (status)
 		{
 		case Translator::ExpectedOperand:
-			error = "expected operand";
+			error = "operand expected";
 			break;
 		case Translator::ExpectedOperator:
-			error = "expected operator";
+			error = "operator expected";
 			break;
 		case Translator::ExpectedBinOp:
-			error = "expected binary operator";
+			error = "binary operator expected";
 			break;
 		// 2010-03-25: added missing parentheses errors
 		case Translator::MissingOpenParen:
@@ -407,6 +422,12 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		case Translator::MissingCloseParen:
 			error = "missing closing parentheses";
 			break;
+		// 2010-04-02: added errors for array/functions
+		case Translator::UnexpectedComma:
+			error = "unexpected comma";
+			break;
+
+		// diagnostic errors
 		case Translator::NotYetImplemented:
 			error = "not yet implemented";
 			break;
@@ -431,6 +452,16 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		// 2010-03-25: added error for parentheses support
 		case Translator::StackEmpty4:
 			error = "done stack empty, expected token for ')'";
+			break;
+		// 2010-04-02: added error for array/function support
+		case Translator::StackEmpty5:
+			error = "done stack empty, expected token for array/function";
+			break;
+		case Translator::UnexpectedCloseParen:
+			error = "unexpected closing parentheses";
+			break;
+		case Translator::UnexpectedToken:
+			error = "expected token on stack for array/function";
 			break;
 		default:
 			error = "UNEXPECTED ERROR";
@@ -639,7 +670,13 @@ bool print_small_token(Token *token, Table *table)
 		}
 		else
 		{
-			printf("%s", table->name(token->index));
+			// 2010-04-02: output name2 (if set) for debug output string
+			const char *name = table->name2(token->index);
+			if (name == NULL)
+			{
+				name = table->name(token->index);
+			}
+			printf("%s", name);
 		}
 		break;
 	case IntFuncN_TokenType:
