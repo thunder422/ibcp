@@ -37,6 +37,13 @@
 //              do_pending_paren() to replace code in three locations, and call
 //              from two new locations
 //
+//  2010-04-02  added array and function support
+//              added count stack to keep track of (count) commas within
+//                arrays (subscripts) and functions (arguments), and to make
+//                sure commas are not found within regular parentheses
+//              modified close parentheses processing to handle the operands
+//                (subscripts and arguments) within arrays and functions
+//
 
 #include "ibcp.h"
 
@@ -70,22 +77,28 @@ Translator::Status Translator::add_token(Token *token)
 	{
 		if (!token->is_operator())
 		{
-			if (token->has_paren())
-			{
-				// token is an array or a function
-				// TODO
-				return NotYetImplemented;
-			}
 			// token is a variable or a function with no arguments
 			//
 			// 2010-03-25: added parentheses support
 			// 2010-03-26: check for and add dummy token if necessary
 			do_pending_paren(hold_stack.top()->index);
 
-			// add token directly output list
-			// and push element pointer on done stack
-			done_stack.push(output->append(&token));
-			state = BinOp;  // next token must be a binary operator
+			// 2010-04-02: moved to after pending parentheses check
+			if (token->has_paren())
+			{
+				// token is an array or a function
+				// 2010-04-02: implemented array/function support
+				count_stack.push(1);  // add an operand counter
+				hold_stack.push(&token);
+				// leave state == Operand
+			}
+			else
+			{
+				// add token directly output list
+				// and push element pointer on done stack
+				done_stack.push(output->append(&token));
+				state = BinOp;  // next token must be a binary operator
+			}
 			return Good;
 		}
 		else  // operator when expecting operand, must be a unary operator
@@ -108,6 +121,8 @@ Translator::Status Translator::add_token(Token *token)
 				// push open parentheses right on stack and return
 				hold_stack.push(&token);
 				state = Operand;
+				// 2010-04-02: add a null counter to prevent commas
+				count_stack.push(0);
 				return Good;
 			}
 			// fall thru to operator code
@@ -138,7 +153,8 @@ Translator::Status Translator::add_token(Token *token)
 	}
 
 	// process all operators
-	while (table->precedence(hold_stack.top()->index)
+	// 2010-04-02: changed stack top precedence to work with paren tokens
+	while (table->precedence(hold_stack.top())
 		>= table->precedence(token->index))
 	{
 		// pop operator on top of stack and add it to the output
@@ -155,8 +171,20 @@ Translator::Status Translator::add_token(Token *token)
 	Token *top_token;
 	int index;
 	Code code;
+	int noperands;  // 2010-04-02: for array/function support
 	switch (table->code(token->index))
 	{
+	// 2010-04-02: implemented comma operator code handling
+	case Comma_Code:
+		if (count_stack.empty() || count_stack.top() == 0)
+		{
+			return UnexpectedComma;
+		}
+		// increment the number of operands
+		count_stack.top()++;
+		state = Operand;
+		break;
+
 	case CloseParen_Code:
 		// do closing parentheses processing
 		if (hold_stack.empty())
@@ -165,17 +193,55 @@ Translator::Status Translator::add_token(Token *token)
 			return StackEmpty4;
 		}
 		top_token = hold_stack.pop();
-		if (table->code(top_token->index) != OpenParen_Code)
+
+		// 2010-04-02: implemented array/function support BEGIN
+		if (count_stack.empty())
 		{
-			// oops, no open parentheses
 			return MissingOpenParen;
 		}
-		delete top_token;  // delete open parentheses token
+		noperands = count_stack.pop();
+		if (noperands == 0)
+		{
+			// just a parentheses expression 
+			if (table->code(top_token->index) != OpenParen_Code)
+			{
+				// oops, no open parentheses
+				return UnexpectedCloseParen;  // this should not happen
+			}
+			delete top_token;  // delete open parentheses token
+
+			// 2010-03-30: set pending parentheses token pointer
+			pending_paren = token;
+		}
+		else  // array or function
+		{
+			// TODO other processing required (checking noperands and operands)
+			// TODO for now pop operands from done stack and add token to output
+
+			for (int i = 0; i < noperands; i++)
+			{
+				List<Token *>::Element *operand;
+				if (!done_stack.pop(&operand))
+				{
+					return StackEmpty5;
+				}
+			}
+
+			// make sure token is an array or a function
+			if (!top_token->has_paren())
+			{
+				// unexpected token on stack
+				return UnexpectedToken;
+			}
+
+			// add token to output list and push element pointer on done stack
+			done_stack.push(output->append(&top_token));
+		}
+		// 2010-04-02: implemented array/function support END
 
 		// 2010-03-26: moved pending check to before stack emptying while
 
-		// set pending parentheses token pointer
-		pending_paren = token;
+		// 2010-04-02: moved set pending paren, not needed for array/function
 		break;
 
 	case EOL_Code:
@@ -198,7 +264,8 @@ Translator::Status Translator::add_token(Token *token)
 			status = Done;
 		}
 		// 2010-03-25: added missing opening parentheses check
-		else if (code == OpenParen_Code)
+		// 2010-04-02: include array/function tokens in check
+		else if (code == OpenParen_Code || token->has_paren())
 		{
 			// oops, open paren without a close paren
 			return MissingCloseParen;
@@ -334,6 +401,11 @@ void Translator::clean_up(void)
 	while (!done_stack.empty())
 	{
 		done_stack.pop();
+	}
+	// 2010-04-02: comma support - need to empty count_stack
+	while (!count_stack.empty())
+	{
+		count_stack.pop();
 	}
 	// 2010-03-25: parentheses support - need to delete pending parentheses
 	if (pending_paren != NULL)
