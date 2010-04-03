@@ -19,6 +19,25 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.6 (2010-04-02)
+
+	Translator developmental release - Array and function support
+	has been implemented, debugged and tested.  This includes
+	support for the comma operator.  New (listed first) and updated
+	files include:
+
+	stack.h         - contains simple stack class
+	translator3.txt - output for array/function tests
+
+	ibcp.cpp        - precedence for non-table entry token types
+	ibcp.h          - updated for array and function support
+	table.cpp       - changed precedence of the comma operator
+	test_ibcp.cpp   - added array/function test expressions
+	translator.cpp  - updated for array and function support
+
+	test/test_stack2.cpp - small program to test simple stacks
+
+
 Release 0.1.5 (2010-03-26)
 
 	Translator developmental release - Parentheses support has been
@@ -33,7 +52,8 @@ Release 0.1.5 (2010-03-26)
 Release 0.1.5-dev-1 (2010-03-25)
 
 	Translator developmental release - Parentheses support has been
-	unnecessary parentheses correctly.  Updated files include:
+	implemented, and is mostly functional but does not handle all
+	unnecessary parentheses correctly.  New (listed first) and
 	updated files include:
 
 	translator2.txt - test output for parentheses expressions
