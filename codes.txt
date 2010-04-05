@@ -34,164 +34,170 @@
 33: Exp_Code
 34: Log_Code
 35: Asc_Code
-36: Chr_Code
-37: Instr_Code
-38: Left_Code
-39: Len_Code
-40: Mid_Code
-41: Repeat_Code
-42: Right_Code
-43: Space_Code
-44: Str_Code
-45: Val_Code
-46: OpenParen_Code
-47: CloseParen_Code
-48: Comma_Code
-49: SemiColon_Code
-50: Colon_Code
-51: RemOp_Code
-52: Tab_Code
-53: Spc_Code
-54: Let_Code
-55: Print_Code
-56: Input_Code
-57: Dim_Code
-58: Def_Code
-59: Rem_Code
-60: If_Code
-61: Then_Code
-62: Else_Code
-63: EndIf_Code
-64: For_Code
-65: To_Code
-66: Step_Code
-67: Next_Code
-68: Do_Code
-69: DoWhile_Code
-70: DoUntil_Code
-71: While_Code
-72: Until_Code
-73: Loop_Code
-74: LoopWhile_Code
-75: LoopUntil_Code
-76: End_Code
-77: EOL_Code
-78: List_Code
-79: Edit_Code
-80: Delete_Code
-81: Run_Code
-82: Renum_Code
-83: Save_Code
-84: Load_Code
-85: New_Code
-86: Auto_Code
-87: Cont_Code
-88: Quit_Code
-89: BegPlainWord_Code
-90: EndPlainWord_Code
-91: BegParenWord_Code
-92: EndParenWord_Code
-93: BegDataTypeWord_Code
-94: EndDataTypeWord_Code
-95: BegSymbol_Code
-96: EndSymbol_Code
-97: sizeof_Code
+36: Asc2_Code
+37: Chr_Code
+38: Instr2_Code
+39: Instr3_Code
+40: Left_Code
+41: Len_Code
+42: Mid2_Code
+43: Mid3_Code
+44: Repeat_Code
+45: Right_Code
+46: Space_Code
+47: Str_Code
+48: Val_Code
+49: OpenParen_Code
+50: CloseParen_Code
+51: Comma_Code
+52: SemiColon_Code
+53: Colon_Code
+54: RemOp_Code
+55: Tab_Code
+56: Spc_Code
+57: Let_Code
+58: Print_Code
+59: Input_Code
+60: Dim_Code
+61: Def_Code
+62: Rem_Code
+63: If_Code
+64: Then_Code
+65: Else_Code
+66: EndIf_Code
+67: For_Code
+68: To_Code
+69: Step_Code
+70: Next_Code
+71: Do_Code
+72: DoWhile_Code
+73: DoUntil_Code
+74: While_Code
+75: Until_Code
+76: Loop_Code
+77: LoopWhile_Code
+78: LoopUntil_Code
+79: End_Code
+80: EOL_Code
+81: List_Code
+82: Edit_Code
+83: Delete_Code
+84: Run_Code
+85: Renum_Code
+86: Save_Code
+87: Load_Code
+88: New_Code
+89: Auto_Code
+90: Cont_Code
+91: Quit_Code
+92: BegPlainWord_Code
+93: EndPlainWord_Code
+94: BegParenWord_Code
+95: EndParenWord_Code
+96: BegDataTypeWord_Code
+97: EndDataTypeWord_Code
+98: BegSymbol_Code
+99: EndSymbol_Code
+100: sizeof_Code
 
 Abs_Code = 21
 Add_Code = 1
 And_Code = 15
+Asc2_Code = 36
 Asc_Code = 35
 Atn_Code = 29
-Auto_Code = 86
-BegDataTypeWord_Code = 93
-BegParenWord_Code = 91
-BegPlainWord_Code = 89
-BegSymbol_Code = 95
-Chr_Code = 36
+Auto_Code = 89
+BegDataTypeWord_Code = 96
+BegParenWord_Code = 94
+BegPlainWord_Code = 92
+BegSymbol_Code = 98
+Chr_Code = 37
 Cint_Code = 27
-CloseParen_Code = 47
-Colon_Code = 50
-Comma_Code = 48
-Cont_Code = 87
+CloseParen_Code = 50
+Colon_Code = 53
+Comma_Code = 51
+Cont_Code = 90
 Cos_Code = 30
-Def_Code = 58
-Delete_Code = 80
-Dim_Code = 57
+Def_Code = 61
+Delete_Code = 83
+Dim_Code = 60
 Div_Code = 5
-DoUntil_Code = 70
-DoWhile_Code = 69
-Do_Code = 68
-EOL_Code = 77
-Edit_Code = 79
-Else_Code = 62
-EndDataTypeWord_Code = 94
-EndIf_Code = 63
-EndParenWord_Code = 92
-EndPlainWord_Code = 90
-EndSymbol_Code = 96
-End_Code = 76
+DoUntil_Code = 73
+DoWhile_Code = 72
+Do_Code = 71
+EOL_Code = 80
+Edit_Code = 82
+Else_Code = 65
+EndDataTypeWord_Code = 97
+EndIf_Code = 66
+EndParenWord_Code = 95
+EndPlainWord_Code = 93
+EndSymbol_Code = 99
+End_Code = 79
 Eq_Code = 9
 Eqv_Code = 18
 Exp_Code = 33
 Fix_Code = 22
-For_Code = 64
+For_Code = 67
 GtEq_Code = 11
 Gt_Code = 10
-If_Code = 60
+If_Code = 63
 Imp_Code = 19
-Input_Code = 56
-Instr_Code = 37
+Input_Code = 59
+Instr2_Code = 38
+Instr3_Code = 39
 IntDiv_Code = 6
 Int_Code = 23
-Left_Code = 38
-Len_Code = 39
-Let_Code = 54
-List_Code = 78
-Load_Code = 84
+Left_Code = 40
+Len_Code = 41
+Let_Code = 57
+List_Code = 81
+Load_Code = 87
 Log_Code = 34
-LoopUntil_Code = 75
-LoopWhile_Code = 74
-Loop_Code = 73
+LoopUntil_Code = 78
+LoopWhile_Code = 77
+Loop_Code = 76
 LtEq_Code = 13
 Lt_Code = 12
-Mid_Code = 40
+Mid2_Code = 42
+Mid3_Code = 43
 Mod_Code = 7
 Mul_Code = 4
 Neg_Code = 3
-New_Code = 85
-Next_Code = 67
+New_Code = 88
+Next_Code = 70
 NotEq_Code = 14
 Not_Code = 17
 Null_Code = 0
-OpenParen_Code = 46
+OpenParen_Code = 49
 Or_Code = 16
 Power_Code = 8
-Print_Code = 55
-Quit_Code = 88
-RemOp_Code = 51
-Rem_Code = 59
-Renum_Code = 82
-Repeat_Code = 41
-Right_Code = 42
+Print_Code = 58
+Quit_Code = 91
+RemOp_Code = 54
+Rem_Code = 62
+Renum_Code = 85
+Repeat_Code = 44
+Right_Code = 45
 RndArg_Code = 25
 Rnd_Code = 24
-Run_Code = 81
-Save_Code = 83
-SemiColon_Code = 49
+Run_Code = 84
+Save_Code = 86
+SemiColon_Code = 52
 Sgn_Code = 26
 Sin_Code = 31
-Space_Code = 43
-Spc_Code = 53
+Space_Code = 46
+Spc_Code = 56
 Sqr_Code = 28
-Step_Code = 66
-Str_Code = 44
+Step_Code = 69
+Str_Code = 47
 Sub_Code = 2
-Tab_Code = 52
+Tab_Code = 55
 Tan_Code = 32
-Then_Code = 61
-To_Code = 65
-Until_Code = 72
-Val_Code = 45
-While_Code = 71
+Then_Code = 64
+To_Code = 68
+Until_Code = 75
+Val_Code = 48
+While_Code = 74
 Xor_Code = 20
-sizeof_Code = 97
+sizeof_Code = 100
