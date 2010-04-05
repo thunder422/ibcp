@@ -44,17 +44,25 @@
 //              modified close parentheses processing to handle the operands
 //                (subscripts and arguments) within arrays and functions
 //
+//  2010-04-04  added internal function number of arguments checking
+//              changed argument of add_token() to reference so that it can
+//                modified to point to the token with the error
+//
 
 #include "ibcp.h"
 
 
-// function to get a token at the current position
+// function to add a token to the output list, but token may be placed
+// on hold stack pending adding it to the output list so that higher
+// precedence tokens may be added to the list first
 //
-//     - a pointer to the token is returned
-//     - the token must be deallocated when it is no longer needed
-//     - the token may contain an error message if an error was found
+//     - Done status returned when last token is processed
+//     - Good status returned when token successfully processed
+//     - error status returned when an error is detected
+//     - token argument may be changed when an error is detected
 
-Translator::Status Translator::add_token(Token *token)
+// 2010-04-04: made argument a reference so different token can be returned
+Translator::Status Translator::add_token(Token *&token)
 {
 	if (state == Initial)
 	{
@@ -62,6 +70,7 @@ Translator::Status Translator::add_token(Token *token)
 		if (token->type == Operator_TokenType
 			&& table->code(token->index) == EOL_Code)
 		{
+			delete token;  // 2010-04-04: delete EOL token
 			return Done;
 		}
 		
@@ -107,7 +116,7 @@ Translator::Status Translator::add_token(Token *token)
 			if (unary_code == Null_Code)
 			{
 				// oops, not a valid unary operator
-				return ExpectedOperand;
+				return Error_ExpectedOperand;
 			}
 			// change token to unary operator
 			token->index = table->index(unary_code);
@@ -133,12 +142,12 @@ Translator::Status Translator::add_token(Token *token)
 		if (!token->is_operator())
 		{
 			// state == BinOp, but token is not an operator
-			return ExpectedOperator;
+			return Error_ExpectedOperator;
 		}
 		// 2010-03-21: changed unary operator check
 		if (table->is_unary_operator(token->index))
 		{
-			return ExpectedBinOp;
+			return Error_ExpectedBinOp;
 		}
 		// 2010-03-26: initialize last precedence before emptying stack for ')'
 		if (table->code(token->index) == CloseParen_Code)
@@ -171,6 +180,7 @@ Translator::Status Translator::add_token(Token *token)
 	Token *top_token;
 	int index;
 	Code code;
+	bool has_paren;
 	int noperands;  // 2010-04-02: for array/function support
 	switch (table->code(token->index))
 	{
@@ -178,7 +188,7 @@ Translator::Status Translator::add_token(Token *token)
 	case Comma_Code:
 		if (count_stack.empty() || count_stack.top() == 0)
 		{
-			return UnexpectedComma;
+			return Error_UnexpectedComma;
 		}
 		// increment the number of operands
 		count_stack.top()++;
@@ -190,14 +200,14 @@ Translator::Status Translator::add_token(Token *token)
 		if (hold_stack.empty())
 		{
 			// oops, stack is empty
-			return StackEmpty4;
+			return BUG_StackEmpty4;
 		}
 		top_token = hold_stack.pop();
 
 		// 2010-04-02: implemented array/function support BEGIN
 		if (count_stack.empty())
 		{
-			return MissingOpenParen;
+			return Error_MissingOpenParen;
 		}
 		noperands = count_stack.pop();
 		if (noperands == 0)
@@ -206,7 +216,7 @@ Translator::Status Translator::add_token(Token *token)
 			if (table->code(top_token->index) != OpenParen_Code)
 			{
 				// oops, no open parentheses
-				return UnexpectedCloseParen;  // this should not happen
+				return BUG_UnexpectedCloseParen;  // this should not happen
 			}
 			delete top_token;  // delete open parentheses token
 
@@ -215,7 +225,28 @@ Translator::Status Translator::add_token(Token *token)
 		}
 		else  // array or function
 		{
-			// TODO other processing required (checking noperands and operands)
+			// 2010-04-04: check for number of arguments for internal functions
+			if (top_token->type == IntFuncP_TokenType
+				&& noperands != table->nargs(top_token->index))
+			{
+				// actual number of arguments doesn't match function's entry
+				int index;
+
+				if ((table->flags(top_token->index) & Multiple_Flag) != 0
+					&& (index = table->search(top_token->index, noperands)) > 0)
+				{
+					// change token to new code (index)
+					top_token->index = index;
+				}
+				else
+				{
+					delete token;  // delete open parentheses token
+					token = top_token;
+					return Error_WrongNumberOfArgs;
+				}				
+			}
+
+			// TODO other processing required (checking operands)
 			// TODO for now pop operands from done stack and add token to output
 
 			for (int i = 0; i < noperands; i++)
@@ -223,7 +254,7 @@ Translator::Status Translator::add_token(Token *token)
 				List<Token *>::Element *operand;
 				if (!done_stack.pop(&operand))
 				{
-					return StackEmpty5;
+					return BUG_StackEmpty5;
 				}
 			}
 
@@ -231,7 +262,7 @@ Translator::Status Translator::add_token(Token *token)
 			if (!top_token->has_paren())
 			{
 				// unexpected token on stack
-				return UnexpectedToken;
+				return BUG_UnexpectedToken;
 			}
 
 			// add token to output list and push element pointer on done stack
@@ -249,13 +280,14 @@ Translator::Status Translator::add_token(Token *token)
 		if (hold_stack.empty())
 		{
 			// oops, stack is empty
-			return StackEmpty;
+			return BUG_StackEmpty;
 		}
-		token = hold_stack.pop();
+		top_token = hold_stack.pop();
 		// 2010-03-26: get index/code and delete token before error checking
-		index = token->index;
+		index = top_token->index;
 		code = table->code(index);
-		delete token;  // delete EOL token
+		has_paren = top_token->has_paren();
+		delete top_token;  // delete token from top of stack
 
 		if (code == Null_Code)
 		{
@@ -265,15 +297,16 @@ Translator::Status Translator::add_token(Token *token)
 		}
 		// 2010-03-25: added missing opening parentheses check
 		// 2010-04-02: include array/function tokens in check
-		else if (code == OpenParen_Code || token->has_paren())
+		else if (code == OpenParen_Code || has_paren)
 		{
 			// oops, open paren without a close paren
-			return MissingCloseParen;
+			// (leave EOL allocated so error can be reported against it)
+			return Error_MissingCloseParen;
 		}
 		else
 		{
 			// this is a diagnostic error, should not occur
-			return StackNotEmpty;
+			return BUG_StackNotEmpty;
 		}
 
 		// 2010-03-25: check if there is a pending closing parentheses
@@ -289,12 +322,13 @@ Translator::Status Translator::add_token(Token *token)
 		List<Token *>::Element *result;
 		if (!done_stack.pop(&result))
 		{
-			return StackEmpty3;
+			return BUG_StackEmpty3;
 		}
 		if (!done_stack.empty())
 		{
-			return StackNotEmpty2;
+			return BUG_StackNotEmpty2;
 		}
+		delete token;  // 2010-04-04: delete EOL token
 		return Done;
 
 	default:  // no special operator, push it onto the holding stack
@@ -322,14 +356,14 @@ Translator::Status Translator::add_operator(Token *token)
 	// for now just pop the operands off of the stack
 	if (!done_stack.pop(&operand1))
 	{
-		return StackEmpty1;
+		return BUG_StackEmpty1;
 	}
 	// 2010-03-21: corrected unary operator check
 	if (!table->is_unary_operator(token->index))
 	{
 		if (!done_stack.pop(&operand2))
 		{
-			return StackEmpty2;
+			return BUG_StackEmpty2;
 		}
 	}
 	// 2010-03-25: added parentheses support BEGIN
@@ -390,13 +424,15 @@ void Translator::clean_up(void)
 	// clean up from error
 	while (!output->empty())
 	{
-		output->pop();  // using pop doesn't require pointer variable
+		// 2010-04-04: added delete to free the token that was in the list
+		delete output->pop();  // using pop doesn't require pointer variable
 	}
 	delete output;
 	output = NULL;
 	while (!hold_stack.empty())
 	{
-		hold_stack.pop();
+		// 2010-04-04: added delete to free the token that was on the stack
+		delete hold_stack.pop();
 	}
 	while (!done_stack.empty())
 	{
