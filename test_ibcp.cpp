@@ -73,6 +73,11 @@
 //              in print_small_token() for operators, use name2 for output if
 //                set, otherwise use name
 //
+//  2010-04-04  added expressions for testing the number of arguments
+//              check for internal functions
+//              added an additional error
+//              added calls to debug_name() in print_small_token()
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -313,9 +318,24 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Arr(B,,C)",
 		NULL
 	};
+	const char *testinput4[] = {  // internal function tests
+		"MID$(MID$(A$+B$,2),(C+5)*D,4)",
+		"abs(A)+FIX(B)+INT(C)+RND(D)+SGN(E)+CINT(F)",
+		"SQR(G)+ATN(H)+COS(I)+SIN(J)+TAN(K)+EXP(L)+LOG(M)",
+		"ASC(A$)+ASC(B$,C)+INSTR(A$,B$)+INSTR(A$,B$,C)+LEN(D$)",
+		"LEFT$(D$,E)+RIGHT$(F$,G)+REPEAT$(H$,5)+SPACE$(15)",
+		"A=VAL(STR$(\"1.23\"))",
+		"MID$(A$)",
+		"MID$(A$,1,2,3)",
+		"INSTR(A$)",
+		"INSTR(A$,B$,C,D)",
+		"ASC(A$,B,C)",
+		"INT(1.23,A)",
+		NULL
+	};
 
 	const char **test[] = {
-		testinput1, testinput2, testinput3
+		testinput1, testinput2, testinput3, testinput4
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -406,62 +426,66 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 
 		switch (status)
 		{
-		case Translator::ExpectedOperand:
+		case Translator::Error_ExpectedOperand:
 			error = "operand expected";
 			break;
-		case Translator::ExpectedOperator:
+		case Translator::Error_ExpectedOperator:
 			error = "operator expected";
 			break;
-		case Translator::ExpectedBinOp:
+		case Translator::Error_ExpectedBinOp:
 			error = "binary operator expected";
 			break;
 		// 2010-03-25: added missing parentheses errors
-		case Translator::MissingOpenParen:
+		case Translator::Error_MissingOpenParen:
 			error = "missing opening parentheses";
 			break;
-		case Translator::MissingCloseParen:
+		case Translator::Error_MissingCloseParen:
 			error = "missing closing parentheses";
 			break;
 		// 2010-04-02: added errors for array/functions
-		case Translator::UnexpectedComma:
+		case Translator::Error_UnexpectedComma:
 			error = "unexpected comma";
+			break;
+		// 2010-04-02: added errors for array/functions
+		case Translator::Error_WrongNumberOfArgs:
+			error = "wrong number of arguments";
 			break;
 
 		// diagnostic errors
-		case Translator::NotYetImplemented:
-			error = "not yet implemented";
+		case Translator::BUG_NotYetImplemented:
+			error = "BUG: not yet implemented";
 			break;
-		case Translator::StackEmpty:
-			error = "hold stack empty, expected Null";
+		case Translator::BUG_StackEmpty:
+			error = "BUG: hold stack empty, expected Null";
 			break;
-		case Translator::StackNotEmpty:
-			error = "hold stack not empty";
+		case Translator::BUG_StackNotEmpty:
+			error = "BUG: hold stack not empty";
 			break;
-		case Translator::StackEmpty1:
-			error = "expected operand 1 on done stack";
+		case Translator::BUG_StackEmpty1:
+			error = "BUG: expected operand 1 on done stack";
 			break;
-		case Translator::StackEmpty2:
-			error = "expected operand 2 on done stack";
+		case Translator::BUG_StackEmpty2:
+			error = "BUG: expected operand 2 on done stack";
 			break;
-		case Translator::StackNotEmpty2:
-			error = "done stack not empty";
+		case Translator::BUG_StackNotEmpty2:
+			error = "BUG: done stack not empty";
 			break;
-		case Translator::StackEmpty3:
-			error = "done stack empty, expected result";
+		case Translator::BUG_StackEmpty3:
+			error = "BUG: done stack empty, expected result";
 			break;
 		// 2010-03-25: added error for parentheses support
-		case Translator::StackEmpty4:
-			error = "done stack empty, expected token for ')'";
+		case Translator::BUG_StackEmpty4:
+			error = "BUG: done stack empty, expected token for ')'";
 			break;
 		// 2010-04-02: added error for array/function support
-		case Translator::StackEmpty5:
-			error = "done stack empty, expected token for array/function";
+		case Translator::BUG_StackEmpty5:
+			error = "BUG: done stack empty, expected token for array/function";
 			break;
-		case Translator::UnexpectedCloseParen:
-			error = "unexpected closing parentheses";
+		case Translator::BUG_UnexpectedCloseParen:
+			error = "BUG: unexpected closing parentheses";
 			break;
-		case Translator::UnexpectedToken:
-			error = "expected token on stack for array/function";
+		case Translator::BUG_UnexpectedToken:
+			error = "BUG: expected token on stack for array/function";
 			break;
 		default:
 			error = "UNEXPECTED ERROR";
@@ -499,6 +523,7 @@ bool print_token(Token *token, Table *table)
 		"Integer",
 		"String"
 	};
+	// 2010-04-04: updated list for new codes
 	const char *code_name[] = {
 		"Null",
 		"Add", "Sub", "Neg", "Mul", "Div", "IntDiv", "Mod", "Power",
@@ -506,8 +531,8 @@ bool print_token(Token *token, Table *table)
 		"And", "Or", "Not", "Eqv", "Imp", "Xor",
 		"Abs", "Fix", "Int", "Rnd", "RndArg", "Sgn", "Cint",
 		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
-		"Asc", "Chr", "Instr", "Left", "Len", "Mid", "Repeat", "Right", "Space",
-		"Str", "Val",
+		"Asc", "Asc2", "Chr", "Instr2", "Instr3", "Left", "Len", "Mid2", "Mid3",
+		"Repeat", "Right", "Space", "Str", "Val",
 		"OpenParen", "CloseParen", "Comma", "SemiColon", "Colon", "RemOp",
 		"Tab", "Spc",
 		"Let", "Print", "Input", "Dim", "Def", "Rem",
@@ -671,17 +696,14 @@ bool print_small_token(Token *token, Table *table)
 		else
 		{
 			// 2010-04-02: output name2 (if set) for debug output string
-			const char *name = table->name2(token->index);
-			if (name == NULL)
-			{
-				name = table->name(token->index);
-			}
-			printf("%s", name);
+			// 2010-04-04: replaced with debug_name call
+			printf("%s", table->debug_name(token->index));
 		}
 		break;
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
-		printf("%s", table->name(token->index));
+		// 2010-04-04: replaced with debug_name call
+		printf("%s", table->debug_name(token->index));
 		break;
 	case Command_TokenType:
 		if (table->code(token->index) == Rem_Code)
