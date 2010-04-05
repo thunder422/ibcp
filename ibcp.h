@@ -66,6 +66,15 @@
 //                functions)
 //              added more errors to Translator
 //
+//  2010-04-04  added support for number of argument checking for internal
+//                functions including added codes for functions with different
+//                number of arguments; adding Multiple_Flag
+//              added nargs to TableEntry; new Table access function and search
+//                function
+//              added new error to Translator
+//              made token argument a reference in Translator::add_token()
+//              added debug_name() to Table
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -124,11 +133,16 @@ enum Code {
 
 	// string functions
 	Asc_Code,
+	Asc2_Code,   // 2010-04-04: added code for two argument form
 	Chr_Code,
-	Instr_Code,
+	// 2010-04-04: replaced Instr_Code
+	Instr2_Code,
+	Instr3_Code,
 	Left_Code,
 	Len_Code,
-	Mid_Code,
+	// 2010-04-04: replaced Mid_Code
+	Mid2_Code,
+	Mid3_Code,
 	Repeat_Code,
 	Right_Code,
 	Space_Code,
@@ -329,6 +343,9 @@ const int LineIncr_Flag       = 0x00000004;  // xxx,zz
 const int Range_Flag          = 0x00000008;  // xxx-yyy
 const int RangeIncr_Flag      = 0x00000010;  // xxx-yyy,zz  xxx-yyy,nnn,zz
 const int String_Flag         = 0x00000020;
+// table entry flags (each must have unique bit set, but not unique from above)
+// 2010-04-04: added new flag for table entries with multiple codes
+const int Multiple_Flag       = 0x00000001;  // function has multiple forms
 
 // 2010-03-25: added highest precedence value
 const int Highest_Precedence = 127;
@@ -348,6 +365,8 @@ struct TableEntry {
 	Code unary_code;			// unary code for operator (Null_Code if none)
 	// 2010-03-20: added precedence
 	int precedence;				// precedence of code
+	// 2010-04-04: added number of arguments
+	int nargs;					// number of arguments for internal functions
 };
 
 
@@ -469,6 +488,16 @@ public:
 	{
 		return entry[index].name2;
 	}
+	// 2010-03-20: added debug name access functions
+	const char *debug_name(int index)
+	{
+		const char *name = entry[index].name2;
+		if (name == NULL)
+		{
+			name = entry[index].name;
+		}
+		return name;
+	}
 	int flags(int index)
 	{
 		return entry[index].flags;
@@ -480,6 +509,11 @@ public:
 	int precedence(int index)
 	{
 		return entry[index].precedence;
+	}
+	// 2010-04-04: added new access function for nargs
+	int nargs(int index)
+	{
+		return entry[index].nargs;
 	}
 	// 2010-04-02: added new precedence of token function
 	int precedence(Token *token)
@@ -495,6 +529,8 @@ public:
 	int search(char letter, int flag);
 	int search(TableSearch type, const char *string, int len);
 	int search(const char *word1, int len1, const char *word2, int len2);
+	// 2010-04-04: added new search function
+	int search(int index, int nargs);
 	// 2010-03-18: add function to set token for code
 	void set_token(Token *token, Code code)
 	{
@@ -569,24 +605,25 @@ public:
 	enum Status {
 		Good,
 		Done,
-		ExpectedOperand,
-		ExpectedOperator,
-		ExpectedBinOp,
-		MissingOpenParen,		// 2010-03-25: added
-		MissingCloseParen,		// 2010-03-25: added
-		UnexpectedComma,		// 2010-04-02: added
+		Error_ExpectedOperand,
+		Error_ExpectedOperator,
+		Error_ExpectedBinOp,
+		Error_MissingOpenParen,		// 2010-03-25: added
+		Error_MissingCloseParen,	// 2010-03-25: added
+		Error_UnexpectedComma,		// 2010-04-02: added
+		Error_WrongNumberOfArgs,	// 2010-04-04: added
 		// the following statuses used during development
-		NotYetImplemented,		// somethings is not implemented
-		StackEmpty,				// diagnostic message
-		StackNotEmpty,			// diagnostic message
-		StackNotEmpty2,			// diagnostic message
-		StackEmpty1,			// diagnostic error
-		StackEmpty2,			// diagnostic error
-		StackEmpty3,			// diagnostic error
-		StackEmpty4,			// diagnostic error (2010-03-25)
-		StackEmpty5,			// diagnostic error (2010-04-02)
-		UnexpectedCloseParen,	// diagnostic error (2010-04-02)
-		UnexpectedToken,		// diagnostic error (2010-04-02)
+		BUG_NotYetImplemented,		// somethings is not implemented
+		BUG_StackEmpty,				// diagnostic message
+		BUG_StackNotEmpty,			// diagnostic message
+		BUG_StackNotEmpty2,			// diagnostic message
+		BUG_StackEmpty1,			// diagnostic error
+		BUG_StackEmpty2,			// diagnostic error
+		BUG_StackEmpty3,			// diagnostic error
+		BUG_StackEmpty4,			// diagnostic error (2010-03-25)
+		BUG_StackEmpty5,			// diagnostic error (2010-04-02)
+		BUG_UnexpectedCloseParen,	// diagnostic error (2010-04-02)
+		BUG_UnexpectedToken,		// diagnostic error (2010-04-02)
 		sizeof_status
 	};
 
@@ -596,7 +633,8 @@ public:
 		output = new List<Token *>;
 		state = Initial;
 	}
-	Status add_token(Token *token);
+	// 2010-04-04: made argument a reference so different value can be returned
+	Status add_token(Token *&token);
 	List<Token *> *get_result(void)	// only call when add_token returns Done
 	{
 		List<Token *> *list = output;
