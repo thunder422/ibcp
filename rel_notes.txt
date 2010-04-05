@@ -19,6 +19,23 @@ see <http://www.gnu.org/licenses/>.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+Release 0.1.7 (2010-04-04)
+
+	Translator developmental release - The number of arguments are
+	checked for internal functions.  New (listed first) and updated
+	files include:
+
+	translator4.txt - output for number of arguments tests
+
+	codes.awk       - updated to allow digits is code names
+	codes.txt       - updated for new function codes
+	ibcp.h          - updated for number of arguments checking
+	table.cpp       - updated number of arguments checking
+	test_ibcp.cpp   - added number of arguments test expressions
+	translator.cpp  - updated for number of arguments check support
+	translator3.txt - updated for new function codes
+
+
 Release 0.1.6 (2010-04-02)
 
 	Translator developmental release - Array and function support
