@@ -1,0 +1,96 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: A=3
+Output: A<ref> 3 Assign 
+
+Input: A,B=3
+Output: A<ref> B<ref> 3 AssignList 
+
+Input: A=B=3
+Output: A<ref> B<ref> 3 AssignList 
+
+Input: A=(B)=3
+Output: A<ref> B ) 3 = Assign 
+
+Input: A=(B=3)
+Output: A<ref> B 3 = ) Assign 
+
+Input: A,B=C=4
+Output: A<ref> B<ref> C 4 = AssignList 
+
+Input: A(B,C)=D
+Output: B<ref> C<ref> A(<ref> D Assign 
+
+Input: A(B,C),E=D
+Output: B<ref> C<ref> A(<ref> E<ref> D AssignList 
+
+Input: E,A(B,C)=D
+Output: E<ref> B<ref> C<ref> A(<ref> D AssignList 
+
+Input: E,A(B,C),F=D
+Output: E<ref> B<ref> C<ref> A(<ref> F<ref> D AssignList 
+
+Input: A(B,(C))=D
+Output: B<ref> C ) A(<ref> D Assign 
+
+Input: A(B+C)=D
+Output: B C + A(<ref> D Assign 
+
+Input: A(B=C)=D
+Output: B C = A(<ref> D Assign 
+
+Input: A(B+C,D=E)=F
+Output: B C + D E = A(<ref> F Assign 
+
+Input: A(B,C)=D(E)
+Output: B<ref> C<ref> A(<ref> E<ref> D( Assign 
+
+Input: A(B,C),D(E)=INT(F)+Function(G)+Array(H)
+Output: B<ref> C<ref> A(<ref> E<ref> D(<ref> F INT( G<ref> Function( + H<ref> Array( + AssignList 
+
+Input: A=B,C=4
+          ^-- unexpected comma in assignment
+
+
+Input: A=B+C,4
+            ^-- unexpected comma in expression
+
+
+Input: A(B+C,(D,E)=F
+               ^-- unexpected comma in parentheses
+
+
+Input: A(B+C,(D=E)=(F,G)
+                     ^-- unexpected comma in parentheses
+
+
+Input: A,B+C
+          ^-- expected equal or comma
+
+
+Input: 3=A
+       ^-- item cannot be assigned
+
+
+Input: A,3,B=4
+         ^-- list item cannot be assigned
+
+
+Input: (A=B)
+       ^-- unexpected parentheses in command
+
+
+Input: A,B,(C)=4
+           ^-- unexpected parentheses in assignment list
+
+
+Input: A+B
+        ^-- unexpected operator
+
+
