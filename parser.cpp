@@ -52,6 +52,11 @@
 //  2010-03-21  FIXME removed an error check for translator simple expression
 //              testing
 //
+//  2010-04-16  removed the unexpected character errors in scan_command() that
+//              was occurring in a statements like "A,B=3" because these were
+//              not valid immediate commands, so these errors were removed to
+//              let the Translator process it (and report an error as necessary
+//
 
 #include <stdio.h>
 
@@ -282,8 +287,10 @@ int Parser::scan_command(CmdArgs &args)
 	// number (increment or start line) must be next
 	if (!isdigit(*pos))  // make sure it's a digit
 	{
-		token->set_error(pos - input, UnexpChr);
-		return Error_Flag;
+		// 2010-04-16: this could be a valid multiple assignment, error removed
+		return Null_Flag;
+		//token->set_error(pos - input, UnexpChr);
+		//return Error_Flag;
 	}
 	num = strtol(pos, &end, 10);  // (base 10)
 	col = pos - input;  // save column in case number is invalid
@@ -323,8 +330,10 @@ int Parser::scan_command(CmdArgs &args)
 	// for LineIncr, there should be no more characters
 	if (flag == LineIncr_Flag || *pos != ',')
 	{
-		token->set_error(pos - input, UnexpChr);
-		return Error_Flag;
+		// 2010-04-16: let translator report error, so no error here
+		return Null_Flag;
+		//token->set_error(pos - input, UnexpChr);
+		//return Error_Flag;
 	}
 	pos++;  // advance past second comma
 	// current number is start line, look for increment
