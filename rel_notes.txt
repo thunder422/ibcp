@@ -18,6 +18,37 @@ see <http://www.gnu.org/licenses/>.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+Planned Roadmap:
+
+	Translator - Data Types
+	Translator - Strings
+	Translator - Semicolons
+	Translator - Commands
+	Translator - Colons
+	Translator - Line Numbers
+	Translator - Immediate Commands
+	Internal Language Definition
+	Dictionary Definition
+	Encoder
+	Recreator
+	translator5.txt - updated for data type handling changes
+
+
+Release 0.1.8 (2010-04-17)
+
+	Translator developmental release - Assignment operators have
+	been implemented.  New (listed first) and updated files include:
+
+	translator5.txt - output for assignment operator tests
+
+	codes.txt       - updated for new assign codes
+	ibcp.h          - updated for assignments and references
+	parser.cpp      - removed some errors that are valid statements
+	table.cpp       - added assignment operator table entries
+	test_ibcp.cpp   - added assignment operator test expressions
+	translator.cpp  - added references and assignment operator support
+	translator3.txt - updated for references flags in output
+
 
 Release 0.1.7 (2010-04-04)
 
