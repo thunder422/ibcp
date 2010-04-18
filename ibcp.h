@@ -75,6 +75,15 @@
 //              made token argument a reference in Translator::add_token()
 //              added debug_name() to Table
 //
+//  2010-04-11  added assignment operator codes
+//              added mode with enumerator to Translator
+//              added more error codes to Translator
+//  2010-04-12  added reference flag to Token
+//  2010-04-13  made token argument a reference in Translator::add_operator()
+//  2010-04-16  added more error codes to Translator
+//              added expression mode flag option to Translator for testing
+//  2010-04-17  added another error code to Translator
+//
 
 #ifndef IBCP_H
 #define IBCP_H
