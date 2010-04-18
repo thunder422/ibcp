@@ -78,6 +78,18 @@
 //              added an additional error
 //              added calls to debug_name() in print_small_token()
 //
+//  2010-04-11  replaced unexpected comma error with two errors
+//              added assignment errors
+//              added new assignment codes to print_token()
+//  2010-04-12  added output of "<ref>" if token reference flag set
+//  2010-04-14  correct token memory allocation problem (only delete token if
+//              it is the original token passed to the Translator)
+//  2010-04-16  added assignment/reference and parentheses errors
+//              modified translator_input() to set expression test mode in 
+//                Translator for previous test inputs
+//              added assignment statement test inputs
+//  2010-04-17  added another unexpected comma error
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +97,7 @@
 
 void parse_input(Parser &parser, Table *table, const char *testinput);
 void translate_input(Translator &translator, Parser &parser, Table *table,
-	const char *testinput);
+	const char *testinput, bool exprmode = false);
 bool print_token(Token *token, Table *table);
 bool print_small_token(Token *token, Table *table);
 void print_error(Token *token, const char *error);
@@ -200,8 +212,8 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 	if (argc != 3 || (testno < 0 || testno >= ntests) && inputmode == 0)
 	{ 
 		// 2010-03-13: changed to output actual program name
-		printf("usage: %s -p <test number 1-%d>|i\n", strrchr(argv[0], '\\') + 1,
-			ntests);
+		printf("usage: %s -p <test number 1-%d>|i\n", strrchr(argv[0], '\\')
+			+ 1, ntests);
 		return true;  // our options are bad
 	}
 
@@ -333,9 +345,39 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"INT(1.23,A)",
 		NULL
 	};
+	const char *testinput5[] = {  // assignment tests
+		"A=3",
+		"A,B=3",
+		"A=B=3",
+		"A=(B)=3",
+		"A=(B=3)",
+		"A,B=C=4",
+		"A(B,C)=D",
+		"A(B,C),E=D",
+		"E,A(B,C)=D",
+		"E,A(B,C),F=D",
+		"A(B,(C))=D",
+		"A(B+C)=D",
+		"A(B=C)=D",
+		"A(B+C,D=E)=F",
+		"A(B,C)=D(E)",
+		"A(B,C),D(E)=INT(F)+Function(G)+Array(H)",
+		// begin of error tests
+		"A=B,C=4",
+		"A=B+C,4",
+		"A(B+C,(D,E)=F",
+		"A(B+C,(D=E)=(F,G)",
+		"A,B+C",
+		"3=A",
+		"A,3,B=4",
+		"(A=B)",
+		"A,B,(C)=4",
+		"A+B",
+		NULL
+	};
 
 	const char **test[] = {
-		testinput1, testinput2, testinput3, testinput4
+		testinput1, testinput2, testinput3, testinput4, testinput5
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -374,7 +416,8 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		for (int i = 0; testinput[i] != NULL; i++)
 		{
 			printf("\nInput: %s\n", testinput[i]);
-			translate_input(translator, parser, table, testinput[i]);
+			translate_input(translator, parser, table, testinput[i],
+				testno < 4);
 		}
 	}
 	printf("\n");
@@ -383,16 +426,18 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 
 
 // 2010-03-18: new function for testing translator
+// 2010-04-16: added new expression mode flag argument
 void translate_input(Translator &translator, Parser &parser, Table *table,
-	const char *testinput)
+	const char *testinput, bool exprmode)
 {
 	Token *token;
+	Token *org_token;
 	Translator::Status status;
 
-	translator.start();
+	translator.start(exprmode);
 	parser.start((char *)testinput);
 	do {
-		token = parser.get_token();
+		org_token = token = parser.get_token();
 		// 2010-03-18: need to check for a parser error
 		if (token->type == Error_TokenType)
 		{
@@ -443,12 +488,41 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			error = "missing closing parentheses";
 			break;
 		// 2010-04-02: added errors for array/functions
-		case Translator::Error_UnexpectedComma:
-			error = "unexpected comma";
+		// 2010-04-11: replaced Error_UnexpectedComma
+		case Translator::Error_UnexpAssignComma:
+			error = "unexpected comma in assignment";
+			break;
+		case Translator::Error_UnexpExprComma:
+			error = "unexpected comma in expression";
+			break;
+		// 2010-04-17: added another unexpected comma error
+		case Translator::Error_UnexpParenComma:
+			error = "unexpected comma in parentheses";
 			break;
 		// 2010-04-02: added errors for array/functions
 		case Translator::Error_WrongNumberOfArgs:
 			error = "wrong number of arguments";
+			break;
+		// 2010-04-11: added errors for assignment
+		case Translator::Error_UnexpectedOperator:
+			error = "unexpected operator";
+			break;
+		case Translator::Error_ExpectedEqualOrComma:
+			error = "expected equal or comma";
+			break;
+		// 2010-04-16: added errors for assignment references
+		case Translator::Error_ExpAssignReference:
+			error = "item cannot be assigned";
+			break;
+		case Translator::Error_ExpAssignListReference:
+			error = "list item cannot be assigned";
+			break;
+		// 2010-04-16: added errors for unexpected parentheses
+		case Translator::Error_UnexpParenInCmd:
+			error = "unexpected parentheses in command";
+			break;
+		case Translator::Error_UnexpParenInComma:
+			error = "unexpected parentheses in assignment list";
 			break;
 
 		// diagnostic errors
@@ -493,7 +567,15 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		}
 		// token pointer is set to cause of error
 		print_error(token, error);
-		delete token;
+		if (token == org_token)
+		{
+			// 2010-04-14: only deleted error token if it's the original token
+			//             returned from the parser, if not then this token is
+			//             in the output list and will be deleted by the
+			//             clean_up() function (the original token has been
+			//             already been deleted by the Translator) XXX
+			delete token;
+		}
 		translator.clean_up();
 	}
 	printf("\n");
@@ -524,11 +606,13 @@ bool print_token(Token *token, Table *table)
 		"String"
 	};
 	// 2010-04-04: updated list for new codes
+	// 2010-04-11: updated list for new codes
 	const char *code_name[] = {
 		"Null",
 		"Add", "Sub", "Neg", "Mul", "Div", "IntDiv", "Mod", "Power",
 		"Eq", "Gt", "GtEq", "Lt", "LtEq", "NotEq",
 		"And", "Or", "Not", "Eqv", "Imp", "Xor",
+		"Assign", "AssignList",
 		"Abs", "Fix", "Int", "Rnd", "RndArg", "Sgn", "Cint",
 		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
 		"Asc", "Asc2", "Chr", "Instr2", "Instr3", "Left", "Len", "Mid2", "Mid3",
@@ -723,6 +807,11 @@ bool print_small_token(Token *token, Table *table)
 	default:
 		// nothing more to output
 		break;
+	}
+	// 2010-04-12: output reference identifier
+	if (token->reference)
+	{
+		printf("<ref>");
 	}
 	return true;
 }
