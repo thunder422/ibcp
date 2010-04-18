@@ -122,6 +122,10 @@ enum Code {
 	Imp_Code,
 	Xor_Code,
 
+	// 2010-04-11: assignment operators
+	Assign_Code,
+	AssignList_Code,
+
 	// math internal functions
 	Abs_Code,
 	Fix_Code,
@@ -277,6 +281,8 @@ struct Token {
 	String *string;			// pointer to string of token
 	// 2010-03-17: changed variable from code to index
 	int index;	 			// index into Table (internal code of token)
+	// 2010-04-12: added reference flag
+	bool reference;			// token is a reference flag
 	union {
 		double dbl_value;	// value for double constant token
 		int int_value;		// value for integer constant token
@@ -288,6 +294,7 @@ struct Token {
 		column = col;
 		string = NULL;
 		length = 1;  // 2010-03-21: initialize length
+		reference = false;  // 2010-04-12: initialize reference flag
 	}
 	~Token(void)
 	{
@@ -609,6 +616,14 @@ class Translator {
 	int last_precedence;			// precedence of last op added during paren
 	// 2010-04-02: added variables to support arrays and functions
 	SimpleStack<char> count_stack;	// number of operands counter stack
+	// 2010-04-11: added mode for handling assignment statements
+	enum Mode {
+		Command,					// expecting command or assignment
+		Equal,						// multiple equal assignment initiated
+		Comma,						// comma separated assignment initiated
+		Expression,					// inside expression
+		sizeof_Mode
+	} mode;							// current assignment mode
 
 public:
 	enum Status {
@@ -617,30 +632,43 @@ public:
 		Error_ExpectedOperand,
 		Error_ExpectedOperator,
 		Error_ExpectedBinOp,
-		Error_MissingOpenParen,		// 2010-03-25: added
-		Error_MissingCloseParen,	// 2010-03-25: added
-		Error_UnexpectedComma,		// 2010-04-02: added
-		Error_WrongNumberOfArgs,	// 2010-04-04: added
+		Error_MissingOpenParen,			// 2010-03-25: added
+		Error_MissingCloseParen,		// 2010-03-25: added
+		// 2010-04-11: replaced Error_UnexpectedComma
+		Error_UnexpAssignComma,			// 2010-04-11: added
+		Error_UnexpExprComma,			// 2010-04-11: added
+		Error_UnexpParenComma,			// 2010-04-17: added
+		Error_WrongNumberOfArgs,		// 2010-04-04: added
+		Error_UnexpectedOperator,		// 2010-04-11: added
+		Error_ExpectedEqualOrComma,		// 2010-04-11: added
+		Error_ExpAssignReference,		// 2010-04-16: added
+		Error_ExpAssignListReference,	// 2010-04-16: added
+		Error_UnexpParenInCmd,			// 2010-04-16: added
+		Error_UnexpParenInComma,		// 2010-04-16: added
 		// the following statuses used during development
-		BUG_NotYetImplemented,		// somethings is not implemented
-		BUG_StackEmpty,				// diagnostic message
-		BUG_StackNotEmpty,			// diagnostic message
-		BUG_StackNotEmpty2,			// diagnostic message
-		BUG_StackEmpty1,			// diagnostic error
-		BUG_StackEmpty2,			// diagnostic error
-		BUG_StackEmpty3,			// diagnostic error
-		BUG_StackEmpty4,			// diagnostic error (2010-03-25)
-		BUG_StackEmpty5,			// diagnostic error (2010-04-02)
-		BUG_UnexpectedCloseParen,	// diagnostic error (2010-04-02)
-		BUG_UnexpectedToken,		// diagnostic error (2010-04-02)
+		BUG_NotYetImplemented,			// somethings is not implemented
+		BUG_StackEmpty,					// diagnostic message
+		BUG_StackNotEmpty,				// diagnostic message
+		BUG_StackNotEmpty2,				// diagnostic message
+		BUG_StackEmpty1,				// diagnostic error
+		BUG_StackEmpty2,				// diagnostic error
+		BUG_StackEmpty3,				// diagnostic error
+		BUG_StackEmpty4,				// diagnostic error (2010-03-25)
+		BUG_StackEmpty5,				// diagnostic error (2010-04-02)
+		BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
+		BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
 		sizeof_status
 	};
 
 	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
-	void start(void)
+	// 2010-04-16: added expression mode flag for testing
+	void start(bool exprmode = false)
 	{
 		output = new List<Token *>;
 		state = Initial;
+		// 2010-04-11: initialize mode to command
+		// 2010-04-16: start in expression mode for testing
+		mode = exprmode ? Expression : Command;
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
 	Status add_token(Token *&token);
@@ -652,7 +680,8 @@ public:
 	}
 	void clean_up(void);			// only call when add_token returns an error
 private:
-	Status add_operator(Token *token);
+	// 2010-04-13: made argument a reference so different value can be returned
+	Status add_operator(Token *&token);
 	void do_pending_paren(int index);  // 2010-03-26: added for parentheses
 };
 
