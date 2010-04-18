@@ -10,17 +10,17 @@ Input: MID$(A$+B$,(C+5)*D,4)+" Test"
 Output: A$ B$ + C 5 + D * 4 MID3$( " Test" + 
 
 Input: int(Arr(A,B*(C+2))+(D))
-Output: A B C 2 + * Arr( D ) + INT( 
+Output: A<ref> B C 2 + * Arr( D ) + INT( 
 
 Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
-Output: X Y I Neg J + * I FNZ( B( INT( NUM$ VAL( Array( 
+Output: X<ref> Y I Neg J + * I<ref> FNZ(<ref> B( INT( NUM$ VAL( Array(<ref> 
 
 Input: INT(A+B
               ^-- missing closing parentheses
 
 
 Input: B,F+G
-        ^-- unexpected comma
+        ^-- unexpected comma in expression
 
 
 Input: Arr(B,,C)
