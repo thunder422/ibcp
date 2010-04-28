@@ -43,6 +43,9 @@
 //              changed main() to test_parser(), moved print_gpl_header, and
 //                table initialization to new ibcp.cpp source file
 //
+//  2010-04-17  made to compile with current ibcp.h
+//              (changed all token->code to token->index)
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -261,8 +264,8 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 		switch (token->type)
 		{
 		case ImmCmd_TokenType:
-			printf(" %3d-%s", token->code,
-				code_name[table->code(token->code)]);
+			printf(" %3d-%s", token->index,
+				code_name[table->code(token->index)]);
 			if (token->datatype == CmdArgs_DataType)
 			{
 				args = (CmdArgs *)token->string->get_data();
@@ -280,8 +283,8 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 			}
 			break;
 		case Remark_TokenType:
-			printf(" %d-%s", token->code,
-				code_name[table->code(token->code)]);
+			printf(" %d-%s", token->index,
+				code_name[table->code(token->index)]);
 			// fall thru
 		case DefFuncN_TokenType:
 		case DefFuncP_TokenType:
@@ -314,10 +317,10 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 		case IntFuncP_TokenType:
 			printf(" %-7s", datatype_name[token->datatype]);
 		case Command_TokenType:
-			printf(" %d-%s", token->code,
-				code_name[table->code(token->code)]);
-			if (table->code(token->code) == Rem_Code
-				|| table->code(token->code) == RemOp_Code)
+			printf(" %d-%s", token->index,
+				code_name[table->code(token->index)]);
+			if (table->code(token->index) == Rem_Code
+				|| table->code(token->index) == RemOp_Code)
 			{
 				printf(" |%.*s|", token->string->get_len(),
 					token->string->get_str());

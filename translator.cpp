@@ -62,8 +62,6 @@
 //              added count stack is empty check before checking mode for open
 //              parentheses, equal operator and no special operator
 //
-<<<<<<< HEAD
-=======
 //  2010-04-25  set default data type for operands
 //              corrected memory leak of comma and close parentheses tokens
 //              added data type handling for internal functions and operators
@@ -71,8 +69,6 @@
 //                type handling
 //  2010-04-26  changed bug error names
 //
-//  $Id: translator.cpp,v 1.9 2010-04-28 23:39:48 thunder422 Exp $
->>>>>>> 0e9d759... updated for data type handling
 
 #include "ibcp.h"
 
