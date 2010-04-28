@@ -7,22 +7,22 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: MID$(MID$(A$+B$,2),(C+5)*D,4)
-Output: A$ B$ + 2 MID2$( C 5 + D * 4 MID3$( 
+Output: A$ B$ +$ 2 MID2$( C 5 CvtDbl + D * CvtInt 4 MID3$( 
 
 Input: abs(A)+FIX(B)+INT(C)+RND(D)+SGN(E)+CINT(F)
-Output: A ABS( B FIX( + C INT( + D RND( + E SGN( + F CINT( + 
+Output: A ABS( B FIX( + C INT( + D RND( + E SGN( + F CINT( CvtDbl + 
 
 Input: SQR(G)+ATN(H)+COS(I)+SIN(J)+TAN(K)+EXP(L)+LOG(M)
 Output: G SQR( H ATN( + I COS( + J SIN( + K TAN( + L EXP( + M LOG( + 
 
 Input: ASC(A$)+ASC(B$,C)+INSTR(A$,B$)+INSTR(A$,B$,C)+LEN(D$)
-Output: A$ ASC( B$ C ASC2( + A$ B$ INSTR2( + A$ B$ C INSTR3( + D$ LEN( + 
+Output: A$ ASC( B$ C CvtInt ASC2( +% A$ B$ INSTR2( +% A$ B$ C CvtInt INSTR3( +% D$ LEN( +% 
 
 Input: LEFT$(D$,E)+RIGHT$(F$,G)+REPEAT$(H$,5)+SPACE$(15)
-Output: D$ E LEFT$( F$ G RIGHT$( + H$ 5 REPEAT$( + 15 SPACE$( + 
+Output: D$ E CvtInt LEFT$( F$ G CvtInt RIGHT$( +$ H$ 5 REPEAT$( +$ 15 SPACE$( +$ 
 
-Input: A=VAL(STR$("1.23"))
-Output: A "1.23" STR$( VAL( = 
+Input: A=VAL(STR$(1.23))
+Output: A 1.23 STR$( VAL( = 
 
 Input: MID$(A$)
        ^^^^^-- wrong number of arguments

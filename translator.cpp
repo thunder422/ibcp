@@ -62,6 +62,17 @@
 //              added count stack is empty check before checking mode for open
 //              parentheses, equal operator and no special operator
 //
+<<<<<<< HEAD
+=======
+//  2010-04-25  set default data type for operands
+//              corrected memory leak of comma and close parentheses tokens
+//              added data type handling for internal functions and operators
+//              implemented new find_code() and match_code() functions for data
+//                type handling
+//  2010-04-26  changed bug error names
+//
+//  $Id: translator.cpp,v 1.9 2010-04-28 23:39:48 thunder422 Exp $
+>>>>>>> 0e9d759... updated for data type handling
 
 #include "ibcp.h"
 
@@ -100,11 +111,12 @@ Translator::Status Translator::add_token(Token *&token)
 	{
 		if (!token->is_operator())
 		{
-			// token is a variable or a function with no arguments
-			//
 			// 2010-03-25: added parentheses support
 			// 2010-03-26: check for and add dummy token if necessary
 			do_pending_paren(hold_stack.top()->index);
+
+			// 2010-04-25: set default data type for token if it has none
+			set_default_datatype(token);
 
 			// 2010-04-02: moved to after pending parentheses check
 			if (token->has_paren())
@@ -117,6 +129,7 @@ Translator::Status Translator::add_token(Token *&token)
 			}
 			else
 			{
+				// token is a variable or a function with no arguments
 				// 2010-04-12: set reference flag for variable or function
 				if (token->type == NoParen_TokenType
 					|| token->type == DefFuncN_TokenType)
@@ -323,6 +336,8 @@ Translator::Status Translator::add_token(Token *&token)
 			}
 			// increment the number of operands
 			count_stack.top()++;
+			// delete comma token, it's not needed (2010-04-25)
+			delete token;
 		}
 		state = Operand;
 		break;
@@ -365,41 +380,50 @@ Translator::Status Translator::add_token(Token *&token)
 			if (top_token->type != IntFuncP_TokenType)
 			{
 				top_token->reference = true;
+
+				// data types for array subscripts and define/user functions
+				// cannot be checked here
+				// TODO save operands for later processing; just pop them now
+				for (int i = 0; i < noperands; i++)
+				{
+					List<Token *>::Element *operand;
+					if (!done_stack.pop(&operand))
+					{
+						return BUG_StackEmpty5;
+					}
+				}
+				// delete close paren token, it's not needed (2010-04-25)
+				delete token;
 			}
 			// 2010-04-04: check for number of arguments for internal functions
-			else if (noperands != table->nargs(top_token->index))
+			else
 			{
-				// actual number of arguments doesn't match function's entry
-				int index;
+				// delete close paren token, it's not needed (2010-04-25)
+				delete token;
+				token = top_token;
 
-				if ((table->flags(top_token->index) & Multiple_Flag) != 0
-					&& (index = table->search(top_token->index, noperands)) > 0)
+				if (noperands != table->noperands(token->index))
 				{
-					// change token to new code (index)
-					top_token->index = index;
+					// number of arguments doesn't match function's entry
+					int index;
+
+					if ((table->flags(token->index) & Multiple_Flag) != 0
+						&& (index = table->search(token->index, noperands)) > 0)
+					{
+						// change token to new code (index)
+						token->index = index;
+					}
+					else
+					{
+						return Error_WrongNumberOfArgs;
+					}				
 				}
-				else
+				// 2010-04-25: implemented data type handling
+				// process data types of arguments (find proper code)
+				Status status = find_code(token);
+				if (status != Good)
 				{
-					delete token;  // delete open parentheses token
-					token = top_token;
-					return Error_WrongNumberOfArgs;
-				}				
-			}
-
-			// TODO other processing required (checking operands)
-			// TODO for now pop operands from done stack and add token to output
-
-			for (int i = 0; i < noperands; i++)
-			{
-				List<Token *>::Element *operand;
-				if (!done_stack.pop(&operand))
-				{
-					return BUG_StackEmpty5;
-				}
-				// 2010-04-12: reset reference flag of operands
-				if (top_token->type == IntFuncP_TokenType)
-				{
-					operand->value->reference = false;
+					return status;
 				}
 			}
 
@@ -425,7 +449,7 @@ Translator::Status Translator::add_token(Token *&token)
 		if (hold_stack.empty())
 		{
 			// oops, stack is empty
-			return BUG_StackEmpty;
+			return BUG_HoldStackEmpty;  // 2010-04-26: changed bug named
 		}
 		top_token = hold_stack.pop();
 		// 2010-03-26: get index/code and delete token before error checking
@@ -523,18 +547,30 @@ Translator::Status Translator::add_operator(Token *&token)
 	List<Token *>::Element *operand1;
 	List<Token *>::Element *operand2;
 
-	// TODO process data types of operands
-	// for now just pop the operands off of the stack
-	if (!done_stack.pop(&operand1))
+	// 2010-04-25: implemented data type handling for non-assignment operators
+	//             removed popping of operands, find_code() does this
+	//             removed unary operator check
+	// TODO temporarily leave assignment code as is
+	Code code = table->code(token->index);
+	if (code != Assign_Code && code != AssignList_Code)
 	{
-		return BUG_StackEmpty1;
+		// process data types of operands (find proper code)
+		Status status = find_code(token);
+		if (status != Good)
+		{
+			return status;
+		}
 	}
-	// 2010-04-12: reset reference flag of operand (need value at run-time)
-	operand1->value->reference = false;
-
-	// 2010-03-21: corrected unary operator check
-	if (!table->is_unary_operator(token->index))
+	else  // TODO temporary assignment operator handling
 	{
+		// for now just pop the operands off of the stack
+		if (!done_stack.pop(&operand1))
+		{
+			return BUG_StackEmpty1;
+		}
+		// 2010-04-12: reset reference flag of operand (need value at run-time)
+		operand1->value->reference = false;
+
 		if (!done_stack.pop(&operand2))
 		{
 			return BUG_StackEmpty2;
@@ -624,6 +660,186 @@ void Translator::do_pending_paren(int index)
 		}
 		pending_paren = NULL;  // reset pending token					
 	}
+}
+ 
+
+// function to find a code where the expected data types of the operands match
+// the actual operands present; the code in the token is checked first followed
+// by any associated codes that the main code has; the token is updated to the
+// code found
+//
+//   - the token is unchanged is there is an exact match of data types
+//   - conversion codes are inserted into the output after operands that need
+//     to be converted
+//   - if there is no match, then an appropriate error is returned and the
+//     token argument is changed to pointer to the token with the error
+
+// 2010-04-25: implemented new function
+Translator::Status Translator::find_code(Token *&token)
+{
+	struct {
+		Code code;						// code match attempted for
+		Code cvt_code[Max_Operands];	// resulting conversion codes
+	} info[Max_Assoc_Codes + 1];		// matching information
+	const int MAIN = Max_Assoc_Codes;	// index of main code in info[]
+	int convert;						// index of convertible match
+	int partial;						// index of partial match
+	List<Token *>::Element *operand[Max_Operands];  // pointers to operands
+	int i;								// loop index variable
+
+	// get number of operands for token and allocate arrays
+	int noperands = table->noperands(token->index);
+
+	// pop operand element pointers off of done stack
+	for (int i = noperands; --i >= 0;)
+	{
+		if (!done_stack.pop(&operand[i]))
+		{
+			// oops, there should have been operands on done stack
+			return BUG_DoneStackEmpty;
+		}
+		// reset reference flag of operand
+		operand[i]->value->reference = false;
+	}
+
+	// see if main code's data types match
+	Match match = match_code(info[MAIN].cvt_code, operand,
+		info[MAIN].code = table->code(token->index));
+	if (match == Yes_Match)
+	{
+		return Good;  // an exact match, we're done here
+	}
+	convert = match == Cvt_Match ? MAIN : -1;
+	partial = MAIN;
+
+	// see if any associated code's data types match
+	for (int i = 0; i < Max_Assoc_Codes; i++)
+	{
+		info[i].code = table->assoc_code(token->index, i);
+		if (info[i].code == Null_Code)
+		{
+			break;  // no mode codes to check
+		}
+		match = match_code(info[i].cvt_code, operand, info[i].code);
+		if (match == Yes_Match)
+		{
+			// change token's code and data type to associated code
+			token->index = table->index(info[i].code);
+			token->datatype = table->datatype(token->index);
+
+			return Good;  // an exact match, we're done here
+		}
+		else if (match == Cvt_Match && convert == -1)
+		{
+			convert = i;  // remember this as possible code
+		}
+		else if (info[i].cvt_code[0] == Null_Code)
+		{
+			partial = i;  // remember this partial match for error reporting
+		}
+	}
+
+	// no exact matches, check for a convertible match
+	if (convert != -1)
+	{
+		// change token's code and data type to convertible code
+		// (convertible code may be main code)
+		token->index = table->index(info[convert].code);
+		token->datatype = table->datatype(token->index);
+
+		// insert conversion codes
+		for (i = 0; i < noperands; i++)
+		{
+			Code code = info[convert].cvt_code[i];
+			if (code != Null_Code)
+			{
+				// create convert token with convert code
+				Token *cvt_token = new Token;
+				cvt_token->index = table->index(code);
+				cvt_token->type = table->type(cvt_token->index);
+				cvt_token->datatype = table->datatype(cvt_token->index);
+
+				// add token to output list after operand
+				output->append(operand[i], &cvt_token);
+			}
+		}
+		return Good;
+	}
+	
+	// no match found, find error and report it
+	for (i = 0; i < noperands; i++)
+	{
+		if (info[partial].cvt_code[i] == Invalid_Code)
+		{
+			break;  // found first operand with bad data type
+		}
+	}
+	// change token to token with invalid data type and return error
+	token = operand[i]->value;
+	switch (table->operand_datatype(table->index(info[partial].code), i))
+	{
+	case Double_DataType:
+		return Error_ExpectedDouble;
+	case Integer_DataType:
+		return Error_ExpectedInteger;
+	case String_DataType:
+		return Error_ExpectedString;
+	}
+}
+
+
+// function to check if the data types in the array of operands matches the
+// data types for the code specified
+//
+//   - returns No_Match if the data types do not match (can't be converted)
+//   - returns Yes_Match if the data types are an exact match
+//   - returns Cvt_Match if the data types match or can be converted
+//   - for Cvt_Match, the cvt_code array is filled with conversion codes
+//     for each operarand
+//   - for No_Match, the cvt_code array is only filled up to the first operand
+//     that can be converted (conversion code set to Invalid)
+
+// 2010-04-25: implemented new function
+Translator::Match Translator::match_code(Code *cvt_code,
+	List<Token *>::Element **operand, Code code)
+{
+	// array of conversion codes [have data type] [need data type]
+	static Code cvtcode_have_need[numberof_DataType][numberof_DataType] =
+	{
+		{	// have Double,    need:
+			Null_Code,		// Double
+			CvtInt_Code,	// Integer
+			Invalid_Code	// String
+		},
+		{	// have Integer,   need:
+			CvtDbl_Code,	// Double
+			Null_Code,		// Integer
+			Invalid_Code	// String
+		},
+		{	// have String,    need:
+			Invalid_Code,	// Double
+			Invalid_Code,	// Integer
+			Null_Code		// String
+		}
+	};
+
+	int index = table->index(code);
+	Match match = Yes_Match;  // assume match to start
+	for (int i = 0; i < table->noperands(index); i++)
+	{
+		cvt_code[i] = cvtcode_have_need[operand[i]->value->datatype]
+			[table->operand_datatype(index, i)];
+		if (cvt_code[i] == Invalid_Code)
+		{
+			return No_Match;  // no match here, exit
+		}
+		else if (cvt_code[i] != Null_Code)  // have a conversion code?
+		{
+			match = Cvt_Match;  // then this is a convertible match
+		}
+		// else Null_Code, leave match as is
+	}
+	return match;
 }
 
 

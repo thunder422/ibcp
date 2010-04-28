@@ -16,13 +16,13 @@ Input: A=B=3
 Output: A<ref> B<ref> 3 AssignList 
 
 Input: A=(B)=3
-Output: A<ref> B ) 3 = Assign 
+Output: A<ref> B ) 3 CvtDbl = Assign 
 
 Input: A=(B=3)
-Output: A<ref> B 3 = ) Assign 
+Output: A<ref> B 3 CvtDbl = ) Assign 
 
 Input: A,B=C=4
-Output: A<ref> B<ref> C 4 = AssignList 
+Output: A<ref> B<ref> C 4 CvtDbl = AssignList 
 
 Input: A(B,C)=D
 Output: B<ref> C<ref> A(<ref> D Assign 
