@@ -41,6 +41,9 @@
 //  2010-04-02  added support for obtaining precedence from token types that
 //              don't have table entries (DefFuncP and Paren)
 //
+//  2010-04-25  added "-t" to usage string
+//              added check if program name does not have full path
+//
 
 #include <stdio.h>
 #include "ibcp.h"
@@ -86,7 +89,10 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 
 int main(int argc, char *argv[])
 {
-	print_gpl_header(strrchr(argv[0], '\\') + 1);
+	// 2010-04-25: added check if program name does not have path
+	char *name = strrchr(argv[0], '\\');
+	name = name == NULL ? argv[0] : name + 1;
+	print_gpl_header(name);
 	
 	Token::initialize();
 	Table *table;
@@ -140,10 +146,11 @@ int main(int argc, char *argv[])
 	Parser parser(table);
 
 	// 2010-03-18: added call to test_translator
+	// 2010-04-25: added "-t" to usage string
 	if (!test_parser(parser, table, argc, argv)
 		&& !test_translator(translator, parser, table, argc, argv))
 	{
-		printf("usage: %s -p <options>\n", strrchr(argv[0], '\\') + 1);
+		printf("usage: %s -p|-t <options>\n", strrchr(argv[0], '\\') + 1);
 	}
 	return 0;
 }
