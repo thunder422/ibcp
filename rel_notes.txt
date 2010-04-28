@@ -20,7 +20,7 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
-	Translator - Data Types
+	Translator - Assignments (Data Types)
 	Translator - Strings
 	Translator - Semicolons
 	Translator - Commands
@@ -31,6 +31,40 @@ Planned Roadmap:
 	Dictionary Definition
 	Encoder
 	Recreator
+
+
+Release 0.1.9 (2010-04-28)
+
+	Translator developmental release - Data type handling has been
+	implemented for expressions, but not assignment operators.  Now
+	that all the files are under CVS control, the entire source tree
+	including the test directory files are included in this release
+	(the source files contain a CVS ID tag, the text files do not).
+	However, only future major releases will contain the entire
+	source tree.  All of the test output files are now located in
+	the test subdirectory.  New (listed first) and updated files
+	include:
+
+	translator6.txt - output for assignment operator tests
+
+	codes.awk       - updated to allow multiple codes per line
+	codes.txt       - updated for new data type specific codes
+	ibcp.cpp        - corrected command line program name bug
+	ibcp.h          - updated for data type handling
+	ibcp.vpj        - added -static-libgcc for command line bug
+	stack.h         - made minor improvements
+	string.cpp      - renamed str memory to less confusing ptr
+	string.h        - renamed str memory to less confusing ptr
+	table.cpp       - updated for data type handling
+	test_ibcp.cpp   - added data type test statements
+	translator.cpp  - added data type handling
+	test/:
+	test_parser.cpp - (obsolete) made to compile with ibcp.h
+	test_string.cpp - updated to compile in test subdirectory
+	translator1.txt - updated for data type handling changes
+	translator2.txt - updated for data type handling changes
+	translator3.txt - updated for data type handling changes
+	translator4.txt - updated for data type handling changes
 	translator5.txt - updated for data type handling changes
 
 
