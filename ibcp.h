@@ -84,6 +84,27 @@
 //              added expression mode flag option to Translator for testing
 //  2010-04-17  added another error code to Translator
 //
+//  2010-04-24  added the associated codes for the specific data types codes for
+//                all the operators and internal functions where applicable
+//              add new Frac_Code
+//              rearranged DataType enumeration names so that the actual data
+//                types are listed at the beginning with Double (the default)
+//                listed first; added number_DataType for actual number of data
+//                types
+//              renamed nargs to noperands in TableEntry and Table (now
+//                applicable operators in addition to internal functions)
+//              added Max_Operands and Max_Assoc_Codes definitions; added
+//                operand_datatype[] and assoc_codes[] arrays to TableEntry;
+//                added related access functions to Table
+//  2010-04-25  added Invalid_Code set to -1
+//              updated Translator for data type handling:
+//                added exptected data type errors
+//                renamed BUG_StackEmpty to BUG_HoldStackEmpty
+//                added BUG_DoneStackEmpty
+//                added set_default_datatype() to set the data type for
+//                  operands that didn't have a specific data type
+//                added find_code() and match_code() with Match enum
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -93,26 +114,32 @@
 #include "stack.h"  // 2010-04-02: added for SimpleStack
 
 
+//*****************************************************************************
+//**                                  CODES                                  **
+//*****************************************************************************
+
 enum Code {
+	Invalid_Code = -1,  // 2010-04-25: added for cvt array
 	Null_Code,	// 2010-03-17: added to indicated no code
 
+	// 2010-04-24: added associated codes
 	// math operators
-	Add_Code,
-	Sub_Code,
-	Neg_Code,  // 2010-03-17: added unary operator
-	Mul_Code,
-	Div_Code,
+	Add_Code, AddInt_Code, CatStr_Code,
+	Sub_Code, SubInt_Code,
+	Neg_Code, NegInt_Code,  // 2010-03-17: added unary operator
+	Mul_Code, MulInt_Code,
+	Div_Code, DivInt_Code,
 	IntDiv_Code,
-	Mod_Code,
-	Power_Code,
+	Mod_Code, ModInt_Code,
+	Power_Code, PowerMul_Code, PowerInt_Code,
 
 	// relational operators
-	Eq_Code,
-	Gt_Code,
-	GtEq_Code,
-	Lt_Code,
-	LtEq_Code,
-	NotEq_Code,
+	Eq_Code, EqInt_Code, EqStr_Code,
+	Gt_Code, GtInt_Code, GtStr_Code,
+	GtEq_Code, GtEqInt_Code, GtEqStr_Code,
+	Lt_Code, LtInt_Code, LtStr_Code,
+	LtEq_Code, LtEqInt_Code, LtEqStr_Code,
+	NotEq_Code, NotEqInt_Code, NotEqStr_Code,
 
 	// logical operators
 	And_Code,
@@ -127,13 +154,17 @@ enum Code {
 	AssignList_Code,
 
 	// math internal functions
-	Abs_Code,
+	Abs_Code, AbsInt_Code,
 	Fix_Code,
+	Frac_Code,  // 2010-04-24: added new code
 	Int_Code,
 	Rnd_Code,
-	RndArg_Code,
-	Sgn_Code,
+	RndArg_Code, RndArgInt_Code,
+	Sgn_Code, SgnInt_Code,
 	Cint_Code,
+	Cdbl_Code,    // 2010-04-24: added new code
+	CvtInt_Code,  // 2010-04-24: added code for hidden conversion
+	CvtDbl_Code,  // 2010-04-24: added code for hidden conversion
 
 	// scientific math internal function
 	Sqr_Code,
@@ -159,7 +190,7 @@ enum Code {
 	Repeat_Code,
 	Right_Code,
 	Space_Code,
-	Str_Code,
+	Str_Code, StrInt_Code,
 	Val_Code,
 
 	// other symbol operators
@@ -247,10 +278,15 @@ enum TokenType {
 
 
 enum DataType {
-	None_DataType,
+	// the actual execution data types must be listed first
+	// since they will also be used for indexes
 	Double_DataType,
 	Integer_DataType,
 	String_DataType,
+	// the end of the actual execution data types
+	numberof_DataType,	// 2010-04-24: new entry for number of actual data types
+	// the following data types are used internally for other uses
+	None_DataType,		// 2010-04-24: moved name after new numberof_DataType
 	CmdArgs_DataType,	// 2010-02-27: for immediate commands
 	sizeof_DataType
 };
@@ -266,6 +302,10 @@ enum Multiple {
 	sizeof_Multiple
 };
 
+
+//*****************************************************************************
+//**                                  TOKEN                                  **
+//*****************************************************************************
 
 // 2010-03-07: added error length and two new set_error()
 struct Token {
@@ -349,6 +389,10 @@ struct Token {
 };
 
 
+//*****************************************************************************
+//**                               TABLE ENTRY                               **
+//*****************************************************************************
+
 // bit definitions for flags field
 const int Null_Flag           = 0x00000000;  // entry has no flags
 const int Error_Flag          = -1;          // error return code
@@ -369,6 +413,17 @@ const int Highest_Precedence = 127;
 	// one-byte signed value (in case the precedence member is changed to an
 	// char); all precedences in the table must be below this value
 
+const int Max_Operands = 3;
+	// 2010-04-24: this value contains the maximum number of operands
+	// (arguments) for any operator or internal function (there are currently
+	// no internal function with more than 3 arguments)
+
+const int Max_Assoc_Codes = 2;
+	// 2010-04-24: this value contains the maximum number of associated codes,
+	// codes in additional to the main code for different possible data types
+	// for the code (no code currently has more the 3 total codes)
+
+	
 struct TableEntry {
 	Code code;					// enumeration code of entry
 	TokenType type;				// type of token for entry
@@ -382,7 +437,12 @@ struct TableEntry {
 	// 2010-03-20: added precedence
 	int precedence;				// precedence of code
 	// 2010-04-04: added number of arguments
-	int nargs;					// number of arguments for internal functions
+	// 2010-04-24: renamed nargs to number of operands
+	int noperands;				// number of operands (operators/int. functions)
+	// 2010-04-24: added operand data type array
+	DataType operand_datatype[Max_Operands];	// data type of each operand
+	// 2010-04-24: added associated codes array
+	Code assoc_code[Max_Assoc_Codes];	// associated codes (Null_Code if none)
 };
 
 
@@ -462,6 +522,10 @@ struct TableError {
 };
 
 
+//*****************************************************************************
+//**                                  TABLE                                  **
+//*****************************************************************************
+
 class Table {
 	TableEntry *entry;				// pointer to table entries
 	int *index_code;				// returns index from code
@@ -527,9 +591,19 @@ public:
 		return entry[index].precedence;
 	}
 	// 2010-04-04: added new access function for nargs
-	int nargs(int index)
+	// 2010-04-23: renamed from nargs
+	int noperands(int index)
 	{
-		return entry[index].nargs;
+		return entry[index].noperands;
+	}
+	// 2010-04-23: added two new access functions
+	int operand_datatype(int index, int operand)
+	{
+		return entry[index].operand_datatype[operand];
+	}
+	Code assoc_code(int index, int number)
+	{
+		return entry[index].assoc_code[number];
 	}
 	// 2010-04-02: added new precedence of token function
 	int precedence(Token *token)
@@ -556,6 +630,10 @@ public:
 	}
 };
 
+
+//*****************************************************************************
+//**                                 PARSER                                  **
+//*****************************************************************************
 
 struct CmdArgs {
 	int begin;				// begin line number (Line, Range)
@@ -597,6 +675,10 @@ public:
 	Token *get_token();
 };
 
+
+//*****************************************************************************
+//**                               TRANSLATOR                                **
+//*****************************************************************************
 
 // 2010-03-18: added Translator class
 // 2010-03-20: renamed members
@@ -645,9 +727,12 @@ public:
 		Error_ExpAssignListReference,	// 2010-04-16: added
 		Error_UnexpParenInCmd,			// 2010-04-16: added
 		Error_UnexpParenInComma,		// 2010-04-16: added
+		Error_ExpectedDouble,			// 2010-04-25: added
+		Error_ExpectedInteger,			// 2010-04-25: added
+		Error_ExpectedString,			// 2010-04-25: added
 		// the following statuses used during development
 		BUG_NotYetImplemented,			// somethings is not implemented
-		BUG_StackEmpty,					// diagnostic message
+		BUG_HoldStackEmpty,				// diagnostic message
 		BUG_StackNotEmpty,				// diagnostic message
 		BUG_StackNotEmpty2,				// diagnostic message
 		BUG_StackEmpty1,				// diagnostic error
@@ -657,6 +742,7 @@ public:
 		BUG_StackEmpty5,				// diagnostic error (2010-04-02)
 		BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
 		BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
+		BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
 		sizeof_status
 	};
 
@@ -682,6 +768,24 @@ public:
 private:
 	// 2010-04-13: made argument a reference so different value can be returned
 	Status add_operator(Token *&token);
+	enum Match {
+		No_Match,
+		Yes_Match,
+		Cvt_Match,
+		sizeof_Match
+	};
+	// 2010-04-25: add two functions for data type handling
+	void set_default_datatype(Token *token)
+	{
+		if (token->datatype == None_DataType)
+		{
+			// TODO for now just set default to double
+			token->datatype = Double_DataType;
+		}
+	}
+	Status find_code(Token *&token);
+	Match match_code(Code *cvt_code, List<Token *>::Element **operand,
+		Code code);
 	void do_pending_paren(int index);  // 2010-03-26: added for parentheses
 };
 
