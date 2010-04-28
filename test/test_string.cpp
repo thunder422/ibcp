@@ -22,11 +22,13 @@
 //
 //  2010-01-15  initial release
 //
+//  2010-04-20  fixed include so that program will compile in test directory
+//
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "string.h"
+#include "../string.h"
 
 void print_gpl_header(void)
 {
