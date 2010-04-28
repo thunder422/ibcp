@@ -22,6 +22,12 @@
 //
 //  2010-04-02  initial release
 //
+//  2010-04-23  changed pop() to return a reference
+//              added push() with no argument to push new item on stack
+//                and return a reference to the new item
+//              modified push(T value) to call push(void), which now
+//                contains the stack check and expansion code
+//
 
 #ifndef STACK_H
 #define STACK_H
@@ -85,12 +91,23 @@ public:
 		return index == -1;
 	}
 
+	// function to push new item on top of stack
+	// - reference to new item is returned
+	// 2010-04-23: new function added
+	T &push(void);
+
 	// function to push a value on the top of a stack
-	void push(T value);
+	// 2010-04-23: modified to call new push(void)
+	void push(T value)
+	{
+		// set value of new item on stack
+		push() = value;
+	}
 
 	// function to pop a constant generic value from top of a stack
 	// - stack must not be empty - no protection is provided, use empty()
-	T pop(void)
+	// 2010-04-23: changed to return a reference
+	T &pop(void)
 	{
 		return stack[index--];
 	}
@@ -104,12 +121,12 @@ public:
 };
 
 
-// This function appends a value passed as a pointer to the end of the
-// list.  A new element is allocated and is linked in after the element
-// argument in the list.  A pointer to the new element is returned.
+// This function makes room on top of the stack for a new item.
+// If the array is not large enough, the size of the array is increased.
 
+// 2010-04-23: changed function for no arugment and return reference
 template <class T, int initial_size, int increase_size>
-void SimpleStack<T, initial_size, increase_size>::push(T value)
+T &SimpleStack<T, initial_size, increase_size>::push(void)
 {
 	if (++index >= size)
 	{
@@ -128,8 +145,8 @@ void SimpleStack<T, initial_size, increase_size>::push(T value)
 		stack = newstack;
 		size = newsize;
 	}
-	// add value to stack array
-	stack[index] = value;
+	// 2010-04-23: just return reference to new value (top of stack)
+	return stack[index];
 }
 
 
