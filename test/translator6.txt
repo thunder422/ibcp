@@ -1,0 +1,103 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: Z = not A < 5.0 = B > 2.0
+Output: Z<ref> A 5 < B 2 > =% NOT Assign 
+
+Input: Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2
+Output: Z%<ref> A% 5 <% NOT B% 2 >% AND C% 1 <% D% 2 <>% AND OR Assign 
+
+Input: Z$=STR$(VAL("1.23"))
+Output: Z$<ref> "1.23" VAL( STR$( Assign 
+
+Input: Z$=MID$(A$+B$,(C%+5)*D%,4)+" Test"
+Output: Z$<ref> A$ B$ +$ C% 5 +% D% *% 4 MID3$( " Test" +$ Assign 
+
+Input: Z$ = (a$ = "this" + "test")
+Output: Z$<ref> a$ "this" "test" +$ =$ ) Assign 
+
+Input: Z = A% + B
+Output: Z<ref> A% CvtDbl B + Assign 
+
+Input: Z = A + B%
+Output: Z<ref> A B% CvtDbl + Assign 
+
+Input: Z% = A% + B%
+Output: Z%<ref> A% B% +% Assign 
+
+Input: Z = A% + B% + C
+Output: Z<ref> A% B% +% CvtDbl C + Assign 
+
+Input: Z = A% - B
+Output: Z<ref> A% CvtDbl B - Assign 
+
+Input: Z = A - B%
+Output: Z<ref> A B% CvtDbl - Assign 
+
+Input: Z% = A% - B%
+Output: Z%<ref> A% B% -% Assign 
+
+Input: Z = A% - B% * C
+Output: Z<ref> A% CvtDbl B% CvtDbl C * - Assign 
+
+Input: Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D)
+Output: Z<ref> A% ABS%( B% SGN%( +% CvtDbl C ABS( D SGN( * + Assign 
+
+Input: Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)
+Output: Z<ref> A% Neg% ABS%( B% Neg% SGN%( +% CvtDbl C Neg ABS( D Neg SGN( * + Assign 
+
+Input: Z$ = STR$(A) + STR$(A%)
+Output: Z$<ref> A STR$( A% STR%$( +$ Assign 
+
+Input: Z = A% + B * C ^ D
+Output: Z<ref> A% CvtDbl B C D ^ * + Assign 
+
+Input: Z = A$ + B
+                ^-- expected string
+
+
+Input: Z = A$ + B%
+                ^^-- expected string
+
+
+Input: Z = A + B$
+               ^^-- expected double
+
+
+Input: Z = A% + B$
+                ^^-- expected integer
+
+
+Input: Z$ = A$ - B$
+            ^^-- expected double
+
+
+Input: Z$ = MID$(A$,B$,1)
+                    ^^-- expected integer
+
+
+Input: Z$ = MID$(A$,2,C$)
+                      ^^-- expected integer
+
+
+Input: Z$ = MID$(A,2,3)
+                 ^-- expected string
+
+
+Input: Z$ = MID$(A$,2,3) + B
+                           ^-- expected string
+
+
+Input: Z = B + MID$(A$,2,3)
+               ^^^^^-- expected double
+
+
+Input: Z = A + (B$ + C$)
+                   ^-- expected double
+
+
