@@ -25,21 +25,31 @@
 #  2010-04-04  added comment header with GPL, change history and usage
 #              modified script to handle digits in code names
 # 
+#  2010-04-28  added code to allow for multiple codes on a line
+#              allow for Invalid_Code = -1
+#              added -d to sort command to ignore "_" in codes names
+#
 #  Usage:
 #    awk -f codes.awk <ibcp.h >codes.txt
 
-BEGIN { n = 0 }
+# 2010-04-28: allow for Invalid_Code=-1
+BEGIN { n = -1 }
 
 $1 ~ /_Code/ {
-	# 2010-04-03: allow digits in the name of the code
-	match($1,"[A-Za-z0-9]*_Code")
-	c[n] = substr($1,RSTART,RLENGTH)
-	printf "%d: %s\n",i n, c[n]
-	n++
+	# 2010-04-28: allow for multiple codes on line
+	for (i = 1; i <= NR; i++) {
+		# 2010-04-03: allow digits in the name of the code
+		if (match($i,"[A-Za-z0-9]*_Code") > 0) {
+			c[n] = substr($i,RSTART,RLENGTH)
+			printf "%d: %s\n", n, c[n]
+			n++
+		}
+	}
 }
 
 END {
 	print ""
 	for (i = 0; i < n; i++)
-		printf "%s = %d\n", c[i], i | "sort"
+		# 2010-04-28: added -d to ignore "_" in codes names
+		printf "%s = %d\n", c[i], i | "sort -d"
 }
