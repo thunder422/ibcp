@@ -90,6 +90,12 @@
 //              added assignment statement test inputs
 //  2010-04-17  added another unexpected comma error
 //
+//  2010-04-25  added errors for data type handling
+//              return get_str() to get_ptr()
+//              added new data handling errors
+//  2010-04-27  corrected previous translation test inputs
+//              added data type handling test inputs
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -277,8 +283,8 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"var_A * Var_A + Var_B * Var_B",
 		"not A < 5 = B > 2",
 		"not A < 5 and B > 2 or C < 1 and D <> 2",
-		"A * B / c \\ D MOD E",
-		"A mod B \\ c / D * E",
+		"A * B / C \\ D MOD E",  // 2010-01-27: rename c to C
+		"A mod B \\ C / D * E",  // 2010-01-27: rename c to C
 		"A * B ^ 2",
 		"a$ = \"this\" + \"test\"",
 		NULL
@@ -336,7 +342,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"SQR(G)+ATN(H)+COS(I)+SIN(J)+TAN(K)+EXP(L)+LOG(M)",
 		"ASC(A$)+ASC(B$,C)+INSTR(A$,B$)+INSTR(A$,B$,C)+LEN(D$)",
 		"LEFT$(D$,E)+RIGHT$(F$,G)+REPEAT$(H$,5)+SPACE$(15)",
-		"A=VAL(STR$(\"1.23\"))",
+		"A=VAL(STR$(1.23))",  // 2010-01-27: corrected expression
 		"MID$(A$)",
 		"MID$(A$,1,2,3)",
 		"INSTR(A$)",
@@ -375,9 +381,41 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A+B",
 		NULL
 	};
+	const char *testinput6[] = {  // data type tests (2010-04-28)
+		"Z = not A < 5.0 = B > 2.0",
+		"Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2",
+		"Z$=STR$(VAL(\"1.23\"))",
+		"Z$=MID$(A$+B$,(C%+5)*D%,4)+\" Test\"",
+		"Z$ = (a$ = \"this\" + \"test\")",
+		"Z = A% + B",
+		"Z = A + B%",
+		"Z% = A% + B%",
+		"Z = A% + B% + C",
+		"Z = A% - B",
+		"Z = A - B%",
+		"Z% = A% - B%",
+		"Z = A% - B% * C",
+		"Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D)",
+		"Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)",
+		"Z$ = STR$(A) + STR$(A%)",
+		"Z = A% + B * C ^ D",
+		// begin of error tests
+		"Z = A$ + B",
+		"Z = A$ + B%",
+		"Z = A + B$",
+		"Z = A% + B$",
+		"Z$ = A$ - B$",
+		"Z$ = MID$(A$,B$,1)",
+		"Z$ = MID$(A$,2,C$)",
+		"Z$ = MID$(A,2,3)",
+		"Z$ = MID$(A$,2,3) + B",
+		"Z = B + MID$(A$,2,3)",
+		"Z = A + (B$ + C$)",
+		NULL
+	};
 
 	const char **test[] = {
-		testinput1, testinput2, testinput3, testinput4, testinput5
+		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -441,7 +479,7 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		// 2010-03-18: need to check for a parser error
 		if (token->type == Error_TokenType)
 		{
-			print_error(token, token->string->get_str());
+			print_error(token, token->string->get_ptr());
 			delete token;
 			translator.clean_up();
 			printf("\n");
@@ -524,12 +562,22 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		case Translator::Error_UnexpParenInComma:
 			error = "unexpected parentheses in assignment list";
 			break;
+		// 2010-04-25: added errors for data type errors
+		case Translator::Error_ExpectedDouble:
+			error = "expected double";
+			break;
+		case Translator::Error_ExpectedInteger:
+			error = "expected integer";
+			break;
+		case Translator::Error_ExpectedString:
+			error = "expected string";
+			break;
 
 		// diagnostic errors
 		case Translator::BUG_NotYetImplemented:
 			error = "BUG: not yet implemented";
 			break;
-		case Translator::BUG_StackEmpty:
+		case Translator::BUG_HoldStackEmpty:
 			error = "BUG: hold stack empty, expected Null";
 			break;
 		case Translator::BUG_StackNotEmpty:
@@ -560,6 +608,9 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			break;
 		case Translator::BUG_UnexpectedToken:
 			error = "BUG: expected token on stack for array/function";
+			break;
+		case Translator::BUG_DoneStackEmpty:
+			error = "BUG: expected operand on done stack";
 			break;
 		default:
 			error = "UNEXPECTED ERROR";
@@ -634,7 +685,7 @@ bool print_token(Token *token, Table *table)
 	if (token->type == Error_TokenType)
 	{
 		// 2010-03-20: moved code to print_error()
-		print_error(token, token->string->get_str());
+		print_error(token, token->string->get_ptr());
 		return false;
 	}
 	// 2010-03-13: test new Token static functions
@@ -662,7 +713,7 @@ bool print_token(Token *token, Table *table)
 		else if (token->datatype == String_DataType)
 		{
 			printf(" String Arg: |%.*s|", token->string->get_len(),
-				token->string->get_str());
+				token->string->get_ptr());
 		}
 		else
 		{
@@ -679,7 +730,7 @@ bool print_token(Token *token, Table *table)
 	case Paren_TokenType:
 		printf(" %-7s", datatype_name[token->datatype]);
 		printf(" |%.*s|", token->string->get_len(),
-			token->string->get_str());
+			token->string->get_ptr());
 		break;
 	case Constant_TokenType:
 		printf(" %-7s", datatype_name[token->datatype]);
@@ -687,15 +738,15 @@ bool print_token(Token *token, Table *table)
 		{
 		case Integer_DataType:
 			printf(" %d |%.*s|", token->int_value,
-				token->string->get_len(), token->string->get_str());
+				token->string->get_len(), token->string->get_ptr());
 			break;
 		case Double_DataType:
 			printf(" %g |%.*s|", token->dbl_value,
-				token->string->get_len(), token->string->get_str());
+				token->string->get_len(), token->string->get_ptr());
 			break;
 		case String_DataType:
 			printf(" |%.*s|", token->string->get_len(),
-				token->string->get_str());
+				token->string->get_ptr());
 			break;
 		}
 		break;
@@ -710,7 +761,7 @@ bool print_token(Token *token, Table *table)
 			|| table->code(token->index) == RemOp_Code)
 		{
 			printf(" |%.*s|", token->string->get_len(),
-				token->string->get_str());
+				token->string->get_ptr());
 		}
 		break;
 	default:
@@ -741,7 +792,7 @@ bool print_small_token(Token *token, Table *table)
 		else if (token->datatype == String_DataType)
 		{
 			printf("\"%.*s\"", token->string->get_len(),
-				token->string->get_str());
+				token->string->get_ptr());
 		}
 		else
 		{
@@ -754,7 +805,7 @@ bool print_small_token(Token *token, Table *table)
 	case DefFuncP_TokenType:
 	case NoParen_TokenType:
 	case Paren_TokenType:
-		printf("%.*s", token->string->get_len(), token->string->get_str());
+		printf("%.*s", token->string->get_len(), token->string->get_ptr());
 		break;
 	case Constant_TokenType:
 		switch (token->datatype)
@@ -767,7 +818,7 @@ bool print_small_token(Token *token, Table *table)
 			break;
 		case String_DataType:
 			printf("\"%.*s\"", token->string->get_len(),
-				token->string->get_str());
+				token->string->get_ptr());
 			break;
 		}
 		break;
@@ -775,7 +826,7 @@ bool print_small_token(Token *token, Table *table)
 		if (table->code(token->index) == RemOp_Code)
 		{
 			printf("%s|%.*s|", table->name(token->index),
-				token->string->get_len(), token->string->get_str());
+				token->string->get_len(), token->string->get_ptr());
 		}
 		else
 		{
@@ -793,7 +844,7 @@ bool print_small_token(Token *token, Table *table)
 		if (table->code(token->index) == Rem_Code)
 		{
 			printf("%s|%.*s|", table->name(token->index),
-				token->string->get_len(), token->string->get_str());
+				token->string->get_len(), token->string->get_ptr());
 		}
 		else
 		{
