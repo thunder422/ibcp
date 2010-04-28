@@ -27,6 +27,8 @@
 //  2010-02-01  changed delete to delete[] because new[] used
 //  2010-02-09  allow string to hold generic data
 //
+//  2010-04-25  renamed all str to ptr (str is redundant with 'String')
+//
 
 #include <ctype.h>
 #include "string.h"
@@ -46,12 +48,12 @@ String::String(String &s)
 	len = s.len;
 	if (len <= 0)  // < 0 prevents copy of special const char * holders
 	{
-		str = NULL;
+		ptr = NULL;
 	}
 	else
 	{
-		str = new char[len];
-		memcpy(str, s.str, len);
+		ptr = new char[len];
+		memcpy(ptr, s.ptr, len);
 	}
 }
 
@@ -67,12 +69,12 @@ String::String(const char *s, const char *p)
 	// 2010-01-17: only allocate if length is non-zero
 	if (len <= 0)
 	{
-		str = NULL;
+		ptr = NULL;
 	}
 	else
 	{
-		str = new char[len];
-		strncpy(str, s, len);
+		ptr = new char[len];
+		strncpy(ptr, s, len);
 	}
 }
 
@@ -85,12 +87,12 @@ String::String(const char *s, int l)
 	// 2010-01-17: only allocate if length is non-zero
 	if (len <= 0)
 	{
-		str = NULL;
+		ptr = NULL;
 	}
 	else
 	{
-		str = new char[len];
-		strncpy(str, s, l);
+		ptr = new char[len];
+		strncpy(ptr, s, l);
 	}
 }
 
@@ -103,12 +105,12 @@ String::String(void *s, int l)
 	// 2010-01-17: only allocate if length is non-zero
 	if (len <= 0)
 	{
-		str = NULL;
+		ptr = NULL;
 	}
 	else
 	{
-		str = new char[len];
-		memcpy(str, s, l);
+		ptr = new char[len];
+		memcpy(ptr, s, l);
 	}
 }
 
@@ -124,11 +126,11 @@ String::String(int l)
 	// 2010-01-17: only allocate if length is non-zero
 	if (len <= 0)
 	{
-		str = NULL;
+		ptr = NULL;
 	}
 	else
 	{
-		str = new char[len];
+		ptr = new char[len];
 	}
 }
 
@@ -150,7 +152,7 @@ bool String::equalcase(String *s)
 	}
 	for (int i = 0; i < len; i++)
 	{
-		if (toupper(str[i]) != toupper(s->str[i]))
+		if (toupper(ptr[i]) != toupper(s->ptr[i]))
 		{
 			return false;
 		}
@@ -168,7 +170,7 @@ bool String::equalcase(const char *s)
 	int i;
 	for (i = 0; i < len && *s; i++, s++)
 	{
-		if (toupper(str[i]) != toupper(*s))
+		if (toupper(ptr[i]) != toupper(*s))
 		{
 			return false;
 		}
@@ -189,8 +191,8 @@ int String::equal(String *s)
 	{
 		return 0;
 	}
-	char *s1 = str;
-	char *s2 = s->str;
+	char *s1 = ptr;
+	char *s2 = s->ptr;
 	for (int i = 0; i < len; i++)
 	{
 		if (*s1++ != *s2++)
@@ -210,11 +212,11 @@ int String::compare(String *s)
 {
 	for (int i = 0; i < len && i < s->len; i++)
 	{
-		if (str[i] < s->str[i])
+		if (ptr[i] < s->ptr[i])
 		{
 			return -1;
 		}
-		if (str[i] > s->str[i])
+		if (ptr[i] > s->ptr[i])
 		{
 			return 1;
 		}
@@ -249,7 +251,7 @@ bool String::set(int pos, char c)
 {
 	if (pos >= 0 && pos < len)
 	{
-		str[pos] = c;
+		ptr[pos] = c;
 		return true;
 	}
 	else
@@ -275,7 +277,7 @@ String *String::getref(int start, int count)
 		{
 			count = len - start + 1;
 		}
-		result->str = str + start - 1;
+		result->ptr = ptr + start - 1;
 		result->len = count;
 	}
 	return result;
@@ -292,7 +294,7 @@ void String::setref(String *s)
 	int l = s->len < len ? s->len : len;
 	if (l > 0)
 	{
-		memcpy(str, s->str, l);
+		memcpy(ptr, s->ptr, l);
 	}
 }
 
@@ -312,17 +314,17 @@ void String::copy(String *s)
 {
 	if (len > 0)  // only delete allocated strings
 	{
-		delete[] str;
+		delete[] ptr;
 	}
 	len = s->len;
 	if (len <= 0)  // < 0 prevents copy of special const char * holders
 	{
-		str = NULL;
+		ptr = NULL;
 	}
 	else
 	{
-		str = new char[len];
-		memcpy(str, s->str, len);
+		ptr = new char[len];
+		memcpy(ptr, s->ptr, len);
 	}
 }
 
@@ -339,10 +341,10 @@ void String::move(String *s)
 {
 	if (len > 0)  // only delete allocated strings
 	{
-		delete[] str;
+		delete[] ptr;
 	}
 	len = s->len;
-	str = s->str;
+	ptr = s->ptr;
 	s->reset();
 }
 
@@ -356,10 +358,10 @@ void String::move(String *s)
 void String::cat(String *s)
 {
 	char *p = new char[len + s->len];
-	memcpy(p, str, len);
-	memcpy(p + len, s->str, s->len);
-	delete[] str;
-	str = p;
+	memcpy(p, ptr, len);
+	memcpy(p + len, s->ptr, s->len);
+	delete[] ptr;
+	ptr = p;
 	len += s->len;
 }
 
@@ -372,8 +374,8 @@ void String::cat(String *s)
 String *String_cat(String *s1, String *s2)
 {
 	String *result = new String(s1->len + s2->len);
-	memcpy(result->str, s1->str, s1->len);
-	memcpy(result->str + s1->len, s2->str, s2->len);
+	memcpy(result->ptr, s1->ptr, s1->len);
+	memcpy(result->ptr + s1->len, s2->ptr, s2->len);
 	return result;
 }
 

@@ -25,6 +25,8 @@
 //  2010-02-01  changed delete to delete[] because new[] used
 //  2010-02-09  allow string to hold generic data
 //
+//  2010-04-25  renamed all str to ptr (str is redundant with 'String')
+//
 
 #ifndef STRING_H
 #define STRING_H
@@ -34,21 +36,21 @@
 
 // This class give BASIC string like functionality to C++.
 //
-//    - empty strings, i.e. "", are defined with len = 0 and str = NULL
+//    - empty strings, i.e. "", are defined with len = 0 and ptr = NULL
 //    - special strings for holding const char * are defined with len = -1;
 //      these are not copied or deallocated (since they were not allocated)
 //      they must not be used with the various functions
-//      only valid functions are ~String() and get_str()
+//      only valid functions are ~String() and get_ptr()
 
 class String {
 	int len;			// length of string
-	char *str;			// pointer to string
+	char *ptr;			// pointer to string
 
 public:
 	String(void)
 	{
 		len = 0;
-		str = NULL;
+		ptr = NULL;
 	}
 	String(String &s);
 	String(const char *s, const char *p);
@@ -58,22 +60,22 @@ public:
 	String(const char *s)  // special holder for C const char * strings
 	{
 		len = -1;
-		str = (char *)s;
+		ptr = (char *)s;
 	}
 	~String()
 	{
 		if (len > 0)  // only delete allocated strings
 		{
-			delete[] str;
+			delete[] ptr;
 		}
 	}
-	char *get_str(void)
+	char *get_ptr(void)
 	{
-		return str;
+		return ptr;
 	}
 	void *get_data(void)  // return generic data pointer
 	{
-		return (void *)str;
+		return (void *)ptr;
 	}
 	int get_len(void)
 	{
@@ -91,7 +93,7 @@ public:
 	void reset(void)  // reset string with no deallocation
 	{
 		len = 0;
-		str = NULL;
+		ptr = NULL;
 	}
 
 	void copy(String *s);
