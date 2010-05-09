@@ -1,0 +1,114 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: A% = B% + 5
+Output: A%<ref> B% 5 +% Assign% 
+
+Input: A% = B + 5
+Output: A%<ref> B 5 CvtDbl + CvtInt Assign% 
+
+Input: A% = B + 5.0
+Output: A%<ref> B 5 + CvtInt Assign% 
+
+Input: A = B = C = 1.0
+Output: A<ref> B<ref> C<ref> 1 AssignList 
+
+Input: A, B, C = 1.0
+Output: A<ref> B<ref> C<ref> 1 AssignList 
+
+Input: A, B, C = 1
+Output: A<ref> B<ref> C<ref> 1 CvtDbl AssignList 
+
+Input: A%,B% = C% + D%
+Output: A%<ref> B%<ref> C% D% +% AssignList% 
+
+Input: A% = B% = C% + D%
+Output: A%<ref> B%<ref> C% D% +% AssignList% 
+
+Input: A$,B$,C$ = "Test"
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$ 
+
+Input: A$ = B$ = C$ = "Test"
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$ 
+
+Input: Z, Y = A$ + B%
+                   ^^-- expected string
+
+
+Input: Z, Y = A$ + B$
+                 ^-- expected double
+
+
+Input: A,B%,C = 1.0
+         ^^-- expected double
+
+
+Input: A,B,C% = 1.0
+           ^^-- expected double
+
+
+Input: A%,B,C = 1.0
+          ^-- expected integer
+
+
+Input: A,"T",B = 1
+         ^-- list item cannot be assigned
+
+
+Input: A = "T" = B = 1
+           ^-- list item cannot be assigned
+
+
+Input: A,B,C = STR$(1)
+               ^^^^^-- expected double
+
+
+Input: A,B,C$ = STR$(1)
+           ^^-- expected double
+
+
+Input: A,B,C$ = 1
+           ^^-- expected double
+
+
+Input: A,B$,C = 1
+         ^^-- expected double
+
+
+Input: A,B,1 = 1
+           ^-- list item cannot be assigned
+
+
+Input: A,B%,1 = 1
+         ^^-- expected double
+
+
+Input: 1,A,B% = 1
+       ^-- list item cannot be assigned
+
+
+Input: A%,B,C% = 1
+          ^-- expected integer
+
+
+Input: A%,B$,C% = 1
+          ^^-- expected integer
+
+
+Input: A$,B$,C% = 1
+             ^^-- expected string
+
+
+Input: A$,B$,C$ = 1
+                  ^-- expected string
+
+
+Input: Z = A$ + B * C
+                  ^-- expected string
+
+
