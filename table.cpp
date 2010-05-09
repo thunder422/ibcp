@@ -67,11 +67,116 @@
 //              moved the Null_Code to the end of the table
 //              added entries for FRAC, CDBL, CvtDbl and CvtDbl
 //
+//  2010-05-03  began to add support for initialization of expression
+//                information structures for the table entries
+//  2010-05-04  updated table entries for the expression information structures
+//  2010-05-05  modified the assignment operator entries for data type handling
+//              added entries for associated assignment operators
+//              added Operands and AssocCode macros
+//  2010-05-08  added expression information structures for unary operators 
+//
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "ibcp.h"
+
+
+#define ArraySize(array)  (sizeof(array) / sizeof(array[0]))
+
+
+// 2010-05-03: expression information for codes
+
+// 2010-05-05: this macro produces two entries for the ExprInfo constructor,
+//             one for the number of operands, one for the pointer to the
+//             operand data type array
+
+#define Operands(type)  (sizeof(type ## _OperandArray) \
+	/ sizeof(type ## _OperandArray[0])), type ## _OperandArray
+
+#define AssocCode(code)  (sizeof(code ## _AssocCode) \
+	/ sizeof(code ## _AssocCode[0])), code ## _AssocCode
+
+
+// 2010-05-05: operand data type arrays
+DataType Dbl_OperandArray[] = {
+	Double_DataType
+};
+DataType DblDbl_OperandArray[] = {
+	Double_DataType, Double_DataType
+};
+DataType DblInt_OperandArray[] = {
+	Double_DataType, Integer_DataType
+};
+DataType Int_OperandArray[] = {
+	Integer_DataType
+};
+DataType IntInt_OperandArray[] = {
+	Integer_DataType, Integer_DataType
+};
+DataType Str_OperandArray[] = {
+	String_DataType
+};
+DataType StrInt_OperandArray[] = {
+	String_DataType, Integer_DataType
+};
+DataType StrIntInt_OperandArray[] = {
+	String_DataType, Integer_DataType, Integer_DataType
+};
+DataType StrStr_OperandArray[] = {
+	String_DataType, String_DataType
+};
+DataType StrStrInt_OperandArray[] = {
+	String_DataType, String_DataType, Integer_DataType
+};
+
+
+// 2010-05-06: associated code data type arrays
+Code Abs_AssocCode[]        = {AbsInt_Code};
+Code Add_AssocCode[]        = {AddInt_Code, CatStr_Code};
+Code Assign_AssocCode[]     = {AssignInt_Code, AssignStr_Code};
+Code AssignList_AssocCode[] = {AssignListInt_Code, AssignListStr_Code};
+Code Div_AssocCode[]        = {DivInt_Code};
+Code Eq_AssocCode[]         = {EqInt_Code, EqStr_Code};
+Code Gt_AssocCode[]         = {GtInt_Code, GtStr_Code};
+Code GtEq_AssocCode[]       = {GtEqInt_Code, GtEqStr_Code};
+Code Lt_AssocCode[]         = {LtInt_Code, LtStr_Code};
+Code LtEq_AssocCode[]       = {LtEqInt_Code, LtEqStr_Code};
+Code Mod_AssocCode[]        = {ModInt_Code};
+Code Mul_AssocCode[]        = {MulInt_Code};
+Code Neg_AssocCode[]        = {NegInt_Code};
+Code NotEq_AssocCode[]      = {NotEqInt_Code, NotEqStr_Code};
+Code Power_AssocCode[]      = {PowerMul_Code, PowerInt_Code};
+Code RndArgs_AssocCode[]    = {RndArgInt_Code};
+Code Sgn_AssocCode[]        = {SgnInt_Code};
+Code Str_AssocCode[]        = {StrInt_Code};
+Code Sub_AssocCode[]        = {SubInt_Code};
+
+
+// 2010-05-06: standand expression information structures
+ExprInfo Dbl_Dbl_ExprInfo(Double_DataType, Null_Code, Operands(Dbl));
+ExprInfo Dbl_DblInt_ExprInfo(Double_DataType, Null_Code, Operands(DblInt));
+ExprInfo Dbl_Int_ExprInfo(Double_DataType, Null_Code, Operands(Int));
+ExprInfo Dbl_Str_ExprInfo(Double_DataType, Null_Code, Operands(Str));
+
+ExprInfo Int_Dbl_ExprInfo(Integer_DataType, Null_Code, Operands(Dbl));
+ExprInfo Int_DblDbl_ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl));
+ExprInfo Int_Int_ExprInfo(Integer_DataType, Null_Code, Operands(Int));
+ExprInfo Int_IntInt_ExprInfo(Integer_DataType, Null_Code, Operands(IntInt));
+ExprInfo Int_Str_ExprInfo(Integer_DataType, Null_Code, Operands(Str));
+ExprInfo Int_StrInt_ExprInfo(Integer_DataType, Null_Code, Operands(StrInt));
+ExprInfo Int_StrStr_ExprInfo(Integer_DataType, Null_Code, Operands(StrStr));
+ExprInfo Int_StrStrInt_ExprInfo(Integer_DataType, Null_Code,
+	Operands(StrStrInt));
+
+ExprInfo Str_Dbl_ExprInfo(String_DataType, Null_Code, Operands(Dbl));
+ExprInfo Str_Int_ExprInfo(String_DataType, Null_Code, Operands(Int));
+ExprInfo Str_StrInt_ExprInfo(String_DataType, Null_Code, Operands(StrInt));
+ExprInfo Str_StrIntInt_ExprInfo(String_DataType, Null_Code,
+	Operands(StrIntInt));
+ExprInfo Str_StrStr_ExprInfo(String_DataType, Null_Code, Operands(StrStr));
+
+ExprInfo None_Int_ExprInfo(None_DataType, Null_Code, Operands(Int));
 
 
 static TableEntry table_entries[] = {
@@ -80,47 +185,47 @@ static TableEntry table_entries[] = {
 	//******************************
 	// (these will go away once gui interface is implemented)
 	{
-		List_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		List_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"L", NULL, Blank_Flag | Line_Flag | Range_Flag
 	},
 	{
-		Edit_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Edit_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"E", NULL, Blank_Flag | Line_Flag
 	},
 	{
-		Delete_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Delete_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"D", NULL, Line_Flag | Range_Flag
 	},
 	{
-		Run_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Run_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"R", NULL, Blank_Flag
 	},
 	{
-		Renum_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Renum_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"R", NULL, Range_Flag | RangeIncr_Flag
 	},
 	{
-		Save_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Save_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"S", NULL, Blank_Flag | String_Flag
 	},
 	{
-		Load_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Load_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"L", NULL, String_Flag
 	},
 	{
-		New_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		New_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"N", NULL, Blank_Flag
 	},
 	{
-		Auto_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Auto_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"A", NULL, Blank_Flag | Line_Flag | LineIncr_Flag
 	},
 	{
-		Cont_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Cont_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"C", NULL, Blank_Flag
 	},
 	{
-		Quit_Code, ImmCmd_TokenType, None_DataType, OneWord_Multiple,
+		Quit_Code, ImmCmd_TokenType, OneWord_Multiple,
 		"Q", NULL, Blank_Flag
 	},
 	// end of immediate commands marked by NULL name (next entry)
@@ -134,141 +239,140 @@ static TableEntry table_entries[] = {
 	//   Commands
 	//--------------
 	{
-		Let_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Let_Code, Command_TokenType, OneWord_Multiple,
 		"LET", NULL
 	},
 	{
-		Print_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Print_Code, Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL
 	},
 	{
-		Input_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Input_Code, Command_TokenType, OneWord_Multiple,
 		"INPUT", NULL
 	},
 	{
-		Dim_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Dim_Code, Command_TokenType, OneWord_Multiple,
 		"DIM", NULL
 	},
 	{
-		Def_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Def_Code, Command_TokenType, OneWord_Multiple,
 		"DEF", NULL
 	},
 	{
-		Rem_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Rem_Code, Command_TokenType, OneWord_Multiple,
 		"REM", NULL
 	},
 	{
-		If_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		If_Code, Command_TokenType, OneWord_Multiple,
 		"IF", NULL
 	},
 	{
-		Then_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Then_Code, Command_TokenType, OneWord_Multiple,
 		"THEN", NULL
 	},
 	{
-		Else_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Else_Code, Command_TokenType, OneWord_Multiple,
 		"ELSE", NULL
 	},
 	{
-		End_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		End_Code, Command_TokenType, TwoWord_Multiple,
 		"END", NULL
 	},
 	{
-		EndIf_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		EndIf_Code, Command_TokenType, TwoWord_Multiple,
 		"END", "IF"
 	},
 	{
-		For_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		For_Code, Command_TokenType, OneWord_Multiple,
 		"FOR", NULL
 	},
 	{
-		To_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		To_Code, Command_TokenType, OneWord_Multiple,
 		"TO", NULL
 	},
 	{
-		Step_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Step_Code, Command_TokenType, OneWord_Multiple,
 		"STEP", NULL
 	},
 	{
-		Next_Code, Command_TokenType, None_DataType, OneWord_Multiple,
+		Next_Code, Command_TokenType, OneWord_Multiple,
 		"NEXT", NULL
 	},
 	{
-		Do_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		Do_Code, Command_TokenType, TwoWord_Multiple,
 		"Do", NULL
 	},
 	{
-		DoWhile_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		DoWhile_Code, Command_TokenType, TwoWord_Multiple,
 		"DO", "WHILE"
 	},
 	{
-		DoUntil_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		DoUntil_Code, Command_TokenType, TwoWord_Multiple,
 		"DO", "UNTIL"
 	},
 	{
-		While_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		While_Code, Command_TokenType, TwoWord_Multiple,
 		"WHILE", NULL
 	},
 	{
-		Until_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		Until_Code, Command_TokenType, TwoWord_Multiple,
 		"UNTIL", NULL
 	},
 	{
-		Loop_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		Loop_Code, Command_TokenType, TwoWord_Multiple,
 		"LOOP", NULL
 	},
 	{
-		LoopWhile_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		LoopWhile_Code, Command_TokenType, TwoWord_Multiple,
 		"LOOP", "WHILE"
 	},
 	{
-		LoopUntil_Code, Command_TokenType, None_DataType, TwoWord_Multiple,
+		LoopUntil_Code, Command_TokenType, TwoWord_Multiple,
 		"LOOP", "UNTIL"
 	},
 	//-----------------------------------------
 	//   Internal Functions (No Parentheses)
 	//-----------------------------------------
 	{
-		Rnd_Code, IntFuncN_TokenType, Double_DataType, OneWord_Multiple,
-		"RND", NULL, Null_Flag, Null_Code, 2, 0
+		Rnd_Code, IntFuncN_TokenType, OneWord_Multiple,
+		"RND", NULL, Null_Flag, 2,
+		new ExprInfo(Double_DataType, Null_Code)
+
 	},
 	//--------------------
 	//   Word Operators
 	//--------------------
 	{
-		Mod_Code, Operator_TokenType, Double_DataType, OneWord_Multiple,
-		"MOD", NULL, Null_Flag, Null_Code, 42,
-		2, {Double_DataType, Double_DataType}, {ModInt_Code}
+		Mod_Code, Operator_TokenType, OneWord_Multiple,
+		"MOD", NULL, Null_Flag, 42,
+		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Mod))
 	},
 	{
-		And_Code, Operator_TokenType, Integer_DataType, OneWord_Multiple,
-		"AND", NULL, Null_Flag, Null_Code, 18,
-		2, {Integer_DataType, Integer_DataType}
+		And_Code, Operator_TokenType, OneWord_Multiple,
+		"AND", NULL, Null_Flag, 18, &Int_IntInt_ExprInfo
 	},
 	{
-		Or_Code, Operator_TokenType, Integer_DataType, OneWord_Multiple,
-		"OR", NULL, Null_Flag, Null_Code, 14,
-		2, {Integer_DataType, Integer_DataType}
+		Or_Code, Operator_TokenType, OneWord_Multiple,
+		"OR", NULL, Null_Flag, 14, &Int_IntInt_ExprInfo
+	},
+	// 2010-05-08: Not needs its own exprinfo struct
+	{
+		Not_Code, Operator_TokenType, OneWord_Multiple,
+		"NOT", NULL, Null_Flag, 20,
+		new ExprInfo(Integer_DataType, Not_Code, Operands(Int))
 	},
 	{
-		Not_Code, Operator_TokenType, Integer_DataType, OneWord_Multiple,
-		"NOT", NULL, Null_Flag, Not_Code, 20,
-		1, {Integer_DataType}
+		Eqv_Code, Operator_TokenType, OneWord_Multiple,
+		"EQV", NULL, Null_Flag, 12, &Int_IntInt_ExprInfo
 	},
 	{
-		Eqv_Code, Operator_TokenType, Integer_DataType, OneWord_Multiple,
-		"EQV", NULL, Null_Flag, Null_Code, 12,
-		2, {Integer_DataType, Integer_DataType}
+		Imp_Code, Operator_TokenType, OneWord_Multiple,
+		"IMP", NULL, Null_Flag, 10, &Int_IntInt_ExprInfo
 	},
 	{
-		Imp_Code, Operator_TokenType, Integer_DataType, OneWord_Multiple,
-		"IMP", NULL, Null_Flag, Null_Code, 10,
-		2, {Integer_DataType, Integer_DataType}
-	},
-	{
-		Xor_Code, Operator_TokenType, Integer_DataType, OneWord_Multiple,
-		"XOR", NULL, Null_Flag, Null_Code, 16,
-		2, {Integer_DataType, Integer_DataType}
+		Xor_Code, Operator_TokenType, OneWord_Multiple,
+		"XOR", NULL, Null_Flag, 16, &Int_IntInt_ExprInfo
 	},
 	//*********************
 	//   END PLAIN WORDS
@@ -286,164 +390,139 @@ static TableEntry table_entries[] = {
 	//   INTERNAL FUNCTIONS (Parentheses)
 	//--------------------------------------
 	{
-		Abs_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"ABS(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}, {AbsInt_Code}
+		Abs_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"ABS(", NULL, Null_Flag, 2,
+		new ExprInfo(Double_DataType, Null_Code, Operands(Dbl), AssocCode(Abs))
 	},
 	{
-		Fix_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"FIX(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Fix_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"FIX(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Frac_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"FRAC(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Frac_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"FRAC(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Int_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"INT(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Int_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"INT(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 
 	},
 	{
-		RndArg_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"RND(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}, {RndArgInt_Code}
+		RndArg_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"RND(", NULL, Null_Flag, 2,
+		new ExprInfo(Double_DataType, Null_Code, Operands(Dbl),
+			AssocCode(RndArgs))
 	},
 	{
-		Sgn_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"SGN(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}, {SgnInt_Code}
+		Sgn_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"SGN(", NULL, Null_Flag, 2,
+		new ExprInfo(Double_DataType, Null_Code, Operands(Dbl),
+			AssocCode(Sgn))
 	},
 	{
-		Cint_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"CINT(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Cint_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"CINT(", NULL, Null_Flag, 2, &Int_Dbl_ExprInfo
 	},
 	{
-		Cdbl_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"CDBL(", NULL, Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		Cdbl_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"CDBL(", NULL, Null_Flag, 2, &Dbl_Int_ExprInfo
 	},
 	{
-		Sqr_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"SQR(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Sqr_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"SQR(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Atn_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"ATN(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Atn_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"ATN(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Cos_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"COS(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Cos_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"COS(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Sin_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"SIN(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Sin_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"SIN(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Tan_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"TAN(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Tan_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"TAN(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Exp_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"EXP(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Exp_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"EXP(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Log_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"LOG(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		Log_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"LOG(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
-		Tab_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
-		"TAB(", NULL, Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		Tab_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"TAB(", NULL, Null_Flag, 2, &None_Int_ExprInfo
 	},
 	{
-		Spc_Code, IntFuncP_TokenType, None_DataType, OneWord_Multiple,
-		"SPC(", NULL, Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		Spc_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"SPC(", NULL, Null_Flag, 2, &None_Int_ExprInfo
 	},
 	{
-		Asc_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"ASC(", NULL, Multiple_Flag, Null_Code, 2,
-		1, {String_DataType}
+		Asc_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"ASC(", NULL, Multiple_Flag, 2, &Int_Str_ExprInfo
 	},
 	// 2010-04-04: added entry for 2 argument ASC
 	{
-		Asc2_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"ASC(", "ASC2(", Null_Flag, Null_Code, 2,
-		2, {String_DataType, Integer_DataType}
+		Asc2_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"ASC(", "ASC2(", Null_Flag, 2, &Int_StrInt_ExprInfo
 	},
 	{
-		Chr_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"CHR$(", NULL, Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		Chr_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"CHR$(", NULL, Null_Flag, 2, &Str_Int_ExprInfo
 	},
 	// 2010-04-04: replaced INSTR entry with INSTR2 and INSTR3 entries
 	{
-		Instr2_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"INSTR(", "INSTR2(", Multiple_Flag, Null_Code, 2,
-		2, {String_DataType, String_DataType}
+		Instr2_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"INSTR(", "INSTR2(", Multiple_Flag, 2, &Int_StrStr_ExprInfo
 	},
 	{
-		Instr3_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"INSTR(", "INSTR3(", Null_Flag, Null_Code, 2,
-		3, {String_DataType, String_DataType, Integer_DataType}
+		Instr3_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"INSTR(", "INSTR3(", Null_Flag, 2, &Int_StrStrInt_ExprInfo
 	},
 	{
-		Left_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"LEFT$(", NULL, Null_Flag, Null_Code, 2,
-		2, {String_DataType, Integer_DataType}
+		Left_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"LEFT$(", NULL, Null_Flag, 2, &Str_StrInt_ExprInfo
 	},
 	{
-		Len_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"LEN(", NULL, Null_Flag, Null_Code, 2,
-		1, {String_DataType}
+		Len_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"LEN(", NULL, Null_Flag, 2, &Int_Str_ExprInfo
 	},
 	// 2010-04-04: replaced MID entry with MID2 and MID3 entries
 	{
-		Mid2_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"MID$(", "MID2$(", Multiple_Flag, Null_Code, 2,
-		2, {String_DataType, Integer_DataType}
+		Mid2_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"MID$(", "MID2$(", Multiple_Flag, 2, &Str_StrInt_ExprInfo
 	},
 	{
-		Mid3_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"MID$(", "MID3$(", Null_Flag, Null_Code, 2,
-		3, {String_DataType, Integer_DataType, Integer_DataType}
+		Mid3_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"MID$(", "MID3$(", Null_Flag, 2, &Str_StrIntInt_ExprInfo
 	},
 	{
-		Repeat_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"REPEAT$(", NULL, Null_Flag, Null_Code, 2,
-		2, {String_DataType, Integer_DataType}
+		Repeat_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"REPEAT$(", NULL, Null_Flag, 2, &Str_StrInt_ExprInfo
 	},
 	{
-		Right_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"RIGHT$(", NULL, Null_Flag, Null_Code, 2,
-		2, {String_DataType, Integer_DataType}
+		Right_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"RIGHT$(", NULL, Null_Flag, 2, &Str_StrInt_ExprInfo
 	},
 	{
-		Space_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"SPACE$(", NULL, Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		Space_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"SPACE$(", NULL, Null_Flag, 2, &Str_Int_ExprInfo
 	},
 	{
-		Str_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"STR$(", NULL, Null_Flag, Null_Code, 2,
-		1, {Double_DataType}, {StrInt_Code}
+		Str_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"STR$(", NULL, Null_Flag, 2,
+		new ExprInfo(String_DataType, Null_Code, Operands(Dbl), AssocCode(Str))
 	},
 	{
 		// 2010-04-02: changed name to all upper case
-		Val_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"VAL(", NULL, Null_Flag, Null_Code, 2,
-		1, {String_DataType}
+		Val_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"VAL(", NULL, Null_Flag, 2, &Dbl_Str_ExprInfo
 	},
 	//***************************
 	//   END PARENTHESES WORDS
@@ -475,91 +554,102 @@ static TableEntry table_entries[] = {
 	//   Symbol Operators
 	//----------------------
 	{
-		Add_Code, Operator_TokenType, Double_DataType, OneChar_Multiple,
-		"+", NULL, Null_Flag, Null_Code, 40,
-		2, {Double_DataType, Double_DataType}, {AddInt_Code, CatStr_Code}
+		Add_Code, Operator_TokenType, OneChar_Multiple,
+		"+", NULL, Null_Flag, 40,
+		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Add))
 	},
 	{
-		Sub_Code, Operator_TokenType, Double_DataType, OneChar_Multiple,
-		"-", NULL, Null_Flag, Neg_Code, 40,
-		2, {Double_DataType, Double_DataType}, {SubInt_Code}
+		Sub_Code, Operator_TokenType, OneChar_Multiple,
+		"-", NULL, Null_Flag, 40,
+		new ExprInfo(Double_DataType, Neg_Code, Operands(DblDbl),
+			AssocCode(Sub))
 	},
 	{
-		Mul_Code, Operator_TokenType, Double_DataType, OneChar_Multiple,
-		"*", NULL, Null_Flag, Null_Code, 46,
-		2, {Double_DataType, Double_DataType}, {MulInt_Code}
+		Mul_Code, Operator_TokenType, OneChar_Multiple,
+		"*", NULL, Null_Flag, 46,
+		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Mul))
 	},
 	{
-		Div_Code, Operator_TokenType, Double_DataType, OneChar_Multiple,
-		"/", NULL, Null_Flag, Null_Code, 46,
-		2, {Double_DataType, Double_DataType}, {DivInt_Code}
+		Div_Code, Operator_TokenType, OneChar_Multiple,
+		"/", NULL, Null_Flag, 46,
+		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Div))
 	},
 	{
-		IntDiv_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"\\", NULL, Null_Flag, Null_Code, 44,
-		2, {Double_DataType, Double_DataType}
+		IntDiv_Code, Operator_TokenType, OneChar_Multiple,
+		"\\", NULL, Null_Flag, 44, &Int_DblDbl_ExprInfo
 	},
 	{
-		Power_Code, Operator_TokenType, Double_DataType, OneChar_Multiple,
-		"^", NULL, Null_Flag, Null_Code, 50,
-		2, {Double_DataType, Double_DataType}, {PowerMul_Code, PowerInt_Code}
+		Power_Code, Operator_TokenType, OneChar_Multiple,
+		"^", NULL, Null_Flag, 50,
+		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Power))
 	},
 	{
-		Eq_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"=", NULL, Null_Flag, Null_Code, 30,
-		2, {Double_DataType, Double_DataType}, {EqInt_Code, EqStr_Code}
+		Eq_Code, Operator_TokenType, OneChar_Multiple,
+		"=", NULL, Null_Flag, 30,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Eq))
 	},
 	{
-		Gt_Code, Operator_TokenType, Integer_DataType, TwoChar_Multiple,
-		">", NULL, Null_Flag, Null_Code, 32,
-		2, {Double_DataType, Double_DataType}, {GtInt_Code, GtStr_Code}
+		Gt_Code, Operator_TokenType, TwoChar_Multiple,
+		">", NULL, Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Gt))
 	},
 	{
-		GtEq_Code, Operator_TokenType, Integer_DataType, TwoChar_Multiple,
-		">=", NULL, Null_Flag, Null_Code, 32,
-		2, {Double_DataType, Double_DataType}, {GtEqInt_Code, GtEqStr_Code}
+		GtEq_Code, Operator_TokenType, TwoChar_Multiple,
+		">=", NULL, Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(GtEq))
 	},
 	{
-		Lt_Code, Operator_TokenType, Integer_DataType, TwoChar_Multiple,
-		"<", NULL, Null_Flag, Null_Code, 32,
-		2, {Double_DataType, Double_DataType}, {LtInt_Code, LtStr_Code}
+		Lt_Code, Operator_TokenType, TwoChar_Multiple,
+		"<", NULL, Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Lt))
 	},
 	{
-		LtEq_Code, Operator_TokenType, Integer_DataType, TwoChar_Multiple,
-		"<=", NULL, Null_Flag, Null_Code, 32,
-		2, {Double_DataType, Double_DataType}, {LtEqInt_Code, LtEqStr_Code}
+		LtEq_Code, Operator_TokenType, TwoChar_Multiple,
+		"<=", NULL, Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(LtEq))
 	},
 	{
-		NotEq_Code, Operator_TokenType, Integer_DataType, TwoChar_Multiple,
-		"<>", NULL, Null_Flag, Null_Code, 30,
-		2, {Double_DataType, Double_DataType}, {NotEqInt_Code, NotEqStr_Code}
+		NotEq_Code, Operator_TokenType, TwoChar_Multiple,
+		"<>", NULL, Null_Flag, 30,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(NotEq))
 	},
 	{
 		// 2010-03-25: set unary code, changed precedence value
-		OpenParen_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		"(", NULL, Null_Flag, OpenParen_Code, 2, 0
+		OpenParen_Code, Operator_TokenType, OneChar_Multiple,
+		"(", NULL, Null_Flag, 2,
+		new ExprInfo(None_DataType, OpenParen_Code)
 	},
 	{
 		// 2010-03-25: changed precedence value
-		CloseParen_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		")", NULL, Null_Flag, Null_Code, 4, 0
+		CloseParen_Code, Operator_TokenType, OneChar_Multiple,
+		")", NULL, Null_Flag, 4
 	},
 	{
 		// 2010-04-02: changed precedence value
-		Comma_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		",", NULL, Null_Flag, Null_Code, 4, 0
+		Comma_Code, Operator_TokenType, OneChar_Multiple,
+		",", NULL, Null_Flag, 4
 	},
 	{
-		SemiColon_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		";", NULL, Null_Flag, Null_Code, 0, 0
+		SemiColon_Code, Operator_TokenType, OneChar_Multiple,
+		";", NULL, Null_Flag, 0
 	},
 	{
-		Colon_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		":", NULL, Null_Flag, Null_Code, 0, 0
+		Colon_Code, Operator_TokenType, OneChar_Multiple,
+		":", NULL, Null_Flag, 0
 	},
 	{
-		RemOp_Code, Operator_TokenType, None_DataType, OneChar_Multiple,
-		"'", NULL, Null_Flag, Null_Code, 0, 0
+		RemOp_Code, Operator_TokenType, OneChar_Multiple,
+		"'", NULL, Null_Flag, 0
 	},
 	//*****************
 	//   END SYMBOLS
@@ -573,161 +663,162 @@ static TableEntry table_entries[] = {
 	// 2010-03-16: added entries for new codes
 	// 2010-04-24: moved null code entry to end
 	{
-		Neg_Code, Operator_TokenType, Double_DataType, OneWord_Multiple,
+		Neg_Code, Operator_TokenType, OneWord_Multiple,
 		// 2010-03-21: temporarily replaced "-" with "Neq" for testing
 		// 2010-03-21: changed unary_code from Null_Code to Neg_Code
 		// 2010-04-02: set name to correct output, name2 to debug output name
-		"-", "Neg", Null_Flag, Neg_Code, 48,
-		1, {Double_DataType}, {NegInt_Code}
+		"-", "Neg", Null_Flag, 48,
+		new ExprInfo(Double_DataType, Neg_Code, Operands(Dbl), AssocCode(Neg))
 	},
 	// 2010-04-11: added entries for assignment operators
+	// 2010-05-05: added reference flag to assignment operators
 	{
-		Assign_Code, Operator_TokenType, None_DataType, OneWord_Multiple,
-		"=", "Assign", Null_Flag, Null_Code, 4, 0
+		Assign_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "Assign", Reference_Flag, 4,
+		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(Assign))
+	},
+	// 2010-05-05: added entries for assignment associated codes
+	{
+		AssignInt_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "Assign%", Reference_Flag, 4, &Int_IntInt_ExprInfo
 	},
 	{
-		AssignList_Code, Operator_TokenType, None_DataType, OneWord_Multiple,
-		"=", "AssignList", Null_Flag, Null_Code, 4, 0
+		AssignStr_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "Assign$", Reference_Flag, 4, &Str_StrStr_ExprInfo
+	},
+	// 2010-05-05: added reference and assign list flags
+	{
+		AssignList_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "AssignList", Reference_Flag | AssignList_Flag, 4,
+		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+			AssocCode(AssignList))
+	},
+	// 2010-05-05: added entries for assignment associated codes
+	{
+		AssignListInt_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "AssignList%", Reference_Flag | AssignList_Flag, 4,
+		&Int_IntInt_ExprInfo
 	},
 	{
-		EOL_Code, Operator_TokenType, None_DataType, OneWord_Multiple,
-		NULL, NULL, Null_Flag, Null_Code, 4, 0
+		AssignListStr_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "AssignList$", Reference_Flag | AssignList_Flag, 4,
+		&Str_StrStr_ExprInfo
+	},
+	{
+		EOL_Code, Operator_TokenType, OneWord_Multiple,
+		NULL, NULL, Null_Flag, 4
 	},
 	// 2010-04-24: added entries for associated codes
 	{
-		AddInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"+", "+%", Null_Flag, Null_Code, 40,
-		2, {Integer_DataType, Integer_DataType}
+		AddInt_Code, Operator_TokenType, OneChar_Multiple,
+		"+", "+%", Null_Flag, 40, &Int_IntInt_ExprInfo
 	},
 	{
-		CatStr_Code, Operator_TokenType, String_DataType, OneChar_Multiple,
-		"+", "+$", Null_Flag, Null_Code, 40,
-		2, {String_DataType, String_DataType}
+		CatStr_Code, Operator_TokenType, OneChar_Multiple,
+		"+", "+$", Null_Flag, 40, &Str_StrStr_ExprInfo
 	},
 	{
-		SubInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"-", "-%", Null_Flag, Null_Code, 40,
-		2, {Integer_DataType, Integer_DataType}
+		SubInt_Code, Operator_TokenType, OneChar_Multiple,
+		"-", "-%", Null_Flag, 40, &Int_IntInt_ExprInfo
+	},
+	// 2010-05-08: NegInt needs its own exprinfo struct
+	{
+		NegInt_Code, Operator_TokenType, OneChar_Multiple,
+		"-", "Neg%", Null_Flag, 40,
+		new ExprInfo(Integer_DataType, NegInt_Code, Operands(Int))
 	},
 	{
-		NegInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"-", "Neg%", Null_Flag, Null_Code, 40,
-		1, {Integer_DataType}
+		MulInt_Code, Operator_TokenType, OneChar_Multiple,
+		"*", "*%", Null_Flag, 46, &Int_IntInt_ExprInfo
 	},
 	{
-		MulInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"*", "*%", Null_Flag, Null_Code, 46,
-		2, {Integer_DataType, Integer_DataType}
+		DivInt_Code, Operator_TokenType, OneChar_Multiple,
+		"/", "/%", Null_Flag, 46, &Int_IntInt_ExprInfo
 	},
 	{
-		DivInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"/", "/%", Null_Flag, Null_Code, 46,
-		2, {Integer_DataType, Integer_DataType}
+		ModInt_Code, Operator_TokenType, OneWord_Multiple,
+		"MOD", "MOD%", Null_Flag, 42, &Int_IntInt_ExprInfo
 	},
 	{
-		ModInt_Code, Operator_TokenType, Integer_DataType, OneWord_Multiple,
-		"MOD", "MOD%", Null_Flag, Null_Code, 42,
-		2, {Integer_DataType, Integer_DataType}
+		PowerMul_Code, Operator_TokenType, OneChar_Multiple,
+		"^", "^*", Null_Flag, 50, &Dbl_DblInt_ExprInfo
 	},
 	{
-		PowerMul_Code, Operator_TokenType, Double_DataType, OneChar_Multiple,
-		"^", "^*", Null_Flag, Null_Code, 50,
-		2, {Double_DataType, Integer_DataType}
+		PowerInt_Code, Operator_TokenType, OneChar_Multiple,
+		"^", "^%", Null_Flag, 50, &Int_IntInt_ExprInfo
 	},
 	{
-		PowerInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"^", "^%", Null_Flag, Null_Code, 50,
-		2, {Integer_DataType, Integer_DataType}
+		EqInt_Code, Operator_TokenType, OneChar_Multiple,
+		"=", "=%", Null_Flag, 30, &Int_IntInt_ExprInfo
 	},
 	{
-		EqInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"=", "=%", Null_Flag, Null_Code, 30,
-		2, {Integer_DataType, Integer_DataType}
+		EqStr_Code, Operator_TokenType, OneChar_Multiple,
+		"=", "=$", Null_Flag, 30, &Int_StrStr_ExprInfo
 	},
 	{
-		EqStr_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"=", "=$", Null_Flag, Null_Code, 30,
-		2, {String_DataType, String_DataType}
+		GtInt_Code, Operator_TokenType, OneChar_Multiple,
+		">", ">%", Null_Flag, 32, &Int_IntInt_ExprInfo
 	},
 	{
-		GtInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		">", ">%", Null_Flag, Null_Code, 32,
-		2, {Integer_DataType, Integer_DataType}
+		GtStr_Code, Operator_TokenType, OneChar_Multiple,
+		">", ">$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
-		GtStr_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		">", ">$", Null_Flag, Null_Code, 32,
-		2, {String_DataType, String_DataType}
+		GtEqInt_Code, Operator_TokenType, OneChar_Multiple,
+		">=", ">=%", Null_Flag, 32, &Int_IntInt_ExprInfo
 	},
 	{
-		GtEqInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		">=", ">=%", Null_Flag, Null_Code, 32,
-		2, {Integer_DataType, Integer_DataType}
+		GtEqStr_Code, Operator_TokenType, OneChar_Multiple,
+		">=", ">=$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
-		GtEqStr_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		">=", ">=$", Null_Flag, Null_Code, 32,
-		2, {String_DataType, String_DataType}
+		LtInt_Code, Operator_TokenType, OneChar_Multiple,
+		"<", "<%", Null_Flag, 32, &Int_IntInt_ExprInfo
 	},
 	{
-		LtInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"<", "<%", Null_Flag, Null_Code, 32,
-		2, {Integer_DataType, Integer_DataType}
+		LtStr_Code, Operator_TokenType, OneChar_Multiple,
+		"<", "<$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
-		LtStr_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"<", "<$", Null_Flag, Null_Code, 32,
-		2, {String_DataType, String_DataType}
+		LtEqInt_Code, Operator_TokenType, OneChar_Multiple,
+		"<=", "<=%", Null_Flag, 32, &Int_IntInt_ExprInfo
 	},
 	{
-		LtEqInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"<=", "<=%", Null_Flag, Null_Code, 32,
-		2, {Integer_DataType, Integer_DataType}
+		LtEqStr_Code, Operator_TokenType, OneChar_Multiple,
+		"<=", "<=$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
-		LtEqStr_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"<=", "<=$", Null_Flag, Null_Code, 32,
-		2, {String_DataType, String_DataType}
+		NotEqInt_Code, Operator_TokenType, OneChar_Multiple,
+		"<>", "<>%", Null_Flag, 30, &Int_IntInt_ExprInfo
 	},
 	{
-		NotEqInt_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"<>", "<>%", Null_Flag, Null_Code, 30,
-		2, {Integer_DataType, Integer_DataType}
+		NotEqStr_Code, Operator_TokenType, OneChar_Multiple,
+		"<>", "<>$", Null_Flag, 30, &Int_StrStr_ExprInfo
 	},
 	{
-		NotEqStr_Code, Operator_TokenType, Integer_DataType, OneChar_Multiple,
-		"<>", "<>$", Null_Flag, Null_Code, 30,
-		2, {String_DataType, String_DataType}
+		AbsInt_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"ABS(", "ABS%(", Null_Flag, 2, &Int_Int_ExprInfo
 	},
 	{
-		AbsInt_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"ABS(", "ABS%(", Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		RndArgInt_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"RND(", "RND%(", Null_Flag, 2, &Int_Int_ExprInfo
 	},
 	{
-		RndArgInt_Code, IntFuncP_TokenType, Double_DataType, OneWord_Multiple,
-		"RND(", "RND%(", Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		SgnInt_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"SGN(", "SGN%(", Null_Flag, 2, &Int_Int_ExprInfo
 	},
 	{
-		SgnInt_Code, IntFuncP_TokenType, Integer_DataType, OneWord_Multiple,
-		"SGN(", "SGN%(", Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		CvtInt_Code, IntFuncN_TokenType, OneWord_Multiple,
+		NULL, "CvtInt", Null_Flag, 2
 	},
 	{
-		CvtInt_Code, IntFuncN_TokenType, Integer_DataType, OneWord_Multiple,
-		NULL, "CvtInt", Null_Flag, Null_Code, 2,
-		1, {Double_DataType}
+		CvtDbl_Code, IntFuncN_TokenType, OneWord_Multiple,
+		NULL, "CvtDbl", Null_Flag, 2
 	},
 	{
-		CvtDbl_Code, IntFuncN_TokenType, Double_DataType, OneWord_Multiple,
-		NULL, "CvtDbl", Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
-	},
-	{
-		StrInt_Code, IntFuncP_TokenType, String_DataType, OneWord_Multiple,
-		"STR$(", "STR%$(", Null_Flag, Null_Code, 2,
-		1, {Integer_DataType}
+		StrInt_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"STR$(", "STR%$(", Null_Flag, 2, &Str_Int_ExprInfo
 	},
 	{
 		Null_Code, Operator_TokenType
@@ -923,12 +1014,12 @@ int Table::search(const char *word1, int len1, const char *word2, int len2)
 //     - search ends at end of section
 
 // 2010-04-04: new function implemented
-int Table::search(int index, int noperands)
+int Table::search(int index, int _noperands)
 {
 	for (int i = index + 1; entry[i].name != NULL; i++)
 	{
 		if (strcmp(entry[index].name, entry[i].name) == 0
-			&& noperands == entry[i].noperands)
+			&& _noperands == noperands(i))
 		{
 			return i;
 		}
