@@ -7,22 +7,22 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: A=3
-Output: A<ref> 3 Assign 
+Output: A<ref> 3 CvtDbl Assign 
 
 Input: A,B=3
-Output: A<ref> B<ref> 3 AssignList 
+Output: A<ref> B<ref> 3 CvtDbl AssignList 
 
 Input: A=B=3
-Output: A<ref> B<ref> 3 AssignList 
+Output: A<ref> B<ref> 3 CvtDbl AssignList 
 
 Input: A=(B)=3
-Output: A<ref> B ) 3 CvtDbl = Assign 
+Output: A<ref> B ) 3 CvtDbl = CvtDbl Assign 
 
 Input: A=(B=3)
-Output: A<ref> B 3 CvtDbl = ) Assign 
+Output: A<ref> B 3 CvtDbl = CvtDbl ) Assign 
 
 Input: A,B=C=4
-Output: A<ref> B<ref> C 4 CvtDbl = AssignList 
+Output: A<ref> B<ref> C 4 CvtDbl = CvtDbl AssignList 
 
 Input: A(B,C)=D
 Output: B<ref> C<ref> A(<ref> D Assign 
