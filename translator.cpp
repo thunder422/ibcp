@@ -69,6 +69,13 @@
 //                type handling
 //  2010-04-26  changed bug error names
 //
+//  2010-05-08  implemented data type handling for assignment operators
+//              modified find_code() to handle references on first operand
+//              modified find_code() to get number of associated codes
+//              modified match_code() to handle references on first operand
+//              added last_operand argument to find_code()
+//              
+//
 
 #include "ibcp.h"
 
@@ -540,76 +547,90 @@ Translator::Status Translator::add_token(Token *&token)
 // 2010-04-13: made argument a reference so different value can be returned
 Translator::Status Translator::add_operator(Token *&token)
 {
-	List<Token *>::Element *operand1;
-	List<Token *>::Element *operand2;
+	List<Token *>::Element *last_operand;
+	List<Token *>::Element *operand;
 
 	// 2010-04-25: implemented data type handling for non-assignment operators
 	//             removed popping of operands, find_code() does this
 	//             removed unary operator check
-	// TODO temporarily leave assignment code as is
-	Code code = table->code(token->index);
-	if (code != Assign_Code && code != AssignList_Code)
-	{
-		// process data types of operands (find proper code)
-		Status status = find_code(token);
-		if (status != Good)
-		{
-			return status;
-		}
-	}
-	else  // TODO temporary assignment operator handling
-	{
-		// for now just pop the operands off of the stack
-		if (!done_stack.pop(&operand1))
-		{
-			return BUG_StackEmpty1;
-		}
-		// 2010-04-12: reset reference flag of operand (need value at run-time)
-		operand1->value->reference = false;
+	// 2010-05-08: removed temporary assignment code
+	//             find_code() now handles assignment operators
+	//             but only last assignment list operand
 
-		if (!done_stack.pop(&operand2))
+	// save if token is an assignment list operator
+	int assignlist = table->flags(token->index) & AssignList_Flag;
+
+	// process data types of operands (find proper code)
+	Status status = find_code(token, &last_operand);
+
+	// 2010-05-08: process rest of operands for assignment list
+	if (assignlist)
+	{
+		Token *org_token;
+		Token *bad_token;
+		if (status == Good)
 		{
-			return BUG_StackEmpty2;
+			bad_token = NULL;
+			org_token = token;  // save original token
 		}
-		// 2010-04-13: add code to check for references on assignment operator
-		Code code = table->code(token->index);
-		if (code == Assign_Code)
+		else
 		{
-			if (!operand2->value->reference)
+			// even though an error already occurred, continue checking rest
+			// of assignment list to point to the first error in the statement
+			bad_token = token;
+			org_token = NULL;  // original token already deleted
+			if (status == Error_ExpAssignReference)
 			{
-				// need a reference, so return error
-				delete token;  // delete the operator token
-				token = operand2->value;  // return operand with error
-				return Error_ExpAssignReference;
+				status = Error_ExpAssignListReference;
 			}
 		}
-		// 2010-04-14: add code to check for references on assign list operator
-		else if (code == AssignList_Code)
+		while (done_stack.pop(&operand))
 		{
-			Token *bad_token = NULL;
-			do {
-				if (!operand2->value->reference)
+			if (last_operand->value->reference 
+				&& operand->value->datatype != last_operand->value->datatype)
+			{
+				// data type does not match, set error at last token
+				bad_token = last_operand->value;
+				switch (operand->value->datatype)
 				{
-					// need a reference, so remember last bad token,
-					// which is the first one in the list
-					bad_token = operand2->value;
+				case Double_DataType:
+					status = Error_ExpectedDouble;
+					break;
+				case Integer_DataType:
+					status = Error_ExpectedInteger;
+					break;
+				case String_DataType:
+					status = Error_ExpectedString;
+					break;
 				}
 			}
-			while (done_stack.pop(&operand2));
-			if (bad_token != NULL)
+
+			if (!operand->value->reference)
 			{
-				// need a reference, so return error
-				delete token;  // delete the operator token
-				token = bad_token;  // return operand with error
-				return Error_ExpAssignListReference;
+				// found a non-reference, set bad token to return
+				bad_token = operand->value;
+				status = Error_ExpAssignListReference;
 			}
+
+			// make this operand the last operand
+			last_operand = operand;
 		}
-		else  // normal operator, reset reference flag (need value at run-time)
+
+		if (bad_token != NULL)
 		{
-			// 2010-04-12: reset reference flag of operand
-			operand2->value->reference = false;
+			if (org_token != NULL)
+			{
+				delete org_token;  // delete the operator token
+			}
+			token = bad_token;  // return operand with error
 		}
 	}
+
+	if (status != Good)
+	{
+		return status;
+	}
+
 	// 2010-03-25: added parentheses support BEGIN
 	// 2010-03-26: replaced code with function call
 	do_pending_paren(token->index);
@@ -671,7 +692,9 @@ void Translator::do_pending_paren(int index)
 //     token argument is changed to pointer to the token with the error
 
 // 2010-04-25: implemented new function
-Translator::Status Translator::find_code(Token *&token)
+// 2010-05-08: added last_operand argument for assignment list processing
+Translator::Status Translator::find_code(Token *&token,
+	List<Token *>::Element **last_operand)
 {
 	struct {
 		Code code;						// code match attempted for
@@ -694,8 +717,29 @@ Translator::Status Translator::find_code(Token *&token)
 			// oops, there should have been operands on done stack
 			return BUG_DoneStackEmpty;
 		}
-		// reset reference flag of operand
-		operand[i]->value->reference = false;
+
+		// 2010-05-08: for assignment list, return first operand
+		if (i == 0 && last_operand != NULL)
+		{
+			*last_operand = operand[0];
+		}
+
+		// 2010-05-08: check if reference is required for first operand
+		if (i == 0 && table->flags(token->index) & Reference_Flag)
+		{
+			if (!operand[0]->value->reference)
+			{
+				// need a reference, so return error
+				delete token;  // delete the operator token
+				token = operand[0]->value;  // return operand with error
+				return Error_ExpAssignReference;
+			}
+		}
+		else
+		{
+			// reset reference flag of operand
+			operand[i]->value->reference = false;
+		}
 	}
 
 	// see if main code's data types match
@@ -709,7 +753,8 @@ Translator::Status Translator::find_code(Token *&token)
 	partial = MAIN;
 
 	// see if any associated code's data types match
-	for (int i = 0; i < Max_Assoc_Codes; i++)
+	// 2010-05-08: get actual number of associated codes
+	for (int i = 0; i < table->nassoc_codes(token->index); i++)
 	{
 		info[i].code = table->assoc_code(token->index, i);
 		if (info[i].code == Null_Code)
@@ -770,6 +815,7 @@ Translator::Status Translator::find_code(Token *&token)
 			break;  // found first operand with bad data type
 		}
 	}
+
 	// change token to token with invalid data type and return error
 	token = operand[i]->value;
 	switch (table->operand_datatype(table->index(info[partial].code), i))
@@ -823,8 +869,26 @@ Translator::Match Translator::match_code(Code *cvt_code,
 	Match match = Yes_Match;  // assume match to start
 	for (int i = 0; i < table->noperands(index); i++)
 	{
-		cvt_code[i] = cvtcode_have_need[operand[i]->value->datatype]
-			[table->operand_datatype(index, i)];
+		// 2010-05-08: check if first operand is a reference
+		if (i == 0 && operand[0]->value->reference)
+		{
+			// for reference, the data type must be an exact match
+			if (operand[0]->value->datatype
+				== table->operand_datatype(index, 0))
+			{
+				cvt_code[0] = Null_Code;
+			}
+			else  // not an exact match, so no match
+			{
+				cvt_code[0] = Invalid_Code;
+				return No_Match;
+			}
+		}
+		else  // non-reference operand
+		{
+			cvt_code[i] = cvtcode_have_need[operand[i]->value->datatype]
+				[table->operand_datatype(index, i)];
+		}
 		if (cvt_code[i] == Invalid_Code)
 		{
 			return No_Match;  // no match here, exit
