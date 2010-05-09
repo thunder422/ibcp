@@ -96,6 +96,9 @@
 //  2010-04-27  corrected previous translation test inputs
 //              added data type handling test inputs
 //
+//  2010-05-09  corrected expresion in translator test input set 6
+//              added assignment data type handling test inputs (set 7)
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -386,7 +389,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2",
 		"Z$=STR$(VAL(\"1.23\"))",
 		"Z$=MID$(A$+B$,(C%+5)*D%,4)+\" Test\"",
-		"Z$ = (a$ = \"this\" + \"test\")",
+		"Z% = (a$ = \"this\" + \"test\")",  // 2010-05-09: corrected expression
 		"Z = A% + B",
 		"Z = A + B%",
 		"Z% = A% + B%",
@@ -413,9 +416,43 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z = A + (B$ + C$)",
 		NULL
 	};
+	const char *testinput7[] = {  // assignments data type tests (2010-05-09)
+		"A% = B% + 5",
+		"A% = B + 5",
+		"A% = B + 5.0",
+		"A = B = C = 1.0",
+		"A, B, C = 1.0",
+		"A, B, C = 1",
+		"A%,B% = C% + D%",
+		"A% = B% = C% + D%",
+		"A$,B$,C$ = \"Test\"",
+		"A$ = B$ = C$ = \"Test\"",
+		// begin of error tests
+		"Z, Y = A$ + B%",
+		"Z, Y = A$ + B$",
+		"A,B%,C = 1.0",
+		"A,B,C% = 1.0",
+		"A%,B,C = 1.0",
+		"A,\"T\",B = 1",
+		"A = \"T\" = B = 1",
+		"A,B,C = STR$(1)",
+		"A,B,C$ = STR$(1)",
+		"A,B,C$ = 1",
+		"A,B$,C = 1",
+		"A,B,1 = 1",
+		"A,B%,1 = 1",
+		"1,A,B% = 1",
+		"A%,B,C% = 1",
+		"A%,B$,C% = 1",
+		"A$,B$,C% = 1",
+		"A$,B$,C$ = 1",
+		"Z = A$ + B * C",
+		NULL
+	};
 
 	const char **test[] = {
-		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6
+		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
+		testinput7
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
