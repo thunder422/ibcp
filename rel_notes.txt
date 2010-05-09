@@ -20,7 +20,6 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
-	Translator - Assignments (Data Types)
 	Translator - Strings
 	Translator - Semicolons
 	Translator - Commands
@@ -31,6 +30,24 @@ Planned Roadmap:
 	Dictionary Definition
 	Encoder
 	Recreator
+
+
+Release 0.1.10 (2010-05-09)
+
+	Translator developmental release - Data type handling has been
+	implemented for assignment operators.  Expression related
+	information has been moved from the table entries to a
+	structure.  New (listed first) and updated files include:
+
+	translator7.txt - output for assignment operator data type tests
+
+	codes.txt       - updated for data type specific assign codes
+	ibcp.h          - updated for expr info struct/data type assigns
+	table.cpp       - updated for expr info struct/data type assigns
+	test_ibcp.cpp   - added data type assignment test statements
+	translator.cpp  - added data type handling for assignments
+	translator5.txt - updated for assignment data type handling
+	translator6.txt - updated for assignment data type handling
 
 
 Release 0.1.9 (2010-04-28)
