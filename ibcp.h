@@ -105,6 +105,15 @@
 //                  operands that didn't have a specific data type
 //                added find_code() and match_code() with Match enum
 //
+//  2010-05-03  added ExprInfo to hold expression related information for the
+//              table entries; replaced these members with ExprInto pointer in
+//              TableEntry; modified the access functions in Table
+//  2010-05-05  added Reference_Falg and AssignList_Flag
+//  2010-05-07  added associated codes for Assign and AssignList
+//  2010-05-08  added check for null exprinfo in datatype() and unary_code()
+//                access functions of Table
+//              added last_operand argument to Table::find_code()
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -150,8 +159,9 @@ enum Code {
 	Xor_Code,
 
 	// 2010-04-11: assignment operators
-	Assign_Code,
-	AssignList_Code,
+	// 2010-05-07: added assignment operator associated codes
+	Assign_Code, AssignInt_Code, AssignStr_Code,
+	AssignList_Code, AssignListInt_Code, AssignListStr_Code,
 
 	// math internal functions
 	Abs_Code, AbsInt_Code,
@@ -406,6 +416,9 @@ const int String_Flag         = 0x00000020;
 // table entry flags (each must have unique bit set, but not unique from above)
 // 2010-04-04: added new flag for table entries with multiple codes
 const int Multiple_Flag       = 0x00000001;  // function has multiple forms
+// 2010-05-05: added flags for assignment operators
+const int Reference_Flag      = 0x00000002;  // code requires a reference
+const int AssignList_Flag     = 0x00000004;  // code is an list assignment
 
 // 2010-03-25: added highest precedence value
 const int Highest_Precedence = 127;
@@ -423,26 +436,50 @@ const int Max_Assoc_Codes = 2;
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
 
+
+// 2010-05-03: expression information for operators and internal functions
+struct ExprInfo {
+	// 2010-05-03: members moved from TableEntry
+	DataType datatype;			// data type of entry (if applicable)
+	// 2010-03-17: added unary code flag
+	Code unary_code;			// unary code for operator (Null_Code if none)
+	// 2010-04-04: added number of arguments
+	// 2010-04-24: renamed nargs to number of operands
+	short noperands;			// number of operands (operators/int. functions)
+	// 2010-05-03: added number of associated codes
+	short nassoc_codes;			// number of associated codes
+	// 2010-04-24: added operand data type array
+	// 2010-05-03: changed from array to pointer
+	DataType *operand_datatype;	// data type of each operand
+	// 2010-04-24: added associated codes array
+	// 2010-05-03: changed from array to pointer
+	Code *assoc_code;			// associated codes
+
+	ExprInfo(DataType _datatype, Code _unary_code,
+		short _noperands = 0, DataType *_operand_datatype = NULL,
+		short _nassoc_codes = 0, Code *_assoc_code = NULL)
+	{
+		datatype = _datatype;
+		unary_code = _unary_code;
+		noperands = _noperands;
+		operand_datatype = _operand_datatype;
+		nassoc_codes = _nassoc_codes;
+		assoc_code = _assoc_code;
+	}
+};
+
 	
 struct TableEntry {
 	Code code;					// enumeration code of entry
 	TokenType type;				// type of token for entry
-	DataType datatype;			// data type of entry (if applicable)
 	Multiple multiple;			// multiple word command/character operator
 	const char *name;			// name for table entry
 	const char *name2;			// name of second word of command
 	int flags;					// flags for entry
-	// 2010-03-17: added unary code flag
-	Code unary_code;			// unary code for operator (Null_Code if none)
 	// 2010-03-20: added precedence
 	int precedence;				// precedence of code
-	// 2010-04-04: added number of arguments
-	// 2010-04-24: renamed nargs to number of operands
-	int noperands;				// number of operands (operators/int. functions)
-	// 2010-04-24: added operand data type array
-	DataType operand_datatype[Max_Operands];	// data type of each operand
-	// 2010-04-24: added associated codes array
-	Code assoc_code[Max_Assoc_Codes];	// associated codes (Null_Code if none)
+	// 2010-05-03: replace members with expression information pointer
+	ExprInfo *exprinfo;			// pointer to expression info (NULL for none)
 };
 
 
@@ -553,7 +590,10 @@ public:
 	}
 	DataType datatype(int index)
 	{
-		return entry[index].datatype;
+		// 2010-05-03: get value from expression information structure
+		// 2010-05-08: added check for null exprinfo pointer
+		ExprInfo *ei = entry[index].exprinfo;
+		return ei == NULL ? None_DataType : ei->datatype;
 	}
 	Multiple multiple(int index)
 	{
@@ -584,7 +624,10 @@ public:
 	}
 	Code unary_code(int index)
 	{
-		return entry[index].unary_code;
+		// 2010-05-03: get value from expression information structure
+		// 2010-05-08: added check for null exprinfo pointer
+		ExprInfo *ei = entry[index].exprinfo;
+		return ei == NULL ? Null_Code : ei->unary_code;
 	}
 	int precedence(int index)
 	{
@@ -594,16 +637,24 @@ public:
 	// 2010-04-23: renamed from nargs
 	int noperands(int index)
 	{
-		return entry[index].noperands;
+		// 2010-05-03: get value from expression information structure
+		return entry[index].exprinfo->noperands;
 	}
 	// 2010-04-23: added two new access functions
 	int operand_datatype(int index, int operand)
 	{
-		return entry[index].operand_datatype[operand];
+		// 2010-05-03: get value from expression information structure
+		return entry[index].exprinfo->operand_datatype[operand];
+	}
+	// 2010-05-08: added new access function for nassoc_codes
+	int nassoc_codes(int index)
+	{
+		return entry[index].exprinfo->nassoc_codes;
 	}
 	Code assoc_code(int index, int number)
 	{
-		return entry[index].assoc_code[number];
+		// 2010-05-03: get value from expression information structure
+		return entry[index].exprinfo->assoc_code[number];
 	}
 	// 2010-04-02: added new precedence of token function
 	int precedence(Token *token)
@@ -614,7 +665,7 @@ public:
 	// 2010-04-02: added convenience function to avoid confusion
 	bool is_unary_operator(int index)
 	{
-		return entry[index].code == entry[index].unary_code;
+		return entry[index].code == unary_code(index);
 	}
 	int search(char letter, int flag);
 	int search(TableSearch type, const char *string, int len);
@@ -783,7 +834,9 @@ private:
 			token->datatype = Double_DataType;
 		}
 	}
-	Status find_code(Token *&token);
+	// 2010-05-08: added last_operand argument
+	Status find_code(Token *&token,
+		List<Token *>::Element **last_operand = NULL);
 	Match match_code(Code *cvt_code, List<Token *>::Element **operand,
 		Code code);
 	void do_pending_paren(int index);  // 2010-03-26: added for parentheses
