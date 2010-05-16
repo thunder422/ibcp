@@ -108,11 +108,20 @@
 //  2010-05-03  added ExprInfo to hold expression related information for the
 //              table entries; replaced these members with ExprInto pointer in
 //              TableEntry; modified the access functions in Table
-//  2010-05-05  added Reference_Falg and AssignList_Flag
+//  2010-05-05  added Reference_Flag and AssignList_Flag
 //  2010-05-07  added associated codes for Assign and AssignList
 //  2010-05-08  added check for null exprinfo in datatype() and unary_code()
 //                access functions of Table
 //              added last_operand argument to Table::find_code()
+//
+//  2010-05-15  added TmpStr_DataType
+//              added RpnItem structure, changed done_stack and output list from
+//                holding Token* to RpnItem*
+//              moved operand[] array from find_code() to Translator as member,
+//                removed operand argument from Translator::match_code()
+//              added logic to Translator::set_default_datatype() to set data
+//                type to TmpStr for token types DefFuncN/DefFuncP when the data
+//                type is String
 //
 
 #ifndef IBCP_H
@@ -293,6 +302,7 @@ enum DataType {
 	Double_DataType,
 	Integer_DataType,
 	String_DataType,
+	TmpStr_DataType,	// 2010-05-15: temporary string data type
 	// the end of the actual execution data types
 	numberof_DataType,	// 2010-04-24: new entry for number of actual data types
 	// the following data types are used internally for other uses
@@ -419,6 +429,7 @@ const int Multiple_Flag       = 0x00000001;  // function has multiple forms
 // 2010-05-05: added flags for assignment operators
 const int Reference_Flag      = 0x00000002;  // code requires a reference
 const int AssignList_Flag     = 0x00000004;  // code is an list assignment
+// note: don't use 0x00000020 - String_Flag is being used for codes
 
 // 2010-03-25: added highest precedence value
 const int Highest_Precedence = 127;
@@ -731,13 +742,49 @@ public:
 //**                               TRANSLATOR                                **
 //*****************************************************************************
 
+// 2010-05-15: add structure for holding RPN output list information
+struct RpnItem {
+	Token *token;							// pointer to token
+	int noperands;							// number of operands
+	List<RpnItem *>::Element **operand;		// array operand pointers
+
+	RpnItem(Token *_token, int _noperands = 0,
+		List<RpnItem *>::Element **_operand = NULL)
+	{
+		token = _token;
+		noperands = _noperands;
+		if (noperands == 0)
+		{
+			operand = NULL;
+		}
+		else
+		{
+			operand = new List<RpnItem *>::Element *[noperands];
+
+			for (int i = 0; i < noperands; i++)
+			{
+				operand[i] = _operand[i];
+			}
+		}
+	}
+	~RpnItem()
+	{
+		delete token;
+		if (noperands > 0)
+		{
+			delete[] operand;
+		}
+	}
+};
+
 // 2010-03-18: added Translator class
 // 2010-03-20: renamed members
+// 2010-05-15: changed output list and done stack from Token* to RpnItem*
 class Translator {
 	Table *table;					// pointer to the table object
-	List<Token *> *output;			// pointer to RPN list output
+	List<RpnItem *> *output;		// pointer to RPN list output
 	List<Token *> hold_stack;		// holding stack
-	List<List<Token *>::Element *> done_stack;	// tokens processed stack
+	List<List<RpnItem *>::Element *> done_stack;	// tokens processed stack
 	enum State {
 		Initial,					// initial state
 		BinOp,						// expecting binary operator
@@ -801,7 +848,7 @@ public:
 	// 2010-04-16: added expression mode flag for testing
 	void start(bool exprmode = false)
 	{
-		output = new List<Token *>;
+		output = new List<RpnItem *>;
 		state = Initial;
 		// 2010-04-11: initialize mode to command
 		// 2010-04-16: start in expression mode for testing
@@ -809,14 +856,17 @@ public:
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
 	Status add_token(Token *&token);
-	List<Token *> *get_result(void)	// only call when add_token returns Done
+	List<RpnItem *> *get_result(void)	// only call when add_token returns Done
 	{
-		List<Token *> *list = output;
+		List<RpnItem *> *list = output;
 		output = NULL;
 		return list;
 	}
 	void clean_up(void);			// only call when add_token returns an error
 private:
+	// 2010-05-15: local variable from find_code() to be access by all of class
+	List<RpnItem *>::Element *operand[Max_Operands];  // pointers to operands
+
 	// 2010-04-13: made argument a reference so different value can be returned
 	Status add_operator(Token *&token);
 	enum Match {
@@ -833,12 +883,18 @@ private:
 			// TODO for now just set default to double
 			token->datatype = Double_DataType;
 		}
+		// 2010-05-15: change string DefFuncN/P to TmpStr
+		else if ((token->type == DefFuncN_TokenType
+			|| token->type == DefFuncP_TokenType)
+			&& token->datatype == String_DataType)
+		{
+			token->datatype = TmpStr_DataType;
+		}
 	}
 	// 2010-05-08: added last_operand argument
 	Status find_code(Token *&token,
-		List<Token *>::Element **last_operand = NULL);
-	Match match_code(Code *cvt_code, List<Token *>::Element **operand,
-		Code code);
+		List<RpnItem *>::Element **last_operand = NULL);
+	Match match_code(Code *cvt_code, Code code);
 	void do_pending_paren(int index);  // 2010-03-26: added for parentheses
 };
 
