@@ -76,6 +76,15 @@
 //              added last_operand argument to find_code()
 //              
 //
+//  2010-05-15  added temporary string support:
+//              changed output list and done stack from Token* to RpnItem*
+//              for arrays and functions, save pointers to operands
+//              for internal functions with string operands, saved operands
+//              for operators with string operands, saved operands
+//              moved find_code() operand[] array to class for all to access
+//              removed operandp[] argument from match_code(), now uses member
+//              added entries to match_code() convertion code table for TmpStr
+//
 
 #include "ibcp.h"
 
@@ -142,7 +151,9 @@ Translator::Status Translator::add_token(Token *&token)
 
 				// add token directly output list
 				// and push element pointer on done stack
-				done_stack.push(output->append(&token));
+				// 2010-05-15: create rpn item to add to output list
+				RpnItem *rpn_item = new RpnItem(token);
+				done_stack.push(output->append(&rpn_item));
 				state = BinOp;  // next token must be a binary operator
 			}
 			return Good;
@@ -371,7 +382,7 @@ Translator::Status Translator::add_token(Token *&token)
 			delete top_token;  // delete open parentheses token
 
 			// 2010-04-16: clear reference for item on top of done stack
-			done_stack.top()->value->reference = false;
+			done_stack.top()->value->token->reference = false;
 
 			// 2010-03-30: set pending parentheses token pointer
 			pending_paren = token;
@@ -386,11 +397,10 @@ Translator::Status Translator::add_token(Token *&token)
 
 				// data types for array subscripts and define/user functions
 				// cannot be checked here
-				// TODO save operands for later processing; just pop them now
-				for (int i = 0; i < noperands; i++)
+				// 2010-05-15: save operands for storage in output list
+				for (int i = noperands; --i >= 0;)
 				{
-					List<Token *>::Element *operand;
-					if (!done_stack.pop(&operand))
+					if (!done_stack.pop(&operand[i]))
 					{
 						return BUG_StackEmpty5;
 					}
@@ -428,6 +438,12 @@ Translator::Status Translator::add_token(Token *&token)
 				{
 					return status;
 				}
+
+				// 2010-05-15: don't save operands if none are strings
+				if (!(table->flags(token->index) & String_Flag))
+				{
+					noperands = 0;  // no string operands, don't save operands
+				}
 			}
 
 			// make sure token is an array or a function
@@ -438,7 +454,9 @@ Translator::Status Translator::add_token(Token *&token)
 			}
 
 			// add token to output list and push element pointer on done stack
-			done_stack.push(output->append(&top_token));
+			// 2010-05-15: create rpn item to add to output list
+			RpnItem *rpn_item = new RpnItem(top_token, noperands, operand);
+			done_stack.push(output->append(&rpn_item));
 		}
 		// 2010-04-02: implemented array/function support END
 
@@ -491,7 +509,7 @@ Translator::Status Translator::add_token(Token *&token)
 		}
 		// 2010-03-21: check if there is a result on the done_stack
 		// there should be one value on the done stack, need to pop it off
-		List<Token *>::Element *result;
+		List<RpnItem *>::Element *result;
 		if (!done_stack.pop(&result))
 		{
 			return BUG_StackEmpty3;
@@ -547,8 +565,9 @@ Translator::Status Translator::add_token(Token *&token)
 // 2010-04-13: made argument a reference so different value can be returned
 Translator::Status Translator::add_operator(Token *&token)
 {
-	List<Token *>::Element *last_operand;
-	List<Token *>::Element *operand;
+	List<RpnItem *>::Element *last_operand;
+	// 2010-05-15: renamed operand to list_operand to avoid conflict with member
+	List<RpnItem *>::Element *list_operand;
 
 	// 2010-04-25: implemented data type handling for non-assignment operators
 	//             removed popping of operands, find_code() does this
@@ -584,14 +603,15 @@ Translator::Status Translator::add_operator(Token *&token)
 				status = Error_ExpAssignListReference;
 			}
 		}
-		while (done_stack.pop(&operand))
+		while (done_stack.pop(&list_operand))
 		{
-			if (last_operand->value->reference 
-				&& operand->value->datatype != last_operand->value->datatype)
+			if (last_operand->value->token->reference 
+				&& list_operand->value->token->datatype
+				!= last_operand->value->token->datatype)
 			{
 				// data type does not match, set error at last token
-				bad_token = last_operand->value;
-				switch (operand->value->datatype)
+				bad_token = last_operand->value->token;
+				switch (list_operand->value->token->datatype)
 				{
 				case Double_DataType:
 					status = Error_ExpectedDouble;
@@ -605,15 +625,15 @@ Translator::Status Translator::add_operator(Token *&token)
 				}
 			}
 
-			if (!operand->value->reference)
+			if (!list_operand->value->token->reference)
 			{
 				// found a non-reference, set bad token to return
-				bad_token = operand->value;
+				bad_token = list_operand->value->token;
 				status = Error_ExpAssignListReference;
 			}
 
 			// make this operand the last operand
-			last_operand = operand;
+			last_operand = list_operand;
 		}
 
 		if (bad_token != NULL)
@@ -642,7 +662,19 @@ Translator::Status Translator::add_operator(Token *&token)
 	// 2010-03-25: added parentheses support END
 
 	// add token to output list and push element pointer on done stack
-	done_stack.push(output->append(&token));
+	// 2010-05-15: for operators that have string operand, save the operands
+	int noperands;
+	if (!(table->flags(token->index) & String_Flag))
+	{
+		noperands = 0;  // no string operands, don't save operands
+	}
+	else  // save the operands
+	{
+		noperands = table->noperands(token->index);
+	}
+	// 2010-05-15: create rpn item to add to output list
+	RpnItem *rpn_item = new RpnItem(token, noperands, operand);
+	done_stack.push(output->append(&rpn_item));
 
 	return Good;
 }
@@ -668,7 +700,9 @@ void Translator::do_pending_paren(int index)
 			|| state == Operand && last_precedence == precedence)
 		{
 			// add dummy token
-			output->append(&pending_paren);
+			// 2010-05-15: create rpn item to add to output list
+			RpnItem *rpn_item = new RpnItem(pending_paren);
+			output->append(&rpn_item);
 			// TODO something needed on done stack?
 		}
 		else  // don't need pending token
@@ -694,7 +728,7 @@ void Translator::do_pending_paren(int index)
 // 2010-04-25: implemented new function
 // 2010-05-08: added last_operand argument for assignment list processing
 Translator::Status Translator::find_code(Token *&token,
-	List<Token *>::Element **last_operand)
+	List<RpnItem *>::Element **last_operand)
 {
 	struct {
 		Code code;						// code match attempted for
@@ -703,7 +737,7 @@ Translator::Status Translator::find_code(Token *&token,
 	const int MAIN = Max_Assoc_Codes;	// index of main code in info[]
 	int convert;						// index of convertible match
 	int partial;						// index of partial match
-	List<Token *>::Element *operand[Max_Operands];  // pointers to operands
+	// 2010-05-15: moved operand[] to class
 	int i;								// loop index variable
 
 	// get number of operands for token and allocate arrays
@@ -727,23 +761,23 @@ Translator::Status Translator::find_code(Token *&token,
 		// 2010-05-08: check if reference is required for first operand
 		if (i == 0 && table->flags(token->index) & Reference_Flag)
 		{
-			if (!operand[0]->value->reference)
+			if (!operand[0]->value->token->reference)
 			{
 				// need a reference, so return error
 				delete token;  // delete the operator token
-				token = operand[0]->value;  // return operand with error
+				token = operand[0]->value->token;  // return operand with error
 				return Error_ExpAssignReference;
 			}
 		}
 		else
 		{
 			// reset reference flag of operand
-			operand[i]->value->reference = false;
+			operand[i]->value->token->reference = false;
 		}
 	}
 
 	// see if main code's data types match
-	Match match = match_code(info[MAIN].cvt_code, operand,
+	Match match = match_code(info[MAIN].cvt_code,
 		info[MAIN].code = table->code(token->index));
 	if (match == Yes_Match)
 	{
@@ -761,7 +795,7 @@ Translator::Status Translator::find_code(Token *&token,
 		{
 			break;  // no mode codes to check
 		}
-		match = match_code(info[i].cvt_code, operand, info[i].code);
+		match = match_code(info[i].cvt_code, info[i].code);
 		if (match == Yes_Match)
 		{
 			// change token's code and data type to associated code
@@ -801,7 +835,9 @@ Translator::Status Translator::find_code(Token *&token,
 				cvt_token->datatype = table->datatype(cvt_token->index);
 
 				// add token to output list after operand
-				output->append(operand[i], &cvt_token);
+				// 2010-05-15: create rpn item to add to output list
+				RpnItem *rpn_item = new RpnItem(cvt_token);
+				output->append(operand[i], &rpn_item);
 			}
 		}
 		return Good;
@@ -817,7 +853,7 @@ Translator::Status Translator::find_code(Token *&token,
 	}
 
 	// change token to token with invalid data type and return error
-	token = operand[i]->value;
+	token = operand[i]->value->token;
 	switch (table->operand_datatype(table->index(info[partial].code), i))
 	{
 	case Double_DataType:
@@ -842,26 +878,36 @@ Translator::Status Translator::find_code(Token *&token,
 //     that can be converted (conversion code set to Invalid)
 
 // 2010-04-25: implemented new function
-Translator::Match Translator::match_code(Code *cvt_code,
-	List<Token *>::Element **operand, Code code)
+// 2010-05-15: removed operand argument, operand now a class member
+Translator::Match Translator::match_code(Code *cvt_code, Code code)
 {
 	// array of conversion codes [have data type] [need data type]
+	// 2010-05-15: add entries for TmpStr_DataType
 	static Code cvtcode_have_need[numberof_DataType][numberof_DataType] =
 	{
 		{	// have Double,    need:
 			Null_Code,		// Double
 			CvtInt_Code,	// Integer
-			Invalid_Code	// String
+			Invalid_Code,	// String
+			Invalid_Code	// TmpStr
 		},
 		{	// have Integer,   need:
 			CvtDbl_Code,	// Double
 			Null_Code,		// Integer
-			Invalid_Code	// String
+			Invalid_Code,	// String
+			Invalid_Code	// TmpStr
 		},
 		{	// have String,    need:
 			Invalid_Code,	// Double
 			Invalid_Code,	// Integer
-			Null_Code		// String
+			Null_Code,		// String
+			Null_Code		// TmpStr
+		},
+		{	// have TmpStr,    need:
+			Invalid_Code,	// Double
+			Invalid_Code,	// Integer
+			Null_Code,		// String
+			Null_Code		// TmpStr
 		}
 	};
 
@@ -870,10 +916,10 @@ Translator::Match Translator::match_code(Code *cvt_code,
 	for (int i = 0; i < table->noperands(index); i++)
 	{
 		// 2010-05-08: check if first operand is a reference
-		if (i == 0 && operand[0]->value->reference)
+		if (i == 0 && operand[0]->value->token->reference)
 		{
 			// for reference, the data type must be an exact match
-			if (operand[0]->value->datatype
+			if (operand[0]->value->token->datatype
 				== table->operand_datatype(index, 0))
 			{
 				cvt_code[0] = Null_Code;
@@ -886,7 +932,7 @@ Translator::Match Translator::match_code(Code *cvt_code,
 		}
 		else  // non-reference operand
 		{
-			cvt_code[i] = cvtcode_have_need[operand[i]->value->datatype]
+			cvt_code[i] = cvtcode_have_need[operand[i]->value->token->datatype]
 				[table->operand_datatype(index, i)];
 		}
 		if (cvt_code[i] == Invalid_Code)
