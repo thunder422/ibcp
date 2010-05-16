@@ -99,6 +99,12 @@
 //  2010-05-09  corrected expresion in translator test input set 6
 //              added assignment data type handling test inputs (set 7)
 //
+//  2010-05-15  modified code because output list from Translator now contains
+//                RpnItem* instead of Token*
+//              added additional loop to output list from Translator with no
+//                deleting, necessary so that the operands of tokens saved by
+//                the Translator can also be printed
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -528,16 +534,36 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 	while (status == Translator::Good);
 	if (status == Translator::Done)
 	{
-		List<Token *> *rpn_list = translator.get_result();
+		// 2010-05-15: change rpn_list from Token pointers
+		List<RpnItem *> *rpn_list = translator.get_result();
+		List<RpnItem *>::Element *element;
 		printf("Output: ");
+		// 2010-05-15: added separate print loop so operands can also be printed
+		for (element = rpn_list->first(); rpn_list->not_end(element);
+			rpn_list->next(element))
+		{
+			print_small_token(element->value->token, table);
+			//print_token(token, table);
+			if (element->value->noperands > 0)
+			{
+				char separator = '[';
+				for (int i = 0; i < element->value->noperands; i++)
+				{
+					printf("%c", separator);
+					print_small_token(element->value->operand[i]->value->token,
+						table);
+					separator = ',';
+				}
+				printf("]");
+			}
+			printf(" ");
+		}
 		// 2010-03-21: corrected to handle an empty rpn list
 		while (!rpn_list->empty())
 		{
-			rpn_list->remove(NULL, &token);
-			//print_token(token, table);
-			print_small_token(token, table);
-			delete token;
-			printf(" ");
+			RpnItem *rpn_item;
+			rpn_list->remove(NULL, &rpn_item);
+			delete rpn_item;
 		}
 	}
 	else  // error occurred, output it
