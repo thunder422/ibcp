@@ -29,7 +29,25 @@ Planned Roadmap:
 	Internal Language Definition
 	Dictionary Definition
 	Encoder
+	Encoder - Temporary Strings
 	Recreator
+
+
+Release 0.1.11-dev-1 (2010-05-15)
+
+	Translator developmental release - support for temporary strings
+	has been implemented.  Updated files include:
+
+	ibcp.h          - updated for temporary string, saving operands
+	table.cpp       - updated codes for temporary strings
+	test_ibcp.cpp   - prints saved operands in output list
+	translator.cpp  - temporary string, saves operands
+	translator1.txt - updated for output of saved operands
+	translator3.txt - updated for output of saved operands
+	translator4.txt - updated for output of saved operands
+	translator5.txt - updated for output of saved operands
+	translator6.txt - updated for output of saved operands
+	translator7.txt - updated for output of saved operands
 
 
 Release 0.1.10 (2010-05-09)
