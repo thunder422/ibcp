@@ -43,5 +43,5 @@ Input: A * B ^ 2
 Output: A B 2 ^* * 
 
 Input: a$ = "this" + "test"
-Output: a$ "this" "test" +$ =$ 
+Output: a$ "this" "test" +$["this","test"] =$[a$,+$] 
 

@@ -7,13 +7,13 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: MID$(A$+B$,(C+5)*D,4)+" Test"
-Output: A$ B$ +$ C 5 CvtDbl + D * CvtInt 4 MID3$( " Test" +$ 
+Output: A$ B$ +$[A$,B$] C 5 CvtDbl + D * CvtInt 4 MID3$([+$,*,4] " Test" +$[MID3$(," Test"] 
 
 Input: int(Arr(A,B*(C+2))+(D))
-Output: A<ref> B C 2 CvtDbl + * Arr( D ) + INT( 
+Output: A<ref> B C 2 CvtDbl + * Arr([A<ref>,*] D ) + INT( 
 
 Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
-Output: X<ref> Y I Neg J + * I<ref> FNZ(<ref> B( INT( NUM$ VAL( Array(<ref> 
+Output: X<ref> Y I Neg J + * I<ref> FNZ(<ref>[I<ref>] B([X<ref>,*,FNZ(<ref>] INT( NUM$ VAL([NUM$] Array(<ref>[INT(,VAL(] 
 
 Input: INT(A+B
               ^-- missing closing parentheses
