@@ -21,8 +21,8 @@ see <http://www.gnu.org/licenses/>.
 Planned Roadmap:
 
 	Translator - Strings
-	Translator - Semicolons
 	Translator - Commands
+	Translator - Semicolons
 	Translator - Colons
 	Translator - Line Numbers
 	Translator - Immediate Commands
@@ -31,6 +31,17 @@ Planned Roadmap:
 	Encoder
 	Encoder - Temporary Strings
 	Recreator
+
+
+Release 0.1.11-dev-2 (2010-05-17)
+
+	Translator developmental release - corrected minor problem with
+	save operands pointing to inserted conversion code.  Updated
+	files include:
+
+	translator.cpp  - correct saved operands/cvt code problem
+	translator3.txt - updated for correction of saved operands
+	translator4.txt - updated for correction of saved operands
 
 
 Release 0.1.11-dev-1 (2010-05-15)
