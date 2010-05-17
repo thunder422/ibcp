@@ -75,7 +75,6 @@
 //              modified match_code() to handle references on first operand
 //              added last_operand argument to find_code()
 //              
-//
 //  2010-05-15  added temporary string support:
 //              changed output list and done stack from Token* to RpnItem*
 //              for arrays and functions, save pointers to operands
@@ -84,6 +83,11 @@
 //              moved find_code() operand[] array to class for all to access
 //              removed operandp[] argument from match_code(), now uses member
 //              added entries to match_code() convertion code table for TmpStr
+//
+//  2010-05-16  corrected problem where saved operand was not pointing to a
+//              conversion code that was inserted after the operand - the
+//              operand was set to the return value of the append call when the
+//              conversion code is inserted
 //
 
 #include "ibcp.h"
@@ -837,7 +841,8 @@ Translator::Status Translator::find_code(Token *&token,
 				// add token to output list after operand
 				// 2010-05-15: create rpn item to add to output list
 				RpnItem *rpn_item = new RpnItem(cvt_token);
-				output->append(operand[i], &rpn_item);
+				// 2010-05-16: set operand to new conversion token
+				operand[i] = output->append(operand[i], &rpn_item);
 			}
 		}
 		return Good;
