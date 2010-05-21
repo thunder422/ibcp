@@ -105,6 +105,9 @@
 //                deleting, necessary so that the operands of tokens saved by
 //                the Translator can also be printed
 //
+//  2010-05-19  created testinput8 for translator substring tests
+//  2010-05-21  added rest of test inputs for substring assignment tests
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -455,10 +458,31 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z = A$ + B * C",
 		NULL
 	};
+	const char *testinput8[] = {  // substring tests (2010-05-19)
+		"LEFT$(A$,1) = B$",
+		"LEFT$(A$,1) = B$ + C$",
+		"MID$(A$,2) = B$",
+		"MID$(A$,2) = B$ + C$",
+		"MID$(A$,2,3) = B$",
+		"MID$(A$,2,3) = B$ + C$",
+		"RIGHT$(A$,2) = B$",
+		"RIGHT$(A$,2) = B$ + C$",
+		"LEFT$(A$,1) = RIGHT$(B$,1)",
+		"LEFT$(A$,1) = RIGHT$(B$+C$,1)",
+		// begin of error tests
+		"RIGHT$(A$,2) = B",
+		"RIGHT$(A$,2) = B%",
+		"RIGHT$(A,2) = B$",
+		"RIGHT$(A%,2) = B$",
+		"RIGHT$(A$+B$,2) = C$",
+		"RIGHT$(LEFT$(A$,1),2) = B$",
+		"RIGHT$(LEFT$(A$+B$,1),2) = C$",
+		NULL
+	};
 
 	const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
-		testinput7
+		testinput7, testinput8
 	};
 	const int ntests = sizeof(test) / sizeof(test[0]);
 
