@@ -123,6 +123,12 @@
 //                type to TmpStr for token types DefFuncN/DefFuncP when the data
 //                type is String
 //
+//  2010-05-19  added new SubStr_DataType
+//              added new associated code AssignSubStr_Code to Assign_Code
+//  2010-05-20  increased Max_Assoc_Codes from 2 to 3 because of
+//                AssignSubStr_Code
+//              added new maximum table errors
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -169,7 +175,8 @@ enum Code {
 
 	// 2010-04-11: assignment operators
 	// 2010-05-07: added assignment operator associated codes
-	Assign_Code, AssignInt_Code, AssignStr_Code,
+	// 2010-05-19: added assign sub-string associated code
+	Assign_Code, AssignInt_Code, AssignStr_Code, AssignSubStr_Code,
 	AssignList_Code, AssignListInt_Code, AssignListStr_Code,
 
 	// math internal functions
@@ -303,6 +310,7 @@ enum DataType {
 	Integer_DataType,
 	String_DataType,
 	TmpStr_DataType,	// 2010-05-15: temporary string data type
+	SubStr_DataType,	// 2010-05-19: sub string data type
 	// the end of the actual execution data types
 	numberof_DataType,	// 2010-04-24: new entry for number of actual data types
 	// the following data types are used internally for other uses
@@ -442,10 +450,11 @@ const int Max_Operands = 3;
 	// (arguments) for any operator or internal function (there are currently
 	// no internal function with more than 3 arguments)
 
-const int Max_Assoc_Codes = 2;
+const int Max_Assoc_Codes = 3;
 	// 2010-04-24: this value contains the maximum number of associated codes,
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
+	// 2010-05-20: increased from 2 to 3 because of AssignSubStr_Code
 
 
 // 2010-05-03: expression information for operators and internal functions
@@ -509,6 +518,8 @@ enum TableErrType {
 	Missing_TableErrType,
 	Range_TableErrType,
 	Overlap_TableErrType,
+	MaxOperands_TableErrType,	// 2010-05-20
+	MaxAssocCodes_TableErrType,	// 2010-05-20
 	sizeof_TableErrType
 };
 
@@ -534,6 +545,9 @@ struct TableError {
 			int ibeg;			// index of beginning bracket code
 			int iend;			// index of ending bracket code
 		} overlap;
+		struct {
+			int found;			// actual maximum found
+		} maximum;
 	};
 
 	TableError(Code code, int ifirst, int idup)
@@ -562,6 +576,12 @@ struct TableError {
 		overlap.type2 = type2;
 		overlap.ibeg = ibeg;
 		overlap.iend = iend;
+	}
+	// 2010-05-20: added new error
+	TableError(TableErrType _type, int max)
+	{
+		type = _type;
+		maximum.found = max;
 	}
 	TableError(void)			// default constructor
 	{
