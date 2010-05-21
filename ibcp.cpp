@@ -44,6 +44,9 @@
 //  2010-04-25  added "-t" to usage string
 //              added check if program name does not have full path
 //
+//  2010-05-20  added maximum operands and maximum associate code table error
+//              reporting
+//
 
 #include <stdio.h>
 #include "ibcp.h"
@@ -130,6 +133,15 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "Search type %d indexes (%d, %d) overlap with "
 					"search type %d\n", error.overlap.type1, error.overlap.ibeg,
 					error.overlap.iend, error.overlap.type2);
+				break;
+			// 2010-05-20: added new maximum errors
+			case MaxOperands_TableErrType:
+				fprintf(stderr, "Max_Operands=%d too small, actual is %d\n",
+					Max_Operands, error.maximum.found);
+				break;
+			case MaxAssocCodes_TableErrType:
+				fprintf(stderr, "Max_Assoc_Codes=%d too small, actual is %d\n",
+					Max_Assoc_Codes, error.maximum.found);
 				break;
 			default:
 				fprintf(stderr, "Unknown error %d\n", error.type);
