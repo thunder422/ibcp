@@ -79,6 +79,12 @@
 //                Space, Str, CatStr, and StrInt) - new ExprInfos were added
 //              added String_Flag to all codes that have string operands
 //
+//  2010-05-19  changed data type of LEFT, MID2, MID3 and RIGHT to SubStr
+//              added new associated code AssignSubStr_Code to Assign_Code along
+//                with it's new table entry
+//  2010-05-20  added code to check if the Max_Operands and Max_Assoc_Codes
+//              agree with the tables entries, reporting errors if not
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -133,12 +139,19 @@ DataType StrStr_OperandArray[] = {
 DataType StrStrInt_OperandArray[] = {
 	String_DataType, String_DataType, Integer_DataType
 };
+// 2010-05-19: added new operand data type array
+DataType SubStr_OperandArray[] = {
+	SubStr_DataType, String_DataType
+};
 
 
 // 2010-05-06: associated code data type arrays
 Code Abs_AssocCode[]        = {AbsInt_Code};
 Code Add_AssocCode[]        = {AddInt_Code, CatStr_Code};
-Code Assign_AssocCode[]     = {AssignInt_Code, AssignStr_Code};
+// 2010-05-19: added AssignSubStr_Code to list
+Code Assign_AssocCode[]     = {
+	AssignInt_Code, AssignStr_Code, AssignSubStr_Code
+};
 Code AssignList_AssocCode[] = {AssignListInt_Code, AssignListStr_Code};
 Code Div_AssocCode[]        = {DivInt_Code};
 Code Eq_AssocCode[]         = {EqInt_Code, EqStr_Code};
@@ -173,15 +186,19 @@ ExprInfo Int_StrStr_ExprInfo(Integer_DataType, Null_Code, Operands(StrStr));
 ExprInfo Int_StrStrInt_ExprInfo(Integer_DataType, Null_Code,
 	Operands(StrStrInt));
 
-ExprInfo Str_StrInt_ExprInfo(String_DataType, Null_Code, Operands(StrInt));
-ExprInfo Str_StrIntInt_ExprInfo(String_DataType, Null_Code,
-	Operands(StrIntInt));
 ExprInfo Str_StrStr_ExprInfo(String_DataType, Null_Code, Operands(StrStr));
 
 // 2010-05-15: changed to return TmpStr
 ExprInfo Tmp_Int_ExprInfo(TmpStr_DataType, Null_Code, Operands(Int));
 ExprInfo Tmp_StrInt_ExprInfo(TmpStr_DataType, Null_Code, Operands(StrInt));
 ExprInfo Tmp_StrStr_ExprInfo(TmpStr_DataType, Null_Code, Operands(StrStr));
+
+// 2010-05-19: changed to return SubStr
+ExprInfo Sub_StrInt_ExprInfo(SubStr_DataType, Null_Code, Operands(StrInt));
+ExprInfo Sub_StrIntInt_ExprInfo(SubStr_DataType, Null_Code,
+	Operands(StrIntInt));
+// 2010-05-19: added new expression info
+ExprInfo Str_SubStr_ExprInfo(String_DataType, Null_Code, Operands(SubStr));
 
 ExprInfo None_Int_ExprInfo(None_DataType, Null_Code, Operands(Int));
 
@@ -495,7 +512,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		Left_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"LEFT$(", NULL, String_Flag, 2, &Str_StrInt_ExprInfo
+		"LEFT$(", NULL, String_Flag, 2, &Sub_StrInt_ExprInfo
 	},
 	{
 		Len_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -504,11 +521,11 @@ static TableEntry table_entries[] = {
 	// 2010-04-04: replaced MID entry with MID2 and MID3 entries
 	{
 		Mid2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID2$(", Multiple_Flag | String_Flag, 2, &Str_StrInt_ExprInfo
+		"MID$(", "MID2$(", Multiple_Flag | String_Flag, 2, &Sub_StrInt_ExprInfo
 	},
 	{
 		Mid3_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID3$(", String_Flag, 2, &Str_StrIntInt_ExprInfo
+		"MID$(", "MID3$(", String_Flag, 2, &Sub_StrIntInt_ExprInfo
 	},
 	{
 		Repeat_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -516,7 +533,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		Right_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"RIGHT$(", NULL, String_Flag, 2, &Str_StrInt_ExprInfo
+		"RIGHT$(", NULL, String_Flag, 2, &Sub_StrInt_ExprInfo
 	},
 	{
 		Space_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -696,6 +713,11 @@ static TableEntry table_entries[] = {
 		AssignStr_Code, Operator_TokenType, OneWord_Multiple,
 		"=", "Assign$", Reference_Flag | String_Flag, 4, &Str_StrStr_ExprInfo
 	},
+	// 2010-05-19: added entries for assign sub-string associated code
+	{
+		AssignSubStr_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "AssignSub$", Reference_Flag | String_Flag, 4, &Str_SubStr_ExprInfo
+	},
 	// 2010-05-05: added reference and assign list flags
 	{
 		AssignList_Code, Operator_TokenType, OneWord_Multiple,
@@ -860,6 +882,9 @@ Table::Table(void)
 	// scan table and record indexes
 	bool error = false;
 	int nentries = sizeof(table_entries) / sizeof(TableEntry);
+	// 2010-05-20: find maximum number of operands and associated codes
+	int max_operands = 0;
+	int max_assoc_codes = 0;
 	for (i = 0; i < nentries; i++)
 	{
 		Code code = entry[i].code;
@@ -873,6 +898,30 @@ Table::Table(void)
 			TableError error(code, index_code[code], i);
 			error_list->append(&error);
 		}
+		// 2010-05-20: check if found new maximums
+		if (entry[i].exprinfo != NULL)
+		{
+			if (max_operands < entry[i].exprinfo->noperands)
+			{
+				max_operands = entry[i].exprinfo->noperands;
+			}
+			if (max_assoc_codes < entry[i].exprinfo->nassoc_codes)
+			{
+				max_assoc_codes = entry[i].exprinfo->nassoc_codes;
+			}
+		}
+	}
+	
+	// 2010-05-20: check maximums found against constants
+	if (max_operands > Max_Operands)
+	{
+		TableError error(MaxOperands_TableErrType, max_operands);
+		error_list->append(&error);
+	}
+	if (max_assoc_codes > Max_Assoc_Codes)
+	{
+		TableError error(MaxAssocCodes_TableErrType, max_assoc_codes);
+		error_list->append(&error);
 	}
 
 	// check for missing codes
