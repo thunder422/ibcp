@@ -89,6 +89,16 @@
 //              operand was set to the return value of the append call when the
 //              conversion code is inserted
 //
+//  2010-05-19  added sub-string support:
+//              in find_code() rearranged first operand code and added check for
+//                a sub-string function to get the string operands reference
+//                flag
+//              added SubStr entries to the convert code table in match_code()
+//  2010-05-21  when an error occurs with a sub-string function where its string
+//              operand cannot be assigned, the change the token with the error
+//              to the string operand that can't be assigned instead of pointing
+//              to the sub-string function
+//
 
 #include "ibcp.h"
 
@@ -756,28 +766,47 @@ Translator::Status Translator::find_code(Token *&token,
 			return BUG_DoneStackEmpty;
 		}
 
-		// 2010-05-08: for assignment list, return first operand
-		if (i == 0 && last_operand != NULL)
+		if (i == 0)  // first operand?
 		{
-			*last_operand = operand[0];
-		}
-
-		// 2010-05-08: check if reference is required for first operand
-		if (i == 0 && table->flags(token->index) & Reference_Flag)
-		{
-			if (!operand[0]->value->token->reference)
+			// 2010-05-08: for assignment list, return first operand
+			if (last_operand != NULL)
 			{
-				// need a reference, so return error
-				delete token;  // delete the operator token
-				token = operand[0]->value->token;  // return operand with error
-				return Error_ExpAssignReference;
+				*last_operand = operand[0];
+			}
+
+			// 2010-05-08: check if reference is required for first operand
+			if (table->flags(token->index) & Reference_Flag)
+			{
+				if (!operand[0]->value->token->reference)
+				{
+					// need a reference, so return error
+					delete token;  // delete the operator token
+					token = operand[0]->value->token;  // return operand w/error
+
+					// 2010-05-21: check if error is from a sub-string function
+					if (token->datatype == SubStr_DataType)
+					{
+						// get string argument of sub-string function
+						token = operand[0]->value->operand[0]->value->token;
+					}
+					return Error_ExpAssignReference;
+				}
+				continue;  // skip clearing of reference flag (will exit loop)
+			}
+
+			// 2010-05-19: check for a sub-string function and string operand
+			if (token->datatype == SubStr_DataType
+				&& operand[0]->value->token->datatype == String_DataType)
+			{
+				// set sub-string functions reference flag to operand's
+				// (this will make sub-string function a reference if the
+				// string operand was a reference)
+				token->reference = operand[0]->value->token->reference;
 			}
 		}
-		else
-		{
-			// reset reference flag of operand
-			operand[i]->value->token->reference = false;
-		}
+
+		// reset reference flag of operand
+		operand[i]->value->token->reference = false;
 	}
 
 	// see if main code's data types match
@@ -888,31 +917,43 @@ Translator::Match Translator::match_code(Code *cvt_code, Code code)
 {
 	// array of conversion codes [have data type] [need data type]
 	// 2010-05-15: add entries for TmpStr_DataType
+	// 2010-05-19: add entries for SubStr_DataType
 	static Code cvtcode_have_need[numberof_DataType][numberof_DataType] =
 	{
 		{	// have Double,    need:
 			Null_Code,		// Double
 			CvtInt_Code,	// Integer
 			Invalid_Code,	// String
-			Invalid_Code	// TmpStr
+			Invalid_Code,	// TmpStr
+			Invalid_Code	// SubStr
 		},
 		{	// have Integer,   need:
 			CvtDbl_Code,	// Double
 			Null_Code,		// Integer
 			Invalid_Code,	// String
-			Invalid_Code	// TmpStr
+			Invalid_Code,	// TmpStr
+			Invalid_Code	// SubStr
 		},
 		{	// have String,    need:
 			Invalid_Code,	// Double
 			Invalid_Code,	// Integer
 			Null_Code,		// String
-			Null_Code		// TmpStr
+			Null_Code,		// TmpStr
+			Null_Code		// SubStr
 		},
 		{	// have TmpStr,    need:
 			Invalid_Code,	// Double
 			Invalid_Code,	// Integer
 			Null_Code,		// String
-			Null_Code		// TmpStr
+			Null_Code,		// TmpStr
+			Null_Code		// SubStr
+		},
+		{	// have SubStr,    need:
+			Invalid_Code,	// Double
+			Invalid_Code,	// Integer
+			Null_Code,		// String
+			Null_Code,		// TmpStr
+			Null_Code		// SubStr
 		}
 	};
 
