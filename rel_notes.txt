@@ -33,11 +33,29 @@ Planned Roadmap:
 	Recreator
 
 
+Release 0.1.11-dev-3 (2010-05-21)
+
+	Translator interim developmental release - added support for
+	sub-string assignments.  Also added checks for the maximum
+	number of operands and associated codes constants against the
+	actual table entries during table initialization.  New (listed
+	first) and updated files include:
+
+	translator8.txt - updated for correction of saved operands
+
+	codes.txt       - updated for sub-string assignment operator
+	ibcp.cpp        - added maxmimum operands/assoc codes errors
+	ibcp.h          - added sub-string support/new table errors
+	table.cpp       - sub-strings/new operator/max table checks
+	translator.cpp  - added sub-string plus assignment support
+	test_ibcp.cpp   - added sub-string assignment test statements
+
+
 Release 0.1.11-dev-2 (2010-05-17)
 
-	Translator developmental release - corrected minor problem with
-	save operands pointing to inserted conversion code.  Updated
-	files include:
+	Translator interim developmental release - corrected minor
+	problem with save operands pointing to inserted conversion code.
+	Updated files include:
 
 	translator.cpp  - correct saved operands/cvt code problem
 	translator3.txt - updated for correction of saved operands
@@ -46,8 +64,8 @@ Release 0.1.11-dev-2 (2010-05-17)
 
 Release 0.1.11-dev-1 (2010-05-15)
 
-	Translator developmental release - support for temporary strings
-	has been implemented.  Updated files include:
+	Translator interim developmental release - support for temporary
+	strings has been implemented.  Updated files include:
 
 	ibcp.h          - updated for temporary string, saving operands
 	table.cpp       - updated codes for temporary strings
