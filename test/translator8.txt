@@ -64,3 +64,30 @@ Input: RIGHT$(LEFT$(A$+B$,1),2) = C$
               ^^^^^^-- item cannot be assigned
 
 
+Input: LEFT$(A$,1),RIGHT$(B$,1) = C$
+Output: A$ 1 LEFT$(<ref>[A$,1] B$ 1 RIGHT$(<ref>[B$,1] C$ AssignListMix$[LEFT$(<ref>,RIGHT$(<ref>,C$] 
+
+Input: LEFT$(A$,1),MID$(B$,2,1),RIGHT$(C$,1) = D$
+Output: A$ 1 LEFT$(<ref>[A$,1] B$ 2 1 MID3$(<ref>[B$,2,1] C$ 1 RIGHT$(<ref>[C$,1] D$ AssignListMix$[LEFT$(<ref>,MID3$(<ref>,RIGHT$(<ref>,D$] 
+
+Input: LEFT$(A$,1),B$ = C$
+Output: A$ 1 LEFT$(<ref>[A$,1] B$<ref> C$ AssignListMix$[LEFT$(<ref>,B$<ref>,C$] 
+
+Input: LEFT$(A$,1),B$,C$ = D$
+Output: A$ 1 LEFT$(<ref>[A$,1] B$<ref> C$<ref> D$ AssignListMix$[LEFT$(<ref>,B$<ref>,C$<ref>,D$] 
+
+Input: A$,LEFT$(B$,1) = C$
+Output: A$<ref> B$ 1 LEFT$(<ref>[B$,1] C$ AssignListMix$[A$<ref>,LEFT$(<ref>,C$] 
+
+Input: A$,LEFT$(B$,1),C$ = D$
+Output: A$<ref> B$ 1 LEFT$(<ref>[B$,1] C$<ref> D$ AssignListMix$[A$<ref>,LEFT$(<ref>,C$<ref>,D$] 
+
+Input: A$,B$,C$ = D$
+Output: A$<ref> B$<ref> C$<ref> D$ AssignList$[A$<ref>,B$<ref>,C$<ref>,D$] 
+
+Input: A$,B$,LEFT$(C$,1) = D$
+Output: A$<ref> B$<ref> C$ 1 LEFT$(<ref>[C$,1] D$ AssignListMix$[A$<ref>,B$<ref>,LEFT$(<ref>,D$] 
+
+Input: LEFT$(A$,1),B$,RIGHT$(C$,1) = D$
+Output: A$ 1 LEFT$(<ref>[A$,1] B$<ref> C$ 1 RIGHT$(<ref>[C$,1] D$ AssignListMix$[LEFT$(<ref>,B$<ref>,RIGHT$(<ref>,D$] 
+
