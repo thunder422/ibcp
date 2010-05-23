@@ -108,6 +108,9 @@
 //  2010-05-19  created testinput8 for translator substring tests
 //  2010-05-21  added rest of test inputs for substring assignment tests
 //
+//  2010-05-22  added more of test inputs for substring assignment tests that
+//              contain mix string list assignments
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -477,6 +480,16 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"RIGHT$(A$+B$,2) = C$",
 		"RIGHT$(LEFT$(A$,1),2) = B$",
 		"RIGHT$(LEFT$(A$+B$,1),2) = C$",
+		// list assignments (2010-05-22)
+		"LEFT$(A$,1),RIGHT$(B$,1) = C$",
+		"LEFT$(A$,1),MID$(B$,2,1),RIGHT$(C$,1) = D$",
+		"LEFT$(A$,1),B$ = C$",
+		"LEFT$(A$,1),B$,C$ = D$",
+		"A$,LEFT$(B$,1) = C$",
+		"A$,LEFT$(B$,1),C$ = D$",
+		"A$,B$,C$ = D$",
+		"A$,B$,LEFT$(C$,1) = D$",
+		"LEFT$(A$,1),B$,RIGHT$(C$,1) = D$",
 		NULL
 	};
 
