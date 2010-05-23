@@ -129,6 +129,11 @@
 //                AssignSubStr_Code
 //              added new maximum table errors
 //
+//  2010-05-20  added new associated code AssignListMixStr_Code to
+//                AssignList_Code
+//              added RpnItem::set() to set rpn item members without allocating
+//                a new array and copying to the array
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -177,7 +182,9 @@ enum Code {
 	// 2010-05-07: added assignment operator associated codes
 	// 2010-05-19: added assign sub-string associated code
 	Assign_Code, AssignInt_Code, AssignStr_Code, AssignSubStr_Code,
+	// 2010-05-22: added assign mix-string list associated code
 	AssignList_Code, AssignListInt_Code, AssignListStr_Code,
+		AssignListMixStr_Code,
 
 	// math internal functions
 	Abs_Code, AbsInt_Code,
@@ -794,6 +801,13 @@ struct RpnItem {
 		{
 			delete[] operand;
 		}
+	}
+
+	// 2010-05-22: function to set operands without allocating a new array
+	void set(int _noperands, List<RpnItem *>::Element **_operand)
+	{
+		noperands = _noperands;
+		operand = _operand;
 	}
 };
 
