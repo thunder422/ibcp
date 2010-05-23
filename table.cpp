@@ -81,9 +81,15 @@
 //
 //  2010-05-19  changed data type of LEFT, MID2, MID3 and RIGHT to SubStr
 //              added new associated code AssignSubStr_Code to Assign_Code along
-//                with it's new table entry
+//                with their new table entries
 //  2010-05-20  added code to check if the Max_Operands and Max_Assoc_Codes
 //              agree with the tables entries, reporting errors if not
+//
+//  2010-05-22  removed String_Flag from codes with string operands and replaced
+//                this with the automatic setting the flag by looking at the
+//                entries during table initialization
+//              added new associated code AssignListMixStr along with its new
+//                table entry
 //
 
 #include <ctype.h>
@@ -152,7 +158,10 @@ Code Add_AssocCode[]        = {AddInt_Code, CatStr_Code};
 Code Assign_AssocCode[]     = {
 	AssignInt_Code, AssignStr_Code, AssignSubStr_Code
 };
-Code AssignList_AssocCode[] = {AssignListInt_Code, AssignListStr_Code};
+// 2010-05-19: added AssignListMaxStr_Code to list
+Code AssignList_AssocCode[] = {
+	AssignListInt_Code, AssignListStr_Code, AssignListMixStr_Code
+};
 Code Div_AssocCode[]        = {DivInt_Code};
 Code Eq_AssocCode[]         = {EqInt_Code, EqStr_Code};
 Code Gt_AssocCode[]         = {GtInt_Code, GtStr_Code};
@@ -489,12 +498,12 @@ static TableEntry table_entries[] = {
 	},
 	{
 		Asc_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", NULL, Multiple_Flag | String_Flag, 2, &Int_Str_ExprInfo
+		"ASC(", NULL, Multiple_Flag, 2, &Int_Str_ExprInfo
 	},
 	// 2010-04-04: added entry for 2 argument ASC
 	{
 		Asc2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", "ASC2(", String_Flag, 2, &Int_StrInt_ExprInfo
+		"ASC(", "ASC2(", Null_Flag, 2, &Int_StrInt_ExprInfo
 	},
 	{
 		Chr_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -503,37 +512,37 @@ static TableEntry table_entries[] = {
 	// 2010-04-04: replaced INSTR entry with INSTR2 and INSTR3 entries
 	{
 		Instr2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR2(", Multiple_Flag | String_Flag, 2,
+		"INSTR(", "INSTR2(", Multiple_Flag, 2,
 		&Int_StrStr_ExprInfo
 	},
 	{
 		Instr3_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR3(", String_Flag, 2, &Int_StrStrInt_ExprInfo
+		"INSTR(", "INSTR3(", Null_Flag, 2, &Int_StrStrInt_ExprInfo
 	},
 	{
 		Left_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"LEFT$(", NULL, String_Flag, 2, &Sub_StrInt_ExprInfo
+		"LEFT$(", NULL, Null_Flag, 2, &Sub_StrInt_ExprInfo
 	},
 	{
 		Len_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"LEN(", NULL, String_Flag, 2, &Int_Str_ExprInfo
+		"LEN(", NULL, Null_Flag, 2, &Int_Str_ExprInfo
 	},
 	// 2010-04-04: replaced MID entry with MID2 and MID3 entries
 	{
 		Mid2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID2$(", Multiple_Flag | String_Flag, 2, &Sub_StrInt_ExprInfo
+		"MID$(", "MID2$(", Multiple_Flag, 2, &Sub_StrInt_ExprInfo
 	},
 	{
 		Mid3_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID3$(", String_Flag, 2, &Sub_StrIntInt_ExprInfo
+		"MID$(", "MID3$(", Null_Flag, 2, &Sub_StrIntInt_ExprInfo
 	},
 	{
 		Repeat_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"REPEAT$(", NULL, String_Flag, 2, &Tmp_StrInt_ExprInfo
+		"REPEAT$(", NULL, Null_Flag, 2, &Tmp_StrInt_ExprInfo
 	},
 	{
 		Right_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"RIGHT$(", NULL, String_Flag, 2, &Sub_StrInt_ExprInfo
+		"RIGHT$(", NULL, Null_Flag, 2, &Sub_StrInt_ExprInfo
 	},
 	{
 		Space_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -548,7 +557,7 @@ static TableEntry table_entries[] = {
 	{
 		// 2010-04-02: changed name to all upper case
 		Val_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"VAL(", NULL, String_Flag, 2, &Dbl_Str_ExprInfo
+		"VAL(", NULL, Null_Flag, 2, &Dbl_Str_ExprInfo
 	},
 	//***************************
 	//   END PARENTHESES WORDS
@@ -711,12 +720,12 @@ static TableEntry table_entries[] = {
 	},
 	{
 		AssignStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "Assign$", Reference_Flag | String_Flag, 4, &Str_StrStr_ExprInfo
+		"=", "Assign$", Reference_Flag, 4, &Str_StrStr_ExprInfo
 	},
 	// 2010-05-19: added entries for assign sub-string associated code
 	{
 		AssignSubStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignSub$", Reference_Flag | String_Flag, 4, &Str_SubStr_ExprInfo
+		"=", "AssignSub$", Reference_Flag, 4, &Str_SubStr_ExprInfo
 	},
 	// 2010-05-05: added reference and assign list flags
 	{
@@ -733,8 +742,14 @@ static TableEntry table_entries[] = {
 	},
 	{
 		AssignListStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList$", Reference_Flag | AssignList_Flag | String_Flag, 4,
+		"=", "AssignList$", Reference_Flag | AssignList_Flag, 4,
 		&Str_StrStr_ExprInfo
+	},
+	// 2010-05-22: added entry for assign mix string list associated code
+	{
+		AssignListMixStr_Code, Operator_TokenType, OneWord_Multiple,
+		"=", "AssignListMix$", Reference_Flag | AssignList_Flag, 4,
+		&Str_SubStr_ExprInfo
 	},
 	{
 		EOL_Code, Operator_TokenType, OneWord_Multiple,
@@ -747,7 +762,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		CatStr_Code, Operator_TokenType, OneChar_Multiple,
-		"+", "+$", String_Flag, 40, &Tmp_StrStr_ExprInfo
+		"+", "+$", Null_Flag, 40, &Tmp_StrStr_ExprInfo
 	},
 	{
 		SubInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -785,7 +800,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		EqStr_Code, Operator_TokenType, OneChar_Multiple,
-		"=", "=$", String_Flag, 30, &Int_StrStr_ExprInfo
+		"=", "=$", Null_Flag, 30, &Int_StrStr_ExprInfo
 	},
 	{
 		GtInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -793,7 +808,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		GtStr_Code, Operator_TokenType, OneChar_Multiple,
-		">", ">$", String_Flag, 32, &Int_StrStr_ExprInfo
+		">", ">$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
 		GtEqInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -801,7 +816,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		GtEqStr_Code, Operator_TokenType, OneChar_Multiple,
-		">=", ">=$", String_Flag, 32, &Int_StrStr_ExprInfo
+		">=", ">=$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
 		LtInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -809,7 +824,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		LtStr_Code, Operator_TokenType, OneChar_Multiple,
-		"<", "<$", String_Flag, 32, &Int_StrStr_ExprInfo
+		"<", "<$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
 		LtEqInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -817,7 +832,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		LtEqStr_Code, Operator_TokenType, OneChar_Multiple,
-		"<=", "<=$", String_Flag, 32, &Int_StrStr_ExprInfo
+		"<=", "<=$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
 		NotEqInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -825,7 +840,7 @@ static TableEntry table_entries[] = {
 	},
 	{
 		NotEqStr_Code, Operator_TokenType, OneChar_Multiple,
-		"<>", "<>$", String_Flag, 30, &Int_StrStr_ExprInfo
+		"<>", "<>$", Null_Flag, 30, &Int_StrStr_ExprInfo
 	},
 	{
 		AbsInt_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -899,15 +914,26 @@ Table::Table(void)
 			error_list->append(&error);
 		}
 		// 2010-05-20: check if found new maximums
-		if (entry[i].exprinfo != NULL)
+		ExprInfo *exprinfo = entry[i].exprinfo;
+		if (exprinfo != NULL)
 		{
-			if (max_operands < entry[i].exprinfo->noperands)
+			if (max_operands < exprinfo->noperands)
 			{
-				max_operands = entry[i].exprinfo->noperands;
+				max_operands = exprinfo->noperands;
 			}
-			if (max_assoc_codes < entry[i].exprinfo->nassoc_codes)
+			if (max_assoc_codes < exprinfo->nassoc_codes)
 			{
-				max_assoc_codes = entry[i].exprinfo->nassoc_codes;
+				max_assoc_codes = exprinfo->nassoc_codes;
+			}
+
+			// 2010-05-22: set String_Flag in entries automatically
+			for (int j = 0; j < exprinfo->noperands; j++)
+			{
+				if (exprinfo->operand_datatype[j] == String_DataType)
+				{
+					entry[i].flags |= String_Flag;
+					break;
+				}
 			}
 		}
 	}
