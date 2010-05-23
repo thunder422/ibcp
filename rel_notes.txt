@@ -20,7 +20,6 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
-	Translator - Strings
 	Translator - Commands
 	Translator - Semicolons
 	Translator - Colons
@@ -31,6 +30,24 @@ Planned Roadmap:
 	Encoder
 	Encoder - Temporary Strings
 	Recreator
+
+
+Release 0.1.11 (2010-05-22)
+
+	Translator developmental release - the string data type is now
+	fully implemented by the Translator including temporary string
+	handling, sub-string assignments, string list assignments, and
+	mixed string and sub-string assignments.  New (listed first) and
+	updated files include:
+
+	codes.txt       - updated for mix-string assignment operator
+	ibcp.h          - added sub-string support/new table errors
+	stack.h         - added number of items on stack access function
+	table.cpp       - sub-strings/new operator/max table checks
+	test_ibcp.cpp   - added sub-string assignment test statements
+	translator.cpp  - assign list: save all operands/mix strings
+	translator7.txt - updated for string list operand correction
+	translator8.txt - updated for additional string assignments
 
 
 Release 0.1.11-dev-3 (2010-05-21)
@@ -44,11 +61,11 @@ Release 0.1.11-dev-3 (2010-05-21)
 	translator8.txt - updated for correction of saved operands
 
 	codes.txt       - updated for sub-string assignment operator
-	ibcp.cpp        - added maxmimum operands/assoc codes errors
+	ibcp.cpp        - added maximum operands/assoc codes errors
 	ibcp.h          - added sub-string support/new table errors
 	table.cpp       - sub-strings/new operator/max table checks
-	translator.cpp  - added sub-string plus assignment support
 	test_ibcp.cpp   - added sub-string assignment test statements
+	translator.cpp  - added sub-string plus assignment support
 
 
 Release 0.1.11-dev-2 (2010-05-17)
