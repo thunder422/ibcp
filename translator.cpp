@@ -82,7 +82,7 @@
 //              for operators with string operands, saved operands
 //              moved find_code() operand[] array to class for all to access
 //              removed operandp[] argument from match_code(), now uses member
-//              added entries to match_code() convertion code table for TmpStr
+//              added entries to match_code() conversion code table for TmpStr
 //
 //  2010-05-16  corrected problem where saved operand was not pointing to a
 //              conversion code that was inserted after the operand - the
@@ -98,6 +98,10 @@
 //              operand cannot be assigned, the change the token with the error
 //              to the string operand that can't be assigned instead of pointing
 //              to the sub-string function
+//
+//  2010-05-22  corrected issue where string list assignments were not saving
+//                all of the operands instead of just the last two
+//              updated add_operator() to handle mix string list assignments
 //
 
 #include "ibcp.h"
@@ -582,6 +586,12 @@ Translator::Status Translator::add_operator(Token *&token)
 	List<RpnItem *>::Element *last_operand;
 	// 2010-05-15: renamed operand to list_operand to avoid conflict with member
 	List<RpnItem *>::Element *list_operand;
+	// 2010-05-22: moved variables used to create rpn item
+	int noperands = 0;
+	List<RpnItem *>::Element **operand_array;
+	// 2010-05-22: moved rpn item point to here
+	RpnItem *rpn_item;
+
 
 	// 2010-04-25: implemented data type handling for non-assignment operators
 	//             removed popping of operands, find_code() does this
@@ -599,8 +609,28 @@ Translator::Status Translator::add_operator(Token *&token)
 	// 2010-05-08: process rest of operands for assignment list
 	if (assignlist)
 	{
+		// 2010-05-22: equivalent data type array
+		static DataType equivalent_datatype[numberof_DataType] =
+		{
+			Double_DataType,	// Double
+			Integer_DataType,	// Integer
+			String_DataType,	// String
+			String_DataType,	// TmpStr
+			String_DataType		// SubStr
+		};
+
+		// 2010-05-22: stack to hold list operands
+		SimpleStack<List<RpnItem *>::Element *> list_operands;
 		Token *org_token;
 		Token *bad_token;
+		// 2010-05-22: variables to detect mix string list assignment
+		bool mix_string = false;
+		DataType datatype;
+
+		// 2010-05-22: push already processed operands onto stack
+		list_operands.push(operand[1]);
+		list_operands.push(operand[0]);
+
 		if (status == Good)
 		{
 			bad_token = NULL;
@@ -617,11 +647,17 @@ Translator::Status Translator::add_operator(Token *&token)
 				status = Error_ExpAssignListReference;
 			}
 		}
+		// 2010-05-22: save data type of last operand
+		datatype = last_operand->value->token->datatype;
 		while (done_stack.pop(&list_operand))
 		{
+			// 2010-05-22: save operand to stack
+			list_operands.push(list_operand);
+
+			// 2010-05-22: check for equivalent data type
 			if (last_operand->value->token->reference 
-				&& list_operand->value->token->datatype
-				!= last_operand->value->token->datatype)
+				&& equivalent_datatype[list_operand->value->token->datatype]
+				!= equivalent_datatype[last_operand->value->token->datatype])
 			{
 				// data type does not match, set error at last token
 				bad_token = last_operand->value->token;
@@ -634,6 +670,7 @@ Translator::Status Translator::add_operator(Token *&token)
 					status = Error_ExpectedInteger;
 					break;
 				case String_DataType:
+				case SubStr_DataType:  // 2010-05-22: added data type
 					status = Error_ExpectedString;
 					break;
 				}
@@ -644,6 +681,13 @@ Translator::Status Translator::add_operator(Token *&token)
 				// found a non-reference, set bad token to return
 				bad_token = list_operand->value->token;
 				status = Error_ExpAssignListReference;
+			}
+
+			// 2010-05-22: see if mix strings in list
+			if (equivalent_datatype[datatype] == String_DataType
+				&& datatype != list_operand->value->token->datatype)
+			{
+				mix_string = true;
 			}
 
 			// make this operand the last operand
@@ -658,11 +702,44 @@ Translator::Status Translator::add_operator(Token *&token)
 			}
 			token = bad_token;  // return operand with error
 		}
-	}
+		if (status != Good)
+		{
+			return status;
+		}
 
-	if (status != Good)
+		// 2010-05-22: see if there is a mix string assignment list
+		if (mix_string)
+		{
+				token->index = table->index(AssignListMixStr_Code);
+		}
+		// 2010-05-15: if string, create an array to hold all operands
+		if (table->flags(token->index) & String_Flag)
+		{
+			noperands = list_operands.nitems();
+			operand_array = new List<RpnItem *>::Element *[noperands];
+			// fill array from stack in reverse order
+			for (int i = 0; i < noperands; i++)
+			{
+				operand_array[i] = list_operands.pop();
+			}
+		}
+		rpn_item = new RpnItem(token);
+		rpn_item->set(noperands, operand_array);
+	}
+	// 2010-05-22: added check for string here if not a list operator
+	else
 	{
-		return status;
+		if (status != Good)
+		{
+			return status;
+		}
+		if (table->flags(token->index) & String_Flag)
+		{
+			// for string tokens, save operands
+			noperands = table->noperands(token->index);
+			operand_array = operand;
+		}
+		rpn_item = new RpnItem(token, noperands, operand_array);
 	}
 
 	// 2010-03-25: added parentheses support BEGIN
@@ -677,17 +754,8 @@ Translator::Status Translator::add_operator(Token *&token)
 
 	// add token to output list and push element pointer on done stack
 	// 2010-05-15: for operators that have string operand, save the operands
-	int noperands;
-	if (!(table->flags(token->index) & String_Flag))
-	{
-		noperands = 0;  // no string operands, don't save operands
-	}
-	else  // save the operands
-	{
-		noperands = table->noperands(token->index);
-	}
+	// 2010-05-22: moved setting of noperands to above with operand_array
 	// 2010-05-15: create rpn item to add to output list
-	RpnItem *rpn_item = new RpnItem(token, noperands, operand);
 	done_stack.push(output->append(&rpn_item));
 
 	return Good;
@@ -748,7 +816,7 @@ Translator::Status Translator::find_code(Token *&token,
 		Code code;						// code match attempted for
 		Code cvt_code[Max_Operands];	// resulting conversion codes
 	} info[Max_Assoc_Codes + 1];		// matching information
-	const int MAIN = Max_Assoc_Codes;	// index of main code in info[]
+	static const int MAIN = Max_Assoc_Codes;	// index of main code in info[]
 	int convert;						// index of convertible match
 	int partial;						// index of partial match
 	// 2010-05-15: moved operand[] to class
