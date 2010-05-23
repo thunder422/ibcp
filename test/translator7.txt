@@ -31,10 +31,10 @@ Input: A% = B% = C% + D%
 Output: A%<ref> B%<ref> C% D% +% AssignList% 
 
 Input: A$,B$,C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[C$<ref>,"Test"] 
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[A$<ref>,B$<ref>,C$<ref>,"Test"] 
 
 Input: A$ = B$ = C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[C$<ref>,"Test"] 
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[A$<ref>,B$<ref>,C$<ref>,"Test"] 
 
 Input: Z, Y = A$ + B%
                    ^^-- expected string
