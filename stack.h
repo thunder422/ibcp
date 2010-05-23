@@ -28,6 +28,8 @@
 //              modified push(T value) to call push(void), which now
 //                contains the stack check and expansion code
 //
+//  2010-05-22  added nitems() function to return the number of items on stack
+//
 
 #ifndef STACK_H
 #define STACK_H
@@ -89,6 +91,11 @@ public:
 	bool empty(void)
 	{
 		return index == -1;
+	}
+	// 2010-05-22: function to get number of items on stack
+	int nitems(void)
+	{
+		return index + 1;
 	}
 
 	// function to push new item on top of stack
