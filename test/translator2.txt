@@ -7,10 +7,10 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: (A + B) + C
-Output: A B + ) C + 
+Output: A B +')' C + 
 
 Input: (A * B) + C
-Output: A B * ) C + 
+Output: A B *')' C + 
 
 Input: (A + B) * C
 Output: A B + C * 
@@ -25,31 +25,31 @@ Input: A + (B + C) * D
 Output: A B C + D * + 
 
 Input: (A + (B + C)) + D
-Output: A B C + + ) D + 
+Output: A B C + +')' D + 
 
 Input: (A + (B + C)) * D
 Output: A B C + + D * 
 
 Input: A + (B * C)
-Output: A B C * ) + 
+Output: A B C *')' + 
 
 Input: A + (B * C) + D
-Output: A B C * ) + D + 
+Output: A B C *')' + D + 
 
 Input: A + (B * C) * D
-Output: A B C * ) D * + 
+Output: A B C *')' D * + 
 
 Input: A + (B * C) ^ D
 Output: A B C * D ^ + 
 
 Input: A + ((B * C) + D)
-Output: A B C * ) D + + 
+Output: A B C *')' D + + 
 
 Input: A + ((B * C) * D)
-Output: A B C * ) D * ) + 
+Output: A B C *')' D *')' + 
 
 Input: A + ((B * C) ^ D)
-Output: A B C * D ^ ) + 
+Output: A B C * D ^')' + 
 
 Input: A * (B + C)
 Output: A B C + * 
@@ -61,22 +61,22 @@ Input: A * (B + C) * D
 Output: A B C + * D * 
 
 Input: A + (B) + C
-Output: A B ) + C + 
+Output: A B')' + C + 
 
 Input: A + ((B)) + C
-Output: A B ) ) + C + 
+Output: A B')' ) + C + 
 
 Input: A + B + ((C))
-Output: A B + C ) ) + 
+Output: A B + C')' ) + 
 
 Input: (A + B + C)
-Output: A B + C + ) 
+Output: A B + C +')' 
 
 Input: ((A + B)) + C
-Output: A B + ) ) C + 
+Output: A B +')' ) C + 
 
 Input: A + ((B * C))
-Output: A B C * ) ) + 
+Output: A B C *')' ) + 
 
 Input: A + B * C ^ D
 Output: A B C D ^ * + 
@@ -91,19 +91,19 @@ Input: (A + B) * (C + D)
 Output: A B + C D + * 
 
 Input: (A + B) + (C + D)
-Output: A B + ) C D + + 
+Output: A B +')' C D + + 
 
 Input: A + B + (C + D)
 Output: A B + C D + + 
 
 Input: (A * B) + (C * D)
-Output: A B * ) C D * ) + 
+Output: A B *')' C D *')' + 
 
 Input: (A + (B * (C ^ D))) + E
-Output: A B C D ^ ) * ) + ) E + 
+Output: A B C D ^')' *')' +')' E + 
 
 Input: (A ^ (B * (C + D))) + E
-Output: A B C D + * ^ ) E + 
+Output: A B C D + * ^')' E + 
 
 Input: (A + B
              ^-- missing closing parentheses

@@ -7,7 +7,7 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: Z = not A < 5.0 = B > 2.0
-Output: Z<ref> A 5 < B 2 > =% NOT CvtDbl Assign 
+Output: Z<ref> A 5.0 < B 2.0 > =% NOT CvtDbl Assign 
 
 Input: Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2
 Output: Z%<ref> A% 5 <% NOT B% 2 >% AND C% 1 <% D% 2 <>% AND OR Assign% 
@@ -19,7 +19,7 @@ Input: Z$=MID$(A$+B$,(C%+5)*D%,4)+" Test"
 Output: Z$<ref> A$ B$ +$[A$,B$] C% 5 +% D% *% 4 MID3$([+$,*%,4] " Test" +$[MID3$(," Test"] Assign$[Z$<ref>,+$] 
 
 Input: Z% = (a$ = "this" + "test")
-Output: Z%<ref> a$ "this" "test" +$["this","test"] =$[a$,+$] ) Assign% 
+Output: Z%<ref> a$ "this" "test" +$["this","test"] =$')'[a$,+$] Assign% 
 
 Input: Z = A% + B
 Output: Z<ref> A% CvtDbl B + Assign 

@@ -13,25 +13,25 @@ Input: A% = B + 5
 Output: A%<ref> B 5 CvtDbl + CvtInt Assign% 
 
 Input: A% = B + 5.0
-Output: A%<ref> B 5 + CvtInt Assign% 
+Output: A%<ref> B 5.0 + CvtInt Assign% 
 
 Input: A = B = C = 1.0
-Output: A<ref> B<ref> C<ref> 1 AssignList 
+Output: A<ref> B<ref> C<ref> 1.0 AssignList 
 
 Input: A, B, C = 1.0
-Output: A<ref> B<ref> C<ref> 1 AssignList 
+Output: A<ref> B<ref> C<ref> 1.0 AssignList',' 
 
 Input: A, B, C = 1
-Output: A<ref> B<ref> C<ref> 1 CvtDbl AssignList 
+Output: A<ref> B<ref> C<ref> 1 CvtDbl AssignList',' 
 
 Input: A%,B% = C% + D%
-Output: A%<ref> B%<ref> C% D% +% AssignList% 
+Output: A%<ref> B%<ref> C% D% +% AssignList%',' 
 
 Input: A% = B% = C% + D%
 Output: A%<ref> B%<ref> C% D% +% AssignList% 
 
 Input: A$,B$,C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[A$<ref>,B$<ref>,C$<ref>,"Test"] 
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$','[A$<ref>,B$<ref>,C$<ref>,"Test"] 
 
 Input: A$ = B$ = C$ = "Test"
 Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[A$<ref>,B$<ref>,C$<ref>,"Test"] 
