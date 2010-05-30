@@ -1,0 +1,58 @@
+# vim:ts=4:sw=4:
+#
+#	Interactive BASIC Compiler Project
+#	File: regtest - MSYS/bash script to run all tests
+#	Copyright (C) 2010  Thunder422
+#
+#	This program is free software: you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation, either version 3 of the License, or
+#	(at your option) any later version.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU General Public License for more details.
+#
+#	For a copy of the GNU General Public License,
+#	see <http://www.gnu.org/licenses/>.
+# 
+#
+#  Change History:
+#
+#  2010-05-29  initial release
+#
+#
+#  Usage:
+#    regtest
+#
+#  Details:
+#    output files are directed to current (IBCP) directory, and then
+#    comparing to the established output files in the test directory
+#    reporting any changes as FAIL
+#
+
+rm -f parser*.txt translator*.txt
+for i in 1 2 3 4 5
+do
+	ibcp -p $i >parser$i.txt
+	cmp -s test/parser$i.txt parser$i.txt
+	if [ $? -eq 0 ]
+	then
+		echo Parser Test $i... OK
+	else
+		echo Parser Test $i... FAIL
+	fi
+done
+
+for i in 1 2 3 4 5 6 7 8 9
+do
+	ibcp -t $i >translator$i.txt
+	cmp -s test/translator$i.txt translator$i.txt
+	if [ $? -eq 0 ]
+	then
+		echo Translator Test $i... OK
+	else
+		echo Translator Test $i... FAIL
+	fi
+done
