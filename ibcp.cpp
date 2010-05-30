@@ -47,6 +47,11 @@
 //  2010-05-20  added maximum operands and maximum associate code table error
 //              reporting
 //
+//  2010-05-28  replaced strrchr(argv[1],...) call with 'name' in usage
+//              message when command line options are not recognized, this
+//              cause the program to crash when run from the Windows cmd line
+//  2010-05-29  added the initialization of the new token has table entry flags
+//
 
 #include <stdio.h>
 #include "ibcp.h"
@@ -64,6 +69,7 @@ void print_gpl_header(char *name)
 bool Token::paren[sizeof_TokenType];
 bool Token::op[sizeof_TokenType];
 int Token::prec[sizeof_TokenType];  // 2010-04-02
+bool Token::table[sizeof_TokenType];  // 2010-05-29
 
 void Token::initialize(void)
 {
@@ -82,6 +88,13 @@ void Token::initialize(void)
 	prec[IntFuncP_TokenType] = -1;
 	prec[DefFuncP_TokenType] = 2;  // same as open parentheses
 	prec[Paren_TokenType] = 2;
+
+	// 2010-05-29: set token type has a table entry flags
+	table[ImmCmd_TokenType] = true;
+	table[Command_TokenType] = true;
+	table[Operator_TokenType] = true;
+	table[IntFuncN_TokenType] = true;
+	table[IntFuncP_TokenType] = true;
 }
 
 
@@ -162,7 +175,8 @@ int main(int argc, char *argv[])
 	if (!test_parser(parser, table, argc, argv)
 		&& !test_translator(translator, parser, table, argc, argv))
 	{
-		printf("usage: %s -p|-t <options>\n", strrchr(argv[0], '\\') + 1);
+		// 2010-05-28: replaced strrchr(argv[1],...) call with 'name'
+		printf("usage: %s -p|-t <options>\n", name);
 	}
 	return 0;
 }
