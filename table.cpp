@@ -91,6 +91,14 @@
 //              added new associated code AssignListMixStr along with its new
 //                table entry
 //
+//  2010-05-27  changed precedence values for CloseParen_Code and Comma_Code
+//                from 4 to 6 so commands are not emptied from the hold stack
+//              added precedence value of 4 (and NUll_Flag) to all commands
+//  2010-05-28  added values for new token_mode to Let_Code
+//              added values for new token_handler to Eq_Code, CloseParen_Code,
+//                Comma_Code, and EOL_Code
+//  2010-05-29  added Hidden_Flag to CvtInt_Code and CvtDbl_Code
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -272,96 +280,97 @@ static TableEntry table_entries[] = {
 	//   Commands
 	//--------------
 	{
+		// 2010-05-28: added value for token_mode
 		Let_Code, Command_TokenType, OneWord_Multiple,
-		"LET", NULL
+		"LET", NULL, Null_Flag, 4, NULL, NULL, Assignment_TokenMode
 	},
 	{
 		Print_Code, Command_TokenType, OneWord_Multiple,
-		"PRINT", NULL
+		"PRINT", NULL, Null_Flag, 4
 	},
 	{
 		Input_Code, Command_TokenType, OneWord_Multiple,
-		"INPUT", NULL
+		"INPUT", NULL, Null_Flag, 4
 	},
 	{
 		Dim_Code, Command_TokenType, OneWord_Multiple,
-		"DIM", NULL
+		"DIM", NULL, Null_Flag, 4
 	},
 	{
 		Def_Code, Command_TokenType, OneWord_Multiple,
-		"DEF", NULL
+		"DEF", NULL, Null_Flag, 4
 	},
 	{
 		Rem_Code, Command_TokenType, OneWord_Multiple,
-		"REM", NULL
+		"REM", NULL, Null_Flag, 4
 	},
 	{
 		If_Code, Command_TokenType, OneWord_Multiple,
-		"IF", NULL
+		"IF", NULL, Null_Flag, 4
 	},
 	{
 		Then_Code, Command_TokenType, OneWord_Multiple,
-		"THEN", NULL
+		"THEN", NULL, Null_Flag, 4
 	},
 	{
 		Else_Code, Command_TokenType, OneWord_Multiple,
-		"ELSE", NULL
+		"ELSE", NULL, Null_Flag, 4
 	},
 	{
 		End_Code, Command_TokenType, TwoWord_Multiple,
-		"END", NULL
+		"END", NULL, Null_Flag, 4
 	},
 	{
 		EndIf_Code, Command_TokenType, TwoWord_Multiple,
-		"END", "IF"
+		"END", "IF", Null_Flag, 4
 	},
 	{
 		For_Code, Command_TokenType, OneWord_Multiple,
-		"FOR", NULL
+		"FOR", NULL, Null_Flag, 4
 	},
 	{
 		To_Code, Command_TokenType, OneWord_Multiple,
-		"TO", NULL
+		"TO", NULL, Null_Flag, 4
 	},
 	{
 		Step_Code, Command_TokenType, OneWord_Multiple,
-		"STEP", NULL
+		"STEP", NULL, Null_Flag, 4
 	},
 	{
 		Next_Code, Command_TokenType, OneWord_Multiple,
-		"NEXT", NULL
+		"NEXT", NULL, Null_Flag, 4
 	},
 	{
 		Do_Code, Command_TokenType, TwoWord_Multiple,
-		"Do", NULL
+		"Do", NULL, Null_Flag, 4
 	},
 	{
 		DoWhile_Code, Command_TokenType, TwoWord_Multiple,
-		"DO", "WHILE"
+		"DO", "WHILE", Null_Flag, 4
 	},
 	{
 		DoUntil_Code, Command_TokenType, TwoWord_Multiple,
-		"DO", "UNTIL"
+		"DO", "UNTIL", Null_Flag, 4
 	},
 	{
 		While_Code, Command_TokenType, TwoWord_Multiple,
-		"WHILE", NULL
+		"WHILE", NULL, Null_Flag, 4
 	},
 	{
 		Until_Code, Command_TokenType, TwoWord_Multiple,
-		"UNTIL", NULL
+		"UNTIL", NULL, Null_Flag, 4
 	},
 	{
 		Loop_Code, Command_TokenType, TwoWord_Multiple,
-		"LOOP", NULL
+		"LOOP", NULL, Null_Flag, 4
 	},
 	{
 		LoopWhile_Code, Command_TokenType, TwoWord_Multiple,
-		"LOOP", "WHILE"
+		"LOOP", "WHILE", Null_Flag, 4
 	},
 	{
 		LoopUntil_Code, Command_TokenType, TwoWord_Multiple,
-		"LOOP", "UNTIL"
+		"LOOP", "UNTIL", Null_Flag, 4
 	},
 	//-----------------------------------------
 	//   Internal Functions (No Parentheses)
@@ -623,10 +632,12 @@ static TableEntry table_entries[] = {
 			AssocCode(Power))
 	},
 	{
+		// 2010-05-28: added value for token_handler
 		Eq_Code, Operator_TokenType, OneChar_Multiple,
 		"=", NULL, Null_Flag, 30,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Eq))
+			AssocCode(Eq)),
+		Equal_Handler
 	},
 	{
 		Gt_Code, Operator_TokenType, TwoChar_Multiple,
@@ -665,14 +676,20 @@ static TableEntry table_entries[] = {
 		new ExprInfo(None_DataType, OpenParen_Code)
 	},
 	{
-		// 2010-03-25: changed precedence value
+		// 2010-03-25: changed precedence value from 0 to 4
+		// 2010-05-27: changed precedence value from 4 to 6
+		// 2010-05-28: added value for token_handler
 		CloseParen_Code, Operator_TokenType, OneChar_Multiple,
-		")", NULL, Null_Flag, 4
+		")", NULL, Null_Flag, 4, NULL,
+		CloseParen_Handler
 	},
 	{
-		// 2010-04-02: changed precedence value
+		// 2010-04-02: changed precedence value from 0 to 4
+		// 2010-05-27: changed precedence value from 4 to 6
+		// 2010-05-28: added value for token_handler
 		Comma_Code, Operator_TokenType, OneChar_Multiple,
-		",", NULL, Null_Flag, 4
+		",", NULL, Null_Flag, 6, NULL,
+		Comma_Handler
 	},
 	{
 		SemiColon_Code, Operator_TokenType, OneChar_Multiple,
@@ -752,8 +769,10 @@ static TableEntry table_entries[] = {
 		&Str_SubStr_ExprInfo
 	},
 	{
+		// 2010-05-28: added value for token_handler
 		EOL_Code, Operator_TokenType, OneWord_Multiple,
-		NULL, NULL, Null_Flag, 4
+		NULL, NULL, Null_Flag, 4, NULL,
+		EndOfLine_Handler
 	},
 	// 2010-04-24: added entries for associated codes
 	{
@@ -855,12 +874,14 @@ static TableEntry table_entries[] = {
 		"SGN(", "SGN%(", Null_Flag, 2, &Int_Int_ExprInfo
 	},
 	{
+		// 2010-05-29: added Hidden_Flag
 		CvtInt_Code, IntFuncN_TokenType, OneWord_Multiple,
-		NULL, "CvtInt", Null_Flag, 2
+		NULL, "CvtInt", Hidden_Flag, 2
 	},
 	{
+		// 2010-05-29: added Hidden_Flag
 		CvtDbl_Code, IntFuncN_TokenType, OneWord_Multiple,
-		NULL, "CvtDbl", Null_Flag, 2
+		NULL, "CvtDbl", Hidden_Flag, 2
 	},
 	{
 		StrInt_Code, IntFuncP_TokenType, OneWord_Multiple,
