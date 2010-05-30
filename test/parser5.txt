@@ -8,49 +8,49 @@ Table initialization successful.
 
 Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
-	 3: Operator  Op None    81-Eq
-	 5: IntFuncP  () String  65-Mid
+	 3: Operator  Op Integer 86-Eq
+	 5: IntFuncP  () SubStr  69-Mid2
 	10: Constant     String  |b|
-	13: Operator  Op None    89-Comma
+	13: Operator  Op None    94-Comma
 	14: NoParen      None    |A|
-	15: Operator  Op None    75-Add
+	15: Operator  Op Double  80-Add
 	16: NoParen      None    |B|
-	17: Operator  Op None    77-Mul
+	17: Operator  Op Double  82-Mul
 	18: Constant     Integer 2 |2|
-	19: Operator  Op None    89-Comma
+	19: Operator  Op None    94-Comma
 	20: NoParen      None    |index|
-	25: Operator  Op None    88-CloseParen
-	26: Operator  Op None    75-Add
-	27: IntFuncP  () String  63-Left
+	25: Operator  Op None    93-CloseParen
+	26: Operator  Op Double  80-Add
+	27: IntFuncP  () SubStr  67-Left
 	33: Constant     String  |TEST|
-	39: Operator  Op None    89-Comma
+	39: Operator  Op None    94-Comma
 	41: Constant     Integer 1 |1|
-	42: Operator  Op None    88-CloseParen
-	43: Operator  Op None    96-EOL
+	42: Operator  Op None    93-CloseParen
+	43: Operator  Op None    108-EOL
 
 Input: if index>5 and subindex<=10 then
 	 0: Command   Op 18-If
 	 3: NoParen      None    |index|
-	 8: Operator  Op None    82-Gt
+	 8: Operator  Op Integer 87-Gt
 	 9: Constant     Integer 5 |5|
-	11: Operator  Op None    37-And
+	11: Operator  Op Integer 37-And
 	15: NoParen      None    |subindex|
-	23: Operator  Op None    85-LtEq
+	23: Operator  Op Integer 90-LtEq
 	25: Constant     Integer 10 |10|
 	28: Command   Op 19-Then
-	32: Operator  Op None    96-EOL
+	32: Operator  Op None    108-EOL
 
 Input: var = 5'initialize variable + 
 	 0: NoParen      None    |var|
-	 4: Operator  Op None    81-Eq
+	 4: Operator  Op Integer 86-Eq
 	 6: Constant     Integer 5 |5|
-	 7: Operator  Op None    92-RemOp |initialize variable + |
-	30: Operator  Op None    96-EOL
+	 7: Operator  Op None    97-RemOp |initialize variable + |
+	30: Operator  Op None    108-EOL
 
 Input: if index<<5 && index><4 || n<4 then
 	 0: Command   Op 18-If
 	 3: NoParen      None    |index|
-	 8: Operator  Op None    84-Lt
-	 9: Operator  Op None    84-Lt
+	 8: Operator  Op Integer 89-Lt
+	 9: Operator  Op Integer 89-Lt
 	10: Constant     Integer 5 |5|
                    ^-- unrecognizable character

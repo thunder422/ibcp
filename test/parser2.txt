@@ -16,7 +16,7 @@ Input: fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
 	26: DefFuncN     Double  |fnword#|
 	34: DefFuncN     String  |fnhello$|
 	43: DefFuncN     Integer |fnindex%|
-	51: Operator  Op None    96-EOL
+	51: Operator  Op None    108-EOL
 
 Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
 	 0: DefFuncP  () None    |fna(|
@@ -28,7 +28,7 @@ Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
 	30: DefFuncP  () Double  |fnword#(|
 	39: DefFuncP  () String  |fnhello$(|
 	49: DefFuncN     Integer |fnindex%|
-	57: Operator  Op None    96-EOL
+	57: Operator  Op None    108-EOL
 
 Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
 	 0: NoParen      None    |a|
@@ -42,30 +42,30 @@ Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
 	33: Paren     () Integer |QWER%(|
 	40: Paren     () String  |Nbb_34$(|
 	49: Paren     () Double  |h_544_4#(|
-	58: Operator  Op None    96-EOL
+	58: Operator  Op None    108-EOL
 
 Input: LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
 	 0: Command   Op 12-Let
 	 4: Command   Op 13-Print
 	10: Command   Op 21-End
 	14: Command   Op 19-Then
-	19: Operator  Op None    42-Xor
-	23: IntFuncP  () None    45-Abs
-	27: IntFuncP  () String  61-Chr
-	32: IntFuncP  () None    70-Val
+	19: Operator  Op Integer 42-Xor
+	23: IntFuncP  () Double  45-Abs
+	27: IntFuncP  () TmpStr  64-Chr
+	32: IntFuncP  () Double  75-Val
 	37: Command   Op 22-EndIf
 	44: NoParen      String  |left$|
-	50: IntFuncP  () String  63-Left
-	56: Operator  Op None    96-EOL
+	50: IntFuncP  () SubStr  67-Left
+	56: Operator  Op None    108-EOL
 
 Input: rem this should be a comment
 	 0: Command   Op 17-Rem | this should be a comment|
-	28: Operator  Op None    96-EOL
+	28: Operator  Op None    108-EOL
 
 Input: rem:this should be a comment
 	 0: Command   Op 17-Rem |:this should be a comment|
-	28: Operator  Op None    96-EOL
+	28: Operator  Op None    108-EOL
 
 Input: rem-this should be a comment
 	 0: Command   Op 17-Rem |-this should be a comment|
-	28: Operator  Op None    96-EOL
+	28: Operator  Op None    108-EOL

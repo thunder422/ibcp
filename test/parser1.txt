@@ -8,90 +8,90 @@ Table initialization successful.
 
 Input: L500=1000
 	 0: NoParen      None    |L500|
-	 4: Operator  Op None    81-Eq
+	 4: Operator  Op Integer 86-Eq
 	 5: Constant     Integer 1000 |1000|
-	 9: Operator  Op None    96-EOL
+	 9: Operator  Op None    108-EOL
 
 Input:  L500 = 1000 
 	 1: NoParen      None    |L500|
-	 6: Operator  Op None    81-Eq
+	 6: Operator  Op Integer 86-Eq
 	 8: Constant     Integer 1000 |1000|
-	13: Operator  Op None    96-EOL
+	13: Operator  Op None    108-EOL
 
 Input:  L 500 = 1000 
 	 1: NoParen      None    |L|
 	 3: Constant     Integer 500 |500|
-	 7: Operator  Op None    81-Eq
+	 7: Operator  Op Integer 86-Eq
 	 9: Constant     Integer 1000 |1000|
-	14: Operator  Op None    96-EOL
+	14: Operator  Op None    108-EOL
 
 Input: L500-1000
 	 0: ImmCmd         0-List Args: begin=500 end=1000 start=-1 incr=-1
-	 9: Operator  Op None    96-EOL
+	 9: Operator  Op None    108-EOL
 
 Input:  L 500 - 1000 
 	 1: ImmCmd         0-List Args: begin=500 end=1000 start=-1 incr=-1
-	14: Operator  Op None    96-EOL
+	14: Operator  Op None    108-EOL
 
 Input: 10L500-1000
 	 0: Constant     Integer 10 |10|
 	 2: NoParen      None    |L500|
-	 6: Operator  Op None    76-Sub
+	 6: Operator  Op Double  81-Sub
 	 7: Constant     Integer 1000 |1000|
-	11: Operator  Op None    96-EOL
+	11: Operator  Op None    108-EOL
 
 Input:  10 L500 - 1000 
 	 1: Constant     Integer 10 |10|
 	 4: NoParen      None    |L500|
-	 9: Operator  Op None    76-Sub
+	 9: Operator  Op Double  81-Sub
 	11: Constant     Integer 1000 |1000|
-	16: Operator  Op None    96-EOL
+	16: Operator  Op None    108-EOL
 
 Input:  10 L 500 - 1000 
 	 1: Constant     Integer 10 |10|
 	 4: NoParen      None    |L|
 	 6: Constant     Integer 500 |500|
-	10: Operator  Op None    76-Sub
+	10: Operator  Op Double  81-Sub
 	12: Constant     Integer 1000 |1000|
-	17: Operator  Op None    96-EOL
+	17: Operator  Op None    108-EOL
 
 Input: l"file
 	 0: ImmCmd         6-Load String Arg: |file|
-	 6: Operator  Op None    96-EOL
+	 6: Operator  Op None    108-EOL
 
 Input:  l "file" 
 	 1: ImmCmd         6-Load String Arg: |file|
-	10: Operator  Op None    96-EOL
+	10: Operator  Op None    108-EOL
 
 Input:  l 
 	 1: ImmCmd         0-List Args: begin=-1 end=-1 start=-1 incr=-1
-	 3: Operator  Op None    96-EOL
+	 3: Operator  Op None    108-EOL
 
 Input: a
 	 0: ImmCmd         8-Auto Args: begin=-1 end=-1 start=-1 incr=-1
-	 1: Operator  Op None    96-EOL
+	 1: Operator  Op None    108-EOL
 
 Input: A500,1000
 	 0: ImmCmd         8-Auto Args: begin=500 end=-1 start=-1 incr=1000
-	 9: Operator  Op None    96-EOL
+	 9: Operator  Op None    108-EOL
 
 Input: A,1000
 	 0: ImmCmd         8-Auto Args: begin=-1 end=-1 start=-1 incr=1000
-	 6: Operator  Op None    96-EOL
+	 6: Operator  Op None    108-EOL
 
 Input: A500,
 	 0: ImmCmd         8-Auto Args: begin=500 end=-1 start=-1 incr=0
-	 5: Operator  Op None    96-EOL
+	 5: Operator  Op None    108-EOL
 
 Input: A,
 	 0: ImmCmd         8-Auto Args: begin=-1 end=-1 start=-1 incr=0
-	 2: Operator  Op None    96-EOL
+	 2: Operator  Op None    108-EOL
 
 Input: A500;1000
 	 0: NoParen      None    |A500|
-	 4: Operator  Op None    90-SemiColon
+	 4: Operator  Op None    95-SemiColon
 	 5: Constant     Integer 1000 |1000|
-	 9: Operator  Op None    96-EOL
+	 9: Operator  Op None    108-EOL
 
 Input: L500,1000
         ^-- invalid arguments for command
@@ -100,11 +100,16 @@ Input:   L500,1000
           ^-- invalid arguments for command
 
 Input:   L500,L1000=5
-              ^-- unexpected character
+	 2: NoParen      None    |L500|
+	 6: Operator  Op None    94-Comma
+	 7: NoParen      None    |L1000|
+	12: Operator  Op Integer 86-Eq
+	13: Constant     Integer 5 |5|
+	14: Operator  Op None    108-EOL
 
 Input: r
 	 0: ImmCmd         3-Run Args: begin=-1 end=-1 start=-1 incr=-1
-	 1: Operator  Op None    96-EOL
+	 1: Operator  Op None    108-EOL
 
 Input: r100
         ^-- invalid arguments for command
@@ -114,83 +119,83 @@ Input: R100,
 
 Input: r100-
 	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=-1 incr=-1
-	 5: Operator  Op None    96-EOL
+	 5: Operator  Op None    108-EOL
 
 Input: r-200
 	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=-1 incr=-1
-	 5: Operator  Op None    96-EOL
+	 5: Operator  Op None    108-EOL
 
 Input: r-
 	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=-1 incr=-1
-	 2: Operator  Op None    96-EOL
+	 2: Operator  Op None    108-EOL
 
 Input: r100-200
 	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=-1 incr=-1
-	 8: Operator  Op None    96-EOL
+	 8: Operator  Op None    108-EOL
 
 Input: r100-,
 	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=-1 incr=0
-	 6: Operator  Op None    96-EOL
+	 6: Operator  Op None    108-EOL
 
 Input: r-200,
 	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=-1 incr=0
-	 6: Operator  Op None    96-EOL
+	 6: Operator  Op None    108-EOL
 
 Input: r-,
 	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=-1 incr=0
-	 3: Operator  Op None    96-EOL
+	 3: Operator  Op None    108-EOL
 
 Input: r100-200,
 	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=-1 incr=0
-	 9: Operator  Op None    96-EOL
+	 9: Operator  Op None    108-EOL
 
 Input: r100-,10
 	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=-1 incr=10
-	 8: Operator  Op None    96-EOL
+	 8: Operator  Op None    108-EOL
 
 Input: r-200,10
 	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=-1 incr=10
-	 8: Operator  Op None    96-EOL
+	 8: Operator  Op None    108-EOL
 
 Input: r-,10
 	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=-1 incr=10
-	 5: Operator  Op None    96-EOL
+	 5: Operator  Op None    108-EOL
 
 Input: r100-200,10
 	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=-1 incr=10
-	11: Operator  Op None    96-EOL
+	11: Operator  Op None    108-EOL
 
 Input: r100-,400,
 	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=400 incr=0
-	10: Operator  Op None    96-EOL
+	10: Operator  Op None    108-EOL
 
 Input: r-200,400,
 	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=400 incr=0
-	10: Operator  Op None    96-EOL
+	10: Operator  Op None    108-EOL
 
 Input: r-,400,
 	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=400 incr=0
-	 7: Operator  Op None    96-EOL
+	 7: Operator  Op None    108-EOL
 
 Input: r100-200,400,
 	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=400 incr=0
-	13: Operator  Op None    96-EOL
+	13: Operator  Op None    108-EOL
 
 Input: r100-,400,10
 	 0: ImmCmd         4-Renum Args: begin=100 end=2147483647 start=400 incr=10
-	12: Operator  Op None    96-EOL
+	12: Operator  Op None    108-EOL
 
 Input: r-200,400,10
 	 0: ImmCmd         4-Renum Args: begin=-1 end=200 start=400 incr=10
-	12: Operator  Op None    96-EOL
+	12: Operator  Op None    108-EOL
 
 Input: r-,400,10
 	 0: ImmCmd         4-Renum Args: begin=-1 end=2147483647 start=400 incr=10
-	 9: Operator  Op None    96-EOL
+	 9: Operator  Op None    108-EOL
 
 Input: r100-200,400,10
 	 0: ImmCmd         4-Renum Args: begin=100 end=200 start=400 incr=10
-	15: Operator  Op None    96-EOL
+	15: Operator  Op None    108-EOL
 
 Input: s"file",a
               ^-- unexpected character
@@ -202,7 +207,11 @@ Input: l100-444444444444
             ^^^^^^^^^^^^-- invalid line number
 
 Input: l100-200;
-               ^-- unexpected character
+	 0: NoParen      None    |l100|
+	 4: Operator  Op Double  81-Sub
+	 5: Constant     Integer 200 |200|
+	 8: Operator  Op None    95-SemiColon
+	 9: Operator  Op None    108-EOL
 
 Input: r100-200,4444444444
                 ^^^^^^^^^^-- invalid increment
@@ -211,7 +220,12 @@ Input: r100-200,4444444444,10
                 ^^^^^^^^^^-- invalid line number
 
 Input: r100-200,l100
-                ^-- unexpected character
+	 0: NoParen      None    |r100|
+	 4: Operator  Op Double  81-Sub
+	 5: Constant     Integer 200 |200|
+	 8: Operator  Op None    94-Comma
+	 9: NoParen      None    |l100|
+	13: Operator  Op None    108-EOL
 
 Input: r100-200,400,0
                     ^-- zero increment invalid
@@ -220,10 +234,20 @@ Input: a100,0
             ^-- zero increment invalid
 
 Input: a100,10;L100
-              ^-- unexpected character
+	 0: NoParen      None    |a100|
+	 4: Operator  Op None    94-Comma
+	 5: Constant     Integer 10 |10|
+	 7: Operator  Op None    95-SemiColon
+	 8: NoParen      None    |L100|
+	12: Operator  Op None    108-EOL
 
 Input: r100,200,10
-               ^-- unexpected character
+	 0: NoParen      None    |r100|
+	 4: Operator  Op None    94-Comma
+	 5: Constant     Integer 200 |200|
+	 8: Operator  Op None    94-Comma
+	 9: Constant     Integer 10 |10|
+	11: Operator  Op None    108-EOL
 
 Input: r100-200,400,10,20
                       ^-- unexpected character
@@ -232,7 +256,13 @@ Input: r100-200,400,4444444444
                     ^^^^^^^^^^-- invalid increment
 
 Input: r100-200,-10
-                ^-- unexpected character
+	 0: NoParen      None    |r100|
+	 4: Operator  Op Double  81-Sub
+	 5: Constant     Integer 200 |200|
+	 8: Operator  Op None    94-Comma
+	 9: Operator  Op Double  81-Sub
+	10: Constant     Integer 10 |10|
+	12: Operator  Op None    108-EOL
 
 Input: r100-200,400,-10
                     ^-- unexpected character
