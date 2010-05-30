@@ -20,9 +20,12 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
-	Translator - Commands
+	Translator - PRINT Command
 	Translator - Semicolons
+	Translator - INPUT Command
 	Translator - Colons
+	Translator - IF-THEN-ELSE-ENDIF Commands
+	Translator - More Commands
 	Translator - Line Numbers
 	Translator - Immediate Commands
 	Internal Language Definition
@@ -32,13 +35,49 @@ Planned Roadmap:
 	Recreator
 
 
+Release 0.1.12 (2010-05-30)
+
+	Translator developmental release - the LET command has been
+	implemented along with several updates including:
+
+	    - token handler functions
+	    - token sub-code support to replace dummy tokens
+	    - parser bug fix for single '0' constant
+	    - parser test updates (long overdue)
+	    - numeric constant correction in test output code
+	    - regression test scripts (MSYS/bash and Windows batch file)
+
+	New (listed first) and updated files include:
+
+	regtest         - bash script to run and compare all tests
+	regtest.bat     - Windows batch file to run & compare all tests
+	translator9.txt - contains command test inputs (LET for now)
+
+	ibcp.cpp        - fixed usage message/token table entry flags
+	ibcp.h          - updated support for translation of commands
+	parser.cpp      - corrected bug where constant '0' caused error
+	parser1.txt     - updated for code/data type changes
+	parser2.txt     - updated for code/data type changes
+	parser3.txt     - updated for code/data type changes
+	parser4.txt     - updated for code/data type changes
+	parser5.txt     - updated for code/data type changes
+	table.cpp       - updated table entries for command support
+	test_ibcp.cpp   - added command tests/update parser test code
+	translator.cpp  - sub-code flag support, command (LET) support
+	translator2.txt - updated for sub-code flag output
+	translator3.txt - updated for sub-code flag output
+	translator5.txt - updated for sub-code flag output
+	translator6.txt - updated for sub-code flag output
+	translator7.txt - updated for sub-code flag output
+	translator8.txt - updated for sub-code flag output
+
+
 Release 0.1.11 (2010-05-22)
 
 	Translator developmental release - the string data type is now
 	fully implemented by the Translator including temporary string
 	handling, sub-string assignments, string list assignments, and
-	mixed string and sub-string assignments.  New (listed first) and
-	updated files include:
+	mixed string and sub-string assignments.  Updated files include:
 
 	codes.txt       - updated for mix-string assignment operator
 	ibcp.h          - added sub-string support/new table errors
