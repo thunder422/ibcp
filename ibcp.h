@@ -134,6 +134,27 @@
 //              added RpnItem::set() to set rpn item members without allocating
 //                a new array and copying to the array
 //
+//  2010-05-27  added SubCode enumeration and subcode member to Token
+//  2010-05-28  changed hold_stack and done_stack from List to SimpleStack in
+//                Translator (a linked list is unnecessary for these stacks)
+//              moved/renamed Translator::Status to TokenStatus
+//              added CmdItem struct and cmd_stack to Translator
+//              moved/renamed Translator::Mode to TokenMode along with
+//                token_mode to TableEntry (next token mode for command) and
+//                access function to Table
+//              added TokenHandler typedef along with token_handler to
+//                TableEntry and access function to Table, added friend
+//                definitions for new translator token handler functions and
+//                extern definitions for actual functions
+//  2010-05-29  added static token has table entry flag (table) to Token along
+//                with access function (used by Table access functions)
+//              added Hidden_Flag to mark table entry of hidden codes
+//              added new flags Table access function with token pointer
+//                argument - returns no flags (0) for non-table entrytokens
+//              changed argument to Translator::do_pending_paren() from index
+//                to token pointer so that it will work with tokens that don't
+//                have a table entry (arrays and functions)
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -338,6 +359,13 @@ enum Multiple {
 };
 
 
+// 2010-05-27: sub-code flags for use in Token and internal program
+const int Null_SubCode       = 0x00000000;	// no sub-code present
+const int Paren_SubCode      = 0x00000001;	// reproduce unnecessary parenthesis
+const int Let_SubCode        = 0x00000002;	// reproduce LET keyword for assign
+const int Comma_SubCode      = 0x00000004;	// multiple assignment has commas
+
+
 //*****************************************************************************
 //**                                  TOKEN                                  **
 //*****************************************************************************
@@ -347,6 +375,7 @@ struct Token {
 	static bool paren[sizeof_TokenType];
 	static bool op[sizeof_TokenType];
 	static int prec[sizeof_TokenType];  // 2010-04-02
+	static bool table[sizeof_TokenType];  // 2010-05-29
 
 	static void initialize(void);
 
@@ -358,6 +387,8 @@ struct Token {
 	int index;	 			// index into Table (internal code of token)
 	// 2010-04-12: added reference flag
 	bool reference;			// token is a reference flag
+	// 2010-05-27: added sub-code
+	int subcode;			// sub-code flags of token
 	union {
 		double dbl_value;	// value for double constant token
 		int int_value;		// value for integer constant token
@@ -370,6 +401,7 @@ struct Token {
 		string = NULL;
 		length = 1;  // 2010-03-21: initialize length
 		reference = false;  // 2010-04-12: initialize reference flag
+		subcode = 0;  // 2010-05-29: initial sub-code flags
 	}
 	~Token(void)
 	{
@@ -421,6 +453,64 @@ struct Token {
 	{
 		return prec[type];
 	}
+	int table_entry(void)
+	{
+		return table[type];
+	}
+};
+
+
+// 2010-05-28: moved from Translator::Status, and renamed the values
+enum TokenStatus {
+	Good_TokenStatus,
+	Done_TokenStatus,
+	ExpOperand_TokenStatus,
+	ExpOperator_TokenStatus,
+	ExpBinOp_TokenStatus,
+	NoOpenParen_TokenStatus,		// 2010-03-25: added
+	NoCloseParen_TokenStatus,		// 2010-03-25: added
+	// 2010-04-11: replaced Error_UnexpectedComma
+	UnexpAssignComma_TokenStatus,	// 2010-04-11: added
+	UnexpExprComma_TokenStatus,		// 2010-04-11: added
+	UnexpParenComma_TokenStatus,	// 2010-04-17: added
+	WrongNumOfArgs_TokenStatus, 	// 2010-04-04: added
+	UnexpOperator_TokenStatus,		// 2010-04-11: added
+	ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
+	ExpAssignRef_TokenStatus,		// 2010-04-16: added
+	ExpAssignListRef_TokenStatus,	// 2010-04-16: added
+	UnexpParenInCmd_TokenStatus,	// 2010-04-16: added
+	UnexpParenInComma_TokenStatus,	// 2010-04-16: added
+	ExpDouble_TokenStatus,			// 2010-04-25: added
+	ExpInteger_TokenStatus,			// 2010-04-25: added
+	ExpString_TokenStatus,			// 2010-04-25: added
+	UnExpCommand_TokenStatus,		// 2010-05-29: added
+	// the following statuses used during development
+	BUG_NotYetImplemented,			// somethings is not implemented
+	BUG_HoldStackEmpty,				// diagnostic message
+	BUG_StackNotEmpty,				// diagnostic message
+	BUG_StackNotEmpty2,				// diagnostic message
+	BUG_StackEmpty1,				// diagnostic error
+	BUG_StackEmpty2,				// diagnostic error
+	BUG_StackEmpty3,				// diagnostic error
+	BUG_StackEmpty4,				// diagnostic error (2010-03-25)
+	BUG_StackEmpty5,				// diagnostic error (2010-04-02)
+	BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
+	BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
+	BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
+	BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
+	sizeof_TokenStatus
+};
+
+
+// 2010-05-28: moved outside Translator, renamed enumeration and values
+enum TokenMode {
+	Null_TokenMode,					// no token mode set flag (2010-05-29)
+	Command_TokenMode,				// expecting command
+	Assignment_TokenMode,			// expecting assignment
+	EqualAssignment_TokenMode,		// possible multiple equal assign started
+	CommaAssignment_TokenMode,		// comma separated assignment started
+	Expression_TokenMode,			// inside expression
+	sizeof_TokenMode
 };
 
 
@@ -444,6 +534,8 @@ const int Multiple_Flag       = 0x00000001;  // function has multiple forms
 // 2010-05-05: added flags for assignment operators
 const int Reference_Flag      = 0x00000002;  // code requires a reference
 const int AssignList_Flag     = 0x00000004;  // code is an list assignment
+// 2010-05-29: added hidden operator/function flag
+const int Hidden_Flag         = 0x00000008;  // code is hidden operator/function
 // note: don't use 0x00000020 - String_Flag is being used for codes
 
 // 2010-03-25: added highest precedence value
@@ -495,7 +587,12 @@ struct ExprInfo {
 	}
 };
 
-	
+
+class Translator;  // 2010-05-28: forward reference to Translator class
+
+typedef TokenStatus (*TokenHandler)(Translator &p, Token *&token);
+
+
 struct TableEntry {
 	Code code;					// enumeration code of entry
 	TokenType type;				// type of token for entry
@@ -507,6 +604,9 @@ struct TableEntry {
 	int precedence;				// precedence of code
 	// 2010-05-03: replace members with expression information pointer
 	ExprInfo *exprinfo;			// pointer to expression info (NULL for none)
+	// 2010-05-28: added variables to support commands in translator
+	TokenHandler token_handler;	// pointer to translator token handler function
+	TokenMode token_mode;		// next token mode for command
 };
 
 
@@ -614,6 +714,8 @@ public:
 	{
 		delete index_code;
 	}
+
+	// ACCESS FUNCTIONS
 	int index(Code code)
 	{
 		return index_code[code];
@@ -660,6 +762,11 @@ public:
 	{
 		return entry[index].flags;
 	}
+	// 2010-05-29: added token mode access function
+	TokenMode token_mode(int index)
+	{
+		return entry[index].token_mode;
+	}
 	Code unary_code(int index)
 	{
 		// 2010-05-03: get value from expression information structure
@@ -700,11 +807,24 @@ public:
 		int prec = token->precedence();
 		return prec != -1 ? prec : precedence(token->index);
 	}
+	// 2010-05-29: added new flags of token function
+	int flags(Token *token)
+	{
+		// (non-table entry token types have no flags)
+		return token->table_entry() ? flags(token->index) : 0;
+	}
 	// 2010-04-02: added convenience function to avoid confusion
 	bool is_unary_operator(int index)
 	{
 		return entry[index].code == unary_code(index);
 	}
+	// 2010-05-28: added token handler function pointer access function
+	TokenHandler token_handler(int index)
+	{
+		return entry[index].token_handler;
+	}
+
+	// TABLE FUNCTIONS
 	int search(char letter, int flag);
 	int search(TableSearch type, const char *string, int len);
 	int search(const char *word1, int len1, const char *word2, int len2);
@@ -817,8 +937,9 @@ struct RpnItem {
 class Translator {
 	Table *table;					// pointer to the table object
 	List<RpnItem *> *output;		// pointer to RPN list output
-	List<Token *> hold_stack;		// holding stack
-	List<List<RpnItem *>::Element *> done_stack;	// tokens processed stack
+	// 2010-05-28: changed hold_stack and done_stack from List to SimpleStack
+	SimpleStack<Token *> hold_stack;		// operator/function holding stack
+	SimpleStack<List<RpnItem *>::Element *> done_stack;	// items processed stack
 	enum State {
 		Initial,					// initial state
 		BinOp,						// expecting binary operator
@@ -831,53 +952,16 @@ class Translator {
 	// 2010-04-02: added variables to support arrays and functions
 	SimpleStack<char> count_stack;	// number of operands counter stack
 	// 2010-04-11: added mode for handling assignment statements
-	enum Mode {
-		Command,					// expecting command or assignment
-		Equal,						// multiple equal assignment initiated
-		Comma,						// comma separated assignment initiated
-		Expression,					// inside expression
-		sizeof_Mode
-	} mode;							// current assignment mode
+	// 2010-05-29: moved enum definition outside Translator and renamed it
+	TokenMode mode;					// current assignment mode
+	// 2010-05-28: added command item and command stack
+	struct CmdItem {
+		Token *token;				// pointer to command token
+		Code code;					// code of command token
+	};
+	SimpleStack<CmdItem> cmd_stack;	// stack of commands waiting processing
 
 public:
-	enum Status {
-		Good,
-		Done,
-		Error_ExpectedOperand,
-		Error_ExpectedOperator,
-		Error_ExpectedBinOp,
-		Error_MissingOpenParen,			// 2010-03-25: added
-		Error_MissingCloseParen,		// 2010-03-25: added
-		// 2010-04-11: replaced Error_UnexpectedComma
-		Error_UnexpAssignComma,			// 2010-04-11: added
-		Error_UnexpExprComma,			// 2010-04-11: added
-		Error_UnexpParenComma,			// 2010-04-17: added
-		Error_WrongNumberOfArgs,		// 2010-04-04: added
-		Error_UnexpectedOperator,		// 2010-04-11: added
-		Error_ExpectedEqualOrComma,		// 2010-04-11: added
-		Error_ExpAssignReference,		// 2010-04-16: added
-		Error_ExpAssignListReference,	// 2010-04-16: added
-		Error_UnexpParenInCmd,			// 2010-04-16: added
-		Error_UnexpParenInComma,		// 2010-04-16: added
-		Error_ExpectedDouble,			// 2010-04-25: added
-		Error_ExpectedInteger,			// 2010-04-25: added
-		Error_ExpectedString,			// 2010-04-25: added
-		// the following statuses used during development
-		BUG_NotYetImplemented,			// somethings is not implemented
-		BUG_HoldStackEmpty,				// diagnostic message
-		BUG_StackNotEmpty,				// diagnostic message
-		BUG_StackNotEmpty2,				// diagnostic message
-		BUG_StackEmpty1,				// diagnostic error
-		BUG_StackEmpty2,				// diagnostic error
-		BUG_StackEmpty3,				// diagnostic error
-		BUG_StackEmpty4,				// diagnostic error (2010-03-25)
-		BUG_StackEmpty5,				// diagnostic error (2010-04-02)
-		BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
-		BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
-		BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
-		sizeof_status
-	};
-
 	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
 	// 2010-04-16: added expression mode flag for testing
 	void start(bool exprmode = false)
@@ -886,10 +970,10 @@ public:
 		state = Initial;
 		// 2010-04-11: initialize mode to command
 		// 2010-04-16: start in expression mode for testing
-		mode = exprmode ? Expression : Command;
+		mode = exprmode ? Expression_TokenMode : Command_TokenMode;
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
-	Status add_token(Token *&token);
+	TokenStatus add_token(Token *&token);
 	List<RpnItem *> *get_result(void)	// only call when add_token returns Done
 	{
 		List<RpnItem *> *list = output;
@@ -902,7 +986,7 @@ private:
 	List<RpnItem *>::Element *operand[Max_Operands];  // pointers to operands
 
 	// 2010-04-13: made argument a reference so different value can be returned
-	Status add_operator(Token *&token);
+	TokenStatus add_operator(Token *&token);
 	enum Match {
 		No_Match,
 		Yes_Match,
@@ -926,11 +1010,27 @@ private:
 		}
 	}
 	// 2010-05-08: added last_operand argument
-	Status find_code(Token *&token,
+	TokenStatus find_code(Token *&token,
 		List<RpnItem *>::Element **last_operand = NULL);
 	Match match_code(Code *cvt_code, Code code);
-	void do_pending_paren(int index);  // 2010-03-26: added for parentheses
+	// 2010-05-29: changed argument from index to token pointer
+	void do_pending_paren(Token *token);  // 2010-03-26: added for parentheses
+public:
+	// 2010-05-28: added token handler friend function definitions section
+	friend TokenStatus Operator_Handler(Translator &p, Token *&token);
+	friend TokenStatus Equal_Handler(Translator &p, Token *&token);
+	friend TokenStatus Comma_Handler(Translator &p, Token *&token);
+	friend TokenStatus CloseParen_Handler(Translator &p, Token *&token);
+	friend TokenStatus EndOfLine_Handler(Translator &p, Token *&token);
 };
+
+
+// 2010-05-28: added token handler function definitions section
+extern TokenStatus Operator_Handler(Translator &p, Token *&token);
+extern TokenStatus Equal_Handler(Translator &p, Token *&token);
+extern TokenStatus Comma_Handler(Translator &p, Token *&token);
+extern TokenStatus CloseParen_Handler(Translator &p, Token *&token);
+extern TokenStatus EndOfLine_Handler(Translator &p, Token *&token);
 
 
 #endif  // IBCP_H
