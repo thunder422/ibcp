@@ -111,6 +111,22 @@
 //  2010-05-22  added more of test inputs for substring assignment tests that
 //              contain mix string list assignments
 //
+//  2010-05-28  added static in front of all test input definitions to prevent
+//              code from being generated
+//  2010-05-29  added support for sub-code output to print_small_token()
+//              renamed Translator::Status names to _TokenStatus names
+//              added support for unexpected command error
+//              updated datatype_name[] and code_name[] arrays for changes made
+//                since parser testing was last used
+//              corrected output of double and integer token output to used
+//                originally entered string instead of stored value
+//              added '0' constants tests to parser test input set #3
+//              added message to identifier Parser or Translator testing for
+//                input mode testing
+//              added testinput9 for translator command testing with tests for
+//                LET command
+//  2010-05-30  added command stack not empty bug error
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -127,7 +143,7 @@ void print_error(Token *token, const char *error);
 // 2010-03-13: changed from main()
 bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 {
-	const char *testinput1[] = {  // immediate commands
+	static const char *testinput1[] = {  // immediate commands
 		"L500=1000",
 		" L500 = 1000 ",
 		" L 500 = 1000 ",
@@ -167,7 +183,7 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 		NULL
 	};
 
-	const char *testinput2[] = {  // identifiers
+	static const char *testinput2[] = {  // identifiers
 		"fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%",
 		"fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%",
 		"a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(",
@@ -178,7 +194,7 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 		NULL
 	};
 
-	const char *testinput3[] = {  // numbers
+	static const char *testinput3[] = {  // numbers
 		"00", "01", ".A", ".e",	"..01",			// error tests
 		"0.1 .1 .01 0.01 0.01000,1000A100.001",
 		"100e10 100E+10 100e-10",
@@ -188,10 +204,11 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 		"1.2345e-307 1.234e-308",
 		"1.23456e3081234",						// double limits tests
 		"14234453464575678567846434234234534566",
+		"0", "0+1",								// added 2010-05-29
 		NULL
 	};
 
-	const char *testinput4[] = {  // strings
+	static const char *testinput4[] = {  // strings
 		"A$ = \"this is a test\"",
 		"A$ = \"this is a test",			// no closing quote
 		"A$ = \"this is a \"\"test\"\"\"",	// embedded quotes end
@@ -206,7 +223,7 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 		NULL
 	};
 
-	const char *testinput5[] = {  // strings
+	static const char *testinput5[] = {  // strings
 		"A$ = mid$(\"b\",A+B*2,index)+LEFT$(\"TEST\", 1)",
 		"if index>5 and subindex<=10 then",
 		"var = 5'initialize variable + ",
@@ -214,10 +231,10 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 		NULL
 	};
 
-	const char **test[] = {
+	static const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5
 	};
-	const int ntests = sizeof(test) / sizeof(test[0]);
+	static const int ntests = sizeof(test) / sizeof(test[0]);
 
 	int testno;
 	int inputmode;
@@ -243,6 +260,7 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 	if (inputmode)
 	{
 		char inputline[200];
+		printf("\nParser Testing...");  // 2010-05-29: added
 		do {
 			printf("\nInput: ");
 			gets(inputline);
@@ -288,7 +306,7 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 bool test_translator(Translator &translator, Parser &parser, Table *table,
 	int argc, char *argv[])
 {
-	const char *testinput1[] = {  // simple expressions tests
+	static const char *testinput1[] = {  // simple expressions tests
 		"A - B",
 		"A + B",
 		"A + B * C",
@@ -304,7 +322,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"a$ = \"this\" + \"test\"",
 		NULL
 	};
-	const char *testinput2[] = {  // parentheses expressions tests
+	static const char *testinput2[] = {  // parentheses expressions tests
 		"(A + B) + C",
 		"(A * B) + C",
 		"(A + B) * C",
@@ -342,7 +360,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A + B)",			// test missing open parentheses
 		NULL
 	};
-	const char *testinput3[] = {  // parentheses expressions tests
+	static const char *testinput3[] = {  // parentheses expressions tests
 		"MID$(A$+B$,(C+5)*D,4)+\" Test\"",
 		"int(Arr(A,B*(C+2))+(D))",
 		"Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))",
@@ -351,7 +369,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Arr(B,,C)",
 		NULL
 	};
-	const char *testinput4[] = {  // internal function tests
+	static const char *testinput4[] = {  // internal function tests
 		"MID$(MID$(A$+B$,2),(C+5)*D,4)",
 		"abs(A)+FIX(B)+INT(C)+RND(D)+SGN(E)+CINT(F)",
 		"SQR(G)+ATN(H)+COS(I)+SIN(J)+TAN(K)+EXP(L)+LOG(M)",
@@ -366,7 +384,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"INT(1.23,A)",
 		NULL
 	};
-	const char *testinput5[] = {  // assignment tests
+	static const char *testinput5[] = {  // assignment tests
 		"A=3",
 		"A,B=3",
 		"A=B=3",
@@ -396,7 +414,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A+B",
 		NULL
 	};
-	const char *testinput6[] = {  // data type tests (2010-04-28)
+	static const char *testinput6[] = {  // data type tests (2010-04-28)
 		"Z = not A < 5.0 = B > 2.0",
 		"Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2",
 		"Z$=STR$(VAL(\"1.23\"))",
@@ -428,7 +446,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z = A + (B$ + C$)",
 		NULL
 	};
-	const char *testinput7[] = {  // assignments data type tests (2010-05-09)
+	static const char *testinput7[] = {  // data type assign tests (2010-05-09)
 		"A% = B% + 5",
 		"A% = B + 5",
 		"A% = B + 5.0",
@@ -461,7 +479,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z = A$ + B * C",
 		NULL
 	};
-	const char *testinput8[] = {  // substring tests (2010-05-19)
+	static const char *testinput8[] = {  // substring tests (2010-05-19)
 		"LEFT$(A$,1) = B$",
 		"LEFT$(A$,1) = B$ + C$",
 		"MID$(A$,2) = B$",
@@ -492,12 +510,33 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"LEFT$(A$,1),B$,RIGHT$(C$,1) = D$",
 		NULL
 	};
-
-	const char **test[] = {
-		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
-		testinput7, testinput8
+	static const char *testinput9[] = {  // command tests (2010-05-29)
+		// LET tests
+		"LET A=0.0",
+		"LET A%=0",
+		"LET A$=\"\"",
+		"LET A=B=C=0.0",
+		"LET A,B,C=0.0",
+		"LET A%=B%=C%=0",
+		"LET A%,B%,C%=0",
+		"LET A$=B$=C$=\"\"",
+		"LET A$,B$,C$=\"\"",
+		"LET LEFT$(A$,1) = B$",
+		"LET LEFT$(A$,1) = B$ + C$",
+		"LET LEFT$(A$,1),RIGHT$(B$,1) = C$",
+		"LET A$,LEFT$(B$,1) = C$",
+		// LET error tests
+		"LET LET A=0",
+		"A = 0 LET 5",
+		"PRINT",
+		NULL
 	};
-	const int ntests = sizeof(test) / sizeof(test[0]);
+
+	static const char **test[] = {
+		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
+		testinput7, testinput8, testinput9
+	};
+	static const int ntests = sizeof(test) / sizeof(test[0]);
 
 	int testno;
 	int inputmode;
@@ -522,6 +561,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 	if (inputmode)
 	{
 		char inputline[200];
+		printf("\nTranslator Testing...");  // 2010-05-29: added
 		do {
 			printf("\nInput: ");
 			gets(inputline);
@@ -550,7 +590,7 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 {
 	Token *token;
 	Token *org_token;
-	Translator::Status status;
+	TokenStatus status;
 
 	translator.start(exprmode);
 	parser.start((char *)testinput);
@@ -568,8 +608,8 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		//print_token(token, table);
 		status = translator.add_token(token);
 	}
-	while (status == Translator::Good);
-	if (status == Translator::Done)
+	while (status == Good_TokenStatus);
+	if (status == Done_TokenStatus)
 	{
 		// 2010-05-15: change rpn_list from Token pointers
 		List<RpnItem *> *rpn_list = translator.get_result();
@@ -609,108 +649,116 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 
 		switch (status)
 		{
-		case Translator::Error_ExpectedOperand:
+		case ExpOperand_TokenStatus:
 			error = "operand expected";
 			break;
-		case Translator::Error_ExpectedOperator:
+		case ExpOperator_TokenStatus:
 			error = "operator expected";
 			break;
-		case Translator::Error_ExpectedBinOp:
+		case ExpBinOp_TokenStatus:
 			error = "binary operator expected";
 			break;
 		// 2010-03-25: added missing parentheses errors
-		case Translator::Error_MissingOpenParen:
+		case NoOpenParen_TokenStatus:
 			error = "missing opening parentheses";
 			break;
-		case Translator::Error_MissingCloseParen:
+		case NoCloseParen_TokenStatus:
 			error = "missing closing parentheses";
 			break;
 		// 2010-04-02: added errors for array/functions
 		// 2010-04-11: replaced Error_UnexpectedComma
-		case Translator::Error_UnexpAssignComma:
+		case UnexpAssignComma_TokenStatus:
 			error = "unexpected comma in assignment";
 			break;
-		case Translator::Error_UnexpExprComma:
+		case UnexpExprComma_TokenStatus:
 			error = "unexpected comma in expression";
 			break;
 		// 2010-04-17: added another unexpected comma error
-		case Translator::Error_UnexpParenComma:
+		case UnexpParenComma_TokenStatus:
 			error = "unexpected comma in parentheses";
 			break;
 		// 2010-04-02: added errors for array/functions
-		case Translator::Error_WrongNumberOfArgs:
+		case WrongNumOfArgs_TokenStatus:
 			error = "wrong number of arguments";
 			break;
 		// 2010-04-11: added errors for assignment
-		case Translator::Error_UnexpectedOperator:
+		case UnexpOperator_TokenStatus:
 			error = "unexpected operator";
 			break;
-		case Translator::Error_ExpectedEqualOrComma:
+		case ExpEqualOrComma_TokenStatus:
 			error = "expected equal or comma";
 			break;
 		// 2010-04-16: added errors for assignment references
-		case Translator::Error_ExpAssignReference:
+		case ExpAssignRef_TokenStatus:
 			error = "item cannot be assigned";
 			break;
-		case Translator::Error_ExpAssignListReference:
+		case ExpAssignListRef_TokenStatus:
 			error = "list item cannot be assigned";
 			break;
 		// 2010-04-16: added errors for unexpected parentheses
-		case Translator::Error_UnexpParenInCmd:
+		case UnexpParenInCmd_TokenStatus:
 			error = "unexpected parentheses in command";
 			break;
-		case Translator::Error_UnexpParenInComma:
+		case UnexpParenInComma_TokenStatus:
 			error = "unexpected parentheses in assignment list";
 			break;
 		// 2010-04-25: added errors for data type errors
-		case Translator::Error_ExpectedDouble:
+		case ExpDouble_TokenStatus:
 			error = "expected double";
 			break;
-		case Translator::Error_ExpectedInteger:
+		case ExpInteger_TokenStatus:
 			error = "expected integer";
 			break;
-		case Translator::Error_ExpectedString:
+		case ExpString_TokenStatus:
 			error = "expected string";
+			break;
+		// 2010-05-29: added unexpected (not yet implemented) command error
+		case UnExpCommand_TokenStatus:
+			error = "unexpected command";
 			break;
 
 		// diagnostic errors
-		case Translator::BUG_NotYetImplemented:
+		case BUG_NotYetImplemented:
 			error = "BUG: not yet implemented";
 			break;
-		case Translator::BUG_HoldStackEmpty:
+		case BUG_HoldStackEmpty:
 			error = "BUG: hold stack empty, expected Null";
 			break;
-		case Translator::BUG_StackNotEmpty:
+		case BUG_StackNotEmpty:
 			error = "BUG: hold stack not empty";
 			break;
-		case Translator::BUG_StackEmpty1:
+		case BUG_StackEmpty1:
 			error = "BUG: expected operand 1 on done stack";
 			break;
-		case Translator::BUG_StackEmpty2:
+		case BUG_StackEmpty2:
 			error = "BUG: expected operand 2 on done stack";
 			break;
-		case Translator::BUG_StackNotEmpty2:
+		case BUG_StackNotEmpty2:
 			error = "BUG: done stack not empty";
 			break;
-		case Translator::BUG_StackEmpty3:
+		case BUG_StackEmpty3:
 			error = "BUG: done stack empty, expected result";
 			break;
 		// 2010-03-25: added error for parentheses support
-		case Translator::BUG_StackEmpty4:
+		case BUG_StackEmpty4:
 			error = "BUG: done stack empty, expected token for ')'";
 			break;
 		// 2010-04-02: added error for array/function support
-		case Translator::BUG_StackEmpty5:
+		case BUG_StackEmpty5:
 			error = "BUG: done stack empty, expected token for array/function";
 			break;
-		case Translator::BUG_UnexpectedCloseParen:
+		case BUG_UnexpectedCloseParen:
 			error = "BUG: unexpected closing parentheses";
 			break;
-		case Translator::BUG_UnexpectedToken:
+		case BUG_UnexpectedToken:
 			error = "BUG: expected token on stack for array/function";
 			break;
-		case Translator::BUG_DoneStackEmpty:
+		case BUG_DoneStackEmpty:
 			error = "BUG: expected operand on done stack";
+			break;
+		// 2010-05-30: add new error
+		case BUG_CmdStackNotEmpty:
+			error = "BUG: command stack not empty";
 			break;
 		default:
 			error = "UNEXPECTED ERROR";
@@ -751,33 +799,66 @@ bool print_token(Token *token, Table *table)
 		"Error"
 	};
 	const char *datatype_name[] = {
-		"None",
+		// 2010-05-29: updated for changes made to data type enumeration
 		"Double",
 		"Integer",
-		"String"
+		"String",
+		"TmpStr",
+		"SubStr",
+		"numberof",
+		"None",
+		"CmdArgs"
 	};
 	// 2010-04-04: updated list for new codes
 	// 2010-04-11: updated list for new codes
+	// 2010-05-29: updated list for new codes
 	const char *code_name[] = {
 		"Null",
-		"Add", "Sub", "Neg", "Mul", "Div", "IntDiv", "Mod", "Power",
-		"Eq", "Gt", "GtEq", "Lt", "LtEq", "NotEq",
+
+		// math operators
+		"Add", "AddInt", "CatStr", "Sub", "SubInt", "Neg", "NegInt",
+			"Mul", "MulInt", "Div", "DivInt", "IntDiv", "Mod", "ModInt",
+			"Power", "PowerMul", "PowerInt",
+
+		// relational operators
+		"Eq", "EqInt", "EqStr", "Gt", "GtInt", "GtStr",
+			"GtEq", "GtEqInt", "GtEqStr", "Lt", "LtInt", "LtStr",
+			"LtEq", "LtEqInt", "LtEqStr", "NotEq", "NotEqInt", "NotEqStr",
+
+		// logical operators
 		"And", "Or", "Not", "Eqv", "Imp", "Xor",
-		"Assign", "AssignList",
-		"Abs", "Fix", "Int", "Rnd", "RndArg", "Sgn", "Cint",
+
+		"Assign", "AssignInt", "AssignStr", "AssignSubStr",
+		"AssignList", "AssignListInt", "AssignListStr",
+			"AssignListMixStr",
+
+		"Abs", "AbsInt", "Fix", "Frac", "Int", "Rnd", "RndArg", "RndArgInt",
+			"Sgn", "SgnInt", "Cint", "Cdbl", "CvtInt", "CvtDbl",
+
+		// scientific math internal function
 		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
+
+		// string functions
 		"Asc", "Asc2", "Chr", "Instr2", "Instr3", "Left", "Len", "Mid2", "Mid3",
-		"Repeat", "Right", "Space", "Str", "Val",
+		"Repeat", "Right", "Space", "Str", "StrInt", "Val",
+
+		// other symbol operators
 		"OpenParen", "CloseParen", "Comma", "SemiColon", "Colon", "RemOp",
+
+		// print internal functions
 		"Tab", "Spc",
-		"Let", "Print", "Input", "Dim", "Def", "Rem",
-		"If", "Then", "Else", "EndIf",
-		"For", "To", "Step", "Next",
-		"Do", "DoWhile", "DoUntil", "While", "Until", "Loop",
-		"LoopWhile", "LoopUntil", "End",
+
+		// commands
+		"Let", "Print", "Input", "Dim", "Def", "Rem", "If", "Then", "Else",
+			"EndIf", "For", "To", "Step", "Next", "Do", "DoWhile", "DoUntil",
+			"While", "Until", "Loop", "LoopWhile", "LoopUntil", "End",
+
+		// other codes
 		"EOL",
+		
+		// immediate commands (will go away once gui implemented)
 		"List", "Edit", "Delete", "Run", "Renum", "Save", "Load", "New", "Auto",
-		"Cont", "Quit",
+			"Cont", "Quit",
 	};
 
 	CmdArgs *args;
@@ -911,10 +992,10 @@ bool print_small_token(Token *token, Table *table)
 		switch (token->datatype)
 		{
 		case Integer_DataType:
-			printf("%d", token->int_value);
+			printf("%.*s", token->string->get_len(), token->string->get_ptr());
 			break;
 		case Double_DataType:
-			printf("%g", token->dbl_value);
+			printf("%.*s", token->string->get_len(), token->string->get_ptr());
 			break;
 		case String_DataType:
 			printf("\"%.*s\"", token->string->get_len(),
@@ -963,6 +1044,24 @@ bool print_small_token(Token *token, Table *table)
 	if (token->reference)
 	{
 		printf("<ref>");
+	}
+	// 2010-05-29: output sub-code flags
+	if (token->subcode)
+	{
+		printf("'");
+		if (token->subcode & Paren_SubCode)
+		{
+			printf(")");
+		}
+		if (token->subcode & Let_SubCode)
+		{
+			printf("LET");
+		}
+		if (token->subcode & Comma_SubCode)
+		{
+			printf(",");
+		}
+		printf("'");
 	}
 	return true;
 }
