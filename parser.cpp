@@ -55,7 +55,12 @@
 //  2010-04-16  removed the unexpected character errors in scan_command() that
 //              was occurring in a statements like "A,B=3" because these were
 //              not valid immediate commands, so these errors were removed to
-//              let the Translator process it (and report an error as necessary
+//              let the Translator process it (and report an error as necessary)
+//
+//  2010-05-29  corrected a problem in the get_number() function where a
+//              constant of a single '0' caused "invalid leading zero in numeric
+//              constant" error, the solution was to check if the next character
+//              is a digit, the number is complete, otherwise an error occurs
 //
 
 #include <stdio.h>
@@ -583,18 +588,27 @@ bool Parser::get_number(void)
 			p++;  // move past digit
 			if (!digits)  // first digit?
 			{
+				digits = true;
 				if (!decimal && *(p - 1) == '0' && *p != '.')
 				{
-					// if didn't find a decimal point
-					// and first character is a zero
-					// and second character is not a decimal point,
-					// this is in invalid number
-					// 2010-03-07: changed to error
-					token->set_error("invalid leading zero in numeric "
-						"constant");
-					return true;
+					// 2010-05-29: added check for single zero digit
+					if (!isdigit(*p))  // next char not a digit (or '.')?
+					{
+						break;  // single zero, exit loop to process string
+					}
+					else
+					{
+						// if didn't find a decimal point
+						// and first character is a zero
+						// and second character is not a decimal point,
+						// and second character is a digit (2010-05-29)
+						// this is in invalid number
+						// 2010-03-07: changed to error
+						token->set_error("invalid leading zero in numeric "
+							"constant");
+						return true;
+					}
 				}
-				digits = true;
 			}
 		}
 		else if (*p == '.')
