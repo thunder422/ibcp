@@ -25,26 +25,26 @@ Input: A=VAL(STR$(1.23))
 Output: A 1.23 STR$( VAL([STR$(] = 
 
 Input: MID$(A$)
-       ^^^^^-- wrong number of arguments
+              ^-- expected operator or comma
 
 
 Input: MID$(A$,1,2,3)
-       ^^^^^-- wrong number of arguments
+                  ^-- expected operator or closing parentheses
 
 
 Input: INSTR(A$)
-       ^^^^^^-- wrong number of arguments
+               ^-- expected operator or comma
 
 
 Input: INSTR(A$,B$,C,D)
-       ^^^^^^-- wrong number of arguments
+                    ^-- expected operator or closing parentheses
 
 
 Input: ASC(A$,B,C)
-       ^^^^-- wrong number of arguments
+               ^-- expected operator or closing parentheses
 
 
 Input: INT(1.23,A)
-       ^^^^-- wrong number of arguments
+               ^-- expected operator or closing parentheses
 
 

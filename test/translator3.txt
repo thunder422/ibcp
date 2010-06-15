@@ -16,14 +16,14 @@ Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
 Output: X<ref> Y I Neg J + * I<ref> FNZ(<ref>[I<ref>] B([X<ref>,*,FNZ(<ref>] INT( NUM$ VAL([NUM$] Array(<ref>[INT(,VAL(] 
 
 Input: INT(A+B
-              ^-- missing closing parentheses
+              ^-- expected operator or closing parentheses
 
 
 Input: B,F+G
-        ^-- unexpected comma in expression
+        ^-- expected operator or end-of-statement
 
 
 Input: Arr(B,,C)
-             ^-- operand expected
+             ^-- expected expression
 
 

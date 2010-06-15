@@ -106,7 +106,7 @@ Input: (A ^ (B * (C + D))) + E
 Output: A B C D + * ^')' E + 
 
 Input: (A + B
-             ^-- missing closing parentheses
+             ^-- expected operator or closing parentheses
 
 
 Input: A + B)

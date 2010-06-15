@@ -55,23 +55,23 @@ Input: A(B,C),D(E)=INT(F)+Function(G)+Array(H)
 Output: B<ref> C<ref> A(<ref>[B<ref>,C<ref>] E<ref> D(<ref>[E<ref>] F INT( G<ref> Function([G<ref>] + H<ref> Array([H<ref>] + AssignList',' 
 
 Input: A=B,C=4
-          ^-- unexpected comma in assignment
+          ^-- expected operator or end-of-statement
 
 
 Input: A=B+C,4
-            ^-- unexpected comma in expression
+            ^-- expected operator or end-of-statement
 
 
 Input: A(B+C,(D,E)=F
-               ^-- unexpected comma in parentheses
+               ^-- expected operator or closing parentheses
 
 
 Input: A(B+C,(D=E)=(F,G)
-                     ^-- unexpected comma in parentheses
+                     ^-- expected operator or closing parentheses
 
 
 Input: A,B+C
-          ^-- expected equal or comma
+          ^-- expected equal or comma for assignment
 
 
 Input: 3=A
@@ -83,7 +83,7 @@ Input: A,3,B=4
 
 
 Input: (A=B)
-       ^-- unexpected parentheses in command
+       ^-- expected statement
 
 
 Input: A,B,(C)=4
@@ -91,6 +91,6 @@ Input: A,B,(C)=4
 
 
 Input: A+B
-        ^-- unexpected operator
+        ^-- expected equal or comma for assignment
 
 
