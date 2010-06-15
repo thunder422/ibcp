@@ -20,19 +20,62 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
-	Translator - PRINT Command
-	Translator - Semicolons
 	Translator - INPUT Command
 	Translator - Colons
 	Translator - IF-THEN-ELSE-ENDIF Commands
+	Translator - FOR-NEXT Commands
+	Translator - DO-LOOP Commands
+	Internal Language Definition
+	Dictionary Definition
+	Encoder - To single lines (not to internal program)
+	Recreator - For single lines (of implemented commands)
+	Translator - Single line DEF FN
 	Translator - More Commands
 	Translator - Line Numbers
 	Translator - Immediate Commands
-	Internal Language Definition
-	Dictionary Definition
-	Encoder
+	Internal Program Definition
+	Encoder - Program sub-module
 	Encoder - Temporary Strings
-	Recreator
+	Recreator - From internal program
+
+
+Release 0.1.13 (2010-06-15)
+
+	Translator developmental release - the PRINT command has been
+	implemented with the print functions along with several updates
+	including:
+
+	    - command handler functions (PRINT, Assign and LET)
+	    - command stack item flags (for used by commands)
+	    - command support at end-of-line handling
+	    - better error reporting (makes attempt to report when
+	      is expected next when an error is detected)
+
+	There are still several errors that are not being reported as
+	desired.  The new translator11.txt file contains what error
+	messages are expected and not what is actually output be the
+	current program (the error messages were modified to the desired
+	message from the actual output file).  The regression tests will
+	report a failure with test #11.  These errors will be corrected
+	in a future release.  A release is being made because it has
+	been too long since the last release.  New (listed first) and
+	updated files include:
+
+	regtest          - updated for more tests
+	regtest.bat      - updated for more tests
+	translator10.txt - contains PRINT command test inputs
+	translator11.txt - contains statement errors test inputs
+
+	ibcp.h           - PRINT command support plus more
+	parser5.txt      - updated for MID3$ code change
+	table.cpp        - added support for PRINT command and functions
+	test_ibcp.cpp    - added PRINT and statement error tests
+	translator.cpp   - PRINT command support/better error reporting
+	translator2.txt  - updated for change of error messages
+	translator3.txt  - updated for change of error messages
+	translator4.txt  - updated for change of error messages
+	translator5.txt  - updated for change of error messages
+	translator9.txt  - updated, PRINT now valid command
 
 
 Release 0.1.12 (2010-05-30)
