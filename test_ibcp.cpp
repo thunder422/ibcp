@@ -127,6 +127,17 @@
 //                LET command
 //  2010-05-30  added command stack not empty bug error
 //
+//  2010-06-02  updated print_token() for new codes
+//  2010-06-06  corrected to call name2() in print_small_token()
+//  2010-06-08  added PRINT statement test inputs
+//              added semicolon sub-code flag support to print_small_token()
+//  2010-06-09  added unexpected comma in arguments error
+//              renamed bug errors for clarity
+//  2010-06-10  added new translator test sets (10 and 11)
+//  2010-06-10  added expected unary or operand error
+//  2010-06-01/14  updated many error enumeration names and string messages for
+//                 clarity
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -531,10 +542,143 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"PRINT",
 		NULL
 	};
+	static const char *testinput10[] = {  // PRINT tests (2010-06-01)
+		"PRINT A;B%;C$",
+		"PRINT A;B%;C$;",
+		"PRINT A,B%,C$",
+		"PRINT A,B%,C$,",
+		"PRINT A+B; C%+D%; E$+F$; MID$(E$,1); LEFT$(E$+F$,5)",
+		"PRINT \"Test:\"; TAB(10); A%; SPC(5); B",
+		"PRINT \"Test:\"; TAB(10); A; LOG(5); B",
+		"PRINT A; TAB(10)",
+		"PRINT A; TAB(10);",
+		"PRINT A; SPC(10)",
+		"PRINT A; SPC(10);",
+		"PRINT ,,A",
+		"PRINT ,,A,",
+		"PRINT A,,B",
+		"PRINT A,,B,",
+		"PRINT A;;B",
+		"PRINT;A;;B;;",
+		"PRINT;",
+		"PRINT,",
+		// PRINT error tests
+		"PRINT C(A,,B)",
+		"PRINT C(A;B)",
+		"A=SPC(10)",
+		"A=TAB(10)",
+		"PRINT (A,,B)",
+		"PRINT A+;",
+		"PRINT A+,",
+		"PRINT A+",
+		"PRINT INT(A+;",
+		"PRINT INT(A+,",
+		"PRINT INT(A+",
+		"PRINT INT(B,,C)",
+		"PRINT (A+B",
+		"PRINT (A+B,",
+		"PRINT MID$(A$+B$",
+		NULL
+	};
+	static const char *testinput11[] = {  // error tests (2010-06-13)
+		"Z,Y",
+
+		"Z = C(A,,B)",
+		"Z = C(A;B)",
+		"Z = A;B",
+		"Z = A+;",
+		"Z = A+B;C",
+		"Z = Y = A;B",
+		"Z , Y = A;B",
+		"Z , Y , A;B",
+		"Z = INT(A;B)",
+		"Z = ASC(A$;B)",
+		"Z$ = MID$(A$;B)",
+		"Z$ = MID$(A$,B;C)",
+		"Z$ = MID$(A$,B,C;D)",
+		"Z = INSTR(A$;B$)",
+		"Z = INSTR(A$,B$;C)",
+		"Z = INSTR(A$,B$,C;D)",
+		"Z = C(A,;B)",
+		"Z = INT(A,",
+		"Z = (A+",
+		"Z = A+",
+		"Z = (A+B",
+		"Z = (,",
+		"Z = (A,",
+		"Z = (A+,",
+		"Z = (A+A+,",
+		"Z = (A+B,",
+		"Z = MID$(A$+B$",
+		"Z = A NOT B",
+		"Z = A + * B",
+		"Z = A + B,",
+		"Z = A,B = 1",
+		"Z+A",
+		"+Z",
+		"-Z",
+		"Z Y = 1",
+		"Z , A B",
+		"Z",
+		",Z",
+		"Z,",
+		"Z,,",
+		"Z,Y",
+		"Z,Y,",
+		"Z=A,",
+		"Z;",
+		";Z",
+		"Z,;",
+		"Z,B;",
+		"Z=B;",
+		"LET A",
+		"LET A,",
+		"LET A;",
+		"Z=",
+		"Z=,",
+		"Z=;",
+		"Z=+",
+		"Z=Y=",
+		"Z,Y=",
+		"Z,Y=,",
+		"Z,Y=;",
+		"LET A=",
+		"Z(",
+		"Z(,",
+		"Z(;",
+		"Z,Y(",
+		"Z = A A",
+		"Z = (A A",
+		"Z = Arr(A A",
+		"Z = INT(A A",
+		"Z = ASC(A$ A",
+		"Z = ASC(A$,A A",
+		"Z$ = MID$(A$ A",
+		"Z$ = MID$(A$,A A",
+		"Z$ = MID$(A$,A,A A",
+		"MID$(",
+		"MID$(A$",
+		"MID$(A$,",
+		"MID$(A$ B",
+		"MID$(A$,B",
+		"MID$(A$,B,",
+		"MID$(A$,B C",
+		"MID$(A$,B,C",
+		"MID$(A$,B,C,",
+		"MID$(A$,B,C D",
+		"MID$(A$,B,C)",
+		"MID$(A$,B,C)=",
+		"INT(",
+		"INT(A,",
+		"INT(A)",
+		"INT(A)=",
+		"INT(A)=B",
+		NULL
+	};
 
 	static const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
-		testinput7, testinput8, testinput9
+		testinput7, testinput8, testinput9, testinput10, testinput11
 	};
 	static const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -649,45 +793,53 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 
 		switch (status)
 		{
-		case ExpOperand_TokenStatus:
-			error = "operand expected";
+		// 2010-06-10/14: updated many error names and messages
+		case ExpStatement_TokenStatus:
+			error = "expected statement";
 			break;
-		case ExpOperator_TokenStatus:
-			error = "operator expected";
+		// 2010-06-10: renamed error, changed message
+		case ExpExpr_TokenStatus:
+			error = "expected expression";
 			break;
-		case ExpBinOp_TokenStatus:
-			error = "binary operator expected";
+		// 2010-06-10: added error
+		case ExpExprOrEnd_TokenStatus:
+			error = "expected expression or end-of-statement";
+			break;
+		case ExpOpOrEnd_TokenStatus:
+			error = "expected operator or end-of-statement";
+			break;
+		case ExpBinOpOrEnd_TokenStatus:
+			error = "expected binary operator or end-of-statement";
+			break;
+		case ExpEqualOrComma_TokenStatus:
+			error = "expected equal or comma for assignment";
+			break;
+		case ExpAssignItem_TokenStatus:  // 2010-06-13
+			error = "expected item for assignment";
+			break;
+		// 2010-06-11: added expected operator or comma
+		case ExpOpOrComma_TokenStatus:
+			error = "expected operator or comma";
+			break;
+		case ExpOpCommaOrParen_TokenStatus:
+			error = "expected operator, comma or closing parentheses";
 			break;
 		// 2010-03-25: added missing parentheses errors
 		case NoOpenParen_TokenStatus:
 			error = "missing opening parentheses";
 			break;
-		case NoCloseParen_TokenStatus:
-			error = "missing closing parentheses";
+		case ExpOpOrParen_TokenStatus:
+			// 2010-06-10: changed error message
+			error = "expected operator or closing parentheses";
 			break;
 		// 2010-04-02: added errors for array/functions
 		// 2010-04-11: replaced Error_UnexpectedComma
 		case UnexpAssignComma_TokenStatus:
-			error = "unexpected comma in assignment";
-			break;
-		case UnexpExprComma_TokenStatus:
-			error = "unexpected comma in expression";
-			break;
-		// 2010-04-17: added another unexpected comma error
-		case UnexpParenComma_TokenStatus:
-			error = "unexpected comma in parentheses";
+			// 2010-06-10: changed error message
+			error = "expected operator in assignment";
 			break;
 		// 2010-04-02: added errors for array/functions
-		case WrongNumOfArgs_TokenStatus:
-			error = "wrong number of arguments";
-			break;
 		// 2010-04-11: added errors for assignment
-		case UnexpOperator_TokenStatus:
-			error = "unexpected operator";
-			break;
-		case ExpEqualOrComma_TokenStatus:
-			error = "expected equal or comma";
-			break;
 		// 2010-04-16: added errors for assignment references
 		case ExpAssignRef_TokenStatus:
 			error = "item cannot be assigned";
@@ -716,35 +868,34 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		case UnExpCommand_TokenStatus:
 			error = "unexpected command";
 			break;
+		// 2010-06-01: added invalid used print-only function error
+		case PrintOnlyIntFunc_TokenStatus:
+			error = "invalid use of print function";
+			break;
 
 		// diagnostic errors
+		// 2010-06-10/14: updated many bug error names and messages
 		case BUG_NotYetImplemented:
 			error = "BUG: not yet implemented";
+			break;
+		case BUG_InvalidMode:  // 2010-06-13
+			error = "BUG: invalid mode";
 			break;
 		case BUG_HoldStackEmpty:
 			error = "BUG: hold stack empty, expected Null";
 			break;
-		case BUG_StackNotEmpty:
+		case BUG_HoldStackNotEmpty:
 			error = "BUG: hold stack not empty";
 			break;
-		case BUG_StackEmpty1:
-			error = "BUG: expected operand 1 on done stack";
-			break;
-		case BUG_StackEmpty2:
-			error = "BUG: expected operand 2 on done stack";
-			break;
-		case BUG_StackNotEmpty2:
+		case BUG_DoneStackNotEmpty:
 			error = "BUG: done stack not empty";
 			break;
-		case BUG_StackEmpty3:
-			error = "BUG: done stack empty, expected result";
-			break;
 		// 2010-03-25: added error for parentheses support
-		case BUG_StackEmpty4:
+		case BUG_DoneStackEmptyParen:
 			error = "BUG: done stack empty, expected token for ')'";
 			break;
 		// 2010-04-02: added error for array/function support
-		case BUG_StackEmpty5:
+		case BUG_DoneStackEmptyArrFunc:
 			error = "BUG: done stack empty, expected token for array/function";
 			break;
 		case BUG_UnexpectedCloseParen:
@@ -759,6 +910,12 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		// 2010-05-30: add new error
 		case BUG_CmdStackNotEmpty:
 			error = "BUG: command stack not empty";
+			break;
+		case BUG_CmdStackEmpty:  // 2010-06-05
+			error = "BUG: command stack empty";
+			break;
+		case BUG_Debug:  // 2010-06-13: used for debugging
+			error = "BUG: debug";
 			break;
 		default:
 			error = "UNEXPECTED ERROR";
@@ -812,6 +969,7 @@ bool print_token(Token *token, Table *table)
 	// 2010-04-04: updated list for new codes
 	// 2010-04-11: updated list for new codes
 	// 2010-05-29: updated list for new codes
+	// 2010-06-02: updated list for new codes
 	const char *code_name[] = {
 		"Null",
 
@@ -849,9 +1007,10 @@ bool print_token(Token *token, Table *table)
 		"Tab", "Spc",
 
 		// commands
-		"Let", "Print", "Input", "Dim", "Def", "Rem", "If", "Then", "Else",
-			"EndIf", "For", "To", "Step", "Next", "Do", "DoWhile", "DoUntil",
-			"While", "Until", "Loop", "LoopWhile", "LoopUntil", "End",
+		"Let", "Print", "PrintDbl", "PrintInt", "PrintStr", "Input", "Dim",
+			"Def", "Rem", "If", "Then", "Else", "EndIf", "For", "To", "Step",
+			"Next", "Do", "DoWhile", "DoUntil", "While", "Until", "Loop",
+			"LoopWhile", "LoopUntil", "End",
 
 		// other codes
 		"EOL",
@@ -1030,7 +1189,8 @@ bool print_small_token(Token *token, Table *table)
 		else
 		{
 			printf("%s", table->name(token->index));
-			if (table->name(token->index) != NULL)
+			// 2010-06-06: call name2() instead of name()
+			if (table->name2(token->index) != NULL)
 			{
 				printf("-%s", table->name2(token->index));
 			}
@@ -1060,6 +1220,11 @@ bool print_small_token(Token *token, Table *table)
 		if (token->subcode & Comma_SubCode)
 		{
 			printf(",");
+		}
+		// 2010-06-08: added semicolon subcode flag
+		if (token->subcode & SemiColon_SubCode)
+		{
+			printf(";");
 		}
 		printf("'");
 	}
