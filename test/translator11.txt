@@ -1,0 +1,367 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: Z = C(A,,B)
+               ^-- expected expression
+
+
+Input: Z = C(A;B)
+              ^-- expected operator, comma or closing parentheses
+
+
+Input: Z = A;B
+            ^-- expected operator or end-of-statement
+
+
+Input: Z = A+;
+             ^-- expected expression
+
+
+Input: Z = A+B;C
+              ^-- expected operator or end-of-statement
+
+
+Input: Z = Y = A;B
+                ^-- expected operator or end-of-statement
+
+
+Input: Z , Y = A;B
+                ^-- expected operator or end-of-statement
+
+
+Input: Z , Y , A;B
+                ^-- expected equal or comma for assignment
+
+
+Input: Z = INT(A;B)
+                ^-- expected operator or closing parentheses
+
+
+Input: Z = ASC(A$;B)
+                 ^-- expected operator, comma or closing parentheses
+
+
+Input: Z$ = MID$(A$;B)
+                   ^-- expected operator or comma
+
+
+Input: Z$ = MID$(A$,B;C)
+                     ^-- expected operator, comma or closing parentheses
+
+
+Input: Z$ = MID$(A$,B,C;D)
+                       ^-- expected operator or closing parentheses
+
+
+Input: Z = INSTR(A$;B$)
+                   ^-- expected operator or comma
+
+
+Input: Z = INSTR(A$,B$;C)
+                      ^-- expected operator, comma or closing parentheses
+
+
+Input: Z = INSTR(A$,B$,C;D)
+                        ^-- expected operator or closing parentheses
+
+
+Input: Z = C(A,;B)
+               ^-- expected expression
+
+
+Input: Z = INT(A,
+                ^-- expected operator or closing parentheses
+
+
+Input: Z = (A+
+              ^-- expected expression
+
+
+Input: Z = A+
+             ^-- expected expression
+
+
+Input: Z = (A+B
+               ^-- expected operator or closing parentheses
+
+
+Input: Z = (,
+            ^-- expected expression
+
+
+Input: Z = (A,
+             ^-- expected operator or closing parentheses
+
+
+Input: Z = (A+,
+              ^-- expected expression
+
+
+Input: Z = (A+A+,
+                ^-- expected expression
+
+
+Input: Z = (A+B,
+               ^-- expected operator or closing parentheses
+
+
+Input: Z = MID$(A$+B$
+                     ^-- expected operator or comma
+
+
+Input: Z = A NOT B
+             ^^^-- expected binary operator or end-of-statement
+
+
+Input: Z = A + * B
+               ^-- expected expression
+
+
+Input: Z = A + B,
+                ^-- expected operator or end-of-statement
+
+
+Input: Z = A,B = 1
+            ^-- expected operator or end-of-statement
+
+
+Input: Z+A
+        ^-- expected equal or comma for assignment
+
+
+Input: +Z
+       ^-- expected statement
+
+
+Input: -Z
+       ^-- expected statement
+
+
+Input: Z Y = 1
+         ^-- expected equal or comma for assignment
+
+
+Input: Z , A B
+             ^-- expected equal or comma for assignment
+
+
+Input: Z
+        ^-- expected equal or comma for assignment
+
+
+Input: ,Z
+       ^-- expected statement
+
+
+Input: Z,
+         ^-- expected item for assignment
+
+
+Input: Z,,
+         ^-- expected item for assignment
+
+
+Input: Z,Y
+          ^-- expected equal or comma for assignment
+
+Input: Z,Y,
+           ^-- expected item for assignment
+
+
+Input: Z=A,
+          ^-- expected operator or end-of-statement
+
+
+Input: Z;
+        ^-- expected equal or comma for assignment
+
+
+Input: ;Z
+       ^-- expected statement
+
+
+Input: Z,;
+         ^-- expected item for assignment
+
+
+Input: Z,B;
+          ^-- expected equal or comma for assignment
+
+
+Input: Z=B;
+          ^-- expected operator or end-of-statement
+
+
+Input: LET A
+            ^-- expected equal or comma for assignment
+
+
+Input: LET A,
+             ^-- expected item for assignment
+
+
+Input: LET A;
+            ^-- expected equal or comma for assignment
+
+
+Input: Z=
+         ^-- expected expression
+
+
+Input: Z=,
+         ^-- expected expression
+
+
+Input: Z=;
+         ^-- expected expression
+
+
+Input: Z=+
+         ^-- expected expression
+
+
+Input: Z=Y=
+           ^-- expected expression
+
+
+Input: Z,Y=
+           ^-- expected expression
+
+
+Input: Z,Y=,
+           ^-- expected expression
+
+
+Input: Z,Y=;
+           ^-- expected expression
+
+
+Input: LET A=
+             ^-- expected expression
+
+
+Input: Z(
+         ^-- expected expression
+
+
+Input: Z(,
+         ^-- expected expression
+
+
+Input: Z(;
+         ^-- expected expression
+
+
+Input: Z,Y(
+           ^-- expected expression
+
+
+Input: Z = A A
+             ^-- expected operator or end-of-statement
+
+
+Input: Z = (A A
+              ^-- expected operator or closing parentheses
+
+
+Input: Z = Arr(A A
+                 ^-- expected operator, comma or closing parentheses
+
+
+Input: Z = INT(A A
+                 ^-- expected operator or closing parentheses
+
+
+Input: Z = ASC(A$ A
+                  ^-- expected operator, comma or closing parentheses
+
+
+Input: Z = ASC(A$,A A
+                    ^-- expected operator or closing parentheses
+
+
+Input: Z$ = MID$(A$ A
+                    ^-- expected operator or comma
+
+
+Input: Z$ = MID$(A$,A A
+                      ^-- expected operator, comma or closing parentheses
+
+
+Input: Z$ = MID$(A$,A,A A
+                        ^-- expected operator or closing parentheses
+
+
+Input: MID$(
+            ^-- expected item for assignment
+
+
+Input: MID$(A$
+              ^-- expected comma
+
+
+Input: MID$(A$,
+               ^-- expected expression
+
+
+Input: MID$(A$ B
+               ^-- expected comma
+
+
+Input: MID$(A$,B
+                ^-- expected operator, comma or closing parentheses
+
+
+Input: MID$(A$,B,
+                 ^-- expected expression
+
+
+Input: MID$(A$,B C
+                 ^-- expected operator, comma or closing parentheses
+
+
+Input: MID$(A$,B,C
+                  ^-- expected operator or closing parentheses
+
+
+Input: MID$(A$,B,C,
+                  ^-- expected operator or closing parentheses
+
+
+Input: MID$(A$,B,C D
+                   ^-- expected operator or closing parentheses
+
+
+Input: MID$(A$,B,C)
+                   ^-- expected equal or comma for assignment
+
+
+Input: MID$(A$,B,C)=
+                    ^-- expected expression
+
+
+Input: INT(
+       ^^^^-- expected statement
+
+
+Input: INT(A,
+       ^^^^-- expected statement
+
+
+Input: INT(A)
+       ^^^^-- expected statement
+
+
+Input: INT(A)=
+       ^^^^-- expected statement
+
+
+Input: INT(A)=B
+       ^^^^-- expected statement
+
+
