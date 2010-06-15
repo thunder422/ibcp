@@ -155,6 +155,38 @@
 //                to token pointer so that it will work with tokens that don't
 //                have a table entry (arrays and functions)
 //
+//  2010-06-01  added support for print-only functions
+//              added generic flag member to CmdItem that can be used by
+//  			  commands (for PRINT it will be used to determine if a PRINT
+//  			  token should be added at the end of a translated print
+//  			  statement, i.e. advance to a new line)
+//  2010-06-02  added support for semicolon with token handler
+//              added Table::new_token() for allocating a new token and setting
+//                it up for a specific code
+//  2010-06-03  added Translator::expression_end() for checking if expression
+//                was ended correctly
+//  2010-06-04  added Translator::add_print_code() for adding new data type
+//                specific print codes that were also added
+//  2010-06-05  added support for command handler function pointers
+//                (was necessary to move CmdItem structure outside Translator)
+//  2010-06-06  added EndExpr_Flag for token codes that can end an expression
+//              corrected issue with special Translator expression only mode
+//  2010-06-08  added PrintFunc_CmdFlag and SemiColon_SubCode
+//  2010-06-09  changed count_stack from <char> to new <CountItem>, which
+//                contains the old count and expected number of arguments
+//  2010-06-10  added new FirstOperand translator state - used for identifying
+//                if any tokens for expression have been received yet
+//  2010-06-13  added token pointer argument to command handlers so that
+//                command handlers have accessed to calling token
+//  2010-06-14  added Translator::paren_status() for checking if there is an
+//                outstanding token with parentheses on the hold stack and if
+//                there is, to return the appropriate error
+//  2010-06-14  removed AssignList_Flag because it is unnecessary (the code can
+//                be checked for AssignList_Code)
+//  2010-06-01/14  added, renamed and deleted many TokenStatus enumeration
+//                 values for matching error messages that were changed for
+//                 better clarity
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -261,7 +293,8 @@ enum Code {
 
 	// commands
 	Let_Code,
-	Print_Code,
+	// 2010-06-04: added data type specified print codes
+	Print_Code, PrintDbl_Code, PrintInt_Code, PrintStr_Code,
 	Input_Code,
 	Dim_Code,
 	Def_Code,
@@ -360,10 +393,12 @@ enum Multiple {
 
 
 // 2010-05-27: sub-code flags for use in Token and internal program
-const int Null_SubCode       = 0x00000000;	// no sub-code present
+// 2010-06-08: renamed Null to None and added SemiColon sub-code flag
+const int None_SubCode       = 0x00000000;	// no sub-code present
 const int Paren_SubCode      = 0x00000001;	// reproduce unnecessary parenthesis
 const int Let_SubCode        = 0x00000002;	// reproduce LET keyword for assign
 const int Comma_SubCode      = 0x00000004;	// multiple assignment has commas
+const int SemiColon_SubCode  = 0x00000008;	// semicolon after print function
 
 
 //*****************************************************************************
@@ -401,7 +436,7 @@ struct Token {
 		string = NULL;
 		length = 1;  // 2010-03-21: initialize length
 		reference = false;  // 2010-04-12: initialize reference flag
-		subcode = 0;  // 2010-05-29: initial sub-code flags
+		subcode = None_SubCode;  // 2010-05-29: initial sub-code flags
 	}
 	~Token(void)
 	{
@@ -461,21 +496,24 @@ struct Token {
 
 
 // 2010-05-28: moved from Translator::Status, and renamed the values
+// 2010-06-01/14: added, renamed or deleted many status enumeration values
 enum TokenStatus {
+	Null_TokenStatus,				// 2010-06-04: added
 	Good_TokenStatus,
 	Done_TokenStatus,
-	ExpOperand_TokenStatus,
-	ExpOperator_TokenStatus,
-	ExpBinOp_TokenStatus,
+	ExpStatement_TokenStatus,		// 2010-06-13: renamed
+	ExpExpr_TokenStatus,			// 2010-06-10: renamed
+	ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
+	ExpOpOrEnd_TokenStatus,			// 2010-06-11: renamed
+	ExpBinOpOrEnd_TokenStatus,		// 2010-06-12: renamed
+	ExpOpOrComma_TokenStatus,		// 2010-06-11: added
+	ExpOpCommaOrParen_TokenStatus,	// 2010-06-11: added
 	NoOpenParen_TokenStatus,		// 2010-03-25: added
-	NoCloseParen_TokenStatus,		// 2010-03-25: added
+	ExpOpOrParen_TokenStatus,		// 2010-03-25: added (renamed 2010-06-11)
 	// 2010-04-11: replaced Error_UnexpectedComma
 	UnexpAssignComma_TokenStatus,	// 2010-04-11: added
-	UnexpExprComma_TokenStatus,		// 2010-04-11: added
-	UnexpParenComma_TokenStatus,	// 2010-04-17: added
-	WrongNumOfArgs_TokenStatus, 	// 2010-04-04: added
-	UnexpOperator_TokenStatus,		// 2010-04-11: added
 	ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
+	ExpAssignItem_TokenStatus,		// 2010-06-13: added
 	ExpAssignRef_TokenStatus,		// 2010-04-16: added
 	ExpAssignListRef_TokenStatus,	// 2010-04-16: added
 	UnexpParenInCmd_TokenStatus,	// 2010-04-16: added
@@ -484,20 +522,21 @@ enum TokenStatus {
 	ExpInteger_TokenStatus,			// 2010-04-25: added
 	ExpString_TokenStatus,			// 2010-04-25: added
 	UnExpCommand_TokenStatus,		// 2010-05-29: added
+	PrintOnlyIntFunc_TokenStatus,	// 2010-06-01: added
 	// the following statuses used during development
 	BUG_NotYetImplemented,			// somethings is not implemented
+	BUG_InvalidMode,				// added 2010-06-13
 	BUG_HoldStackEmpty,				// diagnostic message
-	BUG_StackNotEmpty,				// diagnostic message
-	BUG_StackNotEmpty2,				// diagnostic message
-	BUG_StackEmpty1,				// diagnostic error
-	BUG_StackEmpty2,				// diagnostic error
-	BUG_StackEmpty3,				// diagnostic error
-	BUG_StackEmpty4,				// diagnostic error (2010-03-25)
-	BUG_StackEmpty5,				// diagnostic error (2010-04-02)
+	BUG_HoldStackNotEmpty,			// diagnostic message
+	BUG_DoneStackNotEmpty,			// diagnostic message
+	BUG_DoneStackEmptyParen,		// diagnostic error (2010-03-25)
+	BUG_DoneStackEmptyArrFunc,		// diagnostic error (2010-04-02)
 	BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
 	BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
 	BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
 	BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
+	BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
+	BUG_Debug,						// diagnostic error (2010-06-13
 	sizeof_TokenStatus
 };
 
@@ -530,13 +569,18 @@ const int RangeIncr_Flag      = 0x00000010;  // xxx-yyy,zz  xxx-yyy,nnn,zz
 const int String_Flag         = 0x00000020;
 // table entry flags (each must have unique bit set, but not unique from above)
 // 2010-04-04: added new flag for table entries with multiple codes
-const int Multiple_Flag       = 0x00000001;  // function has multiple forms
-// 2010-05-05: added flags for assignment operators
-const int Reference_Flag      = 0x00000002;  // code requires a reference
-const int AssignList_Flag     = 0x00000004;  // code is an list assignment
+// 2010-05-05: added Reference and AssignList flag for assignment operators
 // 2010-05-29: added hidden operator/function flag
+// 2010-06-01: added Print flag for print-only functions
+// 2010-06-06: added EndExp flag for comma, semicolon and EOL functions
+// 2010-06-14: removed AssignList flag (not needed)
+const int Multiple_Flag       = 0x00000001;  // function has multiple forms
+const int Reference_Flag      = 0x00000002;  // code requires a reference
+// note: value 0x00000004 is available
 const int Hidden_Flag         = 0x00000008;  // code is hidden operator/function
+const int Print_Flag          = 0x00000010;  // print-only function
 // note: don't use 0x00000020 - String_Flag is being used for codes
+const int EndExpr_Flag        = 0x00000040;	 // end expression
 
 // 2010-03-25: added highest precedence value
 const int Highest_Precedence = 127;
@@ -590,7 +634,33 @@ struct ExprInfo {
 
 class Translator;  // 2010-05-28: forward reference to Translator class
 
-typedef TokenStatus (*TokenHandler)(Translator &p, Token *&token);
+typedef TokenStatus (*TokenHandler)(Translator &t, Token *&token);
+
+
+// 2010-06-02: added command stack item flag values
+// some flags are used for all commands and some are used only for
+// specific commands, the values of command specific flags may be reused
+// for different commands so each flag will be assigned a value
+
+// FLAGS FOR ALL COMMANDS
+const int None_CmdFlag			= 0x00000000;	// initial value of command flag
+
+// FLAGS FOR PRINT COMMAND
+const int PrintStay_CmdFlag		= 0x00010000;	// PRINT stay on line flag
+const int PrintFunc_CmdFlag		= 0x00020000;	// print func flag (2010-06-08)
+
+
+// 2010-05-28: added command item and command stack
+// 2010-06-05: moved CmdItem outside Translator for TableEntry
+struct CmdItem {
+	Token *token;				// pointer to command token
+	Code code;					// code of command token
+	int flag;					// 2010-06-01: generic flag for command use
+};
+
+// 2010-06-13: added token pointer argument to command handlers
+typedef TokenStatus (*CmdHandler)(Translator &t, CmdItem *cmd_item,
+	Token *token);
 
 
 struct TableEntry {
@@ -607,6 +677,8 @@ struct TableEntry {
 	// 2010-05-28: added variables to support commands in translator
 	TokenHandler token_handler;	// pointer to translator token handler function
 	TokenMode token_mode;		// next token mode for command
+	// 2010-06-05: added end-of-statement token handler for commands
+	CmdHandler cmd_handler;		// pointer to translator cmd handler function
 };
 
 
@@ -823,6 +895,11 @@ public:
 	{
 		return entry[index].token_handler;
 	}
+	// 2010-06-05: added command handler function pointer access function
+	CmdHandler cmd_handler(int index)
+	{
+		return entry[index].cmd_handler;
+	}
 
 	// TABLE FUNCTIONS
 	int search(char letter, int flag);
@@ -836,6 +913,13 @@ public:
 		token->index = index(code);
 		token->type = type(token->index);
 		token->datatype = datatype(token->index);
+	}
+	// 2010-06-02: create new token and initialize it from code
+	Token *new_token(Code code)
+	{
+		Token *token = new Token;	// allocates and initializes base members
+		set_token(token, code);		// initializes code related members
+		return token;
 	}
 };
 
@@ -944,28 +1028,33 @@ class Translator {
 		Initial,					// initial state
 		BinOp,						// expecting binary operator
 		Operand,					// expecting unary operator or operand
+		FirstOperand,				// expecting first operand (2010-06-10)
 		sizeof_State
 	} state;						// current state of translator
 	// 2010-03-25: added variables to support parentheses
 	Token *pending_paren;			// closing parentheses token is pending
 	int last_precedence;			// precedence of last op added during paren
 	// 2010-04-02: added variables to support arrays and functions
-	SimpleStack<char> count_stack;	// number of operands counter stack
+	// 2010-06-09: change count stack to also hold expected number of operands
+	struct CountItem {
+		char noperands;				// number of operands seen
+		char nexpected;				// number of arguments expected
+	};
+	SimpleStack<CountItem> count_stack;	// number of operands counter stack
 	// 2010-04-11: added mode for handling assignment statements
 	// 2010-05-29: moved enum definition outside Translator and renamed it
 	TokenMode mode;					// current assignment mode
-	// 2010-05-28: added command item and command stack
-	struct CmdItem {
-		Token *token;				// pointer to command token
-		Code code;					// code of command token
-	};
+	// 2010-06-05: moved CmdItem outside Translator for TableEntry
 	SimpleStack<CmdItem> cmd_stack;	// stack of commands waiting processing
+	// 2010-06-06: variable to save expression only mode in
+	bool exprmode;					// expression only mode active flag
 
 public:
 	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
 	// 2010-04-16: added expression mode flag for testing
-	void start(bool exprmode = false)
+	void start(bool _exprmode = false)
 	{
+		exprmode = _exprmode;  // 2010-06-06: save flag
 		output = new List<RpnItem *>;
 		state = Initial;
 		// 2010-04-11: initialize mode to command
@@ -1015,22 +1104,54 @@ private:
 	Match match_code(Code *cvt_code, Code code);
 	// 2010-05-29: changed argument from index to token pointer
 	void do_pending_paren(Token *token);  // 2010-03-26: added for parentheses
+	// 2010-06-03: function to check if expression ended correctly
+	TokenStatus expression_end(void);
+	// 2010-06-14: function to get status for an outstanding parentheses token
+	TokenStatus paren_status(void);
+
+	// COMMAND SPECIFIC FUNCTIONS
+	// 2010-06-04: function to added data type specific print code
+	TokenStatus add_print_code(void);
 public:
 	// 2010-05-28: added token handler friend function definitions section
-	friend TokenStatus Operator_Handler(Translator &p, Token *&token);
-	friend TokenStatus Equal_Handler(Translator &p, Token *&token);
-	friend TokenStatus Comma_Handler(Translator &p, Token *&token);
-	friend TokenStatus CloseParen_Handler(Translator &p, Token *&token);
-	friend TokenStatus EndOfLine_Handler(Translator &p, Token *&token);
+	friend TokenStatus Operator_Handler(Translator &t, Token *&token);
+	friend TokenStatus Equal_Handler(Translator &t, Token *&token);
+	friend TokenStatus Comma_Handler(Translator &t, Token *&token);
+	friend TokenStatus CloseParen_Handler(Translator &t, Token *&token);
+	friend TokenStatus EndOfLine_Handler(Translator &t, Token *&token);
+	// 2010-06-02: added token handler for semicolon
+	friend TokenStatus SemiColon_Handler(Translator &t, Token *&token);
+
+	// 2010-06-05: added command handler friend function definitions section
+	// 2010-06-13: added token pointer argument to command handlers
+	friend TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item,
+	Token *token);
+	friend TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item,
+	Token *token);
+	// 2010-06-13: added command handler
+	friend TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item,
+	Token *token);
 };
 
 
 // 2010-05-28: added token handler function definitions section
-extern TokenStatus Operator_Handler(Translator &p, Token *&token);
-extern TokenStatus Equal_Handler(Translator &p, Token *&token);
-extern TokenStatus Comma_Handler(Translator &p, Token *&token);
-extern TokenStatus CloseParen_Handler(Translator &p, Token *&token);
-extern TokenStatus EndOfLine_Handler(Translator &p, Token *&token);
+// 2010-06-13: added token pointer argument to command handlers
+extern TokenStatus Operator_Handler(Translator &t, Token *&token);
+extern TokenStatus Equal_Handler(Translator &t, Token *&token);
+extern TokenStatus Comma_Handler(Translator &t, Token *&token);
+extern TokenStatus CloseParen_Handler(Translator &t, Token *&token);
+extern TokenStatus EndOfLine_Handler(Translator &t, Token *&token);
+// 2010-06-02: added token handler for semicolon
+extern TokenStatus SemiColon_Handler(Translator &t, Token *&token);
+
+// 2010-06-05: added command handler friend function definitions section
+extern TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item,
+	Token *token);
+extern TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item,
+	Token *token);
+// 2010-06-13: added command handler
+extern TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item,
+	Token *token);
 
 
 #endif  // IBCP_H
