@@ -134,9 +134,58 @@
 //                on the command stack, pop it, and set LET sub-code flag on
 //                assignment operator token
 //
+//  2010-06-01  corrected a bug when an operand is processed, if the mode is
+//                currently Command mode, the mode needs to be changed to
+//                Assignment mode to prevent commands from being accepted
+//              additional support for commands and command stack
+//              added support for print-only functions
+//  2010-06-02  added token handler for semicolon (for PRINT command)
+//  2010-06-03  added PRINT support for comma
+//              created expression_end() from parts of EndOfLine_Handler for
+//                end of expression checks (also used by comma and semicolon)
+//  2010-06-04  implemented new add_print_code() function to be used by
+//              Comma_Handler(), SemiColon_Handler() and Print_CmdHandler()
+//  2010-06-05  implemented Assign_CmdHandler() and Print_CmdHandler()
+//              push assignment token to command stack instead of done stack so
+//                the end of statement is handled properly and simply
+//  2010-06-06  correctly check for expression only mode at end-of-line
+//              end-of-line no longer pops a result off from done stack, which
+//                should now be empty (commands deal with done stack) except for
+//                special expression only mode
+//              added support for end expression flag - codes that can end an
+//                expression (currently comma, semicolon and EOL)
+//              switch back to operand state after comma and semicolon
+//  2010-06-08  set a print function flag in print command stack item to
+//                indicate a print function flag was just added to the output,
+//                which semicolon checks for and sets the semicolon sub-code
+//                flag on the print function token in case the print function is
+//                at the end of the print statement
+//              moved end expression flag check to operand section before unary
+//                operator check, if in the middle of a parentheses expression
+//                or array/function, then return expected closing parentheses
+//                error
+//  2010-06-09  changed count stack from holding just a counter to holding the
+//                counter and the expected number of arguments for internal
+//                functions, so that the number of arguments for internal
+//                functions can be checked as each comma token is received
+//  2010-06-10  added new state FirstOperand set at the beginning of an
+//                expression
+//              renamed errors for clarity
+//  2010-06-11  added check to detect invalid print-only functions sooner
+//  2010-06-13  changed to push AssignList token to hold stack when first comma
+//                token is received instead of when equal token is received
+//                (necessary for proper error condition tests)
+//              Let_CmdHandler implemented, necessary to catch errors when a
+//                LET command statement was not completed correctly
+//  2010-06-14  added check for immediate command token (append to output list
+//                and return Done)
+//              added paren_status() from duplicated code in add_token() and
+//                expression_end()
+//  2010-06-10/14  various changes to return appropriate easy to understand
+//                 error messages
+//
 
 #include "ibcp.h"
-
 
 // function to add a token to the output list, but token may be placed
 // on hold stack pending adding it to the output list so that higher
@@ -162,12 +211,22 @@ TokenStatus Translator::add_token(Token *&token)
 		
 		// push null token to be last operator on stack
 		// to prevent from popping past bottom of stack
-		Token *null_token = new Token();
-		table->set_token(null_token, Null_Code);
-		hold_stack.push(null_token);
+		// 2010-06-02: replaced new and set_token() with new_token()
+		hold_stack.push(table->new_token(Null_Code));
 
-		state = Operand;
+		// 2010-06-10: initialize to FirstOperand instead of Operand
+		state = FirstOperand;
 	}
+
+	// 2010-06-14: check for immediate command
+	if (token->type == ImmCmd_TokenType)
+	{
+		// append to output, and done
+		RpnItem *rpn_item = new RpnItem(token);
+		output->append(&rpn_item);
+		return Done_TokenStatus;
+	}
+
 	// 2010-05-29: added check for command token
 	if (token->type == Command_TokenType)
 	{
@@ -179,6 +238,7 @@ TokenStatus Translator::add_token(Token *&token)
 				cmd_stack.push();
 				cmd_stack.top().token = token;
 				cmd_stack.top().code = table->code(token->index);
+				cmd_stack.top().flag = None_CmdFlag;  // 2010-06-01: reset flag
 				return Good_TokenStatus;  // nothing more to do
 			}
 			else
@@ -192,7 +252,8 @@ TokenStatus Translator::add_token(Token *&token)
 		}
 	}
 
-	if (state == Operand)
+	// check for both operand states (2010-06-10)
+	if (state == Operand || state == FirstOperand)
 	{
 		if (!token->is_operator())
 		{
@@ -209,9 +270,31 @@ TokenStatus Translator::add_token(Token *&token)
 			{
 				// token is an array or a function
 				// 2010-04-02: implemented array/function support
-				count_stack.push(1);  // add an operand counter
+				// 2010-06-08: changed count stack to hold count items
+				count_stack.push();  // add an operand counter
+				count_stack.top().noperands = 1;  // assume at least one
+				// 2010-06-08: added number of operands for internal functions
+				if (token->type == IntFuncP_TokenType)
+				{
+					// 2010-06-11: detect invalid print-only function early
+					if ((table->flags(token->index) & Print_Flag)
+						&& (cmd_stack.empty()
+						|| cmd_stack.top().code != Print_Code))
+					{
+						return PrintOnlyIntFunc_TokenStatus;
+					}
+
+					count_stack.top().nexpected
+						= table->noperands(token->index);
+				}
+				else
+				{
+					count_stack.top().nexpected = 0;
+				}
+
 				hold_stack.push(token);
 				// leave state == Operand
+				state = Operand;  // make sure not FirstOperand (2010-06-10)
 			}
 			else
 			{
@@ -230,15 +313,64 @@ TokenStatus Translator::add_token(Token *&token)
 				done_stack.push(output->append(&rpn_item));
 				state = BinOp;  // next token must be a binary operator
 			}
+			// 2010-06-01: if command mode then need to change to assignment
+			if (mode == Command_TokenMode)
+			{
+				mode = Assignment_TokenMode;
+			}
 			return Good_TokenStatus;
+		}
+		// 2010-06-06: end-of-statement code acceptable instead of operand
+		else if (table->flags(token) & EndExpr_Flag)
+		{
+			if (state != FirstOperand)
+			{
+				switch (mode)
+				{
+				case Assignment_TokenMode:
+					return BUG_Debug;
+
+				case CommaAssignment_TokenMode:
+					// in a comma separated list
+					return ExpAssignItem_TokenStatus;
+
+				case EqualAssignment_TokenMode:
+				case Expression_TokenMode:
+					return ExpExpr_TokenStatus;
+
+				default:
+					return BUG_InvalidMode;
+				}
+				return ExpExpr_TokenStatus;
+			}
+			else  // at first operand (no operands received yet)
+			{
+				switch (mode)
+				{
+				case EqualAssignment_TokenMode:
+					return ExpExpr_TokenStatus;
+
+				case Expression_TokenMode:
+					if (table->code(hold_stack.top()->index) == AssignList_Code)
+					{
+						return ExpExpr_TokenStatus;
+					}
+				}
+			}
+			// otherwise fall thru to where token handler will be called
 		}
 		else  // operator when expecting operand, must be a unary operator
 		{
+			// 2010-06-13: if command mode, then this is not the way it starts
+			if (mode == Command_TokenMode)
+			{
+				return ExpStatement_TokenStatus;
+			}
 			Code unary_code = table->unary_code(token->index);
 			if (unary_code == Null_Code)
 			{
 				// oops, not a valid unary operator
-				return ExpOperand_TokenStatus;
+				return ExpExpr_TokenStatus;
 			}
 			// change token to unary operator
 			token->index = table->index(unary_code);
@@ -257,7 +389,6 @@ TokenStatus Translator::add_token(Token *&token)
 					// (otherwise in an expression)
 					switch (mode)
 					{
-					case Command_TokenMode:
 					case Assignment_TokenMode:
 						// oops, not expecting parentheses
 						return UnexpParenInCmd_TokenStatus;
@@ -274,6 +405,9 @@ TokenStatus Translator::add_token(Token *&token)
 					case Expression_TokenMode:
 						// inside an expression, nothing extra to do
 						break;
+
+					default:
+						return BUG_InvalidMode;
 					}
 				}
 				// push open parentheses right on stack and return
@@ -281,7 +415,10 @@ TokenStatus Translator::add_token(Token *&token)
 				state = Operand;
 
 				// 2010-04-02: add a null counter to prevent commas
-				count_stack.push(0);
+				// 2010-06-09: changed count stack to hold count items
+				count_stack.push();
+				count_stack.top().noperands = 0;
+				count_stack.top().nexpected = 0;
 				return Good_TokenStatus;
 			}
 			// fall thru to operator code
@@ -292,12 +429,32 @@ TokenStatus Translator::add_token(Token *&token)
 		if (!token->is_operator())
 		{
 			// state == BinOp, but token is not an operator
-			return ExpOperator_TokenStatus;
+			TokenStatus status;
+			if ((status = paren_status()) != Good_TokenStatus)
+			{
+				return status;
+			}
+			else  // error is dependent on command
+			{
+				switch (mode)
+				{
+				case Assignment_TokenMode:
+				case CommaAssignment_TokenMode:
+					return ExpEqualOrComma_TokenStatus;
+
+				case EqualAssignment_TokenMode:
+				case Expression_TokenMode:
+					return ExpOpOrEnd_TokenStatus;
+
+				default:
+					return BUG_InvalidMode;
+				}
+			}
 		}
 		// 2010-03-21: changed unary operator check
 		if (table->is_unary_operator(token->index))
 		{
-			return ExpBinOp_TokenStatus;
+			return ExpBinOpOrEnd_TokenStatus;
 		}
 		// 2010-03-26: initialize last precedence before emptying stack for ')'
 		if (table->code(token->index) == CloseParen_Code)
@@ -372,7 +529,7 @@ TokenStatus Translator::add_operator(Token *&token)
 	//             but only last assignment list operand
 
 	// save if token is an assignment list operator
-	int assignlist = table->flags(token->index) & AssignList_Flag;
+	bool assignlist = table->code(token->index) == AssignList_Code;
 
 	// process data types of operands (find proper code)
 	TokenStatus status = find_code(token, &last_operand);
@@ -515,6 +672,15 @@ TokenStatus Translator::add_operator(Token *&token)
 		rpn_item = new RpnItem(token, noperands, operand_array);
 	}
 
+	// 2010-03-25: added parentheses support BEGIN
+	// 2010-03-26: replaced code with function call
+	// 2010-05-29: changed argument to token pointer
+	// 2010-06-05: do before assign check, which will append to output
+	do_pending_paren(token);
+
+	// 2010-06-05: append item now only before assign check
+	List<RpnItem *>::Element *output_item = output->append(&rpn_item);
+
 	// 2010-05-29: if assignment operator, check for LET command
 	if (table->flags(token->index) & Reference_Flag)
 	{
@@ -524,25 +690,28 @@ TokenStatus Translator::add_operator(Token *&token)
 			cmd_stack.pop();
 			token->subcode |= Let_SubCode;
 		}
+
+		// 2010-06-05: push assign to command stack instead of done stack
+		cmd_stack.push().token = token;
+		// using the single Assign_Code value will make it easier to check for
+		// an assignment command later if necessary
+		cmd_stack.top().code = Assign_Code;
+		cmd_stack.top().flag = None_CmdFlag;
 	}
+	else  // regular operator, set last precedence and push to done stack
+	{
+		// save precedence of operator being added
+		// (doesn't matter if not currently within parentheses,
+		// it will be reset upon next open parentheses)
+		last_precedence = table->precedence(token->index);
+		// 2010-03-25: added parentheses support END
 
-	// 2010-03-25: added parentheses support BEGIN
-	// 2010-03-26: replaced code with function call
-	// 2010-05-29: changed argument to token pointer
-	do_pending_paren(token);
-
-	// save precedence of operator being added
-	// (doesn't matter if not currently within parentheses,
-	// it will be reset upon next open parentheses)
-	last_precedence = table->precedence(token->index);
-	// 2010-03-25: added parentheses support END
-
-	// add token to output list and push element pointer on done stack
-	// 2010-05-15: for operators that have string operand, save the operands
-	// 2010-05-22: moved setting of noperands to above with operand_array
-	// 2010-05-15: create rpn item to add to output list
-	done_stack.push(output->append(&rpn_item));
-
+		// add token to output list and push element pointer on done stack
+		// 2010-05-15: for operators that have string operand, save the operands
+		// 2010-05-22: moved setting of noperands to above with operand_array
+		// 2010-05-15: create rpn item to add to output list
+		done_stack.push(output_item);
+	}
 	return Good_TokenStatus;
 }
 
@@ -734,14 +903,10 @@ TokenStatus Translator::find_code(Token *&token,
 			if (code != Null_Code)
 			{
 				// create convert token with convert code
-				Token *cvt_token = new Token;
-				cvt_token->index = table->index(code);
-				cvt_token->type = table->type(cvt_token->index);
-				cvt_token->datatype = table->datatype(cvt_token->index);
-
 				// add token to output list after operand
 				// 2010-05-15: create rpn item to add to output list
-				RpnItem *rpn_item = new RpnItem(cvt_token);
+				// 2010-06-02: replaced code with call to new_token()
+				RpnItem *rpn_item = new RpnItem(table->new_token(code));
 				// 2010-05-16: set operand to new conversion token
 				operand[i] = output->append(operand[i], &rpn_item);
 			}
@@ -867,6 +1032,144 @@ Translator::Match Translator::match_code(Code *cvt_code, Code code)
 }
 
 
+// function to do end of expression hold stack check to make sure
+// nothing is on the hold stack (the initial null entry should be on
+// top)
+//
+//   - checks if there is an open parentheses, parentheses token or
+//     internal function on hold stack (missing closing parentheses)
+//   - checks the null token is on top of stack
+//   - or some other unexpected token (BUG)
+//   - performs pending parentheses check before returning
+//   - returns good status or error status
+
+// 2010-06-03: created new function from code in EOL token handler
+TokenStatus Translator::expression_end(void)
+{
+	TokenStatus status;
+	Token *token;
+
+	// do end of statement processing
+	if (hold_stack.empty())
+	{
+		// oops, stack is empty
+		return BUG_HoldStackEmpty;  // 2010-04-26: changed bug named
+	}
+
+	if ((status = paren_status()) != Good_TokenStatus)
+	{
+		return status;
+	}
+	else
+	{
+		token = hold_stack.top();
+		if (!token->table_entry())
+		{
+			return BUG_NotYetImplemented;
+		}
+		if (table->code(token->index) != Null_Code)
+		{
+			// check if there is some unexpected token on hold stack
+			// could be assignment on hold stack
+			switch (mode)
+			{
+			case Command_TokenMode:
+				// no command was received yet
+				return ExpStatement_TokenStatus;
+
+			case Assignment_TokenMode:
+				// expression hasn't started yet
+				return ExpEqualOrComma_TokenStatus;
+
+			case EqualAssignment_TokenMode:
+				return ExpOpOrEnd_TokenStatus;
+
+			case CommaAssignment_TokenMode:
+				// in a comma separated list
+				return ExpEqualOrComma_TokenStatus;
+
+			case Expression_TokenMode:
+				// something is on the stack that's not suppose to be there
+				// this is a diagnostic error, should not occur
+				return ExpOpOrEnd_TokenStatus;//BUG_HoldStackNotEmpty;
+
+			default:
+				return BUG_InvalidMode;
+			}
+		}
+	}
+
+	// 2010-03-25: check if there is a pending closing parentheses
+	// 2010-03-26: replaced code with function call
+	// 2010-05-29: changed argument to token pointer
+	// pass Null_Code token (will always add dummy)
+	do_pending_paren(token);
+	return Good_TokenStatus;
+}
+
+
+// function to determine the current parentheses status by looking if there
+// is an outstanding opening parentheses, token with parentheses (array or
+// define/user function) or internal function token
+//
+//   - an outstanding token is determined by looking at the count stack
+//   - returns Good status if there is no outstanding parentheses, array or
+//     function token
+//   - returns the appropriate error for the outstanding token
+//   - for open parentheses, an operator or parentheses is expected
+//   - for parentheses token, an operator, comma or parentheses is expected
+//   - for internal function, looks at number of arguments processed so far
+//     to determine if an operator or parentheses is expected, or an operator,
+//     comma or parentheses is expected
+
+// 2010-06-14: implement new function from other code
+TokenStatus Translator::paren_status(void)
+{
+	if (count_stack.empty())
+	{
+		// no parentheses 
+		return Good_TokenStatus;
+	}
+	// parentheses, array or function without closing parentheses
+
+	if (count_stack.top().noperands == 0)
+	{
+		// open parentheses
+		return ExpOpOrParen_TokenStatus;
+	}
+
+	if (count_stack.top().nexpected == 0)
+	{
+		// array, defined function or user function
+		// (more subscripts/arguments possible)
+		return ExpOpCommaOrParen_TokenStatus;
+	}
+
+	if (count_stack.top().noperands == count_stack.top().nexpected)
+	{
+		// internal function - at last argument (no more expected)
+		return ExpOpOrParen_TokenStatus;
+	}
+
+	// internal function - more arguments expected
+	// (number of arguments doesn't match function's entry)
+	int index;
+	Token *top_token = hold_stack.top();
+	if ((table->flags(top_token->index) & Multiple_Flag) != 0
+		&& (index = table->search(top_token->index,
+		count_stack.top().noperands)) > 0)
+	{
+		// found alternate code matching current number of operands
+		// (could be at last argument, could be more arguments)
+		return ExpOpCommaOrParen_TokenStatus;
+	}
+	else  // more arguments are expected
+	{
+		return ExpOpOrComma_TokenStatus;
+	}				
+}
+
+
 // function to clean up the Translator variables after an error is detected
 //
 //   - must be called after add_token() returns an error
@@ -901,6 +1204,50 @@ void Translator::clean_up(void)
 		delete pending_paren;
 		pending_paren = NULL;
 	}
+	// 2010-06-02: command support - need to empty command_stack
+	while (!cmd_stack.empty())
+	{
+		cmd_stack.pop();
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           COMMAND SPECIFIC FUNCTIONS                       //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+// PRINT: function to process the result of an expression on top of the done
+// stack, if not empty, add a data type specific print code to the output
+//
+//   - print string code gets operands for later determination of string type
+//   - returns Good if print code added successfully
+//   - returns Null if stack was empty
+
+// 2010-06-04: implemented new function
+TokenStatus Translator::add_print_code(void)
+{
+	if (!done_stack.empty())
+	{
+		// create token for data type specific print token
+		Token *token = table->new_token(PrintDbl_Code);
+		TokenStatus status = find_code(token);
+		if (status != Good_TokenStatus)
+		{
+			return status;
+		}
+
+		// save operand if string operand
+		int noperands = table->flags(token->index) & String_Flag ? 1 : 0;
+
+		// append token to output
+		RpnItem *rpn_item = new RpnItem(token, noperands, operand);
+		output->append(&rpn_item);
+		return Good_TokenStatus;
+	}
+	return Null_TokenStatus;  // nothing done
 }
 
 
@@ -911,27 +1258,39 @@ void Translator::clean_up(void)
 ////////////////////////////////////////////////////////////////////////////////
 
 
+// token handler functions are called to process tokens when received after
+// the hold stack has been emptied of lower precedence operators
+//
+//   - these functions are friends of the Translator class so that
+//     pointers to these functions can be put into table entries
+//   - there is a reference to the Translator instance so the functions
+//     have access to all the variables of the instance
+//   - the other argument is a reference to the token being handled
+//     (a reference so that the pointer can be change in case of an error)
+//   - returns Good if successful, else an error
+
+
 //**********************************
 //**    OPERATOR TOKEN HANDLER    **
 //**********************************
 
 // 2010-05-29: created function from add_token() no special operator section
-TokenStatus Operator_Handler(Translator &p, Token *&token)
+TokenStatus Operator_Handler(Translator &t, Token *&token)
 {
 	// 2010-04-16: only check mode if not in parentheses (expression)
-	if (p.count_stack.empty())
+	if (t.count_stack.empty())
 	{
 		// 2010-04-11: implemented assignment handling
-		switch (p.mode)
+		switch (t.mode)
 		{
 		case Command_TokenMode:
 		case Assignment_TokenMode:
 			// oops, expected an equal or comma
-			return UnexpOperator_TokenStatus;
+			return ExpEqualOrComma_TokenStatus;
 
 		case EqualAssignment_TokenMode:
 			// continue of a multiple equal assignment
-			p.mode = Expression_TokenMode;  // start of expression
+			t.mode = Expression_TokenMode;  // start of expression
 			break;
 
 		case CommaAssignment_TokenMode:
@@ -941,11 +1300,14 @@ TokenStatus Operator_Handler(Translator &p, Token *&token)
 		case Expression_TokenMode:
 			// inside an expression, nothing extra to do
 			break;
+
+		default:
+			return BUG_InvalidMode;
 		}
 	}
 	// push it onto the holding stack
-	p.hold_stack.push(token);
-	p.state = Translator::Operand;
+	t.hold_stack.push(token);
+	t.state = Translator::Operand;
 	return Good_TokenStatus;
 }
 
@@ -955,23 +1317,25 @@ TokenStatus Operator_Handler(Translator &p, Token *&token)
 //********************************
 
 // 2010-05-28: created function from add_token() case Eq_Code
-TokenStatus Equal_Handler(Translator &p, Token *&token)
+TokenStatus Equal_Handler(Translator &t, Token *&token)
 {
 	// 2010-04-11: implemented assignment handling
 	// 2010-04-16: only check mode if not in parentheses (expression)
-	if (p.count_stack.empty())
+	if (t.count_stack.empty())
 	{
-		switch (p.mode)
+		switch (t.mode)
 		{
-		case Command_TokenMode:
 		case Assignment_TokenMode:
 			// this is an assignment operator, change token
-			token->index = p.table->index(Assign_Code);
+			token->index = t.table->index(Assign_Code);
 
-			p.mode = EqualAssignment_TokenMode;  // allow more equals
+			t.mode = EqualAssignment_TokenMode;  // allow more equals
 
 			// push assignment operator on hold stack
-			p.hold_stack.push(token);
+			t.hold_stack.push(token);
+
+			// expecting first operand next (2010-06-10)
+			t.state = Translator::FirstOperand;
 			break;
 
 		case EqualAssignment_TokenMode:
@@ -979,33 +1343,41 @@ TokenStatus Equal_Handler(Translator &p, Token *&token)
 			delete token;  // don't need another assignment token on stack
 
 			// change assignment token on hold stack to list assignment
-			p.hold_stack.top()->index = p.table->index(AssignList_Code);
+			t.hold_stack.top()->index = t.table->index(AssignList_Code);
+
+			// expecting first operand next (2010-06-10)
+			t.state = Translator::FirstOperand;
 			break;
 
 		case CommaAssignment_TokenMode:
-			// assignment for a comma separated list, change token
-			// TODO user sub-code; needs to be a flag
-			token->index = p.table->index(AssignList_Code);
-			// 2010-05-29: set flag in token to indicate comma
-			token->subcode |= Comma_SubCode;
+			// 2010-06-13: comma puts AssignList on hold stack
+			delete token;  // assign list operator already on hold stack
 
-			p.mode = Expression_TokenMode;  // end of list, expression follows
+			t.mode = Expression_TokenMode;  // end of list, expression follows
 
-			// push assignment operator on hold stack
-			p.hold_stack.push(token);
+			// expecting first operand next (2010-06-10)
+			t.state = Translator::FirstOperand;
 			break;
 
 		case Expression_TokenMode:
 			// inside an expression, keep Eq_Code, push on hold stack
-			p.hold_stack.push(token);
+			t.hold_stack.push(token);
+
+			// expecting another operand next (2010-06-10)
+			t.state = Translator::Operand;
 			break;
+
+		default:
+			return BUG_InvalidMode;
 		}
 	}
 	else  // inside  an expression, keep Eq_Code, push on hold stack
 	{
-		p.hold_stack.push(token);
+		t.hold_stack.push(token);
+
+		// expecting another operand next (2010-06-10)
+		t.state = Translator::Operand;
 	}
-	p.state = Translator::Operand;
 	return Good_TokenStatus;
 }
 
@@ -1015,26 +1387,43 @@ TokenStatus Equal_Handler(Translator &p, Token *&token)
 //********************************
 
 // 2010-05-28: created function from add_token() case Comma_Code
-TokenStatus Comma_Handler(Translator &p, Token *&token)
+// 2010-06-11: reorganized function for better error reporting
+TokenStatus Comma_Handler(Translator &t, Token *&token)
 {
+	int noperands;
+	RpnItem *rpn_item;
+	TokenStatus status;
+
 	// 2010-04-02: implemented comma operator code handling
+	// 2010-04-11: implemented multiple assignment handling
 	// 2010-04-17: only check mode if not in parentheses (expression)
-	if (p.count_stack.empty())
+	if (t.count_stack.empty())
 	{
-		// 2010-04-11: implemented multiple assignment handling
-		switch (p.mode)
+		switch (t.mode)
 		{
 		case Command_TokenMode:
+			// if still in command mode, then comma is not expected (2010-06-13)
+			return ExpStatement_TokenStatus;
+
 		case Assignment_TokenMode:
 			// this is an assignment list
-			delete token;  // don't need comma token on stack
+			// 2010-06-13: comma puts AssignList on hold stack
+			// assignment for a comma separated list, change token
+			//token->index = t.table->index(AssignList_Code);
+			t.table->set_token(token, AssignList_Code);
+			// 2010-05-29: set flag in token to indicate comma
+			token->subcode |= Comma_SubCode;
+
+			// push assignment operator on hold stack
+			t.hold_stack.push(token);
+
 			// comma separated assignment list
-			p.mode = CommaAssignment_TokenMode;
+			t.mode = CommaAssignment_TokenMode;
 			break;
 
 		case EqualAssignment_TokenMode:
 			// oops, comma in a multiple equal assignment - not allowed
-			return UnexpAssignComma_TokenStatus;
+			return ExpOpOrEnd_TokenStatus;
 
 		case CommaAssignment_TokenMode:
 			// continuation a comma separated list
@@ -1043,23 +1432,136 @@ TokenStatus Comma_Handler(Translator &p, Token *&token)
 
 		case Expression_TokenMode:
 			// inside an expression, but not in array or function
-			return UnexpExprComma_TokenStatus;
+
+			// 2010-06-03: check if command allows comma
+			switch (t.cmd_stack.empty() ? Null_Code : t.cmd_stack.top().code)
+			{
+			case Print_Code:
+				// make sure the expression before comma is complete
+				status = t.expression_end();
+				if (status != Good_TokenStatus)
+				{
+					return status;
+				}
+
+				status = t.add_print_code();
+				if (status > Good_TokenStatus)
+				{
+					return status;
+				}
+
+				// append comma token to output
+				rpn_item = new RpnItem(token);
+				t.output->append(&rpn_item);
+
+				// set PRINT command item flag in case last item in statement
+				// (resets PrintFunc_CmdFlag if set)
+				t.cmd_stack.top().flag = PrintStay_CmdFlag;
+
+				// switch back to operand state (2010-06-06)
+				// expecting first operand next (2010-06-10)
+				t.state = Translator::FirstOperand;
+				return Good_TokenStatus;
+
+			default:
+				return ExpOpOrEnd_TokenStatus;
+			}
+
+		default:
+			return BUG_InvalidMode;
 		}
 	}
 	else
 	{
 		// inside an expression, check if in array or function
-		if (p.count_stack.top() == 0)
+		if (t.count_stack.top().noperands == 0
+			|| t.count_stack.top().nexpected > 0
+			&& t.count_stack.top().noperands == t.count_stack.top().nexpected)
 		{
-			return UnexpParenComma_TokenStatus;
+			return ExpOpOrParen_TokenStatus;
 		}
 		// increment the number of operands
-		p.count_stack.top()++;
+		t.count_stack.top().noperands++;
 		// delete comma token, it's not needed (2010-04-25)
 		delete token;
 	}
-	p.state = Translator::Operand;
+
+	t.state = Translator::Operand;
 	return Good_TokenStatus;
+}
+
+
+//***********************************
+//**    SEMICOLON TOKEN HANDLER    **
+//***********************************
+
+// 2010-06-02 implement new function for Semicolon_Code
+TokenStatus SemiColon_Handler(Translator &t, Token *&token)
+{
+	TokenStatus status;
+	int noperands;
+	RpnItem *rpn_item;
+
+	// make sure the expression before semicolon is complete
+	status = t.expression_end();
+	if (status != Good_TokenStatus)
+	{
+		return status;
+	}
+
+	switch (t.cmd_stack.empty()
+		|| !t.count_stack.empty() && t.count_stack.top().noperands > 0
+		? Null_Code : t.cmd_stack.top().code)
+	{
+	case Print_Code:
+		status = t.add_print_code();
+		if (status == Good_TokenStatus)
+		{
+			// print code added, delete semicolon token
+			delete token;
+		}
+		else if (status == Null_TokenStatus)
+		{
+			// check if last token added was a print function (2010-06-08)
+			if (t.cmd_stack.top().flag & PrintFunc_CmdFlag)
+			{
+				// set semicolon subcode flag on print function
+				t.output->last()->value->token->subcode |= SemiColon_SubCode;
+			}
+			else  // no expression, add dummy semicolon token
+			{
+				rpn_item = new RpnItem(token);
+				t.output->append(&rpn_item);
+			}
+		}
+		else  // an error occurred
+		{
+			return status;
+		}
+		
+		// set PRINT command item flag in case last item in statement
+		// (resets PrintFunc_CmdFlag if set)
+		t.cmd_stack.top().flag = PrintStay_CmdFlag;
+
+		// switch back to operand state (2010-06-06)
+		// expecting first operand next (2010-06-10)
+		t.state = Translator::FirstOperand;
+
+		return Good_TokenStatus;
+
+	default:
+		switch (t.mode)
+		{
+		case Command_TokenMode:
+			return ExpStatement_TokenStatus;
+
+		case Assignment_TokenMode:
+			return ExpEqualOrComma_TokenStatus;
+
+		default:
+			return BUG_InvalidMode;
+		}
+	}
 }
 
 
@@ -1068,29 +1570,32 @@ TokenStatus Comma_Handler(Translator &p, Token *&token)
 //*******************************************
 
 // 2010-05-28: created function from add_token() case CloseParen_Code
-TokenStatus CloseParen_Handler(Translator &p, Token *&token)
+TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 {
 	Token *top_token;
 	int noperands;  // 2010-04-02: for array/function support
+	int done_push = true;  // 2010-06-01: for print-only functions
 
 	// do closing parentheses processing
-	if (p.hold_stack.empty())
+	if (t.hold_stack.empty())
 	{
 		// oops, stack is empty
-		return BUG_StackEmpty4;
+		return BUG_DoneStackEmptyParen;
 	}
-	top_token = p.hold_stack.pop();
+	top_token = t.hold_stack.pop();
 
 	// 2010-04-02: implemented array/function support BEGIN
-	if (p.count_stack.empty())
+	if (t.count_stack.empty())
 	{
 		return NoOpenParen_TokenStatus;
 	}
-	noperands = p.count_stack.pop();
+	// 2010-06-09: changed count stack to hold count items
+	noperands = t.count_stack.top().noperands;
+	t.count_stack.pop();
 	if (noperands == 0)
 	{
 		// just a parentheses expression 
-		if (p.table->code(top_token->index) != OpenParen_Code)
+		if (t.table->code(top_token->index) != OpenParen_Code)
 		{
 			// oops, no open parentheses
 			return BUG_UnexpectedCloseParen;  // this should not happen
@@ -1098,10 +1603,10 @@ TokenStatus CloseParen_Handler(Translator &p, Token *&token)
 		delete top_token;  // delete open parentheses token
 
 		// 2010-04-16: clear reference for item on top of done stack
-		p.done_stack.top()->value->token->reference = false;
+		t.done_stack.top()->value->token->reference = false;
 
 		// 2010-03-30: set pending parentheses token pointer
-		p.pending_paren = token;
+		t.pending_paren = token;
 	}
 	else  // array or function
 	{
@@ -1116,11 +1621,11 @@ TokenStatus CloseParen_Handler(Translator &p, Token *&token)
 			// 2010-05-15: save operands for storage in output list
 			for (int i = noperands; --i >= 0;)
 			{
-				if (p.done_stack.empty())
+				if (t.done_stack.empty())
 				{
-					return BUG_StackEmpty5;
+					return BUG_DoneStackEmptyArrFunc;
 				}
-				p.operand[i] = p.done_stack.pop();
+				t.operand[i] = t.done_stack.pop();
 			}
 			// delete close paren token, it's not needed (2010-04-25)
 			delete token;
@@ -1128,38 +1633,56 @@ TokenStatus CloseParen_Handler(Translator &p, Token *&token)
 		// 2010-04-04: check for number of arguments for internal functions
 		else
 		{
-			// delete close paren token, it's not needed (2010-04-25)
-			delete token;
-			token = top_token;
-
-			if (noperands != p.table->noperands(token->index))
+			// changed to pointer to close parentheses for error (2010-04-10)
+			if (noperands != t.table->noperands(top_token->index))
 			{
 				// number of arguments doesn't match function's entry
 				int index;
 
-				if ((p.table->flags(token->index) & Multiple_Flag) != 0
-					&& (index = p.table->search(token->index, noperands)) > 0)
+				if ((t.table->flags(top_token->index) & Multiple_Flag) != 0
+					&& (index = t.table->search(top_token->index, noperands))
+					> 0)
 				{
 					// change token to new code (index)
-					token->index = index;
+					top_token->index = index;
 				}
 				else
 				{
-					return WrongNumOfArgs_TokenStatus;
+					// 2010-06-10: renamed error
+					return ExpOpOrComma_TokenStatus;
 				}				
 			}
+
+			// moved deleting of token and setting to top_token (2010-04-10)
+			// delete close paren token, it's not needed (2010-04-25)
+			delete token;
+			token = top_token;
+
 			// 2010-04-25: implemented data type handling
 			// process data types of arguments (find proper code)
-			TokenStatus status = p.find_code(token);
+			TokenStatus status = t.find_code(token);
 			if (status != Good_TokenStatus)
 			{
 				return status;
 			}
 
 			// 2010-05-15: don't save operands if none are strings
-			if (!(p.table->flags(token->index) & String_Flag))
+			if (!(t.table->flags(token->index) & String_Flag))
 			{
 				noperands = 0;  // no string operands, don't save operands
+			}
+
+			// 2010-06-01: process print-only internal functions
+			if (t.table->flags(token->index) & Print_Flag)
+			{
+				if (t.cmd_stack.top().code != Print_Code)
+				{
+					return PrintOnlyIntFunc_TokenStatus;
+				}
+				// tell PRINT to stay on same line
+				// also set print function flag (2010-06-08)
+				t.cmd_stack.top().flag = PrintStay_CmdFlag | PrintFunc_CmdFlag;
+				done_push = false;  // don't push on done stack
 			}
 		}
 
@@ -1172,8 +1695,13 @@ TokenStatus CloseParen_Handler(Translator &p, Token *&token)
 
 		// add token to output list and push element pointer on done stack
 		// 2010-05-15: create rpn item to add to output list
-		RpnItem *rpn_item = new RpnItem(top_token, noperands, p.operand);
-		p.done_stack.push(p.output->append(&rpn_item));
+		RpnItem *rpn_item = new RpnItem(top_token, noperands, t.operand);
+		// 2010-06-01: check if output item is to be pushed on done stack
+		List<RpnItem *>::Element *output_item = t.output->append(&rpn_item);
+		if (done_push)
+		{
+			t.done_stack.push(output_item);
+		}
 	}
 	// 2010-04-02: implemented array/function support END
 
@@ -1189,73 +1717,151 @@ TokenStatus CloseParen_Handler(Translator &p, Token *&token)
 //*************************************
 
 // 2010-05-28: created function from add_token() case EOL_Code
-TokenStatus EndOfLine_Handler(Translator &p, Token *&token)
+TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 {
-	TokenStatus status;
-	Token *top_token;
-	int index;
-	Code code;
-	bool has_paren;
+	// TODO this is end of statement processing
 
-	// do end of line processing
-	if (p.hold_stack.empty())
-	{
-		// oops, stack is empty
-		return BUG_HoldStackEmpty;  // 2010-04-26: changed bug named
-	}
-	top_token = p.hold_stack.top();
-	code = p.table->code(top_token->index);
-
-	if (code == Null_Code)
-	{
-		// TODO do end of line processing here, but for now...
-		// nothing is on the stack that's not suppose to be there
-		status = Done_TokenStatus;
-	}
-	// 2010-03-25: added missing opening parentheses check
-	// 2010-04-02: include array/function tokens in check
-	else if (code == OpenParen_Code || top_token->has_paren())
-	{
-		// oops, open paren without a close paren
-		// (leave EOL allocated so error can be reported against it)
-		return NoCloseParen_TokenStatus;
-	}
-	else
-	{
-		// this is a diagnostic error, should not occur
-		return BUG_StackNotEmpty;
-	}
-
-	// 2010-03-25: check if there is a pending closing parentheses
-	// 2010-03-26: replaced code with function call
-	// 2010-05-29: changed argument to token pointer
-	// pass Null_Code token (will always add dummy)
-	p.do_pending_paren(top_token);
-	p.hold_stack.pop();
-	delete top_token;  // delete token from top of stack
-
-	if (status != Done_TokenStatus)
+	// 2010-06-10: check for proper end of expression
+	TokenStatus status = t.expression_end();
+	if (status != Good_TokenStatus)
 	{
 		return status;
 	}
-	// 2010-03-21: check if there is a result on the done_stack
-	// there should be one value on the done stack, need to pop it off
-	List<RpnItem *>::Element *result;
-	if (p.done_stack.empty())
+
+	// 2010-06-06: check for expression only mode
+	if (!t.exprmode)
 	{
-		return BUG_StackEmpty3;
+		// process command on top of command stack
+
+		// 2010-06-05: implemented command handling
+		if (t.cmd_stack.empty())
+		{
+			switch (t.mode)
+			{
+			case Assignment_TokenMode:
+				return t.state == Translator::BinOp
+					? ExpEqualOrComma_TokenStatus : ExpAssignItem_TokenStatus;
+
+			case Expression_TokenMode:
+			case CommaAssignment_TokenMode:
+				return BUG_CmdStackEmpty;
+
+			case EqualAssignment_TokenMode:
+			default:
+				return BUG_InvalidMode;
+			}
+		}
+		CmdItem cmd_item = t.cmd_stack.pop();
+		CmdHandler cmd_handler = t.table->cmd_handler(cmd_item.token->index);
+		if (cmd_handler == NULL)  // missing command handler?
+		{
+				return BUG_NotYetImplemented;
+		}
+		status = (*cmd_handler)(t, &cmd_item, token);
+		if (status != Good_TokenStatus)
+		{
+			token = cmd_item.token;  // command decides where error is
+			return status;
+		}
+		// upon return from the command handler,
+		// the hold stack should have the null token on top
+		// and done stack should be empty
+
+		// 2010-06-03: expression end check is handled by command
+
+		// pop and delete null token from top of stack
+		delete t.hold_stack.pop();
+
+		// TODO do end of line processing here, but for now...
+
+		// 2010-06-05: removed popping/checking of result from done stack
+		if (!t.done_stack.empty())
+		{
+			return BUG_DoneStackNotEmpty;
+		}
 	}
-	result = p.done_stack.pop();
-	if (!p.done_stack.empty())
-	{
-		return BUG_StackNotEmpty2;
-	}
-	if (!p.cmd_stack.empty())
+	// 2010-05-29: make sure command stack is empty (temporary TODO)
+	if (!t.cmd_stack.empty())
 	{
 		return BUG_CmdStackNotEmpty;
 	}
 	delete token;  // 2010-04-04: delete EOL token
 	return Done_TokenStatus;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                            COMMAND HANDLERS                                //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+// command handler functions are called to process command tokens on the
+// command stack at the end of a statements
+//
+//   - these functions are friends of the Translator class so that
+//     pointers to these functions can be put into table entries
+//   - there is a reference to the Translator instance so the functions
+//     have access to all the variables of the instance
+//   - the other argument is a pointer to the command stack item being handled
+//     (in case of an error, the original token will be deleted and the token
+//     pointer changed to point to the token with the error)
+//   - returns Good if successful, else an error
+
+
+//**************************************
+//**    ASSIGNMENT COMMAND HANDLER    **
+//**************************************
+
+// 2010-05-28: created function from add_token() case EOL_Code
+TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
+{
+	// nothing needs to be done here, the assignment operator has already
+	// been processed by add_operator() and performed all checked to validate
+	// the assignment statement, so just return good
+	return Good_TokenStatus;
+}
+
+
+//*********************************
+//**    PRINT COMMAND HANDLER    **
+//*********************************
+
+// 2010-05-28: created function from add_token() case EOL_Code
+TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
+{
+	// 2010-06-10: moved end of expression check to end of statement processing
+
+	TokenStatus status = t.add_print_code();
+	if (status == Good_TokenStatus  // data type specific code added?
+		|| status == Null_TokenStatus  // or not stay on line?
+		&& !(cmd_item->flag & PrintStay_CmdFlag))
+	{
+		// append the print token to go to newline at runtime
+		RpnItem *rpn_item = new RpnItem(cmd_item->token);
+		t.output->append(&rpn_item);
+	}
+	else if (status > Good_TokenStatus)
+	{
+		return status;
+	}
+
+	return Good_TokenStatus;
+}
+
+
+//*******************************
+//**    LET COMMAND HANDLER    **
+//*******************************
+
+// 2010-06-13: implemented function to catch errors
+TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
+{
+	// this function should not be called for correct statements
+	// if it is then it means that the LET command was not completed
+	cmd_item->token = token;  // point to end-of-statement token
+	return ExpEqualOrComma_TokenStatus;
 }
 
 
