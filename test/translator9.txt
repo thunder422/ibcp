@@ -54,6 +54,5 @@ Input: A = 0 LET 5
 
 
 Input: PRINT
-       ^^^^^-- BUG: not yet implemented
-
+Output: PRINT 
 
