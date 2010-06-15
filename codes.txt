@@ -95,48 +95,51 @@
 93: Spc_Code
 94: Let_Code
 95: Print_Code
-96: Input_Code
-97: Dim_Code
-98: Def_Code
-99: Rem_Code
-100: If_Code
-101: Then_Code
-102: Else_Code
-103: EndIf_Code
-104: For_Code
-105: To_Code
-106: Step_Code
-107: Next_Code
-108: Do_Code
-109: DoWhile_Code
-110: DoUntil_Code
-111: While_Code
-112: Until_Code
-113: Loop_Code
-114: LoopWhile_Code
-115: LoopUntil_Code
-116: End_Code
-117: EOL_Code
-118: List_Code
-119: Edit_Code
-120: Delete_Code
-121: Run_Code
-122: Renum_Code
-123: Save_Code
-124: Load_Code
-125: New_Code
-126: Auto_Code
-127: Cont_Code
-128: Quit_Code
-129: BegPlainWord_Code
-130: EndPlainWord_Code
-131: BegParenWord_Code
-132: EndParenWord_Code
-133: BegDataTypeWord_Code
-134: EndDataTypeWord_Code
-135: BegSymbol_Code
-136: EndSymbol_Code
-137: sizeof_Code
+96: PrintDbl_Code
+97: PrintInt_Code
+98: PrintStr_Code
+99: Input_Code
+100: Dim_Code
+101: Def_Code
+102: Rem_Code
+103: If_Code
+104: Then_Code
+105: Else_Code
+106: EndIf_Code
+107: For_Code
+108: To_Code
+109: Step_Code
+110: Next_Code
+111: Do_Code
+112: DoWhile_Code
+113: DoUntil_Code
+114: While_Code
+115: Until_Code
+116: Loop_Code
+117: LoopWhile_Code
+118: LoopUntil_Code
+119: End_Code
+120: EOL_Code
+121: List_Code
+122: Edit_Code
+123: Delete_Code
+124: Run_Code
+125: Renum_Code
+126: Save_Code
+127: Load_Code
+128: New_Code
+129: Auto_Code
+130: Cont_Code
+131: Quit_Code
+132: BegPlainWord_Code
+133: EndPlainWord_Code
+134: BegParenWord_Code
+135: EndParenWord_Code
+136: BegDataTypeWord_Code
+137: EndDataTypeWord_Code
+138: BegSymbol_Code
+139: EndSymbol_Code
+140: sizeof_Code
 
 Abs_Code = 50
 AbsInt_Code = 51
@@ -154,11 +157,11 @@ AssignListStr_Code = 48
 AssignStr_Code = 44
 AssignSubStr_Code = 45
 Atn_Code = 65
-Auto_Code = 126
-BegDataTypeWord_Code = 133
-BegParenWord_Code = 131
-BegPlainWord_Code = 129
-BegSymbol_Code = 135
+Auto_Code = 129
+BegDataTypeWord_Code = 136
+BegParenWord_Code = 134
+BegPlainWord_Code = 132
+BegSymbol_Code = 138
 CatStr_Code = 3
 Cdbl_Code = 61
 Chr_Code = 73
@@ -166,34 +169,34 @@ Cint_Code = 60
 CloseParen_Code = 87
 Colon_Code = 90
 Comma_Code = 88
-Cont_Code = 127
+Cont_Code = 130
 Cos_Code = 66
 CvtDbl_Code = 63
 CvtInt_Code = 62
-Def_Code = 98
-Delete_Code = 120
-Dim_Code = 97
+Def_Code = 101
+Delete_Code = 123
+Dim_Code = 100
 Div_Code = 10
 DivInt_Code = 11
-Do_Code = 108
-DoUntil_Code = 110
-DoWhile_Code = 109
-EOL_Code = 117
-Edit_Code = 119
-Else_Code = 102
-End_Code = 116
-EndDataTypeWord_Code = 134
-EndIf_Code = 103
-EndParenWord_Code = 132
-EndPlainWord_Code = 130
-EndSymbol_Code = 136
+Do_Code = 111
+DoUntil_Code = 113
+DoWhile_Code = 112
+EOL_Code = 120
+Edit_Code = 122
+Else_Code = 105
+End_Code = 119
+EndDataTypeWord_Code = 137
+EndIf_Code = 106
+EndParenWord_Code = 135
+EndPlainWord_Code = 133
+EndSymbol_Code = 139
 Eq_Code = 18
 EqInt_Code = 19
 EqStr_Code = 20
 Eqv_Code = 39
 Exp_Code = 69
 Fix_Code = 52
-For_Code = 104
+For_Code = 107
 Frac_Code = 53
 Gt_Code = 21
 GtEq_Code = 24
@@ -201,9 +204,9 @@ GtEqInt_Code = 25
 GtEqStr_Code = 26
 GtInt_Code = 22
 GtStr_Code = 23
-If_Code = 100
+If_Code = 103
 Imp_Code = 40
-Input_Code = 96
+Input_Code = 99
 Instr2_Code = 74
 Instr3_Code = 75
 Int_Code = 54
@@ -211,12 +214,12 @@ IntDiv_Code = 12
 Left_Code = 76
 Len_Code = 77
 Let_Code = 94
-List_Code = 118
-Load_Code = 124
+List_Code = 121
+Load_Code = 127
 Log_Code = 70
-Loop_Code = 113
-LoopUntil_Code = 115
-LoopWhile_Code = 114
+Loop_Code = 116
+LoopUntil_Code = 118
+LoopWhile_Code = 117
 Lt_Code = 27
 LtEq_Code = 30
 LtEqInt_Code = 31
@@ -231,8 +234,8 @@ Mul_Code = 8
 MulInt_Code = 9
 Neg_Code = 6
 NegInt_Code = 7
-New_Code = 125
-Next_Code = 107
+New_Code = 128
+Next_Code = 110
 Not_Code = 38
 NotEq_Code = 33
 NotEqInt_Code = 34
@@ -244,17 +247,20 @@ Power_Code = 15
 PowerInt_Code = 17
 PowerMul_Code = 16
 Print_Code = 95
-Quit_Code = 128
-Rem_Code = 99
+PrintDbl_Code = 96
+PrintInt_Code = 97
+PrintStr_Code = 98
+Quit_Code = 131
+Rem_Code = 102
 RemOp_Code = 91
-Renum_Code = 122
+Renum_Code = 125
 Repeat_Code = 80
 Right_Code = 81
 RndArg_Code = 56
 RndArgInt_Code = 57
 Rnd_Code = 55
-Run_Code = 121
-Save_Code = 123
+Run_Code = 124
+Save_Code = 126
 SemiColon_Code = 89
 Sgn_Code = 58
 SgnInt_Code = 59
@@ -262,17 +268,17 @@ Sin_Code = 67
 Space_Code = 82
 Spc_Code = 93
 Sqr_Code = 64
-Step_Code = 106
+Step_Code = 109
 Str_Code = 83
 StrInt_Code = 84
 Sub_Code = 4
 SubInt_Code = 5
 Tab_Code = 92
 Tan_Code = 68
-Then_Code = 101
-To_Code = 105
-Until_Code = 112
+Then_Code = 104
+To_Code = 108
+Until_Code = 115
 Val_Code = 85
-While_Code = 111
+While_Code = 114
 Xor_Code = 41
-sizeof_Code = 137
+sizeof_Code = 140
