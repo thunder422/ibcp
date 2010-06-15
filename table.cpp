@@ -94,10 +94,23 @@
 //  2010-05-27  changed precedence values for CloseParen_Code and Comma_Code
 //                from 4 to 6 so commands are not emptied from the hold stack
 //              added precedence value of 4 (and NUll_Flag) to all commands
-//  2010-05-28  added values for new token_mode to Let_Code
+//  2010-05-28  added value for new token_mode to Let_Code
 //              added values for new token_handler to Eq_Code, CloseParen_Code,
 //                Comma_Code, and EOL_Code
 //  2010-05-29  added Hidden_Flag to CvtInt_Code and CvtDbl_Code
+//
+//  2010-06-01  added print-only function support (Spc_Code and Tab_Code)
+//              initiated PRINT command development
+//  2010-06-02  added data type specific print hidden code entries
+//              changed precedence and added token handler value to SemiColon
+//  2010-06-05  added command handler function pointers for PRINT and assign
+//              table entries
+//  2010-06-06  added end expression flag to Comma, SemiColon and EOL
+//  2010-06-09  swapped table entries of MID$, INSTR, and ASC so that the larger
+//              number of arguments entry is first, which is necessary for the
+//              new number of arguments checking at comma
+//  2010-06-13  added command handler to Let entry
+//  2010-06-14  removed AssignList_Flag from AssignList table entries
 //
 
 #include <ctype.h>
@@ -181,6 +194,8 @@ Code Mul_AssocCode[]        = {MulInt_Code};
 Code Neg_AssocCode[]        = {NegInt_Code};
 Code NotEq_AssocCode[]      = {NotEqInt_Code, NotEqStr_Code};
 Code Power_AssocCode[]      = {PowerMul_Code, PowerInt_Code};
+// 2010-06-02: added associated codes for data type specific print
+Code Print_AssocCode[]		= {PrintInt_Code, PrintStr_Code};
 Code RndArgs_AssocCode[]    = {RndArgInt_Code};
 Code Sgn_AssocCode[]        = {SgnInt_Code};
 Code Str_AssocCode[]        = {StrInt_Code};
@@ -218,6 +233,8 @@ ExprInfo Sub_StrIntInt_ExprInfo(SubStr_DataType, Null_Code,
 ExprInfo Str_SubStr_ExprInfo(String_DataType, Null_Code, Operands(SubStr));
 
 ExprInfo None_Int_ExprInfo(None_DataType, Null_Code, Operands(Int));
+// 2010-06-02: added none with string operand expression info
+ExprInfo None_Str_ExprInfo(None_DataType, Null_Code, Operands(Str));
 
 
 static TableEntry table_entries[] = {
@@ -281,12 +298,17 @@ static TableEntry table_entries[] = {
 	//--------------
 	{
 		// 2010-05-28: added value for token_mode
+		// 2010-06-13: added value for command handler
 		Let_Code, Command_TokenType, OneWord_Multiple,
-		"LET", NULL, Null_Flag, 4, NULL, NULL, Assignment_TokenMode
+		"LET", NULL, Null_Flag, 4, NULL, NULL, Assignment_TokenMode,
+		Let_CmdHandler
 	},
 	{
+		// 2010-06-01: added value for token_mode
+		// 2010-06-05: added value for command handler
 		Print_Code, Command_TokenType, OneWord_Multiple,
-		"PRINT", NULL, Null_Flag, 4
+		"PRINT", NULL, Null_Flag, 4, NULL, NULL, Expression_TokenMode,
+		Print_CmdHandler
 	},
 	{
 		Input_Code, Command_TokenType, OneWord_Multiple,
@@ -498,35 +520,39 @@ static TableEntry table_entries[] = {
 		"LOG(", NULL, Null_Flag, 2, &Dbl_Dbl_ExprInfo
 	},
 	{
+		// 2010-06-01: added print-only flag
 		Tab_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"TAB(", NULL, Null_Flag, 2, &None_Int_ExprInfo
+		"TAB(", NULL, Print_Flag, 2, &None_Int_ExprInfo
 	},
 	{
+		// 2010-06-01: added print-only flag
 		Spc_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"SPC(", NULL, Null_Flag, 2, &None_Int_ExprInfo
+		"SPC(", NULL, Print_Flag, 2, &None_Int_ExprInfo
+	},
+	// 2010-04-04: added entry for 2 argument ASC
+	// 2010-06-09: swapped ASC and ASC2 entries
+	{
+		Asc2_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"ASC(", "ASC2(", Multiple_Flag, 2, &Int_StrInt_ExprInfo
 	},
 	{
 		Asc_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", NULL, Multiple_Flag, 2, &Int_Str_ExprInfo
-	},
-	// 2010-04-04: added entry for 2 argument ASC
-	{
-		Asc2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", "ASC2(", Null_Flag, 2, &Int_StrInt_ExprInfo
+		"ASC(", NULL, Null_Flag, 2, &Int_Str_ExprInfo
 	},
 	{
 		Chr_Code, IntFuncP_TokenType, OneWord_Multiple,
 		"CHR$(", NULL, Null_Flag, 2, &Tmp_Int_ExprInfo
 	},
 	// 2010-04-04: replaced INSTR entry with INSTR2 and INSTR3 entries
-	{
-		Instr2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR2(", Multiple_Flag, 2,
-		&Int_StrStr_ExprInfo
-	},
+	// 2010-06-09: swapped INSTR2 and INSTR3 entries
 	{
 		Instr3_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR3(", Null_Flag, 2, &Int_StrStrInt_ExprInfo
+		"INSTR(", "INSTR3(", Multiple_Flag, 2, &Int_StrStrInt_ExprInfo
+	},
+	{
+		Instr2_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"INSTR(", "INSTR2(", Null_Flag, 2,
+		&Int_StrStr_ExprInfo
 	},
 	{
 		Left_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -537,13 +563,14 @@ static TableEntry table_entries[] = {
 		"LEN(", NULL, Null_Flag, 2, &Int_Str_ExprInfo
 	},
 	// 2010-04-04: replaced MID entry with MID2 and MID3 entries
-	{
-		Mid2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID2$(", Multiple_Flag, 2, &Sub_StrInt_ExprInfo
-	},
+	// 2010-06-09: swapped MID2 and MID3 entries
 	{
 		Mid3_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID3$(", Null_Flag, 2, &Sub_StrIntInt_ExprInfo
+		"MID$(", "MID3$(", Multiple_Flag, 2, &Sub_StrIntInt_ExprInfo
+	},
+	{
+		Mid2_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"MID$(", "MID2$(", Null_Flag, 2, &Sub_StrInt_ExprInfo
 	},
 	{
 		Repeat_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -687,13 +714,19 @@ static TableEntry table_entries[] = {
 		// 2010-04-02: changed precedence value from 0 to 4
 		// 2010-05-27: changed precedence value from 4 to 6
 		// 2010-05-28: added value for token_handler
+		// 2010-06-06: added end expression flag
 		Comma_Code, Operator_TokenType, OneChar_Multiple,
-		",", NULL, Null_Flag, 6, NULL,
+		",", NULL, EndExpr_Flag, 6,
+		NULL,//new ExprInfo(None_DataType, Comma_Code),
 		Comma_Handler
 	},
 	{
+		// 2010-06-02: changed precedence from 0, added token_handler value
+		// 2010-06-06: added end expression flag
 		SemiColon_Code, Operator_TokenType, OneChar_Multiple,
-		";", NULL, Null_Flag, 0
+		";", NULL, EndExpr_Flag, 6,
+		NULL,//new ExprInfo(None_DataType, SemiColon_Code),
+		SemiColon_Handler
 	},
 	{
 		Colon_Code, Operator_TokenType, OneChar_Multiple,
@@ -724,54 +757,60 @@ static TableEntry table_entries[] = {
 	},
 	// 2010-04-11: added entries for assignment operators
 	// 2010-05-05: added reference flag to assignment operators
+	// 2010-06-05: added command handler function pointers to all assign entries
 	{
 		Assign_Code, Operator_TokenType, OneWord_Multiple,
 		"=", "Assign", Reference_Flag, 4,
 		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Assign))
+			AssocCode(Assign)), NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-05: added entries for assignment associated codes
 	{
 		AssignInt_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "Assign%", Reference_Flag, 4, &Int_IntInt_ExprInfo
+		"=", "Assign%", Reference_Flag, 4, &Int_IntInt_ExprInfo,
+		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{
 		AssignStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "Assign$", Reference_Flag, 4, &Str_StrStr_ExprInfo
+		"=", "Assign$", Reference_Flag, 4, &Str_StrStr_ExprInfo,
+		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-19: added entries for assign sub-string associated code
 	{
 		AssignSubStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignSub$", Reference_Flag, 4, &Str_SubStr_ExprInfo
+		"=", "AssignSub$", Reference_Flag, 4, &Str_SubStr_ExprInfo,
+		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-05: added reference and assign list flags
+	// 2010-06-14: removed assign list flags
 	{
 		AssignList_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList", Reference_Flag | AssignList_Flag, 4,
+		"=", "AssignList", Reference_Flag, 4,
 		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(AssignList))
+			AssocCode(AssignList)), NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-05: added entries for assignment associated codes
 	{
 		AssignListInt_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList%", Reference_Flag | AssignList_Flag, 4,
-		&Int_IntInt_ExprInfo
+		"=", "AssignList%", Reference_Flag, 4,
+		&Int_IntInt_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{
 		AssignListStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList$", Reference_Flag | AssignList_Flag, 4,
-		&Str_StrStr_ExprInfo
+		"=", "AssignList$", Reference_Flag, 4,
+		&Str_StrStr_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-22: added entry for assign mix string list associated code
 	{
 		AssignListMixStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignListMix$", Reference_Flag | AssignList_Flag, 4,
-		&Str_SubStr_ExprInfo
+		"=", "AssignListMix$", Reference_Flag, 4,
+		&Str_SubStr_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{
 		// 2010-05-28: added value for token_handler
+		// 2010-06-06: added end expression flag
 		EOL_Code, Operator_TokenType, OneWord_Multiple,
-		NULL, NULL, Null_Flag, 4, NULL,
+		NULL, NULL, EndExpr_Flag, 4, NULL,
 		EndOfLine_Handler
 	},
 	// 2010-04-24: added entries for associated codes
@@ -886,6 +925,20 @@ static TableEntry table_entries[] = {
 	{
 		StrInt_Code, IntFuncP_TokenType, OneWord_Multiple,
 		"STR$(", "STR%$(", Null_Flag, 2, &Tmp_Int_ExprInfo
+	},
+	// 2010-06-02: added hidden print codes (main plus associated codes)
+	{
+		PrintDbl_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"", "PrintDbl", Null_Flag, 2,
+		new ExprInfo(None_DataType, Null_Code, Operands(Dbl), AssocCode(Print))
+	},
+	{
+		PrintInt_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"", "PrintInt", Null_Flag, 2, &None_Int_ExprInfo
+	},
+	{
+		PrintStr_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"", "PrintStr", String_Flag, 2, &None_Str_ExprInfo
 	},
 	{
 		Null_Code, Operator_TokenType
