@@ -298,11 +298,11 @@ Input: Z$ = MID$(A$,A,A A
 
 
 Input: MID$(
-            ^-- expected item for assignment
+            ^-- expected string variable
 
 
 Input: MID$(A$
-              ^-- expected comma
+              ^-- expected operator or comma
 
 
 Input: MID$(A$,
@@ -310,7 +310,7 @@ Input: MID$(A$,
 
 
 Input: MID$(A$ B
-               ^-- expected comma
+               ^-- expected operator or comma
 
 
 Input: MID$(A$,B
@@ -361,7 +361,31 @@ Input: INT(A)=
        ^^^^-- expected statement
 
 
+Input: LET INT(A)=
+           ^^^^-- expected item for assignment
+
+
+Input: A,INT(A)=
+         ^^^^-- expected item for assignment
+
+
+Input: A=INT(A)=
+                ^-- expected expression
+
+
 Input: INT(A)=B
        ^^^^-- expected statement
+
+
+Input: LET ,
+           ^-- expected item for assignment
+
+
+Input: LET ;
+           ^-- expected item for assignment
+
+
+Input: LET
+          ^-- expected item for assignment
 
 

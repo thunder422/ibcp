@@ -187,6 +187,8 @@
 //                 values for matching error messages that were changed for
 //                 better clarity
 //
+//  2010-06-24  added another TokenStatus
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -523,6 +525,7 @@ enum TokenStatus {
 	ExpString_TokenStatus,			// 2010-04-25: added
 	UnExpCommand_TokenStatus,		// 2010-05-29: added
 	PrintOnlyIntFunc_TokenStatus,	// 2010-06-01: added
+	ExpStrVar_TokenStatus,			// 2010-06-24: added
 	// the following statuses used during development
 	BUG_NotYetImplemented,			// somethings is not implemented
 	BUG_InvalidMode,				// added 2010-06-13

@@ -672,7 +672,13 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"INT(A,",
 		"INT(A)",
 		"INT(A)=",
+		"LET INT(A)=",
+		"A,INT(A)=",
+		"A=INT(A)=",
 		"INT(A)=B",
+		"LET ,",
+		"LET ;",
+		"LET",
 		NULL
 	};
 
@@ -871,6 +877,9 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		// 2010-06-01: added invalid used print-only function error
 		case PrintOnlyIntFunc_TokenStatus:
 			error = "invalid use of print function";
+			break;
+		case ExpStrVar_TokenStatus:  // 2010-06-02: added
+			error = "expected string variable";
 			break;
 
 		// diagnostic errors

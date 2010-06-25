@@ -184,6 +184,12 @@
 //  2010-06-10/14  various changes to return appropriate easy to understand
 //                 error messages
 //
+//  2010-06-24  corrected errors for internal functions not in expressions
+//                except for sub-string functions that can be used for
+//                assignments
+//              at end of expression, added check if in assignment due to an
+//                an array or sub-string function, to report correct errors
+//
 
 #include "ibcp.h"
 
@@ -283,6 +289,24 @@ TokenStatus Translator::add_token(Token *&token)
 					{
 						return PrintOnlyIntFunc_TokenStatus;
 					}
+					// 2010-06-24: check if not in expression mode
+					switch (mode)
+					{
+					case Command_TokenMode:
+						if (table->datatype(token->index) != SubStr_DataType)
+						{
+							return ExpStatement_TokenStatus;
+						}
+						break;
+
+					case Assignment_TokenMode:
+					case CommaAssignment_TokenMode:
+						if (table->datatype(token->index) != SubStr_DataType)
+						{
+							// in a comma separated list
+							return ExpAssignItem_TokenStatus;
+						}
+					}
 
 					count_stack.top().nexpected
 						= table->noperands(token->index);
@@ -328,6 +352,25 @@ TokenStatus Translator::add_token(Token *&token)
 				switch (mode)
 				{
 				case Assignment_TokenMode:
+					// 2010-06-24: check if in array/function
+					if (count_stack.empty())
+					{
+						return BUG_Debug;
+					}
+					else if (count_stack.top().nexpected == 0)
+					{
+						// in array
+						return ExpExpr_TokenStatus;
+					}
+					else if (count_stack.top().noperands == 1)
+					{
+						// in function at first argument (substring function)
+						return ExpStrVar_TokenStatus;
+					}
+					else  // in function not at first argument
+					{
+						return ExpExpr_TokenStatus;
+					}
 					return BUG_Debug;
 
 				case CommaAssignment_TokenMode:
