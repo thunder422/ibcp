@@ -70,6 +70,84 @@ bool Token::paren[sizeof_TokenType];
 bool Token::op[sizeof_TokenType];
 int Token::prec[sizeof_TokenType];  // 2010-04-02
 bool Token::table[sizeof_TokenType];  // 2010-05-29
+TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
+	{Good_TokenStatus,
+		"BUG: should not see this (Good)"},
+	{Done_TokenStatus,
+		"BUG: should not see this (Done)"},
+	{ExpStatement_TokenStatus,
+		"expected statement"},
+	{ExpExpr_TokenStatus,
+		"expected expression"},
+	{ExpExprOrEnd_TokenStatus,
+		"expected expression or end-of-statement"},
+	{ExpOpOrEnd_TokenStatus,
+		"expected operator or end-of-statement"},
+	{ExpBinOpOrEnd_TokenStatus,
+		"expected binary operator or end-of-statement"},
+	{ExpEqualOrComma_TokenStatus,
+		"expected equal or comma for assignment"},
+	{ExpAssignItem_TokenStatus,
+		"expected item for assignment"},
+	{ExpOpOrComma_TokenStatus,
+		"expected operator or comma"},
+	{ExpOpCommaOrParen_TokenStatus,
+		"expected operator, comma or closing parentheses"},
+	{NoOpenParen_TokenStatus,
+		"missing opening parentheses"},
+	{ExpOpOrParen_TokenStatus,
+		"expected operator or closing parentheses"},
+	{UnexpAssignComma_TokenStatus,
+		"expected operator in assignment"},
+	{ExpAssignRef_TokenStatus,
+		"item cannot be assigned"},
+	{ExpAssignListRef_TokenStatus,
+		"list item cannot be assigned"},
+	{UnexpParenInCmd_TokenStatus,
+		"unexpected parentheses in command"},
+	{UnexpParenInComma_TokenStatus,
+		"unexpected parentheses in assignment list"},
+	{ExpDouble_TokenStatus,
+		"expected double"},
+	{ExpInteger_TokenStatus,
+		"expected integer"},
+	{ExpString_TokenStatus,
+		"expected string"},
+	{UnExpCommand_TokenStatus,
+		"unexpected command"},
+	{PrintOnlyIntFunc_TokenStatus,
+		"invalid use of print function"},
+	{ExpStrVar_TokenStatus,
+		"expected string variable"},
+	{BUG_NotYetImplemented,
+		"BUG: not yet implemented"},
+	{BUG_InvalidMode,
+		"BUG: invalid mode"},
+	{BUG_HoldStackEmpty,
+		"BUG: hold stack empty, expected Null"},
+	{BUG_HoldStackNotEmpty,
+		"BUG: hold stack not empty"},
+	{BUG_DoneStackNotEmpty,
+		"BUG: done stack not empty"},
+	{BUG_DoneStackEmptyParen,
+		"BUG: done stack empty, expected token for ')'"},
+	{BUG_DoneStackEmptyArrFunc,
+		"BUG: done stack empty, expected token for array/function"},
+	{BUG_UnexpectedCloseParen,
+		"BUG: unexpected closing parentheses"},
+	{BUG_UnexpectedToken,
+		"BUG: expected token on stack for array/function"},
+	{BUG_DoneStackEmpty,
+		"BUG: expected operand on done stack"},
+	{BUG_CmdStackNotEmpty,
+		"BUG: command stack not empty"},
+	{BUG_CmdStackEmpty,
+		"BUG: command stack empty"},
+	{BUG_Debug,
+		"BUG: debug"}
+};
+int Token::index_status[sizeof_TokenStatus];
+
 
 void Token::initialize(void)
 {
@@ -95,6 +173,43 @@ void Token::initialize(void)
 	table[Operator_TokenType] = true;
 	table[IntFuncN_TokenType] = true;
 	table[IntFuncP_TokenType] = true;
+
+	// 2010-06-25: build message index and check message array
+	List<TokenStsMsgErr> *error_list = new List<TokenStsMsgErr>;
+	int i;
+	for (i = 0; i < sizeof_TokenStatus; i++)  // initialize index array
+	{
+		index_status[i] = -1;
+	}
+	for (i = 0; i < sizeof_TokenStatus; i++)  // fill in index array
+	{
+		TokenStatus status = message_array[i].status;
+		if (index_status[status] == -1)
+		{
+			index_status[status] = i;
+		}
+		else  // already assigned
+		{
+			TokenStsMsgErr error(status, index_status[status], i);
+			error_list->append(&error);
+		}
+	}
+	for (i = 0; i < sizeof_TokenStatus; i++)  // check for missing statuses
+	{
+		if (index_status[i] == -1)
+		{
+			TokenStsMsgErr error((TokenStatus)i);
+			error_list->append(&error);
+		}
+	}
+
+	// throw exception if error_list is not empty
+	if (!error_list->empty())
+	{
+		throw error_list;
+	}
+
+	delete error_list;
 }
 
 
@@ -105,12 +220,48 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 
 int main(int argc, char *argv[])
 {
+	bool error_occurred = false;  // 2010-06-25
+
 	// 2010-04-25: added check if program name does not have path
 	char *name = strrchr(argv[0], '\\');
 	name = name == NULL ? argv[0] : name + 1;
 	print_gpl_header(name);
 	
-	Token::initialize();
+	// 2010-06-25: added try block for token initialization
+	try
+	{
+		Token::initialize();
+	}
+	catch (List<TokenStsMsgErr> *error_list)
+	{
+		TokenStsMsgErr error;
+
+		fprintf(stderr, "Error(s) found in TokenStatusMessage:\n");
+		int n = 0;
+		bool more;
+		do
+		{
+			more = error_list->remove(NULL, &error);
+			fprintf(stderr, "Error #%d: ", ++n);
+			switch (error.type)
+			{
+			case Duplicate_TokenSysMsgErrType:
+				fprintf(stderr, "Status %d in message array more than once "
+					"at entries %d and %d\n", error.duplicate.status,
+					error.duplicate.ifirst, error.duplicate.idup);
+				break;
+			case Missing_TokenSysMsgErrType:
+				fprintf(stderr, "Status %d missing from message array\n",
+					error.missing.status);
+				break;
+			default:
+				fprintf(stderr, "Unknown error %d\n", error.type);
+				break;
+			}
+		}
+		while (more);
+		error_occurred = true;
+	}
 	Table *table;
 	try
 	{
@@ -162,6 +313,10 @@ int main(int argc, char *argv[])
 			}
 		}
 		while (more);
+		error_occurred = true;
+	}
+	if (error_occurred)  // 2010-06-25
+	{
 		fprintf(stderr, "Program aborting!\n");
 		return 1;
 	}

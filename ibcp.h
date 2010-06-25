@@ -407,12 +407,105 @@ const int SemiColon_SubCode  = 0x00000008;	// semicolon after print function
 //**                                  TOKEN                                  **
 //*****************************************************************************
 
+// 2010-05-28: moved from Translator::Status, and renamed the values
+// 2010-06-01/14: added, renamed or deleted many status enumeration values
+// 2010-06-25: moved to begin of TOKEN section
+enum TokenStatus {
+	Null_TokenStatus,				// 2010-06-04: added
+	Good_TokenStatus,
+	Done_TokenStatus,
+	ExpStatement_TokenStatus,		// 2010-06-13: renamed
+	ExpExpr_TokenStatus,			// 2010-06-10: renamed
+	ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
+	ExpOpOrEnd_TokenStatus,			// 2010-06-11: renamed
+	ExpBinOpOrEnd_TokenStatus,		// 2010-06-12: renamed
+	ExpOpOrComma_TokenStatus,		// 2010-06-11: added
+	ExpOpCommaOrParen_TokenStatus,	// 2010-06-11: added
+	NoOpenParen_TokenStatus,		// 2010-03-25: added
+	ExpOpOrParen_TokenStatus,		// 2010-03-25: added (renamed 2010-06-11)
+	// 2010-04-11: replaced Error_UnexpectedComma
+	UnexpAssignComma_TokenStatus,	// 2010-04-11: added
+	ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
+	ExpAssignItem_TokenStatus,		// 2010-06-13: added
+	ExpAssignRef_TokenStatus,		// 2010-04-16: added
+	ExpAssignListRef_TokenStatus,	// 2010-04-16: added
+	UnexpParenInCmd_TokenStatus,	// 2010-04-16: added
+	UnexpParenInComma_TokenStatus,	// 2010-04-16: added
+	ExpDouble_TokenStatus,			// 2010-04-25: added
+	ExpInteger_TokenStatus,			// 2010-04-25: added
+	ExpString_TokenStatus,			// 2010-04-25: added
+	UnExpCommand_TokenStatus,		// 2010-05-29: added
+	PrintOnlyIntFunc_TokenStatus,	// 2010-06-01: added
+	ExpStrVar_TokenStatus,			// 2010-06-24: added
+	// the following statuses used during development
+	BUG_NotYetImplemented,			// somethings is not implemented
+	BUG_InvalidMode,				// added 2010-06-13
+	BUG_HoldStackEmpty,				// diagnostic message
+	BUG_HoldStackNotEmpty,			// diagnostic message
+	BUG_DoneStackNotEmpty,			// diagnostic message
+	BUG_DoneStackEmptyParen,		// diagnostic error (2010-03-25)
+	BUG_DoneStackEmptyArrFunc,		// diagnostic error (2010-04-02)
+	BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
+	BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
+	BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
+	BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
+	BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
+	BUG_Debug,						// diagnostic error (2010-06-13
+	sizeof_TokenStatus
+};
+
+struct TokenStsMsg {  // 2010-06-25
+	TokenStatus status;		// status code
+	const char *string;		// associate message
+};
+
+enum TokenStsMsgErrType {  // 2010-06-25
+	Unset_TokenSysMsgErrType,
+	Duplicate_TokenSysMsgErrType,
+	Missing_TokenSysMsgErrType,
+	sizeof_TokenSysMsgErrType
+};
+
+struct TokenStsMsgErr {  // 2010-06-25
+	TokenStsMsgErrType type;		// type of the error
+	union {
+		struct {
+			TokenStatus status;		// code with duplicate
+			int ifirst;				// index first found
+			int idup;				// index of duplicate
+		} duplicate;
+		struct {
+			TokenStatus status;		// missing code
+		} missing;
+	};
+
+	TokenStsMsgErr(TokenStatus status, int ifirst, int idup)
+	{
+		type = Duplicate_TokenSysMsgErrType;
+		duplicate.status = status;
+		duplicate.ifirst = ifirst;
+		duplicate.idup = idup;
+	}
+	TokenStsMsgErr(TokenStatus status)
+	{
+		type = Missing_TokenSysMsgErrType;
+		missing.status = status;
+	}
+	TokenStsMsgErr(void)			// default constructor
+	{
+		type = Unset_TokenSysMsgErrType;
+	}
+};
+
+
 // 2010-03-07: added error length and two new set_error()
 struct Token {
 	static bool paren[sizeof_TokenType];
 	static bool op[sizeof_TokenType];
 	static int prec[sizeof_TokenType];  // 2010-04-02
 	static bool table[sizeof_TokenType];  // 2010-05-29
+	static TokenStsMsg message_array[sizeof_TokenStatus];  // 2010-06-25
+	static int index_status[sizeof_TokenStatus];  // 2010-06-25
 
 	static void initialize(void);
 
@@ -494,53 +587,11 @@ struct Token {
 	{
 		return table[type];
 	}
-};
-
-
-// 2010-05-28: moved from Translator::Status, and renamed the values
-// 2010-06-01/14: added, renamed or deleted many status enumeration values
-enum TokenStatus {
-	Null_TokenStatus,				// 2010-06-04: added
-	Good_TokenStatus,
-	Done_TokenStatus,
-	ExpStatement_TokenStatus,		// 2010-06-13: renamed
-	ExpExpr_TokenStatus,			// 2010-06-10: renamed
-	ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
-	ExpOpOrEnd_TokenStatus,			// 2010-06-11: renamed
-	ExpBinOpOrEnd_TokenStatus,		// 2010-06-12: renamed
-	ExpOpOrComma_TokenStatus,		// 2010-06-11: added
-	ExpOpCommaOrParen_TokenStatus,	// 2010-06-11: added
-	NoOpenParen_TokenStatus,		// 2010-03-25: added
-	ExpOpOrParen_TokenStatus,		// 2010-03-25: added (renamed 2010-06-11)
-	// 2010-04-11: replaced Error_UnexpectedComma
-	UnexpAssignComma_TokenStatus,	// 2010-04-11: added
-	ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
-	ExpAssignItem_TokenStatus,		// 2010-06-13: added
-	ExpAssignRef_TokenStatus,		// 2010-04-16: added
-	ExpAssignListRef_TokenStatus,	// 2010-04-16: added
-	UnexpParenInCmd_TokenStatus,	// 2010-04-16: added
-	UnexpParenInComma_TokenStatus,	// 2010-04-16: added
-	ExpDouble_TokenStatus,			// 2010-04-25: added
-	ExpInteger_TokenStatus,			// 2010-04-25: added
-	ExpString_TokenStatus,			// 2010-04-25: added
-	UnExpCommand_TokenStatus,		// 2010-05-29: added
-	PrintOnlyIntFunc_TokenStatus,	// 2010-06-01: added
-	ExpStrVar_TokenStatus,			// 2010-06-24: added
-	// the following statuses used during development
-	BUG_NotYetImplemented,			// somethings is not implemented
-	BUG_InvalidMode,				// added 2010-06-13
-	BUG_HoldStackEmpty,				// diagnostic message
-	BUG_HoldStackNotEmpty,			// diagnostic message
-	BUG_DoneStackNotEmpty,			// diagnostic message
-	BUG_DoneStackEmptyParen,		// diagnostic error (2010-03-25)
-	BUG_DoneStackEmptyArrFunc,		// diagnostic error (2010-04-02)
-	BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
-	BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
-	BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
-	BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
-	BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
-	BUG_Debug,						// diagnostic error (2010-06-13
-	sizeof_TokenStatus
+	// 2010-06-25: new function to get message for status
+	static const char *message(TokenStatus status)
+	{
+		return message_array[index_status[status]].string;
+	}
 };
 
 
