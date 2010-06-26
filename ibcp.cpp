@@ -52,8 +52,14 @@
 //              cause the program to crash when run from the Windows cmd line
 //  2010-05-29  added the initialization of the new token has table entry flags
 //
+//  2010-06-25  added TokenStatus initialization to Token::initialize()
+//               for new token status message structure array
+//              replaced TokenStsMgsErr and TableError with generic Error
+//                template
+//
 
 #include <stdio.h>
+#include <stdarg.h>  // 2010-06-25: for generic print function
 #include "ibcp.h"
 
 void print_gpl_header(char *name)
@@ -72,9 +78,9 @@ int Token::prec[sizeof_TokenType];  // 2010-04-02
 bool Token::table[sizeof_TokenType];  // 2010-05-29
 TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 	{Good_TokenStatus,
-		"BUG: should not see this (Good)"},
+		"BUG: Good_TokenStaus"},  // should not see this
 	{Done_TokenStatus,
-		"BUG: should not see this (Done)"},
+		"BUG: Done_TokenStaus"},  // should not see this
 	{ExpStatement_TokenStatus,
 		"expected statement"},
 	{ExpExpr_TokenStatus,
@@ -175,7 +181,8 @@ void Token::initialize(void)
 	table[IntFuncP_TokenType] = true;
 
 	// 2010-06-25: build message index and check message array
-	List<TokenStsMsgErr> *error_list = new List<TokenStsMsgErr>;
+	// 2010-06-25: replaced with Error template
+	List<Error<TokenStatus> > *error_list = new List<Error<TokenStatus> >;
 	int i;
 	for (i = 0; i < sizeof_TokenStatus; i++)  // initialize index array
 	{
@@ -190,7 +197,7 @@ void Token::initialize(void)
 		}
 		else  // already assigned
 		{
-			TokenStsMsgErr error(status, index_status[status], i);
+			Error<TokenStatus> error(status, index_status[status], i);
 			error_list->append(&error);
 		}
 	}
@@ -198,7 +205,7 @@ void Token::initialize(void)
 	{
 		if (index_status[i] == -1)
 		{
-			TokenStsMsgErr error((TokenStatus)i);
+			Error<TokenStatus> error((TokenStatus)i);
 			error_list->append(&error);
 		}
 	}
@@ -218,6 +225,16 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 	int argc, char *argv[]);
 
 
+// 2010-06-25: generic print function for printing to stderr for Error
+void print_stderr(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+}
+
+
 int main(int argc, char *argv[])
 {
 	bool error_occurred = false;  // 2010-06-25
@@ -232,34 +249,12 @@ int main(int argc, char *argv[])
 	{
 		Token::initialize();
 	}
-	catch (List<TokenStsMsgErr> *error_list)
+	// 2010-06-25: replaced with Error template
+	catch (List<Error<TokenStatus> > *error_list)
 	{
-		TokenStsMsgErr error;
-
-		fprintf(stderr, "Error(s) found in TokenStatusMessage:\n");
-		int n = 0;
-		bool more;
-		do
-		{
-			more = error_list->remove(NULL, &error);
-			fprintf(stderr, "Error #%d: ", ++n);
-			switch (error.type)
-			{
-			case Duplicate_TokenSysMsgErrType:
-				fprintf(stderr, "Status %d in message array more than once "
-					"at entries %d and %d\n", error.duplicate.status,
-					error.duplicate.ifirst, error.duplicate.idup);
-				break;
-			case Missing_TokenSysMsgErrType:
-				fprintf(stderr, "Status %d missing from message array\n",
-					error.missing.status);
-				break;
-			default:
-				fprintf(stderr, "Unknown error %d\n", error.type);
-				break;
-			}
-		}
-		while (more);
+		// 2010-06-25: code replaced with function call
+		Error<TokenStatus>::report(error_list, &print_stderr, "TokenStsMsg",
+			"Status");
 		error_occurred = true;
 	}
 	Table *table;
@@ -267,52 +262,11 @@ int main(int argc, char *argv[])
 	{
 		table = new Table();
 	}
-	catch (List<TableError> *error_list)
+	// 2010-06-25: replaced with Error template
+	catch (List<Error<Code> > *error_list)
 	{
-		TableError error;
-
-		fprintf(stderr, "Error(s) found in Table:\n");
-		int n = 0;
-		bool more;
-		do
-		{
-			more = error_list->remove(NULL, &error);
-			fprintf(stderr, "Error #%d: ", ++n);
-			switch (error.type)
-			{
-			case Duplicate_TableErrType:
-				fprintf(stderr, "Code %d in table more than once "
-					"at entries %d and %d\n", error.duplicate.code,
-					error.duplicate.ifirst, error.duplicate.idup);
-				break;
-			case Missing_TableErrType:
-				fprintf(stderr, "Code %d missing from table\n",
-					error.missing.code);
-				break;
-			case Range_TableErrType:
-				fprintf(stderr, "Search type %d indexes (%d, %d) not correct\n",
-					error.range.type, error.range.ibeg, error.range.iend);
-				break;
-			case Overlap_TableErrType:
-				fprintf(stderr, "Search type %d indexes (%d, %d) overlap with "
-					"search type %d\n", error.overlap.type1, error.overlap.ibeg,
-					error.overlap.iend, error.overlap.type2);
-				break;
-			// 2010-05-20: added new maximum errors
-			case MaxOperands_TableErrType:
-				fprintf(stderr, "Max_Operands=%d too small, actual is %d\n",
-					Max_Operands, error.maximum.found);
-				break;
-			case MaxAssocCodes_TableErrType:
-				fprintf(stderr, "Max_Assoc_Codes=%d too small, actual is %d\n",
-					Max_Assoc_Codes, error.maximum.found);
-				break;
-			default:
-				fprintf(stderr, "Unknown error %d\n", error.type);
-				break;
-			}
-		}
-		while (more);
+		// 2010-06-25: code replaced with function call (code now in Error)
+		Error<Code>::report(error_list, print_stderr, "Table", "Code");
 		error_occurred = true;
 	}
 	if (error_occurred)  // 2010-06-25

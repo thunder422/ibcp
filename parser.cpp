@@ -62,6 +62,8 @@
 //              constant" error, the solution was to check if the next character
 //              is a digit, the number is complete, otherwise an error occurs
 //
+//  2010-06-25  TableSearch replaced with SearchType
+//
 
 #include <stdio.h>
 
@@ -395,7 +397,7 @@ bool Parser::get_identifier(void)
 {
 	DataType datatype;		// data type of word
 	bool paren;				// word has opening parenthesis flag
-	TableSearch search;		// table search type
+	SearchType search;		// table search type
 
 	char *p = scan_word(pos, datatype, paren);
 	if (p == NULL)
@@ -415,15 +417,15 @@ bool Parser::get_identifier(void)
 	}
 	if (paren)
 	{
-		search = ParenWord_TableSearch;
+		search = ParenWord_SearchType;
 	}
 	else if (datatype != None_DataType)
 	{
-		search = DataTypeWord_TableSearch;
+		search = DataTypeWord_SearchType;
 	}
 	else
 	{
-		search = PlainWord_TableSearch;
+		search = PlainWord_SearchType;
 	}
 	int index = table->search(search, pos, len);
 	if (index < 0)
@@ -797,7 +799,7 @@ int Parser::scan_string(char *&p, String *s)
 bool Parser::get_operator(void)
 {
 	// search table for current character to see if it is a valid operator
-	int index = table->search(Symbol_TableSearch, pos, 1);
+	int index = table->search(Symbol_SearchType, pos, 1);
 	if (index > 0)
 	{
 		// current character is a valid single character operator
@@ -826,7 +828,7 @@ bool Parser::get_operator(void)
 		
 	// operator could be a two character operator
 	// search table again for two characters at current position
-	int index2 = table->search(Symbol_TableSearch, pos, 2);
+	int index2 = table->search(Symbol_SearchType, pos, 2);
 	if (index2 < 0)
 	{
 		if (index > 0)  // was first character a valid operator?

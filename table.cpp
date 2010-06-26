@@ -112,6 +112,9 @@
 //  2010-06-13  added command handler to Let entry
 //  2010-06-14  removed AssignList_Flag from AssignList table entries
 //
+//  2010-06-25  Replaced TableError with generic Error template
+//              renamed TableSearch enum to SearchType
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -950,7 +953,7 @@ static TableEntry table_entries[] = {
 
 Table::Table(void)
 {
-	List<TableError> *error_list = new List<TableError>;
+	List<Error<Code> > *error_list = new List<Error<Code> >;
 	int i;
 	int type;
 
@@ -963,7 +966,7 @@ Table::Table(void)
 		index_code[i] = -1;
 	}
 	// initialize bracketing code range indexes
-	for (type = 0; type < sizeof_TableSearch; type++)
+	for (type = 0; type < sizeof_SearchType; type++)
 	{
 		range[type].beg = range[type].end = -1;
 	}
@@ -984,7 +987,7 @@ Table::Table(void)
 		else  // already assigned
 		{
 			// record duplicated code error
-			TableError error(code, index_code[code], i);
+			Error<Code> error(code, index_code[code], i);
 			error_list->append(&error);
 		}
 		// 2010-05-20: check if found new maximums
@@ -1015,12 +1018,12 @@ Table::Table(void)
 	// 2010-05-20: check maximums found against constants
 	if (max_operands > Max_Operands)
 	{
-		TableError error(MaxOperands_TableErrType, max_operands);
+		Error<Code> error(MaxOperands_ErrorType, max_operands);
 		error_list->append(&error);
 	}
 	if (max_assoc_codes > Max_Assoc_Codes)
 	{
-		TableError error(MaxAssocCodes_TableErrType, max_assoc_codes);
+		Error<Code> error(MaxAssocCodes_ErrorType, max_assoc_codes);
 		error_list->append(&error);
 	}
 
@@ -1030,39 +1033,39 @@ Table::Table(void)
 		if (index_code[i] == -1)
 		{
 			// record code missing error
-			TableError error((Code)i);
+			Error<Code> error((Code)i);
 			error_list->append(&error);
 		}
 	}
 
 	// setup indexes for bracketing codes
 	// (will be set to -1 if missing - missing errors were recorded above)
-	range[PlainWord_TableSearch].beg = index_code[BegPlainWord_Code];
-	range[PlainWord_TableSearch].end = index_code[EndPlainWord_Code];
-	range[ParenWord_TableSearch].beg = index_code[BegParenWord_Code];
-	range[ParenWord_TableSearch].end = index_code[EndParenWord_Code];
-	range[DataTypeWord_TableSearch].beg = index_code[BegDataTypeWord_Code];
-	range[DataTypeWord_TableSearch].end = index_code[EndDataTypeWord_Code];
-	range[Symbol_TableSearch].beg = index_code[BegSymbol_Code];
-	range[Symbol_TableSearch].end = index_code[EndSymbol_Code];
+	range[PlainWord_SearchType].beg = index_code[BegPlainWord_Code];
+	range[PlainWord_SearchType].end = index_code[EndPlainWord_Code];
+	range[ParenWord_SearchType].beg = index_code[BegParenWord_Code];
+	range[ParenWord_SearchType].end = index_code[EndParenWord_Code];
+	range[DataTypeWord_SearchType].beg = index_code[BegDataTypeWord_Code];
+	range[DataTypeWord_SearchType].end = index_code[EndDataTypeWord_Code];
+	range[Symbol_SearchType].beg = index_code[BegSymbol_Code];
+	range[Symbol_SearchType].end = index_code[EndSymbol_Code];
 
 	// check for missing bracketing codes and if properly positioned in table
 	// (missing codes recorded above, however,
 	// need to make sure all types were set, i.e. no missing assignments above)
-	for (type = 0; type < sizeof_TableSearch; type++)
+	for (type = 0; type < sizeof_SearchType; type++)
 	{
 		if (range[type].beg == -1 || range[type].end == -1
 			|| range[type].beg > range[type].end)
 		{
 			// record bracket range error
-			TableError error((TableSearch)type, range[type].beg,
+			Error<Code> error((SearchType)type, range[type].beg,
 				range[type].end);
 			error_list->append(&error);
 		}
 		else
 		{
 			// check to make sure no bracketing codes overlap
-			for (int type2 = 0; type2 < sizeof_TableSearch; type2++)
+			for (int type2 = 0; type2 < sizeof_SearchType; type2++)
 			{
 				if (type != type2
 					&& range[type2].beg != -1 && range[type2].end != -1
@@ -1072,7 +1075,7 @@ Table::Table(void)
 					&& range[type].end < range[type2].end))
 				{
 					// record bracket overlap error
-					TableError error((TableSearch)type, (TableSearch)type2,
+					Error<Code> error((SearchType)type, (SearchType)type2,
 						range[type].beg, range[type].end);
 					error_list->append(&error);
 				}
@@ -1119,7 +1122,7 @@ int Table::search(char letter, int flag)
 //     - returns the index of the entry that is found
 //     - returns -1 if the string was not found in the table
 
-int Table::search(TableSearch type, const char *string, int len)
+int Table::search(SearchType type, const char *string, int len)
 {
 	int i = range[type].beg;
 	int end = range[type].end;
@@ -1144,8 +1147,8 @@ int Table::search(TableSearch type, const char *string, int len)
 
 int Table::search(const char *word1, int len1, const char *word2, int len2)
 {
-	for (int i = range[PlainWord_TableSearch].beg;
-		i < range[PlainWord_TableSearch].end; i++)
+	for (int i = range[PlainWord_SearchType].beg;
+		i < range[PlainWord_SearchType].end; i++)
 	{
 		if (entry[i].name2 != NULL
 			&& strncasecmp(word1, entry[i].name, len1) == 0

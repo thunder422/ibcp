@@ -16,7 +16,7 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
+//
 //
 //  Change History:
 //
@@ -188,6 +188,10 @@
 //                 better clarity
 //
 //  2010-06-24  added another TokenStatus
+//  2010-06-25  replaced TableErrType enum and TableError struct with
+//                ErrorType enum and Error struct template so that this can also
+//                be used for TokenStatus
+//              TableSearch replaced with SearchType
 //
 
 #ifndef IBCP_H
@@ -321,7 +325,7 @@ enum Code {
 
 	// other codes
 	EOL_Code,  // 2010-03-17: added end-of-line code
-	
+
 	// immediate commands (will go away once gui implemented)
 	List_Code,
 	Edit_Code,
@@ -403,6 +407,164 @@ const int Comma_SubCode      = 0x00000004;	// multiple assignment has commas
 const int SemiColon_SubCode  = 0x00000008;	// semicolon after print function
 
 
+// 2010-06-25: moved max constants
+const int Max_Operands = 3;
+	// 2010-04-24: this value contains the maximum number of operands
+	// (arguments) for any operator or internal function (there are currently
+	// no internal function with more than 3 arguments)
+
+const int Max_Assoc_Codes = 3;
+	// 2010-04-24: this value contains the maximum number of associated codes,
+	// codes in additional to the main code for different possible data types
+	// for the code (no code currently has more the 3 total codes)
+	// 2010-05-20: increased from 2 to 3 because of AssignSubStr_Code
+
+
+//*****************************************************************************
+//**                             ERROR TEMPLATE                              **
+//*****************************************************************************
+
+enum ErrorType {  // 2010-06-25: renamed from TableErrType
+	Unset_ErrorType,
+	Duplicate_ErrorType,
+	Missing_ErrorType,
+	Range_ErrorType,
+	Overlap_ErrorType,
+	MaxOperands_ErrorType,	// 2010-05-20
+	MaxAssocCodes_ErrorType,	// 2010-05-20
+	sizeof_ErrorType
+};
+
+// 2010-06-25: moved and renamed from TableSearch
+enum SearchType {  // table search types
+	PlainWord_SearchType,
+	ParenWord_SearchType,
+	DataTypeWord_SearchType,
+	Symbol_SearchType,
+	sizeof_SearchType
+};
+
+// print call function for Error<T>::report()
+typedef void (*PrintFunction)(const char *fmt, ...);
+
+// generic error structure template
+template <class T> struct Error {  // 2010-06-25: created from TableError
+	ErrorType type;			// type of the error
+	union {
+		struct {
+			T item;				// item with duplicate
+			int ifirst;			// index first found
+			int idup;			// index of duplicate
+		} duplicate;
+		struct {
+			T item;				// missing item
+		} missing;
+		struct {
+			SearchType type;	// search type that is incomplete
+			int ibeg;			// index of beginning bracket item
+			int iend;			// index of ending bracket item
+		} range;
+		struct {
+			SearchType type1;	// first search type of overlap
+			SearchType type2;	// second search type of overlap
+			int ibeg;			// index of beginning bracket item
+			int iend;			// index of ending bracket item
+		} overlap;
+		struct {
+			int found;			// actual maximum found
+		} maximum;
+	};
+
+	Error(T item, int ifirst, int idup)
+	{
+		type = Duplicate_ErrorType;
+		duplicate.item = item;
+		duplicate.ifirst = ifirst;
+		duplicate.idup = idup;
+	}
+	Error(T item)
+	{
+		type = Missing_ErrorType;
+		missing.item = item;
+	}
+	Error(SearchType searchtype, int ibeg, int iend)
+	{
+		type = Range_ErrorType;
+		range.type = searchtype;
+		range.ibeg = ibeg;
+		range.iend = iend;
+	}
+	Error(SearchType type1, SearchType type2, int ibeg, int iend)
+	{
+		type = Overlap_ErrorType;
+		overlap.type1 = type1;
+		overlap.type2 = type2;
+		overlap.ibeg = ibeg;
+		overlap.iend = iend;
+	}
+	// 2010-05-20: added new error
+	Error(ErrorType _type, int max)
+	{
+		type = _type;
+		maximum.found = max;
+	}
+	Error(void)			// default constructor
+	{
+		type = Unset_ErrorType;
+	}
+
+	// 2010-06-25: function from parts of ibcp.cpp:main()
+	static void report(List<Error<T> > *error_list, PrintFunction print,
+		const char *title, const char *item)
+	{
+		Error<T> error;
+
+		(*print)("Error(s) found in %s:\n", title);
+		int n = 0;
+		bool more;
+		do
+		{
+			more = error_list->remove(NULL, &error);
+			(*print)("Error #%d: ", ++n);
+			switch (error.type)
+			{
+			case Duplicate_ErrorType:
+				(*print)("%s %d in table more than once at entries %d and "
+					"%d\n", item, error.duplicate.item,
+					error.duplicate.ifirst, error.duplicate.idup);
+				break;
+			case Missing_ErrorType:
+				(*print)("%s %d missing from table\n", item,
+					error.missing.item);
+				break;
+			case Range_ErrorType:
+				(*print)("Search type %d indexes (%d, %d) not correct\n",
+					error.range.type, error.range.ibeg, error.range.iend);
+				break;
+			case Overlap_ErrorType:
+				(*print)("Search type %d indexes (%d, %d) overlap with search "
+					"type %d\n", error.overlap.type1, error.overlap.ibeg,
+					error.overlap.iend, error.overlap.type2);
+				break;
+			// 2010-05-20: added new maximum errors
+			case MaxOperands_ErrorType:
+				(*print)("Max_Operands=%d too small, actual is %d\n",
+					Max_Operands, error.maximum.found);
+				break;
+			case MaxAssocCodes_ErrorType:
+				(*print)("Max_Assoc_Codes=%d too small, actual is %d\n",
+					Max_Assoc_Codes, error.maximum.found);
+				break;
+			default:
+				(*print)("Unknown error %d\n", error.type);
+				break;
+			}
+		}
+		while (more);
+	}
+};
+
+
 //*****************************************************************************
 //**                                  TOKEN                                  **
 //*****************************************************************************
@@ -459,43 +621,7 @@ struct TokenStsMsg {  // 2010-06-25
 	const char *string;		// associate message
 };
 
-enum TokenStsMsgErrType {  // 2010-06-25
-	Unset_TokenSysMsgErrType,
-	Duplicate_TokenSysMsgErrType,
-	Missing_TokenSysMsgErrType,
-	sizeof_TokenSysMsgErrType
-};
-
-struct TokenStsMsgErr {  // 2010-06-25
-	TokenStsMsgErrType type;		// type of the error
-	union {
-		struct {
-			TokenStatus status;		// code with duplicate
-			int ifirst;				// index first found
-			int idup;				// index of duplicate
-		} duplicate;
-		struct {
-			TokenStatus status;		// missing code
-		} missing;
-	};
-
-	TokenStsMsgErr(TokenStatus status, int ifirst, int idup)
-	{
-		type = Duplicate_TokenSysMsgErrType;
-		duplicate.status = status;
-		duplicate.ifirst = ifirst;
-		duplicate.idup = idup;
-	}
-	TokenStsMsgErr(TokenStatus status)
-	{
-		type = Missing_TokenSysMsgErrType;
-		missing.status = status;
-	}
-	TokenStsMsgErr(void)			// default constructor
-	{
-		type = Unset_TokenSysMsgErrType;
-	}
-};
+// 2010-06-25: TokenStsMsgErr/Type replaced with Error template
 
 
 // 2010-03-07: added error length and two new set_error()
@@ -642,17 +768,7 @@ const int Highest_Precedence = 127;
 	// one-byte signed value (in case the precedence member is changed to an
 	// char); all precedences in the table must be below this value
 
-const int Max_Operands = 3;
-	// 2010-04-24: this value contains the maximum number of operands
-	// (arguments) for any operator or internal function (there are currently
-	// no internal function with more than 3 arguments)
-
-const int Max_Assoc_Codes = 3;
-	// 2010-04-24: this value contains the maximum number of associated codes,
-	// codes in additional to the main code for different possible data types
-	// for the code (no code currently has more the 3 total codes)
-	// 2010-05-20: increased from 2 to 3 because of AssignSubStr_Code
-
+// 2010-06-25: moved max constants to above Error template
 
 // 2010-05-03: expression information for operators and internal functions
 struct ExprInfo {
@@ -736,91 +852,7 @@ struct TableEntry {
 };
 
 
-enum TableSearch {  // table search types
-	PlainWord_TableSearch,
-	ParenWord_TableSearch,
-	DataTypeWord_TableSearch,
-	Symbol_TableSearch,
-	sizeof_TableSearch
-};
-
-
-enum TableErrType {
-	Unset_TableErrType,
-	Duplicate_TableErrType,
-	Missing_TableErrType,
-	Range_TableErrType,
-	Overlap_TableErrType,
-	MaxOperands_TableErrType,	// 2010-05-20
-	MaxAssocCodes_TableErrType,	// 2010-05-20
-	sizeof_TableErrType
-};
-
-struct TableError {
-	TableErrType type;			// type of the error
-	union {
-		struct {
-			Code code;			// code with duplicate
-			int ifirst;			// index first found
-			int idup;			// index of duplicate
-		} duplicate;
-		struct {
-			Code code;			// missing code
-		} missing;
-		struct {
-			TableSearch type;	// search type that is incomplete
-			int ibeg;			// index of beginning bracket code
-			int iend;			// index of ending bracket code
-		} range;
-		struct {
-			TableSearch type1;	// first search type of overlap
-			TableSearch type2;	// second search type of overlap
-			int ibeg;			// index of beginning bracket code
-			int iend;			// index of ending bracket code
-		} overlap;
-		struct {
-			int found;			// actual maximum found
-		} maximum;
-	};
-
-	TableError(Code code, int ifirst, int idup)
-	{
-		type = Duplicate_TableErrType;
-		duplicate.code = code;
-		duplicate.ifirst = ifirst;
-		duplicate.idup = idup;
-	}
-	TableError(Code code)
-	{
-		type = Missing_TableErrType;
-		missing.code = code;
-	}
-	TableError(TableSearch searchtype, int ibeg, int iend)
-	{
-		type = Range_TableErrType;
-		range.type = searchtype;
-		range.ibeg = ibeg;
-		range.iend = iend;
-	}
-	TableError(TableSearch type1, TableSearch type2, int ibeg, int iend)
-	{
-		type = Overlap_TableErrType;
-		overlap.type1 = type1;
-		overlap.type2 = type2;
-		overlap.ibeg = ibeg;
-		overlap.iend = iend;
-	}
-	// 2010-05-20: added new error
-	TableError(TableErrType _type, int max)
-	{
-		type = _type;
-		maximum.found = max;
-	}
-	TableError(void)			// default constructor
-	{
-		type = Unset_TableErrType;
-	}
-};
+// 2010-06-25: TableErrType/TableError replaced with Error template
 
 
 //*****************************************************************************
@@ -833,7 +865,7 @@ class Table {
 	struct Range {
 		int beg;					// begin index of range
 		int end;					// end index of range
-	} range[sizeof_TableSearch];	// range for each search type
+	} range[sizeof_SearchType];	// range for each search type
 public:
 	Table(void);
 	~Table()
@@ -957,7 +989,7 @@ public:
 
 	// TABLE FUNCTIONS
 	int search(char letter, int flag);
-	int search(TableSearch type, const char *string, int len);
+	int search(SearchType type, const char *string, int len);
 	int search(const char *word1, int len1, const char *word2, int len2);
 	// 2010-04-04: added new search function
 	int search(int index, int nargs);
