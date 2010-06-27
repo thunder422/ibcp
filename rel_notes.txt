@@ -39,6 +39,33 @@ Planned Roadmap:
 	Recreator - From internal program
 
 
+Release 0.1.14-pre-1 (2010-06-26)
+
+	Translator preliminary developmental release - all known error
+	reporting issues are now being reported as desired.  Other
+	changes include:
+
+	    - token status (error) messages put into an array
+	    - error template created for table and token status errors
+
+	Note: a CVS branch will be used for future development for each
+	subsequent developmental release.  This will aid in development
+	where intra-day development can be committed to the CVS
+	repository without disturbing the main truck containing the last
+	release.  The result of this can be seen from the CVS revision
+	tags in the source files in this and future preliminary
+	(formally called interim) releases.  This should not show up in
+	formal developmental releases.  New (listed first) and updated
+	files include:
+
+	ibcp.h           - added error template (replaces table error)
+	ibcp.cpp         - token status messages and initialization
+	table.cpp        - minor updates due to new error template
+	test_ibcp.cpp    - more error tests, removed error messages
+	translator.cpp   - added checks to report desired errors
+	translator11.txt - changes to error messages, new tests
+
+
 Release 0.1.13 (2010-06-15)
 
 	Translator developmental release - the PRINT command has been
