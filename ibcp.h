@@ -191,7 +191,8 @@
 //  2010-06-25  replaced TableErrType enum and TableError struct with
 //                ErrorType enum and Error struct template so that this can also
 //                be used for TokenStatus
-//              TableSearch replaced with SearchType
+//              TableSearch renamed to SearchType
+//  2010-06-26  added EndStatement_Flag
 //
 
 #ifndef IBCP_H
@@ -752,8 +753,9 @@ const int String_Flag         = 0x00000020;
 // 2010-05-05: added Reference and AssignList flag for assignment operators
 // 2010-05-29: added hidden operator/function flag
 // 2010-06-01: added Print flag for print-only functions
-// 2010-06-06: added EndExp flag for comma, semicolon and EOL functions
+// 2010-06-06: added EndExpr flag for comma, semicolon and EOL functions
 // 2010-06-14: removed AssignList flag (not needed)
+// 2010-06-26: added EndStatement flag
 const int Multiple_Flag       = 0x00000001;  // function has multiple forms
 const int Reference_Flag      = 0x00000002;  // code requires a reference
 // note: value 0x00000004 is available
@@ -761,6 +763,7 @@ const int Hidden_Flag         = 0x00000008;  // code is hidden operator/function
 const int Print_Flag          = 0x00000010;  // print-only function
 // note: don't use 0x00000020 - String_Flag is being used for codes
 const int EndExpr_Flag        = 0x00000040;	 // end expression
+const int EndStatement_Flag   = 0x00000080;  // end statement
 
 // 2010-03-25: added highest precedence value
 const int Highest_Precedence = 127;

@@ -138,6 +138,9 @@
 //  2010-06-01/14  updated many error enumeration names and string messages for
 //                 clarity
 //
+//  2010-06-25  removed token status switch (messages moved to ibcp.cpp)
+//  2010-06-26  added more error test inputs
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -581,8 +584,6 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		NULL
 	};
 	static const char *testinput11[] = {  // error tests (2010-06-13)
-		"Z,Y",
-
 		"Z = C(A,,B)",
 		"Z = C(A;B)",
 		"Z = A;B",
@@ -625,6 +626,8 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z,,",
 		"Z,Y",
 		"Z,Y,",
+		"Z,Y,X",
+		"Z,Y,X,",
 		"Z=A,",
 		"Z;",
 		";Z",
@@ -647,6 +650,9 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z(,",
 		"Z(;",
 		"Z,Y(",
+		"Z,Y(A",
+		"Z,Y(A,",
+		"Z,Y(A+",
 		"Z = A A",
 		"Z = (A A",
 		"Z = Arr(A A",
@@ -677,6 +683,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A=INT(A)=",
 		"INT(A)=B",
 		"LET ,",
+		"LET A,,",
 		"LET ;",
 		"LET",
 		NULL

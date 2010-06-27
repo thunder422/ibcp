@@ -169,8 +169,17 @@ Input: Z,,
 Input: Z,Y
           ^-- expected equal or comma for assignment
 
+
 Input: Z,Y,
            ^-- expected item for assignment
+
+
+Input: Z,Y,X
+            ^-- expected equal or comma for assignment
+
+
+Input: Z,Y,X,
+             ^-- expected item for assignment
 
 
 Input: Z=A,
@@ -259,6 +268,18 @@ Input: Z(;
 
 Input: Z,Y(
            ^-- expected expression
+
+
+Input: Z,Y(A
+            ^-- expected equal or comma for assignment
+
+
+Input: Z,Y(A,
+             ^-- expected expression
+
+
+Input: Z,Y(A+
+             ^-- expected expression
 
 
 Input: Z = A A
@@ -379,6 +400,10 @@ Input: INT(A)=B
 
 Input: LET ,
            ^-- expected item for assignment
+
+
+Input: LET A,,
+             ^-- expected item for assignment
 
 
 Input: LET ;

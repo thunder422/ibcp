@@ -189,6 +189,9 @@
 //                assignments
 //              at end of expression, added check if in assignment due to an
 //                an array or sub-string function, to report correct errors
+//  2010-06-26  added end of statement checking in the binary operator section
+//              made more error reporting corrections related to checking if the
+//                done stack is empty to determine the correct error to report
 //
 
 #include "ibcp.h"
@@ -375,7 +378,15 @@ TokenStatus Translator::add_token(Token *&token)
 
 				case CommaAssignment_TokenMode:
 					// in a comma separated list
-					return ExpAssignItem_TokenStatus;
+					// 2010-06-26: make sure done stack is not empty
+					if (count_stack.empty())
+					{
+						return ExpAssignItem_TokenStatus;
+					}
+					else
+					{
+						return ExpExpr_TokenStatus;
+					}
 
 				case EqualAssignment_TokenMode:
 				case Expression_TokenMode:
@@ -509,6 +520,15 @@ TokenStatus Translator::add_token(Token *&token)
 
 			// now set last precedence to highest in case no operators in ( )
 			last_precedence = Highest_Precedence;
+		}
+		// 2010-06-26: added checking at end of statment
+		if (table->flags(token) & EndStatement_Flag)
+		{
+			if (mode == CommaAssignment_TokenMode)
+			{
+				// no equal token received yet
+				return ExpEqualOrComma_TokenStatus;
+			}
 		}
 	}
 
@@ -1452,7 +1472,11 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			// this is an assignment list
 			// 2010-06-13: comma puts AssignList on hold stack
 			// assignment for a comma separated list, change token
-			//token->index = t.table->index(AssignList_Code);
+			// 2010-06-26: make sure done stack is not empty
+			if (t.done_stack.empty())
+			{
+				return ExpAssignItem_TokenStatus;
+			}
 			t.table->set_token(token, AssignList_Code);
 			// 2010-05-29: set flag in token to indicate comma
 			token->subcode |= Comma_SubCode;
@@ -1599,6 +1623,11 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 			return ExpStatement_TokenStatus;
 
 		case Assignment_TokenMode:
+			// 2010-06-26: make sure done stack is not empty
+			if (t.done_stack.empty())
+			{
+				return ExpAssignItem_TokenStatus;
+			}
 			return ExpEqualOrComma_TokenStatus;
 
 		default:
@@ -1904,6 +1933,11 @@ TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	// this function should not be called for correct statements
 	// if it is then it means that the LET command was not completed
 	cmd_item->token = token;  // point to end-of-statement token
+	// 2010-06-26: make sure done stack is not empty
+	if (t.done_stack.empty())
+	{
+		return ExpAssignItem_TokenStatus;
+	}
 	return ExpEqualOrComma_TokenStatus;
 }
 

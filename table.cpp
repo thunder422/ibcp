@@ -114,6 +114,7 @@
 //
 //  2010-06-25  Replaced TableError with generic Error template
 //              renamed TableSearch enum to SearchType
+//  2010-06-26  added end statment flag to EOL
 //
 
 #include <ctype.h>
@@ -812,8 +813,9 @@ static TableEntry table_entries[] = {
 	{
 		// 2010-05-28: added value for token_handler
 		// 2010-06-06: added end expression flag
+		// 2010-06-26: added end statment flag
 		EOL_Code, Operator_TokenType, OneWord_Multiple,
-		NULL, NULL, EndExpr_Flag, 4, NULL,
+		NULL, NULL, EndExpr_Flag | EndStatement_Flag, 4, NULL,
 		EndOfLine_Handler
 	},
 	// 2010-04-24: added entries for associated codes
