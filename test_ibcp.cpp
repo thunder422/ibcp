@@ -140,6 +140,9 @@
 //
 //  2010-06-25  removed token status switch (messages moved to ibcp.cpp)
 //  2010-06-26  added more error test inputs
+//  2010-06-29  corrected print_error() to take into account double quotes
+//                surrounding and used internally on string constants
+//              added new translator expression type test set (12)
 //
 
 #include <stdio.h>
@@ -688,10 +691,31 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"LET",
 		NULL
 	};
+	static const char *testinput12[] = {  // more error tests (2010-06-29)
+		"Z = A$ + B$ + C$",
+		"Z = MID$(A*B+C,1)",
+		"Z$ = MID$(A*B+C,1)",
+		"Z$ = MID$(Y$,A$ + B$ + C$)",
+		"Z = A <> B$",
+		"Z = A <> B$ < C$",
+		"Z = A + B$ + C$",
+		"Z = A < B$ + C$",
+		"Z = A + B$ + C%",
+		"Z = A < B$ + C%",
+		"Z = A <> B$ + C$ < D$",
+		"Z = A + B$ + C$ < D$",
+		"Z = A + (B$ + C$ < D$)",
+		"Z$ = A$ + B$ + C%",
+		"Z$ = A$ + B * C",
+		"A$,RIGHT$(B,2) = C$",
+		"A$=RIGHT$(B,2) = C$",
+		NULL
+	};
 
 	static const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
-		testinput7, testinput8, testinput9, testinput10, testinput11
+		testinput7, testinput8, testinput9, testinput10, testinput11,
+		testinput12
 	};
 	static const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -1132,6 +1156,20 @@ void print_error(Token *token, const char *error)
 	else
 	{
 		len = token->string->get_len();
+		// 2010-06-29: account for double quotes of string constants
+		if (token->type == Constant_TokenType
+			&& token->datatype == String_DataType)
+		{
+			len += 2;  // surrounding double quotes
+			char *p = token->string->get_ptr();
+			for (int i = token->string->get_len(); --i >= 0;)
+			{
+				if (*p++ == '"')
+				{
+					len++;  // account for the extra quote
+				}
+			}
+		}
 	}
 	for (int j = 0; j < len; j++)
 	{

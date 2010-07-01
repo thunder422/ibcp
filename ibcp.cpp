@@ -56,6 +56,13 @@
 //               for new token status message structure array
 //              replaced TokenStsMgsErr and TableError with generic Error
 //                template
+//  2010-06-28  added NULL string check to Token::initialize() message array
+//                initialization to catch missing entries
+//              added missing entry for Null_TokenStatus to
+//                Token::message_array[], which was not detected by the error
+//                checking because there was a null entry at the end of the
+//                array that happen to have a 0 (Null_TokenStatus) in it
+//  2010-06-29  updated expected expression error messages
 //
 
 #include <stdio.h>
@@ -77,6 +84,8 @@ bool Token::op[sizeof_TokenType];
 int Token::prec[sizeof_TokenType];  // 2010-04-02
 bool Token::table[sizeof_TokenType];  // 2010-05-29
 TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
+	{Null_TokenStatus,
+		"BUG: Null_TokenStaus"},  // should not see this (2010-06-28)
 	{Good_TokenStatus,
 		"BUG: Good_TokenStaus"},  // should not see this
 	{Done_TokenStatus,
@@ -114,15 +123,23 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 	{UnexpParenInComma_TokenStatus,
 		"unexpected parentheses in assignment list"},
 	{ExpDouble_TokenStatus,
-		"expected double"},
+		"expected double expression"},
 	{ExpInteger_TokenStatus,
-		"expected integer"},
+		"expected integer expression"},
 	{ExpString_TokenStatus,
-		"expected string"},
+		"expected string expression (old)"},
+	{ExpNumExpr_TokenStatus,
+		"expected numeric expression"},
+	{ExpStrExpr_TokenStatus,
+		"expected string expression"},
 	{UnExpCommand_TokenStatus,
 		"unexpected command"},
 	{PrintOnlyIntFunc_TokenStatus,
 		"invalid use of print function"},
+	{ExpDblVar_TokenStatus,
+		"expected double variable"},
+	{ExpIntVar_TokenStatus,
+		"expected integer variable"},
 	{ExpStrVar_TokenStatus,
 		"expected string variable"},
 	{BUG_NotYetImplemented,
@@ -191,7 +208,12 @@ void Token::initialize(void)
 	for (i = 0; i < sizeof_TokenStatus; i++)  // fill in index array
 	{
 		TokenStatus status = message_array[i].status;
-		if (index_status[status] == -1)
+		// 2010-06-28: added missing string check
+		if (message_array[i].string == NULL)
+		{
+			continue;  // will be caught in the missing check below
+		}
+		else if (index_status[status] == -1)
 		{
 			index_status[status] = i;
 		}

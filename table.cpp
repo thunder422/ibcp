@@ -115,6 +115,7 @@
 //  2010-06-25  Replaced TableError with generic Error template
 //              renamed TableSearch enum to SearchType
 //  2010-06-26  added end statment flag to EOL
+//  2010-06-29  added expr_type value to PRINT code
 //
 
 #include <ctype.h>
@@ -310,9 +311,10 @@ static TableEntry table_entries[] = {
 	{
 		// 2010-06-01: added value for token_mode
 		// 2010-06-05: added value for command handler
+		// 2010-06-29: added value for expr_type
 		Print_Code, Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL, Null_Flag, 4, NULL, NULL, Expression_TokenMode,
-		Print_CmdHandler
+		Print_CmdHandler, Any_ExprType
 	},
 	{
 		Input_Code, Command_TokenType, OneWord_Multiple,

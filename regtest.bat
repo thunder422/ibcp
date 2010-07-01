@@ -22,6 +22,7 @@ rem  Change History:
 rem
 rem  2010-05-29  initial release
 rem  2010-06-10  added tests 10 and 11
+rem  2010-06-29  added test 12
 rem
 rem
 rem  Usage:
@@ -40,6 +41,6 @@ rem
 
 del parser*.txt translator*.txt
 for %%i in (1 2 3 4 5) do ibcp.exe -p %%i >parser%%i.txt
-for %%i in (1 2 3 4 5 6 7 8 9 10 11) do ibcp.exe -t %%i >translator%%i.txt
+for %%i in (1 2 3 4 5 6 7 8 9 10 11 12) do ibcp.exe -t %%i >translator%%i.txt
 comp test\parser*.txt parser*.txt
 comp test\translator*.txt translator*.txt

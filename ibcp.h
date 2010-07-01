@@ -193,6 +193,11 @@
 //                be used for TokenStatus
 //              TableSearch renamed to SearchType
 //  2010-06-26  added EndStatement_Flag
+//  2010-06-29  added new ExprType enumeration
+//              added expr_type member to Translator (initialize for expr mode)
+//              added expr_type member to TableEntry (with access function)
+//              updated expected expression related token statuses
+//  2010-06-30  updated expected expression related token statuses
 //
 
 #ifndef IBCP_H
@@ -399,6 +404,15 @@ enum Multiple {
 };
 
 
+enum ExprType {  // 2010-06-29
+	Null_ExprType,
+	Any_ExprType,
+	Num_ExprType,
+	Str_ExprType,
+	sizeof_ExprType
+};
+
+
 // 2010-05-27: sub-code flags for use in Token and internal program
 // 2010-06-08: renamed Null to None and added SemiColon sub-code flag
 const int None_SubCode       = 0x00000000;	// no sub-code present
@@ -597,8 +611,12 @@ enum TokenStatus {
 	ExpDouble_TokenStatus,			// 2010-04-25: added
 	ExpInteger_TokenStatus,			// 2010-04-25: added
 	ExpString_TokenStatus,			// 2010-04-25: added
+	ExpNumExpr_TokenStatus,			// 2010-06-29: added
+	ExpStrExpr_TokenStatus,			// 2010-06-29: added
 	UnExpCommand_TokenStatus,		// 2010-05-29: added
 	PrintOnlyIntFunc_TokenStatus,	// 2010-06-01: added
+	ExpDblVar_TokenStatus,			// 2010-06-30: added
+	ExpIntVar_TokenStatus,			// 2010-06-30: added
 	ExpStrVar_TokenStatus,			// 2010-06-24: added
 	// the following statuses used during development
 	BUG_NotYetImplemented,			// somethings is not implemented
@@ -852,6 +870,8 @@ struct TableEntry {
 	TokenMode token_mode;		// next token mode for command
 	// 2010-06-05: added end-of-statement token handler for commands
 	CmdHandler cmd_handler;		// pointer to translator cmd handler function
+	// 2010-06-29: added expression type, needed when token_mode is Expression
+	ExprType expr_type;			// next expression type for command
 };
 
 
@@ -927,6 +947,11 @@ public:
 	TokenMode token_mode(int index)
 	{
 		return entry[index].token_mode;
+	}
+	// 2010-06-29: added token mode access function
+	ExprType expr_type(int index)
+	{
+		return entry[index].expr_type;
 	}
 	Code unary_code(int index)
 	{
@@ -1128,6 +1153,7 @@ class Translator {
 	struct CountItem {
 		char noperands;				// number of operands seen
 		char nexpected;				// number of arguments expected
+		int index;					// table index of internal function
 	};
 	SimpleStack<CountItem> count_stack;	// number of operands counter stack
 	// 2010-04-11: added mode for handling assignment statements
@@ -1137,6 +1163,7 @@ class Translator {
 	SimpleStack<CmdItem> cmd_stack;	// stack of commands waiting processing
 	// 2010-06-06: variable to save expression only mode in
 	bool exprmode;					// expression only mode active flag
+	ExprType expr_type;				// current expression type (2010-06-29)
 
 public:
 	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
@@ -1149,6 +1176,11 @@ public:
 		// 2010-04-11: initialize mode to command
 		// 2010-04-16: start in expression mode for testing
 		mode = exprmode ? Expression_TokenMode : Command_TokenMode;
+		// 2010-06-29: if expression mode then set any expression type
+		if (exprmode)
+		{
+			expr_type = Any_ExprType;
+		}
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
 	TokenStatus add_token(Token *&token);

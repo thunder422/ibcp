@@ -58,46 +58,46 @@ Input: Z = A% + B * C ^ D
 Output: Z<ref> A% CvtDbl B C D ^ * + Assign 
 
 Input: Z = A$ + B
-                ^-- expected string
+                ^-- expected string expression
 
 
 Input: Z = A$ + B%
-                ^^-- expected string
+                ^^-- expected string expression
 
 
 Input: Z = A + B$
-               ^^-- expected double
+               ^^-- expected numeric expression
 
 
 Input: Z = A% + B$
-                ^^-- expected integer
+                ^^-- expected numeric expression
 
 
 Input: Z$ = A$ - B$
-            ^^-- expected double
+            ^^-- expected numeric expression
 
 
 Input: Z$ = MID$(A$,B$,1)
-                    ^^-- expected integer
+                    ^^-- expected numeric expression
 
 
 Input: Z$ = MID$(A$,2,C$)
-                      ^^-- expected integer
+                      ^^-- expected numeric expression
 
 
 Input: Z$ = MID$(A,2,3)
-                 ^-- expected string
+                 ^-- expected string expression
 
 
 Input: Z$ = MID$(A$,2,3) + B
-                           ^-- expected string
+                           ^-- expected string expression
 
 
 Input: Z = B + MID$(A$,2,3)
-               ^^^^^-- expected double
+               ^^^^^-- expected numeric expression
 
 
 Input: Z = A + (B$ + C$)
-                   ^-- expected double
+                   ^-- expected numeric expression
 
 

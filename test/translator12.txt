@@ -1,0 +1,73 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: Z = A$ + B$ + C$
+                   ^-- expected numeric expression
+
+
+Input: Z = MID$(A*B+C,1)
+                ^-- expected string expression
+
+
+Input: Z$ = MID$(A*B+C,1)
+                 ^-- expected string expression
+
+
+Input: Z$ = MID$(Y$,A$ + B$ + C$)
+                    ^^-- expected numeric expression
+
+
+Input: Z = A <> B$
+                ^^-- expected numeric expression
+
+
+Input: Z = A <> B$ < C$
+Output: Z<ref> A B$ C$ <$[B$,C$] CvtDbl <> CvtDbl Assign 
+
+Input: Z = A + B$ + C$
+               ^^-- expected numeric expression
+
+
+Input: Z = A < B$ + C$
+                  ^-- expected numeric expression
+
+
+Input: Z = A + B$ + C%
+               ^^-- expected numeric expression
+
+
+Input: Z = A < B$ + C%
+                    ^^-- expected string expression
+
+
+Input: Z = A <> B$ + C$ < D$
+Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$[+$,D$] CvtDbl <> CvtDbl Assign 
+
+Input: Z = A + B$ + C$ < D$
+               ^^-- expected numeric expression
+
+
+Input: Z = A + (B$ + C$ < D$)
+Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$[+$,D$] CvtDbl + Assign 
+
+Input: Z$ = A$ + B$ + C%
+                      ^^-- expected string expression
+
+
+Input: Z$ = A$ + B * C
+                   ^-- expected string expression
+
+
+Input: A$,RIGHT$(B,2) = C$
+                 ^-- expected string variable
+
+
+Input: A$=RIGHT$(B,2) = C$
+                 ^-- expected string expression
+
+

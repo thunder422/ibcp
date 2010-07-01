@@ -37,19 +37,19 @@ Input: LEFT$(A$,1) = RIGHT$(B$+C$,1)
 Output: A$ 1 LEFT$(<ref>[A$,1] B$ C$ +$[B$,C$] 1 RIGHT$([+$,1] AssignSub$[LEFT$(<ref>,RIGHT$(] 
 
 Input: RIGHT$(A$,2) = B
-                      ^-- expected string
+                      ^-- expected string expression
 
 
 Input: RIGHT$(A$,2) = B%
-                      ^^-- expected string
+                      ^^-- expected string expression
 
 
 Input: RIGHT$(A,2) = B$
-              ^-- expected string
+              ^-- expected string variable
 
 
 Input: RIGHT$(A%,2) = B$
-              ^^-- expected string
+              ^^-- expected string variable
 
 
 Input: RIGHT$(A$+B$,2) = C$

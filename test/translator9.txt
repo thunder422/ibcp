@@ -7,7 +7,8 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: LET A=0.0
-Output: A<ref> 0.0 Assign'LET' 
+            ^-- BUG: not yet implemented
+
 
 Input: LET A%=0
 Output: A%<ref> 0 Assign%'LET' 
@@ -16,7 +17,8 @@ Input: LET A$=""
 Output: A$<ref> "" Assign$'LET'[A$<ref>,""] 
 
 Input: LET A=B=C=0.0
-Output: A<ref> B<ref> C<ref> 0.0 AssignList'LET' 
+            ^-- BUG: not yet implemented
+
 
 Input: LET A,B,C=0.0
 Output: A<ref> B<ref> C<ref> 0.0 AssignList'LET,' 

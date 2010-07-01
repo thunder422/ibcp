@@ -37,47 +37,47 @@ Input: A$ = B$ = C$ = "Test"
 Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[A$<ref>,B$<ref>,C$<ref>,"Test"] 
 
 Input: Z, Y = A$ + B%
-                   ^^-- expected string
+                   ^^-- expected string expression
 
 
 Input: Z, Y = A$ + B$
-                 ^-- expected double
+                 ^-- expected numeric expression
 
 
 Input: A,B%,C = 1.0
-         ^^-- expected double
+         ^^-- expected double variable
 
 
 Input: A,B,C% = 1.0
-           ^^-- expected double
+           ^^-- expected double variable
 
 
 Input: A%,B,C = 1.0
-          ^-- expected integer
+          ^-- expected integer variable
 
 
 Input: A,"T",B = 1
-         ^-- list item cannot be assigned
+         ^^^-- list item cannot be assigned
 
 
 Input: A = "T" = B = 1
-           ^-- list item cannot be assigned
+           ^^^-- list item cannot be assigned
 
 
 Input: A,B,C = STR$(1)
-               ^^^^^-- expected double
+               ^^^^^-- expected numeric expression
 
 
 Input: A,B,C$ = STR$(1)
-           ^^-- expected double
+           ^^-- expected double variable
 
 
 Input: A,B,C$ = 1
-           ^^-- expected double
+           ^^-- expected double variable
 
 
 Input: A,B$,C = 1
-         ^^-- expected double
+         ^^-- expected double variable
 
 
 Input: A,B,1 = 1
@@ -85,7 +85,7 @@ Input: A,B,1 = 1
 
 
 Input: A,B%,1 = 1
-         ^^-- expected double
+         ^^-- expected double variable
 
 
 Input: 1,A,B% = 1
@@ -93,22 +93,22 @@ Input: 1,A,B% = 1
 
 
 Input: A%,B,C% = 1
-          ^-- expected integer
+          ^-- expected integer variable
 
 
 Input: A%,B$,C% = 1
-          ^^-- expected integer
+          ^^-- expected integer variable
 
 
 Input: A$,B$,C% = 1
-             ^^-- expected string
+             ^^-- expected string variable
 
 
 Input: A$,B$,C$ = 1
-                  ^-- expected string
+                  ^-- expected string expression
 
 
 Input: Z = A$ + B * C
-                  ^-- expected string
+                  ^-- expected string expression
 
 

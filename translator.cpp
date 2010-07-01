@@ -192,9 +192,25 @@
 //  2010-06-26  added end of statement checking in the binary operator section
 //              made more error reporting corrections related to checking if the
 //                done stack is empty to determine the correct error to report
+//  2010-06-29  added support for expression type
+//              added data type to expression type conversion array
+//  2010-06-30  continues to add support for expression type
+//              added expected variable messages for assign list errors
+//
 //
 
 #include "ibcp.h"
+
+// 2010-06-29: equivalent data type array
+static ExprType exprtype_datatype[sizeof_DataType] =
+{
+	Num_ExprType,	// Double
+	Num_ExprType,	// Integer
+	Str_ExprType,	// String
+	Str_ExprType,	// TmpStr
+	Str_ExprType	// SubStr
+//	Any_ExprType	// None
+};
 
 // function to add a token to the output list, but token may be placed
 // on hold stack pending adding it to the output list so that higher
@@ -244,6 +260,11 @@ TokenStatus Translator::add_token(Token *&token)
 			if (table->token_mode(token->index) != Null_TokenMode)
 			{
 				mode = table->token_mode(token->index);
+				// 2010-06-29: if token mode is expression, set expression type
+				if (mode == Expression_TokenMode)
+				{
+					expr_type = table->expr_type(token->index);
+				}
 				cmd_stack.push();
 				cmd_stack.top().token = token;
 				cmd_stack.top().code = table->code(token->index);
@@ -273,6 +294,32 @@ TokenStatus Translator::add_token(Token *&token)
 
 			// 2010-04-25: set default data type for token if it has none
 			set_default_datatype(token);
+
+			// 2010-06-29: check data type against expected expression type
+			if ((mode == Expression_TokenMode || !count_stack.empty())
+				&& expr_type != Any_ExprType
+				&& expr_type != exprtype_datatype[token->datatype])
+			{
+				switch (expr_type)
+				{
+				case Num_ExprType:
+					return ExpNumExpr_TokenStatus;
+
+				case Str_ExprType:
+					if (mode == Assignment_TokenMode
+						|| mode == CommaAssignment_TokenMode)
+					{
+						return ExpStrVar_TokenStatus;
+					}
+					else
+					{
+						return ExpStrExpr_TokenStatus;
+					}
+
+				default:
+					return BUG_NotYetImplemented;
+				}
+			}
 
 			// 2010-04-02: moved to after pending parentheses check
 			if (token->has_paren())
@@ -313,10 +360,19 @@ TokenStatus Translator::add_token(Token *&token)
 
 					count_stack.top().nexpected
 						= table->noperands(token->index);
+
+					// 2010-06-29: save index of internal function's table entry
+					count_stack.top().index = token->index;
+
+					// 2010-06-29: get expression type for first argument
+					expr_type = exprtype_datatype[table->operand_datatype(token
+						->index, 0)];
 				}
 				else
 				{
 					count_stack.top().nexpected = 0;
+					// 2010-06-29: array or function, set any expression type
+					expr_type = Any_ExprType;
 				}
 
 				hold_stack.push(token);
@@ -450,6 +506,7 @@ TokenStatus Translator::add_token(Token *&token)
 					case EqualAssignment_TokenMode:
 						// continue of a multiple equal assignment
 						mode = Expression_TokenMode;  // start of expression
+						expr_type = Any_ExprType;  // FIXME (2010-06-29)
 						break;
 
 					case CommaAssignment_TokenMode:
@@ -654,17 +711,18 @@ TokenStatus Translator::add_operator(Token *&token)
 			{
 				// data type does not match, set error at last token
 				bad_token = last_operand->value->token;
+				// 2010-06-30: replaced with expected variable errors
 				switch (list_operand->value->token->datatype)
 				{
 				case Double_DataType:
-					status = ExpDouble_TokenStatus;
+					status = ExpDblVar_TokenStatus;
 					break;
 				case Integer_DataType:
-					status = ExpInteger_TokenStatus;
+					status = ExpIntVar_TokenStatus;
 					break;
 				case String_DataType:
 				case SubStr_DataType:  // 2010-05-22: added data type
-					status = ExpString_TokenStatus;
+					status = ExpStrVar_TokenStatus;
 					break;
 				}
 			}
@@ -918,6 +976,24 @@ TokenStatus Translator::find_code(Token *&token,
 		info[MAIN].code = table->code(token->index));
 	if (match == Yes_Match)
 	{
+		// 2010-06-30: added check for expected expression type
+		if (token->datatype != None_DataType && expr_type != Any_ExprType
+			&& expr_type != exprtype_datatype[token->datatype])
+		{
+				return BUG_NotYetImplemented;
+			return BUG_Debug;
+			switch (expr_type)
+			{
+			case Num_ExprType:
+				return ExpNumExpr_TokenStatus;
+
+			case Str_ExprType:
+				return ExpStrExpr_TokenStatus;
+
+			default:
+				return BUG_NotYetImplemented;
+			}
+		}
 		return Good_TokenStatus;  // an exact match, we're done here
 	}
 	convert = match == Cvt_Match ? MAIN : -1;
@@ -990,12 +1066,12 @@ TokenStatus Translator::find_code(Token *&token,
 	token = operand[i]->value->token;
 	switch (table->operand_datatype(table->index(info[partial].code), i))
 	{
+	// 2010-06-30: replaced expected expression errors
 	case Double_DataType:
-		return ExpDouble_TokenStatus;
 	case Integer_DataType:
-		return ExpInteger_TokenStatus;
+		return ExpNumExpr_TokenStatus;
 	case String_DataType:
-		return ExpString_TokenStatus;
+		return ExpStrExpr_TokenStatus;
 	}
 }
 
@@ -1354,6 +1430,7 @@ TokenStatus Operator_Handler(Translator &t, Token *&token)
 		case EqualAssignment_TokenMode:
 			// continue of a multiple equal assignment
 			t.mode = Expression_TokenMode;  // start of expression
+			t.expr_type = Any_ExprType;  // FIXME (2010-06-29)
 			break;
 
 		case CommaAssignment_TokenMode:
@@ -1417,6 +1494,7 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 			delete token;  // assign list operator already on hold stack
 
 			t.mode = Expression_TokenMode;  // end of list, expression follows
+			t.expr_type = Any_ExprType;  // FIXME (2010-06-29)
 
 			// expecting first operand next (2010-06-10)
 			t.state = Translator::FirstOperand;
@@ -1528,6 +1606,8 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 				// switch back to operand state (2010-06-06)
 				// expecting first operand next (2010-06-10)
 				t.state = Translator::FirstOperand;
+				// switch back to any expression type (2010-06-30)
+				t.expr_type = Any_ExprType;
 				return Good_TokenStatus;
 
 			default:
@@ -1541,11 +1621,28 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 	else
 	{
 		// inside an expression, check if in array or function
-		if (t.count_stack.top().noperands == 0
-			|| t.count_stack.top().nexpected > 0
-			&& t.count_stack.top().noperands == t.count_stack.top().nexpected)
+		// 2010-06-30: added support for expression type
+		if (t.count_stack.top().noperands == 0)
 		{
+			// inside parentheses
 			return ExpOpOrParen_TokenStatus;
+		}
+		else if (t.count_stack.top().nexpected > 0)  // internal function?
+		{
+			if (t.count_stack.top().noperands == t.count_stack.top().nexpected)
+			{
+				return ExpOpOrParen_TokenStatus;
+			}
+
+			// 2010-06-29: get expression type for next argument
+			t.expr_type = exprtype_datatype[t.table->operand_datatype(
+				t.count_stack.top().index,
+				t.count_stack.top().noperands)];
+		}
+		else  // array or non-internal function
+		{
+			// 2010-06-30: expression type could be any
+			t.expr_type = Any_ExprType;
 		}
 		// increment the number of operands
 		t.count_stack.top().noperands++;
@@ -1613,6 +1710,8 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 		// switch back to operand state (2010-06-06)
 		// expecting first operand next (2010-06-10)
 		t.state = Translator::FirstOperand;
+		// switch back to any expression type (2010-06-30)
+		t.expr_type = Any_ExprType;
 
 		return Good_TokenStatus;
 
@@ -1701,6 +1800,11 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			}
 			// delete close paren token, it's not needed (2010-04-25)
 			delete token;
+
+			// 2010-06-29: reset expression type to type of array or function
+			//             (if type was not right for the array of function,
+			//             it would have been rejected when first received)
+			t.expr_type = exprtype_datatype[top_token->datatype];
 		}
 		// 2010-04-04: check for number of arguments for internal functions
 		else
@@ -1729,6 +1833,13 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			// delete close paren token, it's not needed (2010-04-25)
 			delete token;
 			token = top_token;
+
+			// 2010-06-29: reset expression type to that of internal function
+			//             (this needs to be done before calling find_code()
+			//             because it is currently set to the function's
+			//             operand; if type was not right for the function,
+			//             it would have been rejected when first received)
+			t.expr_type = exprtype_datatype[token->datatype];
 
 			// 2010-04-25: implemented data type handling
 			// process data types of arguments (find proper code)
