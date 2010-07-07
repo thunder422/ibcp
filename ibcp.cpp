@@ -63,6 +63,7 @@
 //                checking because there was a null entry at the end of the
 //                array that happen to have a 0 (Null_TokenStatus) in it
 //  2010-06-29  updated expected expression error messages
+//  2010-07-01/05  updates to token status messages for changes
 //
 
 #include <stdio.h>
@@ -102,6 +103,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected binary operator or end-of-statement"},
 	{ExpEqualOrComma_TokenStatus,
 		"expected equal or comma for assignment"},
+	{ExpComma_TokenStatus,
+		"expected comma"},
 	{ExpAssignItem_TokenStatus,
 		"expected item for assignment"},
 	{ExpOpOrComma_TokenStatus,
@@ -116,8 +119,6 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected operator in assignment"},
 	{ExpAssignRef_TokenStatus,
 		"item cannot be assigned"},
-	{ExpAssignListRef_TokenStatus,
-		"list item cannot be assigned"},
 	{UnexpParenInCmd_TokenStatus,
 		"unexpected parentheses in command"},
 	{UnexpParenInComma_TokenStatus,
@@ -142,6 +143,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected integer variable"},
 	{ExpStrVar_TokenStatus,
 		"expected string variable"},
+	{ExpStrItem_TokenStatus,
+		"expected string item for assignment"},
 	{BUG_NotYetImplemented,
 		"BUG: not yet implemented"},
 	{BUG_InvalidMode,
@@ -166,6 +169,30 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: command stack not empty"},
 	{BUG_CmdStackEmpty,
 		"BUG: command stack empty"},
+	{BUG_NoAssignListCode,
+		"BUG: no assign list code found"},
+	{BUG_InvalidDataType,
+		"BUG: invalid data type"},
+	{BUG_InvalidExprType,
+		"BUG: invalid expression type"},
+	{BUG_Debug1,
+		"BUG: debug #1"},
+	{BUG_Debug2,
+		"BUG: debug #2"},
+	{BUG_Debug3,
+		"BUG: debug #3"},
+	{BUG_Debug4,
+		"BUG: debug #4"},
+	{BUG_Debug5,
+		"BUG: debug #5"},
+	{BUG_Debug6,
+		"BUG: debug #6"},
+	{BUG_Debug7,
+		"BUG: debug #7"},
+	{BUG_Debug8,
+		"BUG: debug #8"},
+	{BUG_Debug9,
+		"BUG: debug #9"},
 	{BUG_Debug,
 		"BUG: debug"}
 };

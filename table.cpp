@@ -116,6 +116,9 @@
 //              renamed TableSearch enum to SearchType
 //  2010-06-26  added end statment flag to EOL
 //  2010-06-29  added expr_type value to PRINT code
+//  2010-07-02  changed assign and assign list operators expression information
+//                from two operands to one - the assign operators are no longer
+//                handled by the standard operator routines
 //
 
 #include <ctype.h>
@@ -171,6 +174,9 @@ DataType StrStr_OperandArray[] = {
 DataType StrStrInt_OperandArray[] = {
 	String_DataType, String_DataType, Integer_DataType
 };
+DataType Sub_OperandArray[] = {  // 2010-07-01
+	SubStr_DataType
+};
 // 2010-05-19: added new operand data type array
 DataType SubStr_OperandArray[] = {
 	SubStr_DataType, String_DataType
@@ -207,7 +213,7 @@ Code Str_AssocCode[]        = {StrInt_Code};
 Code Sub_AssocCode[]        = {SubInt_Code};
 
 
-// 2010-05-06: standand expression information structures
+// 2010-05-06: standard expression information structures
 ExprInfo Dbl_Dbl_ExprInfo(Double_DataType, Null_Code, Operands(Dbl));
 ExprInfo Dbl_DblInt_ExprInfo(Double_DataType, Null_Code, Operands(DblInt));
 ExprInfo Dbl_Int_ExprInfo(Double_DataType, Null_Code, Operands(Int));
@@ -223,6 +229,7 @@ ExprInfo Int_StrStr_ExprInfo(Integer_DataType, Null_Code, Operands(StrStr));
 ExprInfo Int_StrStrInt_ExprInfo(Integer_DataType, Null_Code,
 	Operands(StrStrInt));
 
+ExprInfo Str_Str_ExprInfo(String_DataType, Null_Code, Operands(Str));
 ExprInfo Str_StrStr_ExprInfo(String_DataType, Null_Code, Operands(StrStr));
 
 // 2010-05-15: changed to return TmpStr
@@ -234,6 +241,7 @@ ExprInfo Tmp_StrStr_ExprInfo(TmpStr_DataType, Null_Code, Operands(StrStr));
 ExprInfo Sub_StrInt_ExprInfo(SubStr_DataType, Null_Code, Operands(StrInt));
 ExprInfo Sub_StrIntInt_ExprInfo(SubStr_DataType, Null_Code,
 	Operands(StrIntInt));
+ExprInfo Str_Sub_ExprInfo(String_DataType, Null_Code, Operands(Sub));
 // 2010-05-19: added new expression info
 ExprInfo Str_SubStr_ExprInfo(String_DataType, Null_Code, Operands(SubStr));
 
@@ -764,53 +772,55 @@ static TableEntry table_entries[] = {
 	// 2010-04-11: added entries for assignment operators
 	// 2010-05-05: added reference flag to assignment operators
 	// 2010-06-05: added command handler function pointers to all assign entries
+	// 2010-07-02: changed all assign operators from 2 to 1 operands
 	{
 		Assign_Code, Operator_TokenType, OneWord_Multiple,
 		"=", "Assign", Reference_Flag, 4,
-		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+		new ExprInfo(Double_DataType, Null_Code, Operands(Dbl),
 			AssocCode(Assign)), NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-05: added entries for assignment associated codes
 	{
 		AssignInt_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "Assign%", Reference_Flag, 4, &Int_IntInt_ExprInfo,
+		"=", "Assign%", Reference_Flag, 4, &Int_Int_ExprInfo,
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{
 		AssignStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "Assign$", Reference_Flag, 4, &Str_StrStr_ExprInfo,
+		"=", "Assign$", Reference_Flag | String_Flag, 4, &Str_Str_ExprInfo,
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-19: added entries for assign sub-string associated code
 	{
 		AssignSubStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignSub$", Reference_Flag, 4, &Str_SubStr_ExprInfo,
+		"=", "AssignSub$", Reference_Flag | String_Flag, 4, &Str_Sub_ExprInfo,
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-05: added reference and assign list flags
 	// 2010-06-14: removed assign list flags
+	// 2010-07-02: changed all assign list operators from 2 to 1 operands
 	{
 		AssignList_Code, Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList", Reference_Flag, 4,
-		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
+		new ExprInfo(Double_DataType, Null_Code, Operands(Dbl),
 			AssocCode(AssignList)), NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-05: added entries for assignment associated codes
 	{
 		AssignListInt_Code, Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList%", Reference_Flag, 4,
-		&Int_IntInt_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
+		&Int_Int_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{
 		AssignListStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList$", Reference_Flag, 4,
-		&Str_StrStr_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
+		"=", "AssignList$", Reference_Flag | String_Flag, 4,
+		&Str_Str_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-22: added entry for assign mix string list associated code
 	{
 		AssignListMixStr_Code, Operator_TokenType, OneWord_Multiple,
-		"=", "AssignListMix$", Reference_Flag, 4,
-		&Str_SubStr_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
+		"=", "AssignListMix$", Reference_Flag | String_Flag, 4,
+		&Str_Sub_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{
 		// 2010-05-28: added value for token_handler
@@ -1190,6 +1200,57 @@ int Table::search(int index, int _noperands)
 		}
 	}
 	return -1;
+}
+
+
+// this search function will look for a code matching the same
+// operand data types as specified in the argument, the main code is
+// checked first and then each of the associated codes
+//
+//     - returns the index of the code that is found
+//     - returns -1 if there is not matching code
+//     - the code specified must have associated codes
+//     - the number of data types must match that of the code
+
+// 2010-07-02: new function implemented
+int Table::search(Code code, DataType *datatype)
+{
+	int i;
+	int main_index = index(code);
+
+	if (match(main_index, datatype))
+	{
+		return main_index;  // main code matches
+	}
+
+	for (int n = nassoc_codes(main_index); --n >= 0;)
+	{
+		int assoc_index = index(assoc_code(main_index, n));
+		if (match(assoc_index, datatype))
+		{
+			return assoc_index;  // associated code matches
+		}
+	}
+	return -1;  // no matches
+}
+
+// this function checks to see if data types specified match the data
+// types of the code at the index specified
+//
+//    - returns true if there is match, otherwise returns false
+//
+
+// 2010-07-02: new function implemented
+bool Table::match(int index, DataType *datatype)
+{
+	for (int n = noperands(index); --n >= 0;)
+	{
+		if (datatype[n] != operand_datatype(index, n))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 

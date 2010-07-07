@@ -198,6 +198,15 @@
 //              added expr_type member to TableEntry (with access function)
 //              updated expected expression related token statuses
 //  2010-06-30  updated expected expression related token statuses
+//  2010-07-01  added AssignList_CmdFlag back
+//              removed last_operand argument from Table::find_code(), which was
+//                needed for assign list operators, but assign list is no
+//                handled by comma, semicolor and Assign handlers
+//              added new check_assignlist_token() and set_assign_command()
+//                to Translator
+//  2010-07-02  updated TokenStatus
+//              added new search and match functions to Table
+//  2010-07-04  updated TokenStatus
 //
 
 #ifndef IBCP_H
@@ -603,9 +612,9 @@ enum TokenStatus {
 	// 2010-04-11: replaced Error_UnexpectedComma
 	UnexpAssignComma_TokenStatus,	// 2010-04-11: added
 	ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
+	ExpComma_TokenStatus,			// 2010-07-04: added
 	ExpAssignItem_TokenStatus,		// 2010-06-13: added
 	ExpAssignRef_TokenStatus,		// 2010-04-16: added
-	ExpAssignListRef_TokenStatus,	// 2010-04-16: added
 	UnexpParenInCmd_TokenStatus,	// 2010-04-16: added
 	UnexpParenInComma_TokenStatus,	// 2010-04-16: added
 	ExpDouble_TokenStatus,			// 2010-04-25: added
@@ -618,6 +627,7 @@ enum TokenStatus {
 	ExpDblVar_TokenStatus,			// 2010-06-30: added
 	ExpIntVar_TokenStatus,			// 2010-06-30: added
 	ExpStrVar_TokenStatus,			// 2010-06-24: added
+	ExpStrItem_TokenStatus,			// 2010-07-04: added
 	// the following statuses used during development
 	BUG_NotYetImplemented,			// somethings is not implemented
 	BUG_InvalidMode,				// added 2010-06-13
@@ -631,7 +641,19 @@ enum TokenStatus {
 	BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
 	BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
 	BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
-	BUG_Debug,						// diagnostic error (2010-06-13
+	BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
+	BUG_InvalidDataType,			// diagnostic error (2010-07-02)
+	BUG_InvalidExprType,			// diagnostic error (2010-07-02)
+	BUG_Debug,						// diagnostic error (2010-06-13)
+	BUG_Debug1,						// diagnostic error (2010-06-13)
+	BUG_Debug2,						// diagnostic error (2010-06-13)
+	BUG_Debug3,						// diagnostic error (2010-06-13)
+	BUG_Debug4,						// diagnostic error (2010-06-13)
+	BUG_Debug5,						// diagnostic error (2010-06-13)
+	BUG_Debug6,						// diagnostic error (2010-06-13)
+	BUG_Debug7,						// diagnostic error (2010-06-13)
+	BUG_Debug8,						// diagnostic error (2010-06-13)
+	BUG_Debug9,						// diagnostic error (2010-06-13)
 	sizeof_TokenStatus
 };
 
@@ -840,6 +862,9 @@ const int None_CmdFlag			= 0x00000000;	// initial value of command flag
 const int PrintStay_CmdFlag		= 0x00010000;	// PRINT stay on line flag
 const int PrintFunc_CmdFlag		= 0x00020000;	// print func flag (2010-06-08)
 
+// FLAGS FOR ASSIGNMENT COMMANDS
+const int AssignList_CmdFlag	= 0x00010000;	// currently an assign list
+
 
 // 2010-05-28: added command item and command stack
 // 2010-06-05: moved CmdItem outside Translator for TableEntry
@@ -1021,6 +1046,9 @@ public:
 	int search(const char *word1, int len1, const char *word2, int len2);
 	// 2010-04-04: added new search function
 	int search(int index, int nargs);
+	// 2010-07-02: added new search and match functions
+	int search(Code code, DataType *datatype);
+	bool match(int index, DataType *datatype);
 	// 2010-03-18: add function to set token for code
 	void set_token(Token *token, Code code)
 	{
@@ -1163,7 +1191,7 @@ class Translator {
 	SimpleStack<CmdItem> cmd_stack;	// stack of commands waiting processing
 	// 2010-06-06: variable to save expression only mode in
 	bool exprmode;					// expression only mode active flag
-	ExprType expr_type;				// current expression type (2010-06-29)
+//-	ExprType expr_type;				// current expression type (2010-06-29)
 
 public:
 	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
@@ -1177,10 +1205,10 @@ public:
 		// 2010-04-16: start in expression mode for testing
 		mode = exprmode ? Expression_TokenMode : Command_TokenMode;
 		// 2010-06-29: if expression mode then set any expression type
-		if (exprmode)
-		{
-			expr_type = Any_ExprType;
-		}
+//-		if (exprmode)
+//-		{
+//-			expr_type = Any_ExprType;
+//-		}
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
 	TokenStatus add_token(Token *&token);
@@ -1220,8 +1248,8 @@ private:
 		}
 	}
 	// 2010-05-08: added last_operand argument
-	TokenStatus find_code(Token *&token,
-		List<RpnItem *>::Element **last_operand = NULL);
+	// 2010-07-01: removed last_operand argument
+	TokenStatus find_code(Token *&token);
 	Match match_code(Code *cvt_code, Code code);
 	// 2010-05-29: changed argument from index to token pointer
 	void do_pending_paren(Token *token);  // 2010-03-26: added for parentheses
@@ -1233,6 +1261,9 @@ private:
 	// COMMAND SPECIFIC FUNCTIONS
 	// 2010-06-04: function to added data type specific print code
 	TokenStatus add_print_code(void);
+	// 2010-07-01: functions for new assignment processing
+	TokenStatus check_assignlist_token(Token *&token);
+	TokenStatus set_assign_command(Token *&token, Code assign_code);
 public:
 	// 2010-05-28: added token handler friend function definitions section
 	friend TokenStatus Operator_Handler(Translator &t, Token *&token);
