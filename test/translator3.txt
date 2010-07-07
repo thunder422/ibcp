@@ -24,6 +24,6 @@ Input: B,F+G
 
 
 Input: Arr(B,,C)
-             ^-- expected expression
+             ^-- expected numeric expression
 
 

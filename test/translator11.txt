@@ -10,80 +10,16 @@ Input: Z = C(A,,B)
                ^-- expected expression
 
 
-Input: Z = C(A;B)
-              ^-- expected operator, comma or closing parentheses
-
-
-Input: Z = A;B
-            ^-- expected operator or end-of-statement
-
-
-Input: Z = A+;
-             ^-- expected expression
-
-
-Input: Z = A+B;C
-              ^-- expected operator or end-of-statement
-
-
-Input: Z = Y = A;B
-                ^-- expected operator or end-of-statement
-
-
-Input: Z , Y = A;B
-                ^-- expected operator or end-of-statement
-
-
-Input: Z , Y , A;B
-                ^-- expected equal or comma for assignment
-
-
-Input: Z = INT(A;B)
-                ^-- expected operator or closing parentheses
-
-
-Input: Z = ASC(A$;B)
-                 ^-- expected operator, comma or closing parentheses
-
-
-Input: Z$ = MID$(A$;B)
-                   ^-- expected operator or comma
-
-
-Input: Z$ = MID$(A$,B;C)
-                     ^-- expected operator, comma or closing parentheses
-
-
-Input: Z$ = MID$(A$,B,C;D)
-                       ^-- expected operator or closing parentheses
-
-
-Input: Z = INSTR(A$;B$)
-                   ^-- expected operator or comma
-
-
-Input: Z = INSTR(A$,B$;C)
-                      ^-- expected operator, comma or closing parentheses
-
-
-Input: Z = INSTR(A$,B$,C;D)
-                        ^-- expected operator or closing parentheses
-
-
-Input: Z = C(A,;B)
-               ^-- expected expression
-
-
 Input: Z = INT(A,
                 ^-- expected operator or closing parentheses
 
 
 Input: Z = (A+
-              ^-- expected expression
+              ^-- expected numeric expression
 
 
 Input: Z = A+
-             ^-- expected expression
+             ^-- expected numeric expression
 
 
 Input: Z = (A+B
@@ -91,7 +27,7 @@ Input: Z = (A+B
 
 
 Input: Z = (,
-            ^-- expected expression
+            ^-- expected numeric expression
 
 
 Input: Z = (A,
@@ -99,11 +35,11 @@ Input: Z = (A,
 
 
 Input: Z = (A+,
-              ^-- expected expression
+              ^-- expected numeric expression
 
 
 Input: Z = (A+A+,
-                ^-- expected expression
+                ^-- expected numeric expression
 
 
 Input: Z = (A+B,
@@ -119,7 +55,7 @@ Input: Z = A NOT B
 
 
 Input: Z = A + * B
-               ^-- expected expression
+               ^-- expected numeric expression
 
 
 Input: Z = A + B,
@@ -159,11 +95,11 @@ Input: ,Z
 
 
 Input: Z,
-         ^-- expected item for assignment
+         ^-- expected double variable
 
 
 Input: Z,,
-         ^-- expected item for assignment
+         ^-- expected double variable
 
 
 Input: Z,Y
@@ -171,7 +107,7 @@ Input: Z,Y
 
 
 Input: Z,Y,
-           ^-- expected item for assignment
+           ^-- expected double variable
 
 
 Input: Z,Y,X
@@ -179,30 +115,10 @@ Input: Z,Y,X
 
 
 Input: Z,Y,X,
-             ^-- expected item for assignment
+             ^-- expected double variable
 
 
 Input: Z=A,
-          ^-- expected operator or end-of-statement
-
-
-Input: Z;
-        ^-- expected equal or comma for assignment
-
-
-Input: ;Z
-       ^-- expected statement
-
-
-Input: Z,;
-         ^-- expected item for assignment
-
-
-Input: Z,B;
-          ^-- expected equal or comma for assignment
-
-
-Input: Z=B;
           ^-- expected operator or end-of-statement
 
 
@@ -211,63 +127,47 @@ Input: LET A
 
 
 Input: LET A,
-             ^-- expected item for assignment
-
-
-Input: LET A;
-            ^-- expected equal or comma for assignment
+             ^-- expected double variable
 
 
 Input: Z=
-         ^-- expected expression
+         ^-- expected numeric expression
 
 
 Input: Z=,
-         ^-- expected expression
-
-
-Input: Z=;
-         ^-- expected expression
+         ^-- expected numeric expression
 
 
 Input: Z=+
-         ^-- expected expression
+         ^-- expected numeric expression
 
 
 Input: Z=Y=
-           ^-- expected expression
+           ^-- expected numeric expression
 
 
 Input: Z,Y=
-           ^-- expected expression
+           ^-- expected numeric expression
 
 
 Input: Z,Y=,
-           ^-- expected expression
-
-
-Input: Z,Y=;
-           ^-- expected expression
+           ^-- expected numeric expression
 
 
 Input: LET A=
-             ^-- expected expression
+             ^-- expected numeric expression
 
 
 Input: Z(
-         ^-- expected expression
+         ^-- expected numeric expression
 
 
 Input: Z(,
-         ^-- expected expression
-
-
-Input: Z(;
-         ^-- expected expression
+         ^-- expected numeric expression
 
 
 Input: Z,Y(
-           ^-- expected expression
+           ^-- expected numeric expression
 
 
 Input: Z,Y(A
@@ -275,11 +175,11 @@ Input: Z,Y(A
 
 
 Input: Z,Y(A,
-             ^-- expected expression
+             ^-- expected numeric expression
 
 
 Input: Z,Y(A+
-             ^-- expected expression
+             ^-- expected numeric expression
 
 
 Input: Z = A A
@@ -323,15 +223,15 @@ Input: MID$(
 
 
 Input: MID$(A$
-              ^-- expected operator or comma
+              ^-- expected comma
 
 
 Input: MID$(A$,
-               ^-- expected expression
+               ^-- expected numeric expression
 
 
 Input: MID$(A$ B
-               ^-- expected operator or comma
+               ^-- expected comma
 
 
 Input: MID$(A$,B
@@ -339,7 +239,7 @@ Input: MID$(A$,B
 
 
 Input: MID$(A$,B,
-                 ^-- expected expression
+                 ^-- expected numeric expression
 
 
 Input: MID$(A$,B C
@@ -387,11 +287,11 @@ Input: LET INT(A)=
 
 
 Input: A,INT(A)=
-         ^^^^-- expected item for assignment
+         ^^^^-- expected double variable
 
 
 Input: A=INT(A)=
-                ^-- expected expression
+                ^-- expected numeric expression
 
 
 Input: INT(A)=B
@@ -403,14 +303,132 @@ Input: LET ,
 
 
 Input: LET A,,
-             ^-- expected item for assignment
-
-
-Input: LET ;
-           ^-- expected item for assignment
+             ^-- expected double variable
 
 
 Input: LET
           ^-- expected item for assignment
 
+
+Input: Z%,
+          ^-- expected integer variable
+
+
+Input: Z%,,
+          ^-- expected integer variable
+
+
+Input: Z%,Y%,
+             ^-- expected integer variable
+
+
+Input: Z%,Y%,X%,
+                ^-- expected integer variable
+
+
+Input: LET A%,
+              ^-- expected integer variable
+
+
+Input: LET A%,,
+              ^-- expected integer variable
+
+
+Input: Z$,
+          ^-- expected string item for assignment
+
+
+Input: Z$,,
+          ^-- expected string item for assignment
+
+
+Input: Z$,Y$,
+             ^-- expected string item for assignment
+
+
+Input: Z$,Y$,X,
+             ^-- expected string item for assignment
+
+
+Input: LET A$,
+              ^-- expected string item for assignment
+
+
+Input: LET A$,,
+              ^-- expected string item for assignment
+
+
+Input: Z%=
+          ^-- expected numeric expression
+
+
+Input: Z%=,
+          ^-- expected numeric expression
+
+
+Input: Z%=+
+          ^-- expected numeric expression
+
+
+Input: Z%=Y%=
+             ^-- expected numeric expression
+
+
+Input: Z%,Y%=
+             ^-- expected numeric expression
+
+
+Input: Z%,Y%=,
+             ^-- expected numeric expression
+
+
+Input: LET A%=
+              ^-- expected numeric expression
+
+
+Input: Z$=
+          ^-- expected numeric expression
+
+
+Input: Z$=,
+          ^-- expected string expression
+
+
+Input: Z$=+
+          ^-- expected string expression
+
+
+Input: Z$=Y$=
+             ^-- expected string expression
+
+
+Input: Z$,Y$=
+             ^-- expected string expression
+
+
+Input: Z$,Y$=,
+             ^-- expected string expression
+
+
+Input: LET A$=
+              ^-- expected string expression
+
+
+Input: MID$(A$+
+              ^-- expected comma
+
+
+Input: MID$(A$+B$
+              ^-- expected comma
+
+
+Input: MID$(A$+B$,
+              ^-- expected comma
+
+
+Input: A(INT(B+C))=4
+Output: B C + INT( A(<ref> 4 CvtDbl Assign 
+
+Input: MID$(A$,LEFT$(B$,1)<C$)=D$
+Output: A$ B$ 1 LEFT$([B$,1] C$ <$[LEFT$(,C$] MID2$(<ref>[A$,<$] D$ AssignSub$[D$] 
 

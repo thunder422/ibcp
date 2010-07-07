@@ -79,7 +79,7 @@ Input: 3=A
 
 
 Input: A,3,B=4
-         ^-- list item cannot be assigned
+         ^-- expected double variable
 
 
 Input: (A=B)
@@ -87,7 +87,7 @@ Input: (A=B)
 
 
 Input: A,B,(C)=4
-           ^-- unexpected parentheses in assignment list
+           ^-- expected double variable
 
 
 Input: A+B

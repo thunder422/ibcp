@@ -31,10 +31,10 @@ Input: A% = B% = C% + D%
 Output: A%<ref> B%<ref> C% D% +% AssignList% 
 
 Input: A$,B$,C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$','[A$<ref>,B$<ref>,C$<ref>,"Test"] 
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$','["Test"] 
 
 Input: A$ = B$ = C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$[A$<ref>,B$<ref>,C$<ref>,"Test"] 
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$["Test"] 
 
 Input: Z, Y = A$ + B%
                    ^^-- expected string expression
@@ -57,11 +57,11 @@ Input: A%,B,C = 1.0
 
 
 Input: A,"T",B = 1
-         ^^^-- list item cannot be assigned
+         ^^^-- expected double variable
 
 
 Input: A = "T" = B = 1
-           ^^^-- list item cannot be assigned
+                 ^-- expected string expression
 
 
 Input: A,B,C = STR$(1)
@@ -81,7 +81,7 @@ Input: A,B$,C = 1
 
 
 Input: A,B,1 = 1
-           ^-- list item cannot be assigned
+           ^-- expected double variable
 
 
 Input: A,B%,1 = 1
@@ -89,7 +89,7 @@ Input: A,B%,1 = 1
 
 
 Input: 1,A,B% = 1
-       ^-- list item cannot be assigned
+       ^-- item cannot be assigned
 
 
 Input: A%,B,C% = 1
@@ -101,7 +101,7 @@ Input: A%,B$,C% = 1
 
 
 Input: A$,B$,C% = 1
-             ^^-- expected string variable
+             ^^-- expected string item for assignment
 
 
 Input: A$,B$,C$ = 1

@@ -13,10 +13,10 @@ Input: Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2
 Output: Z%<ref> A% 5 <% NOT B% 2 >% AND C% 1 <% D% 2 <>% AND OR Assign% 
 
 Input: Z$=STR$(VAL("1.23"))
-Output: Z$<ref> "1.23" VAL(["1.23"] STR$( Assign$[Z$<ref>,STR$(] 
+Output: Z$<ref> "1.23" VAL(["1.23"] STR$( Assign$[STR$(] 
 
 Input: Z$=MID$(A$+B$,(C%+5)*D%,4)+" Test"
-Output: Z$<ref> A$ B$ +$[A$,B$] C% 5 +% D% *% 4 MID3$([+$,*%,4] " Test" +$[MID3$(," Test"] Assign$[Z$<ref>,+$] 
+Output: Z$<ref> A$ B$ +$[A$,B$] C% 5 +% D% *% 4 MID3$([+$,*%,4] " Test" +$[MID3$(," Test"] Assign$[+$] 
 
 Input: Z% = (a$ = "this" + "test")
 Output: Z%<ref> a$ "this" "test" +$["this","test"] =$')'[a$,+$] Assign% 
@@ -52,7 +52,7 @@ Input: Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)
 Output: Z<ref> A% Neg% ABS%( B% Neg% SGN%( +% CvtDbl C Neg ABS( D Neg SGN( * + Assign 
 
 Input: Z$ = STR$(A) + STR$(A%)
-Output: Z$<ref> A STR$( A% STR%$( +$[STR$(,STR%$(] Assign$[Z$<ref>,+$] 
+Output: Z$<ref> A STR$( A% STR%$( +$[STR$(,STR%$(] Assign$[+$] 
 
 Input: Z = A% + B * C ^ D
 Output: Z<ref> A% CvtDbl B C D ^ * + Assign 

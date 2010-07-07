@@ -84,27 +84,27 @@ Input: PRINT (A,,B)
 
 
 Input: PRINT A+;
-               ^-- expected expression
+               ^-- expected numeric expression
 
 
 Input: PRINT A+,
-               ^-- expected expression
+               ^-- expected numeric expression
 
 
 Input: PRINT A+
-               ^-- expected expression
+               ^-- expected numeric expression
 
 
 Input: PRINT INT(A+;
-                   ^-- expected expression
+                   ^-- expected numeric expression
 
 
 Input: PRINT INT(A+,
-                   ^-- expected expression
+                   ^-- expected numeric expression
 
 
 Input: PRINT INT(A+
-                   ^-- expected expression
+                   ^-- expected numeric expression
 
 
 Input: PRINT INT(B,,C)

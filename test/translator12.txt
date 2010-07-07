@@ -71,3 +71,19 @@ Input: A$=RIGHT$(B,2) = C$
                  ^-- expected string expression
 
 
+Input: Z=MID$(A$,2) < "B"
+Output: Z<ref> A$ 2 MID2$([A$,2] "B" <$[MID2$(,"B"] CvtDbl Assign 
+
+Input: Z=MID$(A$,2) = B$
+                    ^-- BUG: expected operand on done stack
+
+
+Input: Z(INT(A+B))=C
+Output: A B + INT( Z(<ref>[INT(] C Assign 
+
+Input: Z(A$)=C
+Output: A$<ref> Z(<ref>[A$<ref>] C Assign 
+
+Input: Z(A)=Y(A$)
+Output: A<ref> Z(<ref>[A<ref>] A$<ref> Y([A$<ref>] Assign 
+
