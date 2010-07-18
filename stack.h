@@ -30,6 +30,10 @@
 //
 //  2010-05-22  added nitems() function to return the number of items on stack
 //
+//  2010-07-17  made push() function inline for optimizition, but separated code
+//              that grows stack as need to new grow() function so that this
+//              code is not inlined
+//
 
 #ifndef STACK_H
 #define STACK_H
@@ -98,10 +102,22 @@ public:
 		return index + 1;
 	}
 
+	// function to grow stack when needed (2010-07-17)
+	void grow(void);
+
 	// function to push new item on top of stack
 	// - reference to new item is returned
 	// 2010-04-23: new function added
-	T &push(void);
+	// 2010-07-17: made function inline with call to new grow() function
+	T &push(void)
+	{
+		if (++index >= size)
+		{
+			grow();
+		}
+		// 2010-04-23: just return reference to new value (top of stack)
+		return stack[index];
+	}
 
 	// function to push a value on the top of a stack
 	// 2010-04-23: modified to call new push(void)
@@ -132,28 +148,24 @@ public:
 // If the array is not large enough, the size of the array is increased.
 
 // 2010-04-23: changed function for no arugment and return reference
+// 2010-07-17: renamed and changed function to only contain grow stack code
 template <class T, int initial_size, int increase_size>
-T &SimpleStack<T, initial_size, increase_size>::push(void)
+void SimpleStack<T, initial_size, increase_size>::grow(void)
 {
-	if (++index >= size)
+	// stack array is not big enough, increase size
+	int newsize = size + increase_size;
+	T* newstack = new T[newsize];
+
+	// move elements from current array to new array
+	// (C++ provides no realloc() functionality with new)
+	for (int i = 0; i < size; i++)
 	{
-		// stack array is not big enough, increase size
-		int newsize = size + increase_size;
-		T* newstack = new T[newsize];
-
-		// move elements from current array to new array
-		// (C++ provides no realloc() functionality with new)
-		for (int i = 0; i < size; i++)
-		{
-			newstack[i] = stack[i];
-		}
-
-		delete[] stack;
-		stack = newstack;
-		size = newsize;
+		newstack[i] = stack[i];
 	}
-	// 2010-04-23: just return reference to new value (top of stack)
-	return stack[index];
+
+	delete[] stack;
+	stack = newstack;
+	size = newsize;
 }
 
 
