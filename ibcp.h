@@ -227,22 +227,22 @@ enum Code {
 
 	// 2010-04-24: added associated codes
 	// math operators
-	Add_Code, AddInt_Code, CatStr_Code,
-	Sub_Code, SubInt_Code,
+	Add_Code, AddInt_Code, AddI1_Code, AddI2_Code, CatStr_Code,
+	Sub_Code, SubInt_Code, SubI1_Code, SubI2_Code,
 	Neg_Code, NegInt_Code,  // 2010-03-17: added unary operator
-	Mul_Code, MulInt_Code,
-	Div_Code, DivInt_Code,
+	Mul_Code, MulInt_Code, MulI1_Code, MulI2_Code,
+	Div_Code, DivInt_Code, DivI1_Code, DivI2_Code,
 	IntDiv_Code,
-	Mod_Code, ModInt_Code,
-	Power_Code, PowerMul_Code, PowerInt_Code,
+	Mod_Code, ModInt_Code, ModI1_Code, ModI2_Code,
+	Power_Code, PowerMul_Code, PowerInt_Code, PowerI1_Code,
 
 	// relational operators
-	Eq_Code, EqInt_Code, EqStr_Code,
-	Gt_Code, GtInt_Code, GtStr_Code,
-	GtEq_Code, GtEqInt_Code, GtEqStr_Code,
-	Lt_Code, LtInt_Code, LtStr_Code,
-	LtEq_Code, LtEqInt_Code, LtEqStr_Code,
-	NotEq_Code, NotEqInt_Code, NotEqStr_Code,
+	Eq_Code, EqInt_Code, EqI1_Code, EqI2_Code, EqStr_Code,
+	Gt_Code, GtInt_Code, GtI1_Code, GtI2_Code, GtStr_Code,
+	GtEq_Code, GtEqInt_Code, GtEqI1_Code, GtEqI2_Code, GtEqStr_Code,
+	Lt_Code, LtInt_Code, LtI1_Code, LtI2_Code, LtStr_Code,
+	LtEq_Code, LtEqInt_Code, LtEqI1_Code, LtEqI2_Code, LtEqStr_Code,
+	NotEq_Code, NotEqInt_Code, NotEqI1_Code, NotEqI2_Code, NotEqStr_Code,
 
 	// logical operators
 	And_Code,
@@ -283,8 +283,8 @@ enum Code {
 	Log_Code,
 
 	// string functions
-	Asc_Code,
-	Asc2_Code,   // 2010-04-04: added code for two argument form
+	Asc_Code, //+AscTmp_Code,
+	Asc2_Code, //+Asc2Tmp_Code,   // 2010-04-04: added code for two argument form
 	Chr_Code,
 	// 2010-04-04: replaced Instr_Code
 	Instr2_Code,
@@ -437,11 +437,12 @@ const int Max_Operands = 3;
 	// (arguments) for any operator or internal function (there are currently
 	// no internal function with more than 3 arguments)
 
-const int Max_Assoc_Codes = 3;
+const int Max_Assoc_Codes = 4;
 	// 2010-04-24: this value contains the maximum number of associated codes,
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
 	// 2010-05-20: increased from 2 to 3 because of AssignSubStr_Code
+	// 2010-07-18  increased from 3 to 4 for second operand associated codes
 
 
 //*****************************************************************************
@@ -454,8 +455,9 @@ enum ErrorType {  // 2010-06-25: renamed from TableErrType
 	Missing_ErrorType,
 	Range_ErrorType,
 	Overlap_ErrorType,
-	MaxOperands_ErrorType,	// 2010-05-20
+	MaxOperands_ErrorType,		// 2010-05-20
 	MaxAssocCodes_ErrorType,	// 2010-05-20
+	Assoc2Code_ErrorType,		// 2010-07-18
 	sizeof_ErrorType
 };
 
@@ -497,6 +499,10 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 		struct {
 			int found;			// actual maximum found
 		} maximum;
+		struct {
+			short index;		// assoc 2 code
+			short n;			// number of assoc codes
+		} assoc2;
 	};
 
 	Error(T item, int ifirst, int idup)
@@ -531,6 +537,13 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 	{
 		type = _type;
 		maximum.found = max;
+	}
+	// 2010-07-18: added new error
+	Error(short index2, short nassoc)
+	{
+		type = Assoc2Code_ErrorType;
+		assoc2.index = index2;
+		assoc2.n = nassoc;
 	}
 	Error(void)			// default constructor
 	{
@@ -578,6 +591,11 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 			case MaxAssocCodes_ErrorType:
 				(*print)("Max_Assoc_Codes=%d too small, actual is %d\n",
 					Max_Assoc_Codes, error.maximum.found);
+				break;
+			// 2010-07-18: added new assoc 2 code bad error
+			case Assoc2Code_ErrorType:
+				(*print)("Assoc2Code=%d too large, maximum is %d\n",
+					error, error.maximum.found);
 				break;
 			default:
 				(*print)("Unknown error %d\n", error.type);
@@ -824,6 +842,8 @@ struct ExprInfo {
 	short noperands;			// number of operands (operators/int. functions)
 	// 2010-05-03: added number of associated codes
 	short nassoc_codes;			// number of associated codes
+	// 2010-07-18: added index to second operand associated codes
+	short assoc2_code;			// index to start of second operand assoc codes
 	// 2010-04-24: added operand data type array
 	// 2010-05-03: changed from array to pointer
 	DataType *operand_datatype;	// data type of each operand
@@ -833,13 +853,15 @@ struct ExprInfo {
 
 	ExprInfo(DataType _datatype, Code _unary_code,
 		short _noperands = 0, DataType *_operand_datatype = NULL,
-		short _nassoc_codes = 0, Code *_assoc_code = NULL)
+		short _nassoc_codes = 0, short _assoc2_code = 0,
+		Code *_assoc_code = NULL)
 	{
 		datatype = _datatype;
 		unary_code = _unary_code;
 		noperands = _noperands;
 		operand_datatype = _operand_datatype;
 		nassoc_codes = _nassoc_codes;
+		assoc2_code = _assoc2_code;
 		assoc_code = _assoc_code;
 	}
 };

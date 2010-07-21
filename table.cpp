@@ -139,8 +139,13 @@
 #define Operands(type)  (sizeof(type ## _OperandArray) \
 	/ sizeof(type ## _OperandArray[0])), type ## _OperandArray
 
+// 2010-07-18: modified to set assoc2code to zero
 #define AssocCode(code)  (sizeof(code ## _AssocCode) \
-	/ sizeof(code ## _AssocCode[0])), code ## _AssocCode
+	/ sizeof(code ## _AssocCode[0])), 0, code ## _AssocCode
+
+// 2010-07-18: new macro with second operand assoc code index
+#define AssocCode2(code, index)  (sizeof(code ## _AssocCode) \
+	/ sizeof(code ## _AssocCode[0])), index, code ## _AssocCode
 
 
 // 2010-05-05: operand data type arrays
@@ -155,6 +160,9 @@ DataType DblInt_OperandArray[] = {
 };
 DataType Int_OperandArray[] = {
 	Integer_DataType
+};
+DataType IntDbl_OperandArray[] = {
+	Integer_DataType, Double_DataType
 };
 DataType IntInt_OperandArray[] = {
 	Integer_DataType, Integer_DataType
@@ -181,11 +189,17 @@ DataType Sub_OperandArray[] = {  // 2010-07-01
 DataType SubStr_OperandArray[] = {
 	SubStr_DataType, String_DataType
 };
+//+DataType TmpInt_OperandArray[] = {
+//+	TmpStr_DataType, Integer_DataType
+//+};
 
 
 // 2010-05-06: associated code data type arrays
 Code Abs_AssocCode[]        = {AbsInt_Code};
-Code Add_AssocCode[]        = {AddInt_Code, CatStr_Code};
+Code Add_AssocCode[]        = {
+	AddI1_Code, CatStr_Code, AddI2_Code
+};
+Code AddI1_AssocCode[]     = {AddInt_Code};
 // 2010-05-19: added AssignSubStr_Code to list
 Code Assign_AssocCode[]     = {
 	AssignInt_Code, AssignStr_Code, AssignSubStr_Code
@@ -194,23 +208,34 @@ Code Assign_AssocCode[]     = {
 Code AssignList_AssocCode[] = {
 	AssignListInt_Code, AssignListStr_Code, AssignListMixStr_Code
 };
-Code Div_AssocCode[]        = {DivInt_Code};
-Code Eq_AssocCode[]         = {EqInt_Code, EqStr_Code};
-Code Gt_AssocCode[]         = {GtInt_Code, GtStr_Code};
-Code GtEq_AssocCode[]       = {GtEqInt_Code, GtEqStr_Code};
-Code Lt_AssocCode[]         = {LtInt_Code, LtStr_Code};
-Code LtEq_AssocCode[]       = {LtEqInt_Code, LtEqStr_Code};
-Code Mod_AssocCode[]        = {ModInt_Code};
-Code Mul_AssocCode[]        = {MulInt_Code};
+Code Div_AssocCode[]        = {DivI1_Code, DivI2_Code};
+Code DivI1_AssocCode[]      = {DivInt_Code};
+Code Eq_AssocCode[]         = {EqI1_Code, EqStr_Code, EqI2_Code};
+Code EqI1_AssocCode[]       = {EqInt_Code};
+Code Gt_AssocCode[]         = {GtI1_Code, GtStr_Code, GtI2_Code};
+Code GtI1_AssocCode[]       = {GtInt_Code};
+Code GtEq_AssocCode[]       = {GtEqI1_Code, GtEqStr_Code, GtEqI2_Code};
+Code GtEqI1_AssocCode[]     = {GtEqInt_Code};
+Code Lt_AssocCode[]         = {LtI1_Code, LtStr_Code, LtI2_Code};
+Code LtI1_AssocCode[]       = {LtInt_Code};
+Code LtEq_AssocCode[]       = {LtEqI1_Code, LtEqStr_Code, LtEqI2_Code};
+Code LtEqI1_AssocCode[]     = {LtEqInt_Code};
+Code Mod_AssocCode[]        = {ModI1_Code};
+Code ModI1_AssocCode[]      = {ModInt_Code};
+Code Mul_AssocCode[]        = {MulI1_Code, MulI2_Code};
+Code MulI1_AssocCode[]      = {MulInt_Code};
 Code Neg_AssocCode[]        = {NegInt_Code};
-Code NotEq_AssocCode[]      = {NotEqInt_Code, NotEqStr_Code};
-Code Power_AssocCode[]      = {PowerMul_Code, PowerInt_Code};
+Code NotEq_AssocCode[]      = {NotEqI1_Code, NotEqStr_Code, NotEqI2_Code};
+Code NotEqI1_AssocCode[]    = {NotEqInt_Code};
+Code Power_AssocCode[]      = {PowerI1_Code, PowerMul_Code};
+Code PowerI1_AssocCode[]    = {PowerInt_Code};
 // 2010-06-02: added associated codes for data type specific print
 Code Print_AssocCode[]		= {PrintInt_Code, PrintStr_Code};
 Code RndArgs_AssocCode[]    = {RndArgInt_Code};
 Code Sgn_AssocCode[]        = {SgnInt_Code};
 Code Str_AssocCode[]        = {StrInt_Code};
-Code Sub_AssocCode[]        = {SubInt_Code};
+Code Sub_AssocCode[]        = {SubI1_Code, SubI2_Code};
+Code SubI1_AssocCode[]      = {SubInt_Code};
 
 
 // 2010-05-06: standard expression information structures
@@ -221,6 +246,7 @@ ExprInfo Dbl_Str_ExprInfo(Double_DataType, Null_Code, Operands(Str));
 
 ExprInfo Int_Dbl_ExprInfo(Integer_DataType, Null_Code, Operands(Dbl));
 ExprInfo Int_DblDbl_ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl));
+ExprInfo Int_DblInt_ExprInfo(Integer_DataType, Null_Code, Operands(DblInt));
 ExprInfo Int_Int_ExprInfo(Integer_DataType, Null_Code, Operands(Int));
 ExprInfo Int_IntInt_ExprInfo(Integer_DataType, Null_Code, Operands(IntInt));
 ExprInfo Int_Str_ExprInfo(Integer_DataType, Null_Code, Operands(Str));
@@ -228,6 +254,7 @@ ExprInfo Int_StrInt_ExprInfo(Integer_DataType, Null_Code, Operands(StrInt));
 ExprInfo Int_StrStr_ExprInfo(Integer_DataType, Null_Code, Operands(StrStr));
 ExprInfo Int_StrStrInt_ExprInfo(Integer_DataType, Null_Code,
 	Operands(StrStrInt));
+//+ExprInfo Int_TmpInt_ExprInfo(Integer_DataType, Null_Code, Operands(TmpInt));
 
 ExprInfo Str_Str_ExprInfo(String_DataType, Null_Code, Operands(Str));
 ExprInfo Str_StrStr_ExprInfo(String_DataType, Null_Code, Operands(StrStr));
@@ -424,7 +451,7 @@ static TableEntry table_entries[] = {
 		Mod_Code, Operator_TokenType, OneWord_Multiple,
 		"MOD", NULL, Null_Flag, 42,
 		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Mod))
+			AssocCode2(Mod, 1))
 	},
 	{
 		And_Code, Operator_TokenType, OneWord_Multiple,
@@ -553,6 +580,14 @@ static TableEntry table_entries[] = {
 		Asc_Code, IntFuncP_TokenType, OneWord_Multiple,
 		"ASC(", NULL, Null_Flag, 2, &Int_Str_ExprInfo
 	},
+//+	{
+//+		Asc2Tmp_Code, IntFuncP_TokenType, OneWord_Multiple,
+//+		"ASC(", "ASC2tmp(", Multiple_Flag, 2, &Int_TmpInt_ExprInfo
+//+	},
+//+	{
+//+		AscTmp_Code, IntFuncP_TokenType, OneWord_Multiple,
+//+		"ASC(", "ASCtmp(", Null_Flag, 2, &Int_Str_ExprInfo
+//+	},
 	{
 		Chr_Code, IntFuncP_TokenType, OneWord_Multiple,
 		"CHR$(", NULL, Null_Flag, 2, &Tmp_Int_ExprInfo
@@ -642,25 +677,25 @@ static TableEntry table_entries[] = {
 		Add_Code, Operator_TokenType, OneChar_Multiple,
 		"+", NULL, Null_Flag, 40,
 		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Add))
+			AssocCode2(Add, 2))
 	},
 	{
 		Sub_Code, Operator_TokenType, OneChar_Multiple,
 		"-", NULL, Null_Flag, 40,
 		new ExprInfo(Double_DataType, Neg_Code, Operands(DblDbl),
-			AssocCode(Sub))
+			AssocCode2(Sub, 1))
 	},
 	{
 		Mul_Code, Operator_TokenType, OneChar_Multiple,
 		"*", NULL, Null_Flag, 46,
 		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Mul))
+			AssocCode2(Mul, 1))
 	},
 	{
 		Div_Code, Operator_TokenType, OneChar_Multiple,
 		"/", NULL, Null_Flag, 46,
 		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Div))
+			AssocCode2(Div, 1))
 	},
 	{
 		IntDiv_Code, Operator_TokenType, OneChar_Multiple,
@@ -670,45 +705,45 @@ static TableEntry table_entries[] = {
 		Power_Code, Operator_TokenType, OneChar_Multiple,
 		"^", NULL, Null_Flag, 50,
 		new ExprInfo(Double_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Power))
+			AssocCode2(Power, 1))
 	},
 	{
 		// 2010-05-28: added value for token_handler
 		Eq_Code, Operator_TokenType, OneChar_Multiple,
 		"=", NULL, Null_Flag, 30,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Eq)),
+			AssocCode2(Eq, 2)),
 		Equal_Handler
 	},
 	{
 		Gt_Code, Operator_TokenType, TwoChar_Multiple,
 		">", NULL, Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Gt))
+			AssocCode2(Gt, 2))
 	},
 	{
 		GtEq_Code, Operator_TokenType, TwoChar_Multiple,
 		">=", NULL, Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(GtEq))
+			AssocCode2(GtEq, 2))
 	},
 	{
 		Lt_Code, Operator_TokenType, TwoChar_Multiple,
 		"<", NULL, Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(Lt))
+			AssocCode2(Lt, 2))
 	},
 	{
 		LtEq_Code, Operator_TokenType, TwoChar_Multiple,
 		"<=", NULL, Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(LtEq))
+			AssocCode2(LtEq, 2))
 	},
 	{
 		NotEq_Code, Operator_TokenType, TwoChar_Multiple,
 		"<>", NULL, Null_Flag, 30,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(DblDbl),
-			AssocCode(NotEq))
+			AssocCode2(NotEq, 2))
 	},
 	{
 		// 2010-03-25: set unary code, changed precedence value
@@ -831,6 +866,17 @@ static TableEntry table_entries[] = {
 		EndOfLine_Handler
 	},
 	// 2010-04-24: added entries for associated codes
+	// 2010-07-17: added secondary operand entries for associated codes
+	{
+		AddI1_Code, Operator_TokenType, OneChar_Multiple,
+		"+", "+%1", Null_Flag, 40,
+		new ExprInfo(Double_DataType, Null_Code, Operands(IntDbl),
+			AssocCode(AddI1))
+	},
+	{
+		AddI2_Code, Operator_TokenType, OneChar_Multiple,
+		"+", "+%2", Null_Flag, 40, &Dbl_DblInt_ExprInfo
+	},
 	{
 		AddInt_Code, Operator_TokenType, OneChar_Multiple,
 		"+", "+%", Null_Flag, 40, &Int_IntInt_ExprInfo
@@ -838,6 +884,16 @@ static TableEntry table_entries[] = {
 	{
 		CatStr_Code, Operator_TokenType, OneChar_Multiple,
 		"+", "+$", Null_Flag, 40, &Tmp_StrStr_ExprInfo
+	},
+	{
+		SubI1_Code, Operator_TokenType, OneChar_Multiple,
+		"-", "-%1", Null_Flag, 40,
+		new ExprInfo(Double_DataType, Null_Code, Operands(IntDbl),
+			AssocCode(SubI1))
+	},
+	{
+		SubI2_Code, Operator_TokenType, OneChar_Multiple,
+		"-", "-%2", Null_Flag, 40, &Dbl_DblInt_ExprInfo
 	},
 	{
 		SubInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -850,16 +906,52 @@ static TableEntry table_entries[] = {
 		new ExprInfo(Integer_DataType, NegInt_Code, Operands(Int))
 	},
 	{
+		MulI1_Code, Operator_TokenType, OneChar_Multiple,
+		"*", "*%1", Null_Flag, 46,
+		new ExprInfo(Double_DataType, Null_Code, Operands(IntDbl),
+			AssocCode(MulI1))
+	},
+	{
+		MulI2_Code, Operator_TokenType, OneChar_Multiple,
+		"*", "*%2", Null_Flag, 46, &Dbl_DblInt_ExprInfo
+	},
+	{
 		MulInt_Code, Operator_TokenType, OneChar_Multiple,
 		"*", "*%", Null_Flag, 46, &Int_IntInt_ExprInfo
+	},
+	{
+		DivI1_Code, Operator_TokenType, OneChar_Multiple,
+		"/", "/%1", Null_Flag, 46,
+		new ExprInfo(Double_DataType, Null_Code, Operands(IntDbl),
+			AssocCode(DivI1))
+	},
+	{
+		DivI2_Code, Operator_TokenType, OneChar_Multiple,
+		"/", "/%2", Null_Flag, 46, &Dbl_DblInt_ExprInfo
 	},
 	{
 		DivInt_Code, Operator_TokenType, OneChar_Multiple,
 		"/", "/%", Null_Flag, 46, &Int_IntInt_ExprInfo
 	},
 	{
+		ModI1_Code, Operator_TokenType, OneChar_Multiple,
+		"MOD", "MOD%1", Null_Flag, 42,
+		new ExprInfo(Double_DataType, Null_Code, Operands(IntDbl),
+			AssocCode(ModI1))
+	},
+	{
+		ModI2_Code, Operator_TokenType, OneChar_Multiple,
+		"MOD", "MOD%2", Null_Flag, 42, &Dbl_DblInt_ExprInfo
+	},
+	{
 		ModInt_Code, Operator_TokenType, OneWord_Multiple,
 		"MOD", "MOD%", Null_Flag, 42, &Int_IntInt_ExprInfo
+	},
+	{
+		PowerI1_Code, Operator_TokenType, OneChar_Multiple,
+		"^", "^%1", Null_Flag, 50,
+		new ExprInfo(Double_DataType, Null_Code, Operands(IntDbl),
+			AssocCode(PowerI1))
 	},
 	{
 		PowerMul_Code, Operator_TokenType, OneChar_Multiple,
@@ -870,12 +962,32 @@ static TableEntry table_entries[] = {
 		"^", "^%", Null_Flag, 50, &Int_IntInt_ExprInfo
 	},
 	{
+		EqI1_Code, Operator_TokenType, OneChar_Multiple,
+		"=", "=%1", Null_Flag, 30,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
+			AssocCode2(EqI1, 2))
+	},
+	{
+		EqI2_Code, Operator_TokenType, OneChar_Multiple,
+		"=", "=%2", Null_Flag, 30, &Int_DblInt_ExprInfo
+	},
+	{
 		EqInt_Code, Operator_TokenType, OneChar_Multiple,
 		"=", "=%", Null_Flag, 30, &Int_IntInt_ExprInfo
 	},
 	{
 		EqStr_Code, Operator_TokenType, OneChar_Multiple,
 		"=", "=$", Null_Flag, 30, &Int_StrStr_ExprInfo
+	},
+	{
+		GtI1_Code, Operator_TokenType, OneChar_Multiple,
+		">", ">%1", Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
+			AssocCode2(GtI1, 2))
+	},
+	{
+		GtI2_Code, Operator_TokenType, OneChar_Multiple,
+		">", ">%2", Null_Flag, 32, &Int_DblInt_ExprInfo
 	},
 	{
 		GtInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -886,12 +998,32 @@ static TableEntry table_entries[] = {
 		">", ">$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
+		GtEqI1_Code, Operator_TokenType, OneChar_Multiple,
+		">=", ">=%1", Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
+			AssocCode2(GtEqI1, 2))
+	},
+	{
+		GtEqI2_Code, Operator_TokenType, OneChar_Multiple,
+		">=", ">=%2", Null_Flag, 32, &Int_DblInt_ExprInfo
+	},
+	{
 		GtEqInt_Code, Operator_TokenType, OneChar_Multiple,
 		">=", ">=%", Null_Flag, 32, &Int_IntInt_ExprInfo
 	},
 	{
 		GtEqStr_Code, Operator_TokenType, OneChar_Multiple,
 		">=", ">=$", Null_Flag, 32, &Int_StrStr_ExprInfo
+	},
+	{
+		LtI1_Code, Operator_TokenType, OneChar_Multiple,
+		"<", "<%1", Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
+			AssocCode2(LtI1, 2))
+	},
+	{
+		LtI2_Code, Operator_TokenType, OneChar_Multiple,
+		"<", "<%2", Null_Flag, 32, &Int_DblInt_ExprInfo
 	},
 	{
 		LtInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -902,12 +1034,32 @@ static TableEntry table_entries[] = {
 		"<", "<$", Null_Flag, 32, &Int_StrStr_ExprInfo
 	},
 	{
+		LtEqI1_Code, Operator_TokenType, OneChar_Multiple,
+		"<=", "<=%1", Null_Flag, 32,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
+			AssocCode2(LtEqI1, 2))
+	},
+	{
+		LtEqI2_Code, Operator_TokenType, OneChar_Multiple,
+		"<=", "<=%2", Null_Flag, 32, &Int_DblInt_ExprInfo
+	},
+	{
 		LtEqInt_Code, Operator_TokenType, OneChar_Multiple,
 		"<=", "<=%", Null_Flag, 32, &Int_IntInt_ExprInfo
 	},
 	{
 		LtEqStr_Code, Operator_TokenType, OneChar_Multiple,
 		"<=", "<=$", Null_Flag, 32, &Int_StrStr_ExprInfo
+	},
+	{
+		NotEqI1_Code, Operator_TokenType, OneChar_Multiple,
+		"<>", "<>%1", Null_Flag, 30,
+		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
+			AssocCode2(NotEqI1, 2))
+	},
+	{
+		NotEqI2_Code, Operator_TokenType, OneChar_Multiple,
+		"<>", "<>%2", Null_Flag, 30, &Int_DblInt_ExprInfo
 	},
 	{
 		NotEqInt_Code, Operator_TokenType, OneChar_Multiple,
@@ -1015,6 +1167,15 @@ Table::Table(void)
 			if (max_assoc_codes < exprinfo->nassoc_codes)
 			{
 				max_assoc_codes = exprinfo->nassoc_codes;
+			}
+
+			// 2010-07-18: check in assoc2_code is valid
+			if (exprinfo->assoc2_code >= exprinfo->nassoc_codes)
+			{
+				// record duplicated code error
+				Error<Code> error(exprinfo->assoc2_code,
+					exprinfo->nassoc_codes);
+				error_list->append(&error);
 			}
 
 			// 2010-05-22: set String_Flag in entries automatically

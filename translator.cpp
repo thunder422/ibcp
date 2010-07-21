@@ -762,6 +762,9 @@ TokenStatus Translator::add_operator(Token *&token)
 	// 2010-07-01: removed assignment and assignment list code, now handled in
 	//             Equal_Handler(), Comma_Handler() and Assign_CmdHandler()
 
+	// XXX check second operand (binary), insert conversion code XXX
+
+
 	// process data types of operands (find proper code)
 	TokenStatus status = find_code(token);
 
@@ -1439,6 +1442,8 @@ TokenStatus Operator_Handler(Translator &t, Token *&token)
 			return BUG_InvalidMode;
 		}
 	}
+	// XXX check first operand, insert conversion code XXX
+
 	// push it onto the holding stack
 	t.hold_stack.push(token);
 	t.state = Translator::Operand;
@@ -1702,6 +1707,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 					}
 				}
 			}
+			// XXX check argument, insert conversion XXX
 //-
 //-			// 2010-06-29: get expression type for next argument
 //-			t.expr_type = exprtype_datatype[t.table->operand_datatype(
@@ -1925,6 +1931,8 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			// delete close paren token, it's not needed (2010-04-25)
 			delete token;
 			token = top_token;
+
+			// XXX check argument, change code, insert conversion XXX
 
 			// 2010-04-25: implemented data type handling
 			// process data types of arguments (find proper code)
