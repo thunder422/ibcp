@@ -1,0 +1,232 @@
+
+ibcp.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: Z = C(A;B)
+              ^-- expected operator, comma or closing parentheses
+
+
+Input: Z = A;B
+            ^-- expected operator or end-of-statement
+
+
+Input: Z = A+;
+             ^-- expected numeric expression
+
+
+Input: Z = A+B;C
+              ^-- expected operator or end-of-statement
+
+
+Input: Z = Y = A;B
+                ^-- expected operator or end-of-statement
+
+
+Input: Z , Y = A;B
+                ^-- expected operator or end-of-statement
+
+
+Input: Z , Y , A;B
+                ^-- expected equal or comma for assignment
+
+
+Input: Z = INT(A;B)
+                ^-- expected operator or closing parentheses
+
+
+Input: Z = ASC(A$;B)
+                 ^-- expected operator, comma or closing parentheses
+
+
+Input: Z$ = MID$(A$;B)
+                   ^-- expected operator or comma
+
+
+Input: Z$ = MID$(A$,B;C)
+                     ^-- expected operator, comma or closing parentheses
+
+
+Input: Z$ = MID$(A$,B,C;D)
+                       ^-- expected operator or closing parentheses
+
+
+Input: Z = INSTR(A$;B$)
+                   ^-- expected operator or comma
+
+
+Input: Z = INSTR(A$,B$;C)
+                      ^-- expected operator, comma or closing parentheses
+
+
+Input: Z = INSTR(A$,B$,C;D)
+                        ^-- expected operator or closing parentheses
+
+
+Input: Z = C(A,;B)
+               ^-- expected expression
+
+
+Input: Z;
+        ^-- expected equal or comma for assignment
+
+
+Input: ;Z
+       ^-- expected statement
+
+
+Input: Z,;
+         ^-- expected double variable
+
+
+Input: Z,B;
+          ^-- expected equal or comma for assignment
+
+
+Input: Z=B;
+          ^-- expected operator or end-of-statement
+
+
+Input: LET A;
+            ^-- expected equal or comma for assignment
+
+
+Input: Z=;
+         ^-- expected numeric expression
+
+
+Input: Z,Y=;
+           ^-- expected numeric expression
+
+
+Input: Z=Y=;
+           ^-- expected numeric expression
+
+
+Input: Z=Y=(;
+            ^-- expected numeric expression
+
+
+Input: Z=Y=(A;
+             ^-- expected operator or closing parentheses
+
+
+Input: Z(;
+         ^-- expected numeric expression
+
+
+Input: MID$(,
+            ^-- expected string variable
+
+
+Input: MID$(;
+            ^-- expected string variable
+
+
+Input: MID$(A$;
+              ^-- expected comma
+
+
+Input: MID$(A$,;
+               ^-- expected numeric expression
+
+
+Input: MID$(A$,B;
+                ^-- expected operator, comma or closing parentheses
+
+
+Input: MID$(A$,B);
+                 ^-- expected equal or comma for assignment
+
+
+Input: Z$,MID$(,
+               ^-- expected string variable
+
+
+Input: Z$,MID$(;
+               ^-- expected string variable
+
+
+Input: Z$,MID$(A$;
+                 ^-- expected comma
+
+
+Input: Z$,MID$(A$,;
+                  ^-- expected numeric expression
+
+
+Input: Z$,MID$(A$,B;
+                   ^-- expected operator, comma or closing parentheses
+
+
+Input: Z$,MID$(A$,B);
+                    ^-- expected equal or comma for assignment
+
+
+Input: Z$=MID$(,
+               ^-- expected string expression
+
+
+Input: Z$=MID$(;
+               ^-- expected string expression
+
+
+Input: Z$=MID$(A$;
+                 ^-- expected operator or comma
+
+
+Input: Z$=MID$(A$,;
+                  ^-- expected numeric expression
+
+
+Input: Z$=MID$(A$,B;
+                   ^-- expected operator, comma or closing parentheses
+
+
+Input: Z$=MID$(A$,B);
+                    ^-- expected operator or end-of-statement
+
+
+Input: Z(A;
+          ^-- expected operator, comma or closing parentheses
+
+
+Input: LET ;
+           ^-- expected item for assignment
+
+
+Input: Z%,;
+          ^-- expected integer variable
+
+
+Input: LET A%,;
+              ^-- expected integer variable
+
+
+Input: Z$,;
+          ^-- expected string item for assignment
+
+
+Input: LET A$,;
+              ^-- expected string item for assignment
+
+
+Input: Z%=;
+          ^-- expected numeric expression
+
+
+Input: Z%,Y%=;
+             ^-- expected numeric expression
+
+
+Input: Z$=;
+          ^-- expected string expression
+
+
+Input: Z$,Y$=;
+             ^-- expected string expression
+
+
