@@ -2,283 +2,329 @@
 0: Null_Code
 1: Add_Code
 2: AddInt_Code
-3: CatStr_Code
-4: Sub_Code
-5: SubInt_Code
-6: Neg_Code
-7: NegInt_Code
-8: Mul_Code
-9: MulInt_Code
-10: Div_Code
-11: DivInt_Code
-12: IntDiv_Code
-13: Mod_Code
-14: ModInt_Code
-15: Power_Code
-16: PowerMul_Code
-17: PowerInt_Code
-18: Eq_Code
-19: EqInt_Code
-20: EqStr_Code
-21: Gt_Code
-22: GtInt_Code
-23: GtStr_Code
-24: GtEq_Code
-25: GtEqInt_Code
-26: GtEqStr_Code
-27: Lt_Code
-28: LtInt_Code
-29: LtStr_Code
-30: LtEq_Code
-31: LtEqInt_Code
-32: LtEqStr_Code
-33: NotEq_Code
-34: NotEqInt_Code
-35: NotEqStr_Code
-36: And_Code
-37: Or_Code
-38: Not_Code
-39: Eqv_Code
-40: Imp_Code
-41: Xor_Code
-42: Assign_Code
-43: AssignInt_Code
-44: AssignStr_Code
-45: AssignSubStr_Code
-46: AssignList_Code
-47: AssignListInt_Code
-48: AssignListStr_Code
-49: AssignListMixStr_Code
-50: Abs_Code
-51: AbsInt_Code
-52: Fix_Code
-53: Frac_Code
-54: Int_Code
-55: Rnd_Code
-56: RndArg_Code
-57: RndArgInt_Code
-58: Sgn_Code
-59: SgnInt_Code
-60: Cint_Code
-61: Cdbl_Code
-62: CvtInt_Code
-63: CvtDbl_Code
-64: Sqr_Code
-65: Atn_Code
-66: Cos_Code
-67: Sin_Code
-68: Tan_Code
-69: Exp_Code
-70: Log_Code
-71: Asc_Code
-72: Asc2_Code
-73: Chr_Code
-74: Instr2_Code
-75: Instr3_Code
-76: Left_Code
-77: Len_Code
-78: Mid2_Code
-79: Mid3_Code
-80: Repeat_Code
-81: Right_Code
-82: Space_Code
-83: Str_Code
-84: StrInt_Code
-85: Val_Code
-86: OpenParen_Code
-87: CloseParen_Code
-88: Comma_Code
-89: SemiColon_Code
-90: Colon_Code
-91: RemOp_Code
-92: Tab_Code
-93: Spc_Code
-94: Let_Code
-95: Print_Code
-96: PrintDbl_Code
-97: PrintInt_Code
-98: PrintStr_Code
-99: Input_Code
-100: Dim_Code
-101: Def_Code
-102: Rem_Code
-103: If_Code
-104: Then_Code
-105: Else_Code
-106: EndIf_Code
-107: For_Code
-108: To_Code
-109: Step_Code
-110: Next_Code
-111: Do_Code
-112: DoWhile_Code
-113: DoUntil_Code
-114: While_Code
-115: Until_Code
-116: Loop_Code
-117: LoopWhile_Code
-118: LoopUntil_Code
-119: End_Code
-120: EOL_Code
-121: List_Code
-122: Edit_Code
-123: Delete_Code
-124: Run_Code
-125: Renum_Code
-126: Save_Code
-127: Load_Code
-128: New_Code
-129: Auto_Code
-130: Cont_Code
-131: Quit_Code
-132: BegPlainWord_Code
-133: EndPlainWord_Code
-134: BegParenWord_Code
-135: EndParenWord_Code
-136: BegDataTypeWord_Code
-137: EndDataTypeWord_Code
-138: BegSymbol_Code
-139: EndSymbol_Code
-140: sizeof_Code
+3: AddI1_Code
+4: AddI2_Code
+5: CatStr_Code
+6: Sub_Code
+7: SubInt_Code
+8: SubI1_Code
+9: SubI2_Code
+10: Neg_Code
+11: NegInt_Code
+12: Mul_Code
+13: MulInt_Code
+14: MulI1_Code
+15: MulI2_Code
+16: Div_Code
+17: DivInt_Code
+18: DivI1_Code
+19: DivI2_Code
+20: IntDiv_Code
+21: Mod_Code
+22: ModInt_Code
+23: ModI1_Code
+24: ModI2_Code
+25: Power_Code
+26: PowerMul_Code
+27: PowerInt_Code
+28: PowerI1_Code
+29: Eq_Code
+30: EqInt_Code
+31: EqI1_Code
+32: EqI2_Code
+33: EqStr_Code
+34: Gt_Code
+35: GtInt_Code
+36: GtI1_Code
+37: GtI2_Code
+38: GtStr_Code
+39: GtEq_Code
+40: GtEqInt_Code
+41: GtEqI1_Code
+42: GtEqI2_Code
+43: GtEqStr_Code
+44: Lt_Code
+45: LtInt_Code
+46: LtI1_Code
+47: LtI2_Code
+48: LtStr_Code
+49: LtEq_Code
+50: LtEqInt_Code
+51: LtEqI1_Code
+52: LtEqI2_Code
+53: LtEqStr_Code
+54: NotEq_Code
+55: NotEqInt_Code
+56: NotEqI1_Code
+57: NotEqI2_Code
+58: NotEqStr_Code
+59: And_Code
+60: Or_Code
+61: Not_Code
+62: Eqv_Code
+63: Imp_Code
+64: Xor_Code
+65: Assign_Code
+66: AssignInt_Code
+67: AssignStr_Code
+68: AssignSubStr_Code
+69: AssignList_Code
+70: AssignListInt_Code
+71: AssignListStr_Code
+72: AssignListMixStr_Code
+73: Abs_Code
+74: AbsInt_Code
+75: Fix_Code
+76: Frac_Code
+77: Int_Code
+78: Rnd_Code
+79: RndArg_Code
+80: RndArgInt_Code
+81: Sgn_Code
+82: SgnInt_Code
+83: Cint_Code
+84: Cdbl_Code
+85: CvtInt_Code
+86: CvtDbl_Code
+87: Sqr_Code
+88: Atn_Code
+89: Cos_Code
+90: Sin_Code
+91: Tan_Code
+92: Exp_Code
+93: Log_Code
+94: Asc_Code
+95: Asc2_Code
+96: Chr_Code
+97: Instr2_Code
+98: Instr3_Code
+99: Left_Code
+100: Len_Code
+101: Mid2_Code
+102: Mid3_Code
+103: Repeat_Code
+104: Right_Code
+105: Space_Code
+106: Str_Code
+107: StrInt_Code
+108: Val_Code
+109: OpenParen_Code
+110: CloseParen_Code
+111: Comma_Code
+112: SemiColon_Code
+113: Colon_Code
+114: RemOp_Code
+115: Tab_Code
+116: Spc_Code
+117: Let_Code
+118: Print_Code
+119: PrintDbl_Code
+120: PrintInt_Code
+121: PrintStr_Code
+122: Input_Code
+123: Dim_Code
+124: Def_Code
+125: Rem_Code
+126: If_Code
+127: Then_Code
+128: Else_Code
+129: EndIf_Code
+130: For_Code
+131: To_Code
+132: Step_Code
+133: Next_Code
+134: Do_Code
+135: DoWhile_Code
+136: DoUntil_Code
+137: While_Code
+138: Until_Code
+139: Loop_Code
+140: LoopWhile_Code
+141: LoopUntil_Code
+142: End_Code
+143: EOL_Code
+144: List_Code
+145: Edit_Code
+146: Delete_Code
+147: Run_Code
+148: Renum_Code
+149: Save_Code
+150: Load_Code
+151: New_Code
+152: Auto_Code
+153: Cont_Code
+154: Quit_Code
+155: BegPlainWord_Code
+156: EndPlainWord_Code
+157: BegParenWord_Code
+158: EndParenWord_Code
+159: BegDataTypeWord_Code
+160: EndDataTypeWord_Code
+161: BegSymbol_Code
+162: EndSymbol_Code
+163: sizeof_Code
 
-Abs_Code = 50
-AbsInt_Code = 51
+Abs_Code = 73
+AbsInt_Code = 74
 Add_Code = 1
+AddI1_Code = 3
+AddI2_Code = 4
 AddInt_Code = 2
-And_Code = 36
-Asc2_Code = 72
-Asc_Code = 71
-Assign_Code = 42
-AssignInt_Code = 43
-AssignList_Code = 46
-AssignListInt_Code = 47
-AssignListMixStr_Code = 49
-AssignListStr_Code = 48
-AssignStr_Code = 44
-AssignSubStr_Code = 45
-Atn_Code = 65
-Auto_Code = 129
-BegDataTypeWord_Code = 136
-BegParenWord_Code = 134
-BegPlainWord_Code = 132
-BegSymbol_Code = 138
-CatStr_Code = 3
-Cdbl_Code = 61
-Chr_Code = 73
-Cint_Code = 60
-CloseParen_Code = 87
-Colon_Code = 90
-Comma_Code = 88
-Cont_Code = 130
-Cos_Code = 66
-CvtDbl_Code = 63
-CvtInt_Code = 62
-Def_Code = 101
-Delete_Code = 123
-Dim_Code = 100
-Div_Code = 10
-DivInt_Code = 11
-Do_Code = 111
-DoUntil_Code = 113
-DoWhile_Code = 112
-EOL_Code = 120
-Edit_Code = 122
-Else_Code = 105
-End_Code = 119
-EndDataTypeWord_Code = 137
-EndIf_Code = 106
-EndParenWord_Code = 135
-EndPlainWord_Code = 133
-EndSymbol_Code = 139
-Eq_Code = 18
-EqInt_Code = 19
-EqStr_Code = 20
-Eqv_Code = 39
-Exp_Code = 69
-Fix_Code = 52
-For_Code = 107
-Frac_Code = 53
-Gt_Code = 21
-GtEq_Code = 24
-GtEqInt_Code = 25
-GtEqStr_Code = 26
-GtInt_Code = 22
-GtStr_Code = 23
-If_Code = 103
-Imp_Code = 40
-Input_Code = 99
-Instr2_Code = 74
-Instr3_Code = 75
-Int_Code = 54
-IntDiv_Code = 12
-Left_Code = 76
-Len_Code = 77
-Let_Code = 94
-List_Code = 121
-Load_Code = 127
-Log_Code = 70
-Loop_Code = 116
-LoopUntil_Code = 118
-LoopWhile_Code = 117
-Lt_Code = 27
-LtEq_Code = 30
-LtEqInt_Code = 31
-LtEqStr_Code = 32
-LtInt_Code = 28
-LtStr_Code = 29
-Mid2_Code = 78
-Mid3_Code = 79
-Mod_Code = 13
-ModInt_Code = 14
-Mul_Code = 8
-MulInt_Code = 9
-Neg_Code = 6
-NegInt_Code = 7
-New_Code = 128
-Next_Code = 110
-Not_Code = 38
-NotEq_Code = 33
-NotEqInt_Code = 34
-NotEqStr_Code = 35
+And_Code = 59
+Asc2_Code = 95
+Asc_Code = 94
+Assign_Code = 65
+AssignInt_Code = 66
+AssignList_Code = 69
+AssignListInt_Code = 70
+AssignListMixStr_Code = 72
+AssignListStr_Code = 71
+AssignStr_Code = 67
+AssignSubStr_Code = 68
+Atn_Code = 88
+Auto_Code = 152
+BegDataTypeWord_Code = 159
+BegParenWord_Code = 157
+BegPlainWord_Code = 155
+BegSymbol_Code = 161
+CatStr_Code = 5
+Cdbl_Code = 84
+Chr_Code = 96
+Cint_Code = 83
+CloseParen_Code = 110
+Colon_Code = 113
+Comma_Code = 111
+Cont_Code = 153
+Cos_Code = 89
+CvtDbl_Code = 86
+CvtInt_Code = 85
+Def_Code = 124
+Delete_Code = 146
+Dim_Code = 123
+Div_Code = 16
+DivI1_Code = 18
+DivI2_Code = 19
+DivInt_Code = 17
+Do_Code = 134
+DoUntil_Code = 136
+DoWhile_Code = 135
+EOL_Code = 143
+Edit_Code = 145
+Else_Code = 128
+End_Code = 142
+EndDataTypeWord_Code = 160
+EndIf_Code = 129
+EndParenWord_Code = 158
+EndPlainWord_Code = 156
+EndSymbol_Code = 162
+Eq_Code = 29
+EqI1_Code = 31
+EqI2_Code = 32
+EqInt_Code = 30
+EqStr_Code = 33
+Eqv_Code = 62
+Exp_Code = 92
+Fix_Code = 75
+For_Code = 130
+Frac_Code = 76
+Gt_Code = 34
+GtEq_Code = 39
+GtEqI1_Code = 41
+GtEqI2_Code = 42
+GtEqInt_Code = 40
+GtEqStr_Code = 43
+GtI1_Code = 36
+GtI2_Code = 37
+GtInt_Code = 35
+GtStr_Code = 38
+If_Code = 126
+Imp_Code = 63
+Input_Code = 122
+Instr2_Code = 97
+Instr3_Code = 98
+Int_Code = 77
+IntDiv_Code = 20
+Left_Code = 99
+Len_Code = 100
+Let_Code = 117
+List_Code = 144
+Load_Code = 150
+Log_Code = 93
+Loop_Code = 139
+LoopUntil_Code = 141
+LoopWhile_Code = 140
+Lt_Code = 44
+LtEq_Code = 49
+LtEqI1_Code = 51
+LtEqI2_Code = 52
+LtEqInt_Code = 50
+LtEqStr_Code = 53
+LtI1_Code = 46
+LtI2_Code = 47
+LtInt_Code = 45
+LtStr_Code = 48
+Mid2_Code = 101
+Mid3_Code = 102
+Mod_Code = 21
+ModI1_Code = 23
+ModI2_Code = 24
+ModInt_Code = 22
+Mul_Code = 12
+MulI1_Code = 14
+MulI2_Code = 15
+MulInt_Code = 13
+Neg_Code = 10
+NegInt_Code = 11
+New_Code = 151
+Next_Code = 133
+Not_Code = 61
+NotEq_Code = 54
+NotEqI1_Code = 56
+NotEqI2_Code = 57
+NotEqInt_Code = 55
+NotEqStr_Code = 58
 Null_Code = 0
-OpenParen_Code = 86
-Or_Code = 37
-Power_Code = 15
-PowerInt_Code = 17
-PowerMul_Code = 16
-Print_Code = 95
-PrintDbl_Code = 96
-PrintInt_Code = 97
-PrintStr_Code = 98
-Quit_Code = 131
-Rem_Code = 102
-RemOp_Code = 91
-Renum_Code = 125
-Repeat_Code = 80
-Right_Code = 81
-RndArg_Code = 56
-RndArgInt_Code = 57
-Rnd_Code = 55
-Run_Code = 124
-Save_Code = 126
-SemiColon_Code = 89
-Sgn_Code = 58
-SgnInt_Code = 59
-Sin_Code = 67
-Space_Code = 82
-Spc_Code = 93
-Sqr_Code = 64
-Step_Code = 109
-Str_Code = 83
-StrInt_Code = 84
-Sub_Code = 4
-SubInt_Code = 5
-Tab_Code = 92
-Tan_Code = 68
-Then_Code = 104
-To_Code = 108
-Until_Code = 115
-Val_Code = 85
-While_Code = 114
-Xor_Code = 41
-sizeof_Code = 140
+OpenParen_Code = 109
+Or_Code = 60
+Power_Code = 25
+PowerI1_Code = 28
+PowerInt_Code = 27
+PowerMul_Code = 26
+Print_Code = 118
+PrintDbl_Code = 119
+PrintInt_Code = 120
+PrintStr_Code = 121
+Quit_Code = 154
+Rem_Code = 125
+RemOp_Code = 114
+Renum_Code = 148
+Repeat_Code = 103
+Right_Code = 104
+RndArg_Code = 79
+RndArgInt_Code = 80
+Rnd_Code = 78
+Run_Code = 147
+Save_Code = 149
+SemiColon_Code = 112
+Sgn_Code = 81
+SgnInt_Code = 82
+Sin_Code = 90
+Space_Code = 105
+Spc_Code = 116
+Sqr_Code = 87
+Step_Code = 132
+Str_Code = 106
+StrInt_Code = 107
+Sub_Code = 6
+SubI1_Code = 8
+SubI2_Code = 9
+SubInt_Code = 7
+Tab_Code = 115
+Tan_Code = 91
+Then_Code = 127
+To_Code = 131
+Until_Code = 138
+Val_Code = 108
+While_Code = 137
+Xor_Code = 64
+sizeof_Code = 163
