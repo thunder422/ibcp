@@ -208,6 +208,18 @@
 //              added new search and match functions to Table
 //  2010-07-04  updated TokenStatus
 //
+//  2010-08-01  removed support for multiple equal assignments (now only commas
+//                used for multiple assignments)
+//  2010-07-18  added second associated index to ExprInfo for support of
+//                checking each operand when processed instead of processing
+//                all operands at the end
+//  2010-08-10  added several multiple error types used for additional table
+//                checking during initialization
+//  2010-09-03  added new Translator::process_final_operand(),
+//                modified Translator::find_code(),
+//                removed Translator::match_code()
+//  2010-12-13  added number of string arguments to ExprInfo for Table entries
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -283,8 +295,8 @@ enum Code {
 	Log_Code,
 
 	// string functions
-	Asc_Code, //+AscTmp_Code,
-	Asc2_Code, //+Asc2Tmp_Code,   // 2010-04-04: added code for two argument form
+	Asc_Code, //+AscTmp_XCode,
+	Asc2_Code, //+Asc2Tmp_XCode,   // 2010-04-04: added code for two argument form
 	Chr_Code,
 	// 2010-04-04: replaced Instr_Code
 	Instr2_Code,
@@ -424,10 +436,10 @@ enum ExprType {  // 2010-06-29
 
 // 2010-05-27: sub-code flags for use in Token and internal program
 // 2010-06-08: renamed Null to None and added SemiColon sub-code flag
+// 2010-08-01: removed Comma_SubCode
 const int None_SubCode       = 0x00000000;	// no sub-code present
 const int Paren_SubCode      = 0x00000001;	// reproduce unnecessary parenthesis
 const int Let_SubCode        = 0x00000002;	// reproduce LET keyword for assign
-const int Comma_SubCode      = 0x00000004;	// multiple assignment has commas
 const int SemiColon_SubCode  = 0x00000008;	// semicolon after print function
 
 
@@ -458,6 +470,9 @@ enum ErrorType {  // 2010-06-25: renamed from TableErrType
 	MaxOperands_ErrorType,		// 2010-05-20
 	MaxAssocCodes_ErrorType,	// 2010-05-20
 	Assoc2Code_ErrorType,		// 2010-07-18
+	MultName_ErrorType,			// 2010-08-10
+	MultExprInfo_ErrorType,		// 2010-08-10
+	MultNOperands_ErrorType,	// 2010-08-10
 	sizeof_ErrorType
 };
 
@@ -474,35 +489,47 @@ enum SearchType {  // table search types
 typedef void (*PrintFunction)(const char *fmt, ...);
 
 // generic error structure template
+// 2010-08-10: changed ints to shorts, added multiple error types
 template <class T> struct Error {  // 2010-06-25: created from TableError
 	ErrorType type;			// type of the error
 	union {
 		struct {
 			T item;				// item with duplicate
-			int ifirst;			// index first found
-			int idup;			// index of duplicate
+			short ifirst;		// index first found
+			short idup;			// index of duplicate
 		} duplicate;
 		struct {
 			T item;				// missing item
 		} missing;
 		struct {
 			SearchType type;	// search type that is incomplete
-			int ibeg;			// index of beginning bracket item
-			int iend;			// index of ending bracket item
+			short ibeg;			// index of beginning bracket item
+			short iend;			// index of ending bracket item
 		} range;
 		struct {
 			SearchType type1;	// first search type of overlap
 			SearchType type2;	// second search type of overlap
-			int ibeg;			// index of beginning bracket item
-			int iend;			// index of ending bracket item
+			short ibeg;			// index of beginning bracket item
+			short iend;			// index of ending bracket item
 		} overlap;
 		struct {
 			int found;			// actual maximum found
 		} maximum;
 		struct {
+			short entry;		// index of entry with error
 			short index;		// assoc 2 code
 			short n;			// number of assoc codes
 		} assoc2;
+		struct {
+			const char *name;		// name of entry
+			union {
+				const char *name2;	// mis-match name of next entry
+				struct {
+					short entry;	// number of operands of entry
+					short next;		// number of operands of next entry
+				} noperands;
+			};
+		} multiple;
 	};
 
 	Error(T item, int ifirst, int idup)
@@ -539,11 +566,31 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 		maximum.found = max;
 	}
 	// 2010-07-18: added new error
-	Error(short index2, short nassoc)
+	Error(short index, short index2, short nassoc)
 	{
 		type = Assoc2Code_ErrorType;
+		assoc2.entry = index;
 		assoc2.index = index2;
 		assoc2.n = nassoc;
+	}
+	// 2010-08-10: added new error
+	Error(const char *name, const char *name2)
+	{
+		type = MultName_ErrorType;
+		multiple.name = name;
+		multiple.name2 = name2;
+	}
+	Error(const char *name)
+	{
+		type = MultExprInfo_ErrorType;
+		multiple.name = name;
+	}
+	Error(const char *name, short noperands, short noperands2)
+	{
+		type = MultNOperands_ErrorType;
+		multiple.name = name;
+		multiple.noperands.entry = noperands;
+		multiple.noperands.next = noperands2;
 	}
 	Error(void)			// default constructor
 	{
@@ -594,8 +641,23 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 				break;
 			// 2010-07-18: added new assoc 2 code bad error
 			case Assoc2Code_ErrorType:
-				(*print)("Assoc2Code=%d too large, maximum is %d\n",
-					error, error.maximum.found);
+				(*print)("Entry:%d Assoc2Code=%d too large, maximum is %d\n",
+					error.assoc2.entry, error.assoc2.index, error.assoc2.n);
+				break;
+			// 2010-08-10: added new multiple flag errors
+			case MultName_ErrorType:
+				(*print)("Multiple entry '%s' name mis-match '%s'\n",
+					error.multiple.name, error.multiple.name2);
+				break;
+			case MultExprInfo_ErrorType:
+				(*print)("Multiple entry '%s' next entry no expression info\n",
+					error.multiple.name);
+				break;
+			case MultNOperands_ErrorType:
+				(*print)("Multiple entry '%s' incorrect number of operands "
+					"(%d, %d)\n", error.multiple.name,
+					error.multiple.noperands.entry,
+					error.multiple.noperands.next);
 				break;
 			default:
 				(*print)("Unknown error %d\n", error.type);
@@ -653,7 +715,9 @@ enum TokenStatus {
 	BUG_HoldStackNotEmpty,			// diagnostic message
 	BUG_DoneStackNotEmpty,			// diagnostic message
 	BUG_DoneStackEmptyParen,		// diagnostic error (2010-03-25)
-	BUG_DoneStackEmptyArrFunc,		// diagnostic error (2010-04-02)
+	BUG_DoneStackEmptyOperands,		// diagnostic error (2010-04-02)
+	BUG_DoneStackEmptyOperands2,	// diagnostic error (2010-10-11)
+	BUG_DoneStackEmptyFindCode,		// diagnostic error (2010-07-01)
 	BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
 	BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
 	BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
@@ -781,12 +845,12 @@ struct Token {
 
 
 // 2010-05-28: moved outside Translator, renamed enumeration and values
+// 2010-08-01: removed EqualAssignment, renamed CommaAssignment
 enum TokenMode {
 	Null_TokenMode,					// no token mode set flag (2010-05-29)
 	Command_TokenMode,				// expecting command
 	Assignment_TokenMode,			// expecting assignment
-	EqualAssignment_TokenMode,		// possible multiple equal assign started
-	CommaAssignment_TokenMode,		// comma separated assignment started
+	AssignmentList_TokenMode,		// comma separated assignment started
 	Expression_TokenMode,			// inside expression
 	sizeof_TokenMode
 };
@@ -843,7 +907,9 @@ struct ExprInfo {
 	// 2010-05-03: added number of associated codes
 	short nassoc_codes;			// number of associated codes
 	// 2010-07-18: added index to second operand associated codes
-	short assoc2_code;			// index to start of second operand assoc codes
+	short assoc2_index;			// index to start of second operand assoc codes
+	// 2010-12-23: added number of string arguments
+	short nstrings;				// number of string arguments
 	// 2010-04-24: added operand data type array
 	// 2010-05-03: changed from array to pointer
 	DataType *operand_datatype;	// data type of each operand
@@ -853,7 +919,7 @@ struct ExprInfo {
 
 	ExprInfo(DataType _datatype, Code _unary_code,
 		short _noperands = 0, DataType *_operand_datatype = NULL,
-		short _nassoc_codes = 0, short _assoc2_code = 0,
+		short _nassoc_codes = 0, short _assoc2_index = 0,
 		Code *_assoc_code = NULL)
 	{
 		datatype = _datatype;
@@ -861,8 +927,9 @@ struct ExprInfo {
 		noperands = _noperands;
 		operand_datatype = _operand_datatype;
 		nassoc_codes = _nassoc_codes;
-		assoc2_code = _assoc2_code;
+		assoc2_index = _assoc2_index;
 		assoc_code = _assoc_code;
+		nstrings = 0;  // 2010-12-23: default, will be filled in later
 	}
 };
 
@@ -1019,7 +1086,7 @@ public:
 		return entry[index].exprinfo->noperands;
 	}
 	// 2010-04-23: added two new access functions
-	int operand_datatype(int index, int operand)
+	DataType operand_datatype(int index, int operand)
 	{
 		// 2010-05-03: get value from expression information structure
 		return entry[index].exprinfo->operand_datatype[operand];
@@ -1033,6 +1100,16 @@ public:
 	{
 		// 2010-05-03: get value from expression information structure
 		return entry[index].exprinfo->assoc_code[number];
+	}
+	// 2010-08-07: added new access function for assoc2_index
+	int assoc2_index(int index)
+	{
+		return entry[index].exprinfo->assoc2_index;
+	}
+	// 2010-12-23: added new access function for nstrings
+	int nstrings(int index)
+	{
+		return entry[index].exprinfo->nstrings;
 	}
 	// 2010-04-02: added new precedence of token function
 	int precedence(Token *token)
@@ -1075,6 +1152,13 @@ public:
 	void set_token(Token *token, Code code)
 	{
 		token->index = index(code);
+		token->type = type(token->index);
+		token->datatype = datatype(token->index);
+	}
+	// 2010-08-07: add function to set token for index
+	void set_token(Token *token, int index)
+	{
+		token->index = index;
 		token->type = type(token->index);
 		token->datatype = datatype(token->index);
 	}
@@ -1148,19 +1232,8 @@ struct RpnItem {
 	{
 		token = _token;
 		noperands = _noperands;
-		if (noperands == 0)
-		{
-			operand = NULL;
-		}
-		else
-		{
-			operand = new List<RpnItem *>::Element *[noperands];
-
-			for (int i = 0; i < noperands; i++)
-			{
-				operand[i] = _operand[i];
-			}
-		}
+		// 2010-07-18: removed allocation of operand array (now set from arg)
+		operand = _operand;
 	}
 	~RpnItem()
 	{
@@ -1242,8 +1315,6 @@ public:
 	}
 	void clean_up(void);			// only call when add_token returns an error
 private:
-	// 2010-05-15: local variable from find_code() to be access by all of class
-	List<RpnItem *>::Element *operand[Max_Operands];  // pointers to operands
 
 	// 2010-04-13: made argument a reference so different value can be returned
 	TokenStatus add_operator(Token *&token);
@@ -1269,10 +1340,13 @@ private:
 			token->datatype = TmpStr_DataType;
 		}
 	}
+	// 2010-09-03: added new function
+	TokenStatus process_final_operand(Token *&token, int operand_index,
+		int noperands = 0);
 	// 2010-05-08: added last_operand argument
 	// 2010-07-01: removed last_operand argument
-	TokenStatus find_code(Token *&token);
-	Match match_code(Code *cvt_code, Code code);
+	// 2010-09-03: added operand_index argument
+	TokenStatus find_code(Token *&token, int operand_index);
 	// 2010-05-29: changed argument from index to token pointer
 	void do_pending_paren(Token *token);  // 2010-03-26: added for parentheses
 	// 2010-06-03: function to check if expression ended correctly
