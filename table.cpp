@@ -120,6 +120,14 @@
 //                from two operands to one - the assign operators are no longer
 //                handled by the standard operator routines
 //
+//  2010-07-18  added second associate code index to support checking each
+//                operand when first processed
+//  2010-08-10  swapped function with multiple arguments (ASC, INSTR, MID) back
+//                where least number of argument form is first
+//              validate multiple argument codes (ASC, INSTR, MID)
+//  2010-12-23  automatically generate new table entry number of string
+//                arguments
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -220,7 +228,7 @@ Code Lt_AssocCode[]         = {LtI1_Code, LtStr_Code, LtI2_Code};
 Code LtI1_AssocCode[]       = {LtInt_Code};
 Code LtEq_AssocCode[]       = {LtEqI1_Code, LtEqStr_Code, LtEqI2_Code};
 Code LtEqI1_AssocCode[]     = {LtEqInt_Code};
-Code Mod_AssocCode[]        = {ModI1_Code};
+Code Mod_AssocCode[]        = {ModI1_Code, ModI2_Code};
 Code ModI1_AssocCode[]      = {ModInt_Code};
 Code Mul_AssocCode[]        = {MulI1_Code, MulI2_Code};
 Code MulI1_AssocCode[]      = {MulInt_Code};
@@ -277,7 +285,8 @@ ExprInfo None_Int_ExprInfo(None_DataType, Null_Code, Operands(Int));
 ExprInfo None_Str_ExprInfo(None_DataType, Null_Code, Operands(Str));
 
 
-static TableEntry table_entries[] = {
+static TableEntry table_entries[] =
+{
 	//******************************
 	//   IMMEDIATE COMMANDS FIRST
 	//******************************
@@ -572,21 +581,22 @@ static TableEntry table_entries[] = {
 	},
 	// 2010-04-04: added entry for 2 argument ASC
 	// 2010-06-09: swapped ASC and ASC2 entries
-	{
-		Asc2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", "ASC2(", Multiple_Flag, 2, &Int_StrInt_ExprInfo
-	},
+	// 2010-08-10: swapped ASC and ASC2 entries back
 	{
 		Asc_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", NULL, Null_Flag, 2, &Int_Str_ExprInfo
+		"ASC(", NULL, Multiple_Flag, 2, &Int_Str_ExprInfo
+	},
+	{
+		Asc2_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"ASC(", "ASC2(", Null_Flag, 2, &Int_StrInt_ExprInfo
 	},
 //+	{
-//+		Asc2Tmp_Code, IntFuncP_TokenType, OneWord_Multiple,
-//+		"ASC(", "ASC2tmp(", Multiple_Flag, 2, &Int_TmpInt_ExprInfo
+//+		AscTmp_Code, IntFuncP_TokenType, OneWord_Multiple,
+//+		"ASC(", "ASCtmp(", Multiple_Flag, 2, &Int_Str_ExprInfo
 //+	},
 //+	{
-//+		AscTmp_Code, IntFuncP_TokenType, OneWord_Multiple,
-//+		"ASC(", "ASCtmp(", Null_Flag, 2, &Int_Str_ExprInfo
+//+		Asc2Tmp_Code, IntFuncP_TokenType, OneWord_Multiple,
+//+		"ASC(", "ASC2tmp(", Null_Flag, 2, &Int_TmpInt_ExprInfo
 //+	},
 	{
 		Chr_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -594,14 +604,15 @@ static TableEntry table_entries[] = {
 	},
 	// 2010-04-04: replaced INSTR entry with INSTR2 and INSTR3 entries
 	// 2010-06-09: swapped INSTR2 and INSTR3 entries
-	{
-		Instr3_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR3(", Multiple_Flag, 2, &Int_StrStrInt_ExprInfo
-	},
+	// 2010-08-10: swapped INSTR2 and INSTR3 entries back
 	{
 		Instr2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR2(", Null_Flag, 2,
+		"INSTR(", "INSTR2(", Multiple_Flag, 2,
 		&Int_StrStr_ExprInfo
+	},
+	{
+		Instr3_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"INSTR(", "INSTR3(", Null_Flag, 2, &Int_StrStrInt_ExprInfo
 	},
 	{
 		Left_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -613,13 +624,14 @@ static TableEntry table_entries[] = {
 	},
 	// 2010-04-04: replaced MID entry with MID2 and MID3 entries
 	// 2010-06-09: swapped MID2 and MID3 entries
-	{
-		Mid3_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID3$(", Multiple_Flag, 2, &Sub_StrIntInt_ExprInfo
-	},
+	// 2010-08-10: swapped MID2 and MID3 entries back
 	{
 		Mid2_Code, IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID2$(", Null_Flag, 2, &Sub_StrInt_ExprInfo
+		"MID$(", "MID2$(", Multiple_Flag, 2, &Sub_StrInt_ExprInfo
+	},
+	{
+		Mid3_Code, IntFuncP_TokenType, OneWord_Multiple,
+		"MID$(", "MID3$(", Null_Flag, 2, &Sub_StrIntInt_ExprInfo
 	},
 	{
 		Repeat_Code, IntFuncP_TokenType, OneWord_Multiple,
@@ -965,7 +977,7 @@ static TableEntry table_entries[] = {
 		EqI1_Code, Operator_TokenType, OneChar_Multiple,
 		"=", "=%1", Null_Flag, 30,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
-			AssocCode2(EqI1, 2))
+			AssocCode2(EqI1, 0))
 	},
 	{
 		EqI2_Code, Operator_TokenType, OneChar_Multiple,
@@ -983,7 +995,7 @@ static TableEntry table_entries[] = {
 		GtI1_Code, Operator_TokenType, OneChar_Multiple,
 		">", ">%1", Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
-			AssocCode2(GtI1, 2))
+			AssocCode2(GtI1, 0))
 	},
 	{
 		GtI2_Code, Operator_TokenType, OneChar_Multiple,
@@ -1001,7 +1013,7 @@ static TableEntry table_entries[] = {
 		GtEqI1_Code, Operator_TokenType, OneChar_Multiple,
 		">=", ">=%1", Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
-			AssocCode2(GtEqI1, 2))
+			AssocCode2(GtEqI1, 0))
 	},
 	{
 		GtEqI2_Code, Operator_TokenType, OneChar_Multiple,
@@ -1019,7 +1031,7 @@ static TableEntry table_entries[] = {
 		LtI1_Code, Operator_TokenType, OneChar_Multiple,
 		"<", "<%1", Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
-			AssocCode2(LtI1, 2))
+			AssocCode2(LtI1, 0))
 	},
 	{
 		LtI2_Code, Operator_TokenType, OneChar_Multiple,
@@ -1037,7 +1049,7 @@ static TableEntry table_entries[] = {
 		LtEqI1_Code, Operator_TokenType, OneChar_Multiple,
 		"<=", "<=%1", Null_Flag, 32,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
-			AssocCode2(LtEqI1, 2))
+			AssocCode2(LtEqI1, 0))
 	},
 	{
 		LtEqI2_Code, Operator_TokenType, OneChar_Multiple,
@@ -1055,7 +1067,7 @@ static TableEntry table_entries[] = {
 		NotEqI1_Code, Operator_TokenType, OneChar_Multiple,
 		"<>", "<>%1", Null_Flag, 30,
 		new ExprInfo(Integer_DataType, Null_Code, Operands(IntDbl),
-			AssocCode2(NotEqI1, 2))
+			AssocCode2(NotEqI1, 0))
 	},
 	{
 		NotEqI2_Code, Operator_TokenType, OneChar_Multiple,
@@ -1169,22 +1181,50 @@ Table::Table(void)
 				max_assoc_codes = exprinfo->nassoc_codes;
 			}
 
-			// 2010-07-18: check in assoc2_code is valid
-			if (exprinfo->assoc2_code >= exprinfo->nassoc_codes)
+			// 2010-07-18: check in assoc2_index is valid
+			if (exprinfo->assoc2_index > 0
+				&& exprinfo->assoc2_index >= exprinfo->nassoc_codes)
 			{
-				// record duplicated code error
-				Error<Code> error(exprinfo->assoc2_code,
+				Error<Code> error(i, exprinfo->assoc2_index,
 					exprinfo->nassoc_codes);
 				error_list->append(&error);
 			}
 
-			// 2010-05-22: set String_Flag in entries automatically
+			// 2010-12-23: generate number of string arguments value
+			exprinfo->nstrings = 0;
 			for (int j = 0; j < exprinfo->noperands; j++)
 			{
-				if (exprinfo->operand_datatype[j] == String_DataType)
+				if (exprinfo->operand_datatype[j] == String_DataType
+					|| exprinfo->operand_datatype[j] == TmpStr_DataType)
 				{
-					entry[i].flags |= String_Flag;
-					break;
+					exprinfo->nstrings++;
+				}
+			}
+			// 2010-05-22: set String_Flag in entries automatically
+			if (exprinfo->nstrings > 0)
+			{
+				entry[i].flags |= String_Flag;
+			}
+
+			// 2010-08-10: validate multiple entries
+			if (entry[i].flags & Multiple_Flag != 0)
+			{
+				ExprInfo *exprinfo2 = entry[i + 1].exprinfo;
+				if (strcmp(entry[i].name, entry[i + 1].name) != 0)
+				{
+					Error<Code> error(entry[i].name, entry[i + 1].name);
+					error_list->append(&error);
+				}
+				else if (exprinfo2 == NULL)
+				{
+					Error<Code> error(entry[i + 1].name);
+					error_list->append(&error);
+				}
+				else if (exprinfo2->noperands != exprinfo->noperands + 1)
+				{
+					Error<Code> error(entry[i].name, exprinfo->noperands,
+						exprinfo2->noperands);
+					error_list->append(&error);
 				}
 			}
 		}
