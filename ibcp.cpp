@@ -16,7 +16,7 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
+//
 //
 //  Change History:
 //
@@ -72,10 +72,10 @@
 
 void print_gpl_header(char *name)
 {
-    printf("\n%s  Copyright (C) 2010  Thunder422\n", name);
-    printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
-    printf("This is free software, and you are welcome to\n");
-    printf("redistribute it under certain conditions.\n\n");
+	printf("\n%s  Copyright (C) 2010  Thunder422\n", name);
+	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
+	printf("This is free software, and you are welcome to\n");
+	printf("redistribute it under certain conditions.\n\n");
 }
 
 
@@ -157,8 +157,12 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: done stack not empty"},
 	{BUG_DoneStackEmptyParen,
 		"BUG: done stack empty, expected token for ')'"},
-	{BUG_DoneStackEmptyArrFunc,
-		"BUG: done stack empty, expected token for array/function"},
+	{BUG_DoneStackEmptyOperands,
+		"BUG: done stack empty, expected token for operands"},
+	{BUG_DoneStackEmptyOperands2,
+		"BUG: insufficient items on done stack empty for operands"},
+	{BUG_DoneStackEmptyFindCode,
+		"BUG: done stack empty, expected token for operand"},
 	{BUG_UnexpectedCloseParen,
 		"BUG: unexpected closing parentheses"},
 	{BUG_UnexpectedToken,
@@ -292,7 +296,7 @@ int main(int argc, char *argv[])
 	char *name = strrchr(argv[0], '\\');
 	name = name == NULL ? argv[0] : name + 1;
 	print_gpl_header(name);
-	
+
 	// 2010-06-25: added try block for token initialization
 	try
 	{
@@ -324,7 +328,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	printf("Table initialization successful.\n");
-		
+
 	Translator translator(table);
 	Parser parser(table);
 
@@ -338,6 +342,6 @@ int main(int argc, char *argv[])
 	}
 	return 0;
 }
-	
+
 
 // end: ibcp.cpp
