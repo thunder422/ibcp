@@ -28,16 +28,16 @@ Input: var_A * Var_A + Var_B * Var_B
 Output: var_A Var_A * Var_B Var_B * + 
 
 Input: not A < 5 = B > 2
-Output: A 5 CvtDbl < B 2 CvtDbl > =% NOT 
+Output: A 5 <%2 B 2 >%2 =% NOT 
 
 Input: not A < 5 and B > 2 or C < 1 and D <> 2
-Output: A 5 CvtDbl < NOT B 2 CvtDbl > AND C 1 CvtDbl < D 2 CvtDbl <> AND OR 
+Output: A 5 <%2 NOT B 2 >%2 AND C 1 <%2 D 2 <>%2 AND OR 
 
 Input: A * B / C \ D MOD E
-Output: A B * C / D \ CvtDbl E MOD 
+Output: A B * C / D \ E MOD%1 
 
 Input: A mod B \ C / D * E
-Output: A B C D / E * \ CvtDbl MOD 
+Output: A B C D / E * \ MOD%2 
 
 Input: A * B ^ 2
 Output: A B 2 ^* * 

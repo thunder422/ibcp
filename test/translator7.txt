@@ -10,31 +10,32 @@ Input: A% = B% + 5
 Output: A%<ref> B% 5 +% Assign% 
 
 Input: A% = B + 5
-Output: A%<ref> B 5 CvtDbl + CvtInt Assign% 
+Output: A%<ref> B 5 +%2 CvtInt Assign% 
 
 Input: A% = B + 5.0
 Output: A%<ref> B 5.0 + CvtInt Assign% 
 
 Input: A = B = C = 1.0
-Output: A<ref> B<ref> C<ref> 1.0 AssignList 
+Output: A<ref> B C = 1.0 =%1 CvtDbl Assign 
 
 Input: A, B, C = 1.0
-Output: A<ref> B<ref> C<ref> 1.0 AssignList',' 
+Output: A<ref> B<ref> C<ref> 1.0 AssignList 
 
 Input: A, B, C = 1
-Output: A<ref> B<ref> C<ref> 1 CvtDbl AssignList',' 
+Output: A<ref> B<ref> C<ref> 1 CvtDbl AssignList 
 
 Input: A%,B% = C% + D%
-Output: A%<ref> B%<ref> C% D% +% AssignList%',' 
-
-Input: A% = B% = C% + D%
 Output: A%<ref> B%<ref> C% D% +% AssignList% 
 
+Input: A% = B% = C% + D%
+Output: A%<ref> B% C% D% +% =% Assign% 
+
 Input: A$,B$,C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$','["Test"] 
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$ 
 
 Input: A$ = B$ = C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$["Test"] 
+                      ^^^^^^-- expected numeric expression
+
 
 Input: Z, Y = A$ + B%
                    ^^-- expected string expression
