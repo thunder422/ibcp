@@ -90,6 +90,8 @@ Release 0.1.14-pre-2 (2010-12-27)
 
 	New (listed first) and updated files include:
 
+	test_codes.awk   - new script to generate test_codes.h
+	test_codes.h     - contains code names for test_ibcp.cpp
 	translator12.txt - contains more error tests
 	translator13.txt - contains semicolon error tests
 
