@@ -9,7 +9,7 @@ Table initialization successful.
 Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
-	 5: IntFuncP  () SubStr  69-Mid3
+	 5: IntFuncP  () SubStr  69-Mid2
 	10: Constant     String  |b|
 	13: Operator  Op None    94-Comma
 	14: NoParen      None    |A|
