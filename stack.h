@@ -30,7 +30,7 @@
 //
 //  2010-05-22  added nitems() function to return the number of items on stack
 //
-//  2010-07-17  made push() function inline for optimizition, but separated code
+//  2010-07-17  made push() function inline for optimization, but separated code
 //              that grows stack as need to new grow() function so that this
 //              code is not inlined
 //
