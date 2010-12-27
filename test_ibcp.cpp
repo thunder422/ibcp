@@ -16,7 +16,7 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
+//
 //
 //  Change History:
 //
@@ -66,7 +66,7 @@
 //  2010-03-25  added expressions for testing expressions with parentheses
 //              added additional errors for parentheses errors
 //
-//  2010-03-26  added more parentheses test expressions 
+//  2010-03-26  added more parentheses test expressions
 //
 //  2010-04-02  added expressions for testing expressions with arrays functions
 //              added additional errors for arrays/function errors
@@ -85,7 +85,7 @@
 //  2010-04-14  correct token memory allocation problem (only delete token if
 //              it is the original token passed to the Translator)
 //  2010-04-16  added assignment/reference and parentheses errors
-//              modified translator_input() to set expression test mode in 
+//              modified translator_input() to set expression test mode in
 //                Translator for previous test inputs
 //              added assignment statement test inputs
 //  2010-04-17  added another unexpected comma error
@@ -146,6 +146,11 @@
 //  2010-07-04  moved semicolon error tests from testinput11 to new testinput13
 //              added more error tests to testinput11
 //              added more error tests in testinput12
+//
+//  2010-08-01  removed comma sub-code
+//  2010-10-05  added more translator tests
+//              modified to get code_name[] contents from auto-generated include
+//                file
 //
 
 #include <stdio.h>
@@ -268,7 +273,7 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 		inputmode = strcmp(argv[2], "i") == 0;
 	}
 	if (argc != 3 || (testno < 0 || testno >= ntests) && inputmode == 0)
-	{ 
+	{
 		// 2010-03-13: changed to output actual program name
 		printf("usage: %s -p <test number 1-%d>|i\n", strrchr(argv[0], '\\')
 			+ 1, ntests);
@@ -276,7 +281,7 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 	}
 
 	// 2010-03-13: removed Table initialization code
-	
+
 	if (inputmode)
 	{
 		char inputline[200];
@@ -384,9 +389,17 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"MID$(A$+B$,(C+5)*D,4)+\" Test\"",
 		"int(Arr(A,B*(C+2))+(D))",
 		"Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))",
+		// begin of error tests
 		"INT(A+B",
 		"B,F+G",
 		"Arr(B,,C)",
+		"MID$(,,C)",
+		"MID$(A,,C)",
+		"MID$(A$,,C)",
+		"MID$(A$,B$,C)",
+		"MID$(A$,B,,C)",
+		"MID$(A$,B,C$)",
+		"MID$(A$,B,C,)",
 		NULL
 	};
 	static const char *testinput4[] = {  // internal function tests
@@ -410,6 +423,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A=B=3",
 		"A=(B)=3",
 		"A=(B=3)",
+		"A,B=(C=3)",
 		"A,B=C=4",
 		"A(B,C)=D",
 		"A(B,C),E=D",
@@ -528,6 +542,8 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"A$,B$,C$ = D$",
 		"A$,B$,LEFT$(C$,1) = D$",
 		"LEFT$(A$,1),B$,RIGHT$(C$,1) = D$",
+		// more related tests (2010-10-05)
+		"A(int(B))=C",
 		NULL
 	};
 	static const char *testinput9[] = {  // command tests (2010-05-29)
@@ -803,7 +819,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		inputmode = strcmp(argv[2], "i") == 0;
 	}
 	if (argc != 3 || (testno < 0 || testno >= ntests) && inputmode == 0)
-	{ 
+	{
 		// 2010-03-13: changed to output actual program name
 		// 2010-04-02: added + 1 so that '\' is no output
 		printf("usage: %s -t <test number 1-%d>|i\n", strrchr(argv[0], '\\')
@@ -949,53 +965,9 @@ bool print_token(Token *token, Table *table)
 	// 2010-05-29: updated list for new codes
 	// 2010-06-02: updated list for new codes
 	const char *code_name[] = {
-		"Null",
-
-		// math operators
-		"Add", "AddInt", "CatStr", "Sub", "SubInt", "Neg", "NegInt",
-			"Mul", "MulInt", "Div", "DivInt", "IntDiv", "Mod", "ModInt",
-			"Power", "PowerMul", "PowerInt",
-
-		// relational operators
-		"Eq", "EqInt", "EqStr", "Gt", "GtInt", "GtStr",
-			"GtEq", "GtEqInt", "GtEqStr", "Lt", "LtInt", "LtStr",
-			"LtEq", "LtEqInt", "LtEqStr", "NotEq", "NotEqInt", "NotEqStr",
-
-		// logical operators
-		"And", "Or", "Not", "Eqv", "Imp", "Xor",
-
-		"Assign", "AssignInt", "AssignStr", "AssignSubStr",
-		"AssignList", "AssignListInt", "AssignListStr",
-			"AssignListMixStr",
-
-		"Abs", "AbsInt", "Fix", "Frac", "Int", "Rnd", "RndArg", "RndArgInt",
-			"Sgn", "SgnInt", "Cint", "Cdbl", "CvtInt", "CvtDbl",
-
-		// scientific math internal function
-		"Sqr", "Atn", "Cos", "Sin", "Tan", "Exp", "Log",
-
-		// string functions
-		"Asc", "Asc2", "Chr", "Instr2", "Instr3", "Left", "Len", "Mid2", "Mid3",
-		"Repeat", "Right", "Space", "Str", "StrInt", "Val",
-
-		// other symbol operators
-		"OpenParen", "CloseParen", "Comma", "SemiColon", "Colon", "RemOp",
-
-		// print internal functions
-		"Tab", "Spc",
-
-		// commands
-		"Let", "Print", "PrintDbl", "PrintInt", "PrintStr", "Input", "Dim",
-			"Def", "Rem", "If", "Then", "Else", "EndIf", "For", "To", "Step",
-			"Next", "Do", "DoWhile", "DoUntil", "While", "Until", "Loop",
-			"LoopWhile", "LoopUntil", "End",
-
-		// other codes
-		"EOL",
-		
-		// immediate commands (will go away once gui implemented)
-		"List", "Edit", "Delete", "Run", "Renum", "Save", "Load", "New", "Auto",
-			"Cont", "Quit",
+		// replaced strings with automatically generated include file
+		// (use "awk -f test_codes.awk <ibcp.h >test_codes.h" to create)
+		#include "test_codes.h"
 	};
 
 	CmdArgs *args;
@@ -1195,10 +1167,7 @@ bool print_small_token(Token *token, Table *table)
 		{
 			printf("LET");
 		}
-		if (token->subcode & Comma_SubCode)
-		{
-			printf(",");
-		}
+		// 2010-08-01: removed Comma_SubCode
 		// 2010-06-08: added semicolon subcode flag
 		if (token->subcode & SemiColon_SubCode)
 		{
