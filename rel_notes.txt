@@ -20,6 +20,7 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
+	Translator - Full support for temporary strings
 	Translator - INPUT Command
 	Translator - Colons
 	Translator - IF-THEN-ELSE-ENDIF Commands
@@ -37,6 +38,74 @@ Planned Roadmap:
 	Encoder - Program sub-module
 	Encoder - Temporary Strings
 	Recreator - From internal program
+
+
+Release 0.1.14-pre-2 (2010-12-27)
+
+	Translator preliminary developmental release - first eight
+	translator tests are working correctly, the rest are not yet.  A
+	summary of the other changes made:
+
+	    - multiple equal assignments removed
+	    - operand processing as each is processed
+	    - addition of new data type specific associated codes
+	    - no attachment of operands to sub-string functions
+	    - functions with different number of arguments reordered
+	    - additional table initialization including new checks
+
+	Multiple equal assignments were removed because the type of
+	type of variable being assigned can not be determined when the
+	expressions contain an identifier with parentheses as either an
+	array of function (multiple comma assignments remain).
+
+	The Translator was modified to process one operand of operators
+	and internal functions one at a time, removing each from the
+	done stack except string operands, which are left so they can be
+	attached to the operator or internal function tokens.
+
+	New associated codes were added for all the operators
+	that can take different data type arguments (for example double
+	or integer).  Hidden conversion codes will no longer be
+	necessary for these.
+
+	For sub-string functions, no string operand is attached - the
+	operands will be left on the done stack and carried forward to
+	be attached to the next non-sub-string token.  This is because
+	during run-time, the sub-string functions behave the same
+	whether the operand is a string or a temporary string.
+
+	Internal functions with different number of arguments (ASC,
+	INSTR, and MID$) were reordered in the table putting the form
+	with the least number arguments first.  This was necessary
+	because operands are now processed one at a time instead of all
+	at the end.
+
+	To make sure the functions with different number of arguments
+	are entered into the table correctly (necessary for the
+	Translator to work properly), checks were added to the table
+	initialization to insure that these entries are correct.  The
+	number of string arguments (non-temporary) was added to the
+	table entries where this value is automatically generated during
+	table initialization.
+
+	New (listed first) and updated files include:
+
+	translator12.txt - contains more error tests
+	translator13.txt - contains semicolon error tests
+
+	codes.awk        - only look for codes in Code enumeration
+	codes.txt        - updated for token code changes
+	ibcp.cpp         - outgoing development changes
+	ibcp.h           - outgoing development changes
+	ibcp.vpj         - removed -O2 option for easier debugging
+	regtest          - added new tests
+	regtest.bat      - added new tests
+	stack.h          - optimizations
+	table.cpp        - outgoing development changes
+	test_ibcp.cpp    - updated tests
+	translator.cpp   - outgoing development changes
+	parser5.txt      - updated for token code changes
+	translatorXX.txt - updated for changes
 
 
 Release 0.1.14-pre-1 (2010-06-26)
