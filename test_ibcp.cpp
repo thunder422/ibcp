@@ -152,6 +152,8 @@
 //              modified to get code_name[] contents from auto-generated include
 //                file
 //
+//  2011-01-04  added translator test 14 - expression type tests
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -799,11 +801,42 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z$,Y$=;",
 		NULL
 	};
+	static const char *testinput14[] = {  // expression error tests (2011-01-04)
+		//                count		hold
+		"Z=(,",         // 0,0		OpenParen	Op
+		"Z=-,",         // -1		Neg			Op
+		"Z=A+,",        // -1		Add			Op
+		"Z=(-,",        // 0,0		Neq			Op
+		"Z=(A+,",       // 0,0		Add			Op
+		"Z=INT(,",      // 1,1		Int			HasParen
+		"Z=INT(-,",     // 1,1		Neg			Op
+		"Z=INT(A+,",    // 1,1		Add			Op
+		"Z=INT((,",     // 1,1/0,0	OpenParen	Op
+		"Z=INT((-,",    // 1,1/0,0	Neg			Op
+		"Z=INT((A+,",   // 1,1/0,0	Add			Op
+		"Z=A(,",        // 1,0		---			HasParen
+		"Z=A(-,",       // 1,0		Neg			Op
+		"Z=A(B+,",      // 1,0		Add			Op
+		"Z=A((,",       // 1,0/0,0	OpenParen	Op
+		"Z=A((-,",      // 1,0/0,0	Neg			Op
+		"Z=A((B+,",     // 1,0/0,0	Add			Op
+		"Z=A(INT(,",    // 1,0/1,1	Int			HasParen
+		"Z=A(INT(-,",   // 1,0/1,1	Neg			Op
+		"Z=A(INT(A+,",  // 1,0/1,1	Add			Op
+		"Z=A(B(,",      // 1,0/1,0	---			HasParen
+		"Z=A(B(-,",     // 1,0/1,0	Neq			Op
+		"Z=A(B(C+,",    // 1,0/1,0	Add			Op
+		"Z = -",
+		"Z% = A%+",
+		"Z$ = A$+",
+		"Z = A(B+",
+		NULL
+	};
 
 	static const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
 		testinput7, testinput8, testinput9, testinput10, testinput11,
-		testinput12, testinput13
+		testinput12, testinput13, testinput14
 	};
 	static const int ntests = sizeof(test) / sizeof(test[0]);
 

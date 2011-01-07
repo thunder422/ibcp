@@ -220,6 +220,11 @@
 //                removed Translator::match_code()
 //  2010-12-13  added number of string arguments to ExprInfo for Table entries
 //
+//  2011-01-02  added Translator::get_expr_datatype()
+//  2011-01-05  put datatype back into TableEntry, removed expr_type
+//              modified datatype access function to get main datatype if there
+//                is not exprinfo (this may be temporary)
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -726,6 +731,9 @@ enum TokenStatus {
 	BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
 	BUG_InvalidDataType,			// diagnostic error (2010-07-02)
 	BUG_InvalidExprType,			// diagnostic error (2010-07-02)
+	BUG_CmdStackEmptyExpr,			// diagnostic error (2011-01-02)
+	BUG_CountStackEmpty,			// diagnostic error (2011-01-02)
+	BUG_UnexpParenExpr,				// diagnostic error (2011-01-02)
 	BUG_Debug,						// diagnostic error (2010-06-13)
 	BUG_Debug1,						// diagnostic error (2010-06-13)
 	BUG_Debug2,						// diagnostic error (2010-06-13)
@@ -977,6 +985,8 @@ struct TableEntry {
 	int flags;					// flags for entry
 	// 2010-03-20: added precedence
 	int precedence;				// precedence of code
+	// 2011-01-05: added expected expression data type for commands
+	DataType datatype;			// next expression data type for command
 	// 2010-05-03: replace members with expression information pointer
 	ExprInfo *exprinfo;			// pointer to expression info (NULL for none)
 	// 2010-05-28: added variables to support commands in translator
@@ -984,8 +994,8 @@ struct TableEntry {
 	TokenMode token_mode;		// next token mode for command
 	// 2010-06-05: added end-of-statement token handler for commands
 	CmdHandler cmd_handler;		// pointer to translator cmd handler function
-	// 2010-06-29: added expression type, needed when token_mode is Expression
-	ExprType expr_type;			// next expression type for command
+//+	// 2010-06-29: added expression type, needed when token_mode is Expression
+//+	ExprType expr_type;			// next expression type for command
 };
 
 
@@ -1028,7 +1038,8 @@ public:
 		// 2010-05-03: get value from expression information structure
 		// 2010-05-08: added check for null exprinfo pointer
 		ExprInfo *ei = entry[index].exprinfo;
-		return ei == NULL ? None_DataType : ei->datatype;
+		// 2010-01-05: return main data type if no expression info
+		return ei == NULL ? entry[index].datatype : ei->datatype;
 	}
 	Multiple multiple(int index)
 	{
@@ -1062,11 +1073,11 @@ public:
 	{
 		return entry[index].token_mode;
 	}
-	// 2010-06-29: added token mode access function
-	ExprType expr_type(int index)
-	{
-		return entry[index].expr_type;
-	}
+//-	// 2010-06-29: added token mode access function
+//-	ExprType expr_type(int index)
+//-	{
+//-		return entry[index].expr_type;
+//-	}
 	Code unary_code(int index)
 	{
 		// 2010-05-03: get value from expression information structure
@@ -1353,6 +1364,8 @@ private:
 	TokenStatus expression_end(void);
 	// 2010-06-14: function to get status for an outstanding parentheses token
 	TokenStatus paren_status(void);
+    // 2011-01-02: function to get current expression data type
+	TokenStatus get_expr_datatype(DataType &datatype);
 
 	// COMMAND SPECIFIC FUNCTIONS
 	// 2010-06-04: function to added data type specific print code

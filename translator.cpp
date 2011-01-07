@@ -232,6 +232,18 @@
 //  2010-12-25  modified to leave string operand on stack for sub-string
 //                functions and not push the sub-string token to the done stack
 //
+//  2010-12-28  corrected call to process_final_operand() in add_print_code()
+//  2010-12-29  modified EndOfLine_Handler() to wait to pop the command on top
+//               of the command stack until after the command handler is called
+//  2011-01-01  made None_DataType return expected error instead of bug error
+//  2011-01-03  implemented new function get_expr_datatype() to get the current
+//                datatype of the expression by looking back at what was
+//                processed so far; called when an error occurs so that the
+//                appropriate error can be reported)
+//  2011-01-04  assign datatype to open parentheses when being pushed to the
+//                hold stack (to be used later when getting the datatype for an
+//                expression)
+//
 
 #include "ibcp.h"
 
@@ -286,16 +298,6 @@ static DataType equivalent_datatype[numberof_DataType] = {
 	String_DataType		// SubStr
 };
 
-// 2010-06-29: equivalent data type array
-static ExprType exprtype_datatype[sizeof_DataType] = {
-	Num_ExprType,	// Double
-	Num_ExprType,	// Integer
-	Str_ExprType,	// String
-	Str_ExprType,	// TmpStr
-	Str_ExprType	// SubStr
-//	Any_ExprType	// None
-};
-
 // 2010-07-03: error status data type array
 static struct {
 	TokenStatus expected;
@@ -333,7 +335,7 @@ static struct {
 		BUG_InvalidDataType
 	},
 	{	// None
-		BUG_InvalidDataType,
+		ExpExpr_TokenStatus,   // changed from Invalid (2011-01-01)
 		BUG_InvalidDataType,
 		ExpAssignItem_TokenStatus
 	},
@@ -538,6 +540,10 @@ TokenStatus Translator::add_token(Token *&token)
 		{
 			if (state != FirstOperand)
 			{
+				TokenStatus status;
+				DataType datatype;
+
+				// unexpected of end expresion - determine error to return
 				switch (mode)
 				{
 				case Command_TokenMode:
@@ -567,29 +573,15 @@ TokenStatus Translator::add_token(Token *&token)
 					}
 
 				case Expression_TokenMode:
-					if (count_stack.empty())
+					// 2011-01-03: replaced code with function call
+					if ((status = get_expr_datatype(datatype))
+						!= Good_TokenStatus)
 					{
-						if (hold_stack.empty())
-						{
-							return BUG_HoldStackEmpty;
-						}
-						// TODO operator on hold stack needs correct data type
-						return BUG_Debug1;
-						return errstatus_datatype[cmd_stack.top().token
-							->datatype].variable;
+						return status;
 					}
-					else if (count_stack.top().nexpected == 0)
+					else
 					{
-						// in array or non-internal function
-						// (cannot determine type of expression)
-						return ExpExpr_TokenStatus;
-					}
-					else  // in internal function
-					{
-						// 2010-10-01: corrected to return expected type error
-						return errstatus_datatype
-							[table->operand_datatype(count_stack.top().index,
-							count_stack.top().noperands - 1)].expected;
+						return errstatus_datatype[datatype].expected;
 					}
 
 				default:
@@ -658,6 +650,13 @@ TokenStatus Translator::add_token(Token *&token)
 					default:
 						return BUG_InvalidMode;
 					}
+				}
+				// 2011-01-04: assign current expr data type to paren token
+				TokenStatus status;
+				if ((status = get_expr_datatype(token->datatype))
+					!= Good_TokenStatus)
+				{
+					return status;
 				}
 				// push open parentheses right on stack and return
 				hold_stack.push(token);
@@ -795,7 +794,7 @@ TokenStatus Translator::add_operator(Token *&token)
 	// 2010-08-22: moved to before final operand processing
 	do_pending_paren(token);
 
-	// changed token operator code or insert conversion codes as needed
+	// change token operator code or insert conversion codes as needed
 	TokenStatus status = process_final_operand(token,
 		table->is_unary_operator(token->index) ? 0 : 1);
 	if (status != Good_TokenStatus)
@@ -932,12 +931,10 @@ TokenStatus Translator::process_final_operand(Token *&token, int operand_index,
 	{
 		operand = new List<RpnItem *>::Element *[noperands];
 		// 2010-05-15: save operands for storage in output list
-		// TODO reverse loop, add second index variable
 		for (int i = noperands; --i >= 0;)
 		{
 			if (done_stack.empty())
 			{
-				return BUG_Debug3;
 				return BUG_DoneStackEmptyOperands;
 			}
 			operand[i] = done_stack.pop();
@@ -1325,6 +1322,82 @@ TokenStatus Translator::paren_status(void)
 }
 
 
+// function to get current expression data type
+//
+//   - sets data type from current expression
+//   - return Good_TokenStatus is successful, error otherwise
+//   - if operator on hold stack, then get it's operand's data type
+//   - if Null (empty hold stack), then get command's expression type
+//   - if OpenParen, then get it's data type (which could be None)
+//   - if internal function, then get it's current operand's dasta type
+//   - if array or non-internal function, then data type is None
+
+// 2011-01-02: implemented new function from parts of add_token()
+TokenStatus Translator::get_expr_datatype(DataType &datatype)
+{
+	TokenStatus status = Good_TokenStatus;
+	if (hold_stack.empty())  // at least NULL token should be on hold stack
+	{
+		status = BUG_HoldStackEmpty;
+	}
+	else if (hold_stack.top()->is_operator())
+	{
+		int index = hold_stack.top()->index;
+		Code code = table->code(index);
+		if (code == Null_Code)
+		{
+			// nothing on hold stack, get expected type for command
+			if (cmd_stack.empty())
+			{
+				if (!exprmode)
+				{
+					status = BUG_CmdStackEmptyExpr;  // this shouldn't happen
+				}
+			}
+			else
+			{
+				// could be Null, Any, Num, Str _ExprType
+				datatype = cmd_stack.top().token->datatype;
+			}
+		}
+		else if (code == OpenParen_Code)
+		{
+			// no operator, get data type of open parantheses (could be none)
+			datatype = hold_stack.top()->datatype;
+		}
+		else  // an regular operator on top of hold stack
+		{
+			// datatype from operand of operator on top of hold stack
+			// (first operand for unary and second operand for binary operator)
+			datatype = table->operand_datatype(index,
+				table->is_unary_operator(index) ? 0 : 1);
+		}
+	}
+	else if (count_stack.empty())  // no parentheses, array or function?
+	{
+		// this situation sould have been handled above
+		status = BUG_CountStackEmpty;  // this shouldn't happen
+	}
+	else if (count_stack.top().nexpected > 0)  // internal function?
+	{
+		// datatype from current operator of internal function
+		datatype = table->operand_datatype(count_stack.top().index,
+			count_stack.top().noperands - 1);
+	}
+	else if (count_stack.top().noperands == 0)  // in parentheses?
+	{
+		// this situation should have been handled above
+		status = BUG_UnexpParenExpr;
+	}
+	else  // in array or non-internal function
+	{
+		// (cannot determine type of expression)
+		datatype = None_DataType;
+	}
+	return status;
+}
+
+
 // function to clean up the Translator variables after an error is detected
 //
 //   - must be called after add_token() returns an error
@@ -1388,9 +1461,8 @@ TokenStatus Translator::add_print_code(void)
 	{
 		// create token for data type specific print token
 		Token *token = table->new_token(PrintDbl_Code);
-		TokenStatus status;
-		process_final_operand(token, 0, status);
-		return status;
+		// 2010-12-28: corrected status return value and arguments in call
+		return process_final_operand(token, 0);
 //-		TokenStatus status = find_code(token);
 //-		if (status != Good_TokenStatus)
 //-		{
@@ -2154,13 +2226,16 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 				return BUG_InvalidMode;
 			}
 		}
-		CmdItem cmd_item = t.cmd_stack.pop();
+		// changed from pop, leave command on top of stack (2010-12-29)
+		CmdItem cmd_item = t.cmd_stack.top();
 		CmdHandler cmd_handler = t.table->cmd_handler(cmd_item.token->index);
 		if (cmd_handler == NULL)  // missing command handler?
 		{
 			return BUG_NotYetImplemented;
 		}
 		status = (*cmd_handler)(t, &cmd_item, token);
+		// now pop the command off of stack (2010-12-29)
+		t.cmd_stack.pop();
 		if (status != Good_TokenStatus)
 		{
 			token = cmd_item.token;  // command decides where error is

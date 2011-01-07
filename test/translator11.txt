@@ -387,7 +387,7 @@ Input: LET A%=
 
 
 Input: Z$=
-          ^-- expected numeric expression
+          ^-- expected string expression
 
 
 Input: Z$=,
@@ -399,7 +399,7 @@ Input: Z$=+
 
 
 Input: Z$=Y$=
-             ^-- expected string expression
+            ^-- expected string operator
 
 
 Input: Z$,Y$=
@@ -427,8 +427,8 @@ Input: MID$(A$+B$,
 
 
 Input: A(INT(B+C))=4
-Output: B C + INT( A(<ref> 4 CvtDbl Assign 
+Output: B C + INT( A(<ref>[INT(] 4 CvtDbl Assign 
 
 Input: MID$(A$,LEFT$(B$,1)<C$)=D$
-Output: A$ B$ 1 LEFT$([B$,1] C$ <$[LEFT$(,C$] MID2$(<ref>[A$,<$] D$ AssignSub$[D$] 
+Output: A$<ref> B$ 1 LEFT$( C$ <$[B$,C$] MID2$(<ref> D$ AssignSub$[D$] 
 
