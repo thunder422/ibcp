@@ -906,7 +906,7 @@ const int Highest_Precedence = 127;
 // 2010-05-03: expression information for operators and internal functions
 struct ExprInfo {
 	// 2010-05-03: members moved from TableEntry
-	DataType datatype;			// data type of entry (if applicable)
+	// 2010-01-07: moved datatype back to TableEntry
 	// 2010-03-17: added unary code flag
 	Code unary_code;			// unary code for operator (Null_Code if none)
 	// 2010-04-04: added number of arguments
@@ -925,12 +925,11 @@ struct ExprInfo {
 	// 2010-05-03: changed from array to pointer
 	Code *assoc_code;			// associated codes
 
-	ExprInfo(DataType _datatype, Code _unary_code,
-		short _noperands = 0, DataType *_operand_datatype = NULL,
-		short _nassoc_codes = 0, short _assoc2_index = 0,
-		Code *_assoc_code = NULL)
+	// 2010-01-07: removed datatype
+	ExprInfo(Code _unary_code = Null_Code, short _noperands = 0,
+		DataType *_operand_datatype = NULL, short _nassoc_codes = 0,
+		short _assoc2_index = 0, Code *_assoc_code = NULL)
 	{
-		datatype = _datatype;
 		unary_code = _unary_code;
 		noperands = _noperands;
 		operand_datatype = _operand_datatype;
@@ -1037,9 +1036,9 @@ public:
 	{
 		// 2010-05-03: get value from expression information structure
 		// 2010-05-08: added check for null exprinfo pointer
-		ExprInfo *ei = entry[index].exprinfo;
 		// 2010-01-05: return main data type if no expression info
-		return ei == NULL ? entry[index].datatype : ei->datatype;
+		// 2011-01-17: removed expression info
+		return entry[index].datatype;
 	}
 	Multiple multiple(int index)
 	{
