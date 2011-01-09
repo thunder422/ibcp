@@ -244,6 +244,16 @@
 //                hold stack (to be used later when getting the datatype for an
 //                expression)
 //
+//  2011-01-08  get datatype of expression to get appropriate error when a
+//                binary operator occurs when an operand is expected
+//              corrected paren_status() when at last argument of first form
+//                of a function with multiple forms to report the appropriate
+//                error (that a comma could also be expected)
+//              in Comma_Handler() when an error occurs and the done stack is
+//                empty, get data type of expression to get appropriate error
+//              in Comma_Handler() when moving to the next multiple form of a
+//                function, corrected the setting of the index on count stack
+//
 
 #include "ibcp.h"
 
@@ -359,6 +369,9 @@ static struct {
 // 2010-04-04: made argument a reference so different token can be returned
 TokenStatus Translator::add_token(Token *&token)
 {
+	TokenStatus status;
+	DataType datatype;
+
 	if (state == Initial)
 	{
 		// 2010-03-21: check for end of line at begin of input
@@ -540,9 +553,6 @@ TokenStatus Translator::add_token(Token *&token)
 		{
 			if (state != FirstOperand)
 			{
-				TokenStatus status;
-				DataType datatype;
-
 				// unexpected of end expresion - determine error to return
 				switch (mode)
 				{
@@ -596,7 +606,7 @@ TokenStatus Translator::add_token(Token *&token)
 					// FIXME this won't happen
 					if (table->code(hold_stack.top()->index) == AssignList_Code)
 					{
-						return BUG_Debug;
+						return BUG_Debug1;
 					}
 				}
 			}
@@ -614,8 +624,15 @@ TokenStatus Translator::add_token(Token *&token)
 			if (unary_code == Null_Code)
 			{
 				// oops, not a valid unary operator
-				return BUG_Debug8;
-				return ExpExpr_TokenStatus;
+				// get data type of expr for appropriate error (2011-01-08)
+				if ((status = get_expr_datatype(datatype)) != Good_TokenStatus)
+				{
+					return status;
+				}
+				else
+				{
+					return errstatus_datatype[datatype].expected;
+				}
 			}
 			// change token to unary operator
 			token->index = table->index(unary_code);
@@ -652,7 +669,6 @@ TokenStatus Translator::add_token(Token *&token)
 					}
 				}
 				// 2011-01-04: assign current expr data type to paren token
-				TokenStatus status;
 				if ((status = get_expr_datatype(token->datatype))
 					!= Good_TokenStatus)
 				{
@@ -677,7 +693,6 @@ TokenStatus Translator::add_token(Token *&token)
 		if (!token->is_operator())
 		{
 			// state == BinOp, but token is not an operator
-			TokenStatus status;
 			if ((status = paren_status()) != Good_TokenStatus)
 			{
 				return status;
@@ -744,7 +759,7 @@ TokenStatus Translator::add_token(Token *&token)
 		// pop operator on top of stack and add it to the output
 		// 2010-04-13: set top_token so reference can be passed
 		top_token = hold_stack.pop();
-		TokenStatus status = add_operator(top_token);
+		status = add_operator(top_token);
 		if (status != Good_TokenStatus)
 		{
 			token = top_token;  // 2010-04-13: return token with error
@@ -1112,7 +1127,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index)
 			}
 			else  // possible problem (last token should match top token)
 			{
-				status = BUG_Debug8;
+				status = BUG_Debug9;
 			}
 		}
 	}
@@ -1215,7 +1230,7 @@ TokenStatus Translator::expression_end(void)
 		token = hold_stack.top();
 		if (!token->table_entry())
 		{
-			return BUG_Debug;
+			return BUG_Debug2;
 		}
 		if (table->code(token->index) != Null_Code)
 		{
@@ -1292,16 +1307,25 @@ TokenStatus Translator::paren_status(void)
 		return ExpOpCommaOrParen_TokenStatus;
 	}
 
+	// internal function
+	int index;
+	Token *top_token = hold_stack.top();
 	if (count_stack.top().noperands == count_stack.top().nexpected)
 	{
-		// internal function - at last argument (no more expected)
-		return ExpOpOrParen_TokenStatus;
+		// check if there could be more arguments (2011-01-08)
+		if ((table->flags(top_token->index) & Multiple_Flag) == 0)
+		{
+			// internal function - at last argument (no more expected)
+			return ExpOpOrParen_TokenStatus;
+		}
+		else  // multiple flag set, could have more arguments
+		{
+			return ExpOpCommaOrParen_TokenStatus;
+		}
 	}
 
 	// internal function - more arguments expected
 	// (number of arguments doesn't match function's entry)
-	int index;
-	Token *top_token = hold_stack.top();
 	if ((table->flags(top_token->index) & Multiple_Flag) != 0
 		&& (index = table->search(top_token->index,
 		count_stack.top().noperands)) > 0)
@@ -1794,6 +1818,20 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 				return Good_TokenStatus;
 
 			default:
+				// if done stack empty, get expected expr type (2011-01-08)
+				if (t.done_stack.empty())
+				{
+					DataType datatype;
+					if ((status = t.get_expr_datatype(datatype))
+						!= Good_TokenStatus)
+					{
+						return status;
+					}
+					else
+					{
+						return errstatus_datatype[datatype].expected;
+					}
+				}
 				return ExpOpOrEnd_TokenStatus;
 			}
 
@@ -1821,7 +1859,8 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 				{
 					// change token to next code (index)
 					// (table entries have been validated during initialization)
-					t.count_stack.top().index = top_token->index++;
+					// 2011-01-08: need to increment index before assignment
+					t.count_stack.top().index = ++top_token->index;
 					// update number of expected operands
 					t.count_stack.top().nexpected
 						= t.table->noperands(top_token->index);
@@ -1845,7 +1884,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 //-					}
 //-					if (!t.done_stack.top()->value->token->reference)
 //-					{
-//-						return BUG_Debug9;
+//-						return BUG_Debug;
 //-					}
 //-					if (t.done_stack.top()->value->token->datatype
 //-						!= String_DataType)

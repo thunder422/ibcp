@@ -44,7 +44,7 @@ Input: MID$(A$,B$,C)
 
 
 Input: MID$(A$,B,,C)
-                 ^-- expected string expression
+                 ^-- expected numeric expression
 
 
 Input: MID$(A$,B,C$)

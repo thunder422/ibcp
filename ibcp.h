@@ -224,6 +224,7 @@
 //  2011-01-05  put datatype back into TableEntry, removed expr_type
 //              modified datatype access function to get main datatype if there
 //                is not exprinfo (this may be temporary)
+//  2011-01-07  removed datatype from ExprInfo
 //
 
 #ifndef IBCP_H
@@ -730,7 +731,7 @@ enum TokenStatus {
 	BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
 	BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
 	BUG_InvalidDataType,			// diagnostic error (2010-07-02)
-	BUG_InvalidExprType,			// diagnostic error (2010-07-02)
+//+	BUG_InvalidExprType,			// diagnostic error (2010-07-02)
 	BUG_CmdStackEmptyExpr,			// diagnostic error (2011-01-02)
 	BUG_CountStackEmpty,			// diagnostic error (2011-01-02)
 	BUG_UnexpParenExpr,				// diagnostic error (2011-01-02)
@@ -906,7 +907,7 @@ const int Highest_Precedence = 127;
 // 2010-05-03: expression information for operators and internal functions
 struct ExprInfo {
 	// 2010-05-03: members moved from TableEntry
-	// 2010-01-07: moved datatype back to TableEntry
+	// 2011-01-07: moved datatype back to TableEntry
 	// 2010-03-17: added unary code flag
 	Code unary_code;			// unary code for operator (Null_Code if none)
 	// 2010-04-04: added number of arguments
@@ -925,7 +926,7 @@ struct ExprInfo {
 	// 2010-05-03: changed from array to pointer
 	Code *assoc_code;			// associated codes
 
-	// 2010-01-07: removed datatype
+	// 2011-01-07: removed datatype
 	ExprInfo(Code _unary_code = Null_Code, short _noperands = 0,
 		DataType *_operand_datatype = NULL, short _nassoc_codes = 0,
 		short _assoc2_index = 0, Code *_assoc_code = NULL)
@@ -1037,7 +1038,7 @@ public:
 		// 2010-05-03: get value from expression information structure
 		// 2010-05-08: added check for null exprinfo pointer
 		// 2010-01-05: return main data type if no expression info
-		// 2011-01-17: removed expression info
+		// 2011-01-07: removed expression info
 		return entry[index].datatype;
 	}
 	Multiple multiple(int index)

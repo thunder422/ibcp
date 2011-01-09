@@ -263,7 +263,7 @@ Input: MID$(A$,B,C)
 
 
 Input: MID$(A$,B,C)=
-                    ^-- expected expression
+                    ^-- expected string expression
 
 
 Input: INT(
@@ -399,7 +399,7 @@ Input: Z$=+
 
 
 Input: Z$=Y$=
-            ^-- expected string operator
+             ^-- expected string expression
 
 
 Input: Z$,Y$=

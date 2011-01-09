@@ -65,6 +65,8 @@
 //  2010-06-29  updated expected expression error messages
 //  2010-07-01/05  updates to token status messages for changes
 //
+//  2011-01-02  added for error codes
+//
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
@@ -173,12 +175,18 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: command stack not empty"},
 	{BUG_CmdStackEmpty,
 		"BUG: command stack empty"},
+	{BUG_CmdStackEmptyExpr,  // 2011-01-02: added
+		"BUG: command stack empty for expression"},
 	{BUG_NoAssignListCode,
 		"BUG: no assign list code found"},
 	{BUG_InvalidDataType,
 		"BUG: invalid data type"},
-	{BUG_InvalidExprType,
-		"BUG: invalid expression type"},
+//+	{BUG_InvalidExprType,
+//+		"BUG: invalid expression type"},
+	{BUG_CountStackEmpty,  // 2011-01-02: added
+		"BUG: count stack empty"},
+	{BUG_UnexpParenExpr,  // 2011-01-02: added
+		"BUG: unexpected parentheses in expression"},
 	{BUG_Debug1,
 		"BUG: debug #1"},
 	{BUG_Debug2,
