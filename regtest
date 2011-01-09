@@ -25,6 +25,9 @@
 #  2010-06-29  added test 12
 #  2010-07-04  added test 13
 #  2011-01-04  added test 14
+#  2011-01-09  changed name of executable from ibcp to ibcp.exe to make
+#              it work properly on Linux (this still works under windows;
+#              before the .exe was being added automatically)
 #
 #
 #  Usage:
@@ -39,7 +42,7 @@
 rm -f parser*.txt translator*.txt
 for i in 1 2 3 4 5
 do
-	ibcp -p $i >parser$i.txt
+	ibcp.exe -p $i >parser$i.txt
 	cmp -s test/parser$i.txt parser$i.txt
 	if [ $? -eq 0 ]
 	then
@@ -51,7 +54,7 @@ done
 
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14
 do
-	ibcp -t $i >translator$i.txt
+	ibcp.exe -t $i >translator$i.txt
 	cmp -s test/translator$i.txt translator$i.txt
 	if [ $? -eq 0 ]
 	then
