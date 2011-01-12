@@ -64,6 +64,8 @@
 //
 //  2010-06-25  TableSearch replaced with SearchType
 //
+//  2011-01-11  Set token length for identifiers and number constants
+//
 
 #include <stdio.h>
 
@@ -437,6 +439,7 @@ bool Parser::get_identifier(void)
 		token->type = paren ? Paren_TokenType : NoParen_TokenType;
 		token->datatype = datatype;
 		token->string = new String(pos, len);
+		token->length = len;  // 2011-01-11: set length of token
 		pos = p;  // move position past word
 		return true;
 	}
@@ -713,6 +716,7 @@ bool Parser::get_number(void)
 	}
 	// create string of number so it later can be reproduced
 	token->string = new String(pos, p);
+	token->length = token->string->get_len();  // 2011-01-11: set len of token
 	pos = p;  // move to next character after constant
 	return true;
 }

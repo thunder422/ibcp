@@ -34,6 +34,8 @@
 //              that grows stack as need to new grow() function so that this
 //              code is not inlined
 //
+//  2011-01-12  renamed stack[] to array[] to reduce confusion during debugging
+//
 
 #ifndef STACK_H
 #define STACK_H
@@ -76,19 +78,19 @@
 
 template <class T, int initial_size = 10, int increase_size = 10>
 class SimpleStack {
-	T *stack;					// pointer to array holding stack
+	T *array;					// pointer to array holding stack
 	int size;					// current size of the array
 	int index;					// index to the top element in the stack
 public:
 	SimpleStack(void)
 	{
 		size = initial_size;
-		stack = new T[size];	// allocate stack array
+		array = new T[size];	// allocate stack array
 		index = -1;				// indicates stack is empty
 	}
 	~SimpleStack()
 	{
-		delete[] stack;			// de-allocate stack array
+		delete[] array;			// de-allocate stack array
 	}
 
 	// function to check if list is empty 
@@ -116,7 +118,7 @@ public:
 			grow();
 		}
 		// 2010-04-23: just return reference to new value (top of stack)
-		return stack[index];
+		return array[index];
 	}
 
 	// function to push a value on the top of a stack
@@ -132,14 +134,14 @@ public:
 	// 2010-04-23: changed to return a reference
 	T &pop(void)
 	{
-		return stack[index--];
+		return array[index--];
 	}
 
 	// function to get a reference to the generic value on top of stack
 	T &top(void)
 	{
 		// must have a value on the stack
-		return stack[index];
+		return array[index];
 	}
 };
 
@@ -154,17 +156,17 @@ void SimpleStack<T, initial_size, increase_size>::grow(void)
 {
 	// stack array is not big enough, increase size
 	int newsize = size + increase_size;
-	T* newstack = new T[newsize];
+	T* newarray = new T[newsize];
 
 	// move elements from current array to new array
 	// (C++ provides no realloc() functionality with new)
 	for (int i = 0; i < size; i++)
 	{
-		newstack[i] = stack[i];
+		newarray[i] = array[i];
 	}
 
-	delete[] stack;
-	stack = newstack;
+	delete[] array;
+	array = newarray;
 	size = newsize;
 }
 

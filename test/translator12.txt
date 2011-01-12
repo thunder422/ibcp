@@ -7,19 +7,19 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: Z = A$ + B$ + C$
-                   ^-- expected numeric expression
+           ^^^^^^^^^^^^-- expected numeric expression
 
 
 Input: Z = MID$(A*B+C,1)
-                ^-- expected string expression
+                ^^^^^-- expected string expression
 
 
 Input: Z$ = MID$(A*B+C,1)
-                 ^-- expected string expression
+                 ^^^^^-- expected string expression
 
 
 Input: Z$ = MID$(Y$,A$ + B$ + C$)
-                    ^^-- expected numeric expression
+                    ^^^^^^^^^^^^-- expected numeric expression
 
 
 Input: Z = A <> B$
@@ -34,7 +34,7 @@ Input: Z = A + B$ + C$
 
 
 Input: Z = A < B$ + C$
-                  ^-- expected numeric expression
+               ^^^^^^^-- expected numeric expression
 
 
 Input: Z = A + B$ + C%
@@ -60,7 +60,7 @@ Input: Z$ = A$ + B$ + C%
 
 
 Input: Z$ = A$ + B * C
-                   ^-- expected string expression
+                 ^^^^^-- expected string expression
 
 
 Input: A$,RIGHT$(B,2) = C$

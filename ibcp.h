@@ -226,6 +226,8 @@
 //                is not exprinfo (this may be temporary)
 //  2011-01-07  removed datatype from ExprInfo
 //
+//  2011-01-11  moved length from union in Token so it can be used for all types
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -768,6 +770,7 @@ struct Token {
 	static void initialize(void);
 
 	int column;				// start column of token
+	int length;				// length of token (2011-01-11: moved from union)
 	TokenType type;			// type of the token
 	DataType datatype;		// data type of token
 	String *string;			// pointer to string of token
@@ -780,7 +783,6 @@ struct Token {
 	union {
 		double dbl_value;	// value for double constant token
 		int int_value;		// value for integer constant token
-		int length;			// length of token
 	};
 	// 2010-03-18: added default value to constructor
 	Token(int col = -1)

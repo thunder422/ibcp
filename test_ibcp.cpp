@@ -153,6 +153,8 @@
 //                file
 //
 //  2011-01-04  added translator test 14 - expression type tests
+//  2011-01-11  removed redundant code in print_error() for determining length
+//                of token (can now just use token length member)
 //
 
 #include <stdio.h>
@@ -1219,33 +1221,8 @@ void print_error(Token *token, const char *error)
 
 	// 2010-03-07: modified to use new error length
 	printf("       %*s", token->column, "");
-	if (token->type == Error_TokenType || token->string == NULL)
-	{
-		len = token->length;
-		if (len > 20)  // should not happed
-		{
-			len = 1;
-		}
-	}
-	else
-	{
-		len = token->string->get_len();
-		// 2010-06-29: account for double quotes of string constants
-		if (token->type == Constant_TokenType
-			&& token->datatype == String_DataType)
-		{
-			len += 2;  // surrounding double quotes
-			char *p = token->string->get_ptr();
-			for (int i = token->string->get_len(); --i >= 0;)
-			{
-				if (*p++ == '"')
-				{
-					len++;  // account for the extra quote
-				}
-			}
-		}
-	}
-	for (int j = 0; j < len; j++)
+	// 2011-01-11: removed extra code, token now contains correct length
+	for (int j = 0; j < token->length; j++)
 	{
 		putchar('^');
 	}
