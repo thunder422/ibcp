@@ -254,6 +254,36 @@
 //              in Comma_Handler() when moving to the next multiple form of a
 //                function, corrected the setting of the index on count stack
 //
+//	2011-01-13	started implementation of storing first and last operands
+//				converted hold stack from holding token pointers to holding
+//				  hold stack items (with a token and first pointer)
+//				added argument to process_final_operand() for passing in an
+//				  operand (either first operand or CloseParen token)
+//	2011-01-14	implemented new process_first_operand() with code from
+//				  Operator/Equal handlers
+//	2011-01-15	converted done stack from holding output list element pointers
+//				  to holding done stack items (with element, first, and last
+//				  pointers)
+//				added arguments to find_code() for return first/last operands
+//				implemented new delete_close_paren() to check for and delete a
+//				  CloseParen token that may be in done stack last token
+//	2011-01-16	in delete_close_paren(), also check if token has table entry
+//				added reporting range of tokens for expression type errors
+//				in clean_up(), fixed to not delete tokens until after stacks
+//				in EndOfLine_Handler(), corrected cleanup for expression mode
+//	2011-01-20	in process_final_operand(), current unary operators to only set
+//				  last operand (first operand should be the unary operator)
+//	2011-01-22	in do_pending_paren(), corrected to delete pending paren token
+//				  when setting parentheses sub-code
+//				implement new function delete_open_paren()
+//				in delete_close_paren(), check if close paren token still being
+//				  used as pending paren (don't delete, just clear last sub-code)
+//				modified find_code() to use work first/last token pointers
+//	2011-01-23	in CloseParen_Handler(), save both open and close paren tokens
+//				  as first/last operands (don't delete open paren token),
+//				  and set last and used sub-code flags of close paren token so
+//				  it doesn't get deleted until its not used anymore
+//
 
 #include "ibcp.h"
 
@@ -385,7 +415,8 @@ TokenStatus Translator::add_token(Token *&token)
 		// push null token to be last operator on stack
 		// to prevent from popping past bottom of stack
 		// 2010-06-02: replaced new and set_token() with new_token()
-		hold_stack.push(table->new_token(Null_Code));
+		hold_stack.push().token = table->new_token(Null_Code);
+		hold_stack.top().first = NULL;
 
 		// 2010-06-10: initialize to FirstOperand instead of Operand
 		state = FirstOperand;
@@ -413,8 +444,7 @@ TokenStatus Translator::add_token(Token *&token)
 //+				{
 //+					expr_type = table->expr_type(token->index);
 //+				}
-				cmd_stack.push();
-				cmd_stack.top().token = token;
+				cmd_stack.push().token = token;
 				cmd_stack.top().code = table->code(token->index);
 				cmd_stack.top().flag = None_CmdFlag;  // 2010-06-01: reset flag
 				return Good_TokenStatus;  // nothing more to do
@@ -438,7 +468,7 @@ TokenStatus Translator::add_token(Token *&token)
 			// 2010-03-25: added parentheses support
 			// 2010-03-26: check for and add dummy token if necessary
 			// 2010-05-29: changed argument to token pointer
-			do_pending_paren(hold_stack.top());
+			do_pending_paren(hold_stack.top().token);
 
 			// 2010-04-25: set default data type for token if it has none
 			set_default_datatype(token);
@@ -475,7 +505,7 @@ TokenStatus Translator::add_token(Token *&token)
 							token->reference = true;
 						}
 						// check if first operand of sub-string (2010-10-10)
-						else if (hold_stack.top()->reference
+						else if (hold_stack.top().token->reference
 							&& count_stack.top().noperands == 1)
 						{
 							return ExpStrVar_TokenStatus;
@@ -497,8 +527,7 @@ TokenStatus Translator::add_token(Token *&token)
 				}
 
 				// 2010-06-08: changed count stack to hold count items
-				count_stack.push();  // add an operand counter
-				count_stack.top().noperands = 1;  // assume at least one
+				count_stack.push().noperands = 1;  // assume at least one
 				if (token->type == IntFuncP_TokenType)
 				{
 					count_stack.top().nexpected
@@ -518,7 +547,8 @@ TokenStatus Translator::add_token(Token *&token)
 //+					expr_type = Any_ExprType;
 				}
 
-				hold_stack.push(token);
+				hold_stack.push().token = token;
+				hold_stack.top().first = NULL;
 				// leave state == Operand
 				state = Operand;  // make sure not FirstOperand (2010-06-10)
 			}
@@ -536,15 +566,16 @@ TokenStatus Translator::add_token(Token *&token)
 				// and push element pointer on done stack
 				// 2010-05-15: create rpn item to add to output list
 				RpnItem *rpn_item = new RpnItem(token);
-				done_stack.push(output->append(&rpn_item));
+				done_stack.push().element = output->append(&rpn_item);
+				done_stack.top().first = done_stack.top().last = NULL;
 				state = BinOp;  // next token must be a binary operator
 			}
-#if 0  // Comma and Equal will take care of this FIXME
-			// 2010-06-01: if command mode then need to change to assignment
-			if (mode == Command_TokenMode)
-			{
-				mode = Assignment_TokenMode;
-			}
+#if 0  // Comma and Equal will take care of this
+//+			// 2010-06-01: if command mode then need to change to assignment
+//+			if (mode == Command_TokenMode)
+//+			{
+//+				mode = Assignment_TokenMode;
+//+			}
 #endif
 			return Good_TokenStatus;
 		}
@@ -604,7 +635,8 @@ TokenStatus Translator::add_token(Token *&token)
 				{
 				case Expression_TokenMode:
 					// FIXME this won't happen
-					if (table->code(hold_stack.top()->index) == AssignList_Code)
+					if (table->code(hold_stack.top().token->index)
+						== AssignList_Code)
 					{
 						return BUG_Debug1;
 					}
@@ -642,7 +674,7 @@ TokenStatus Translator::add_token(Token *&token)
 				// 2010-03-26: don't initialize last_precedence here
 				// 2010-03-26: check for and add dummy token if necessary
 				// 2010-05-29: changed argument to token pointer
-				do_pending_paren(hold_stack.top());
+				do_pending_paren(hold_stack.top().token);
 
 				// 2010-04-16: implemented assignment handling
 				if (count_stack.empty())
@@ -675,13 +707,13 @@ TokenStatus Translator::add_token(Token *&token)
 					return status;
 				}
 				// push open parentheses right on stack and return
-				hold_stack.push(token);
+				hold_stack.push().token = token;
+				hold_stack.top().first = NULL;
 				state = Operand;
 
 				// 2010-04-02: add a null counter to prevent commas
 				// 2010-06-09: changed count stack to hold count items
-				count_stack.push();
-				count_stack.top().noperands = 0;
+				count_stack.push().noperands = 0;
 				count_stack.top().nexpected = 0;
 				return Good_TokenStatus;
 			}
@@ -720,7 +752,8 @@ TokenStatus Translator::add_token(Token *&token)
 			return ExpBinOpOrEnd_TokenStatus;
 		}
 		// 2010-10-10: check if after first operand of sub-string assignment
-		if (hold_stack.top()->reference && count_stack.top().noperands == 1
+		if (hold_stack.top().token->reference
+			&& count_stack.top().noperands == 1
 			&& table->code(token->index) != Comma_Code)
 		{
 			// only a comma is allowed here
@@ -732,7 +765,7 @@ TokenStatus Translator::add_token(Token *&token)
 			// 2010-03-26: check for and add dummy token if necessary
 			//             before emptying stack
 			// 2010-05-29: changed argument to token pointer
-			do_pending_paren(hold_stack.top());
+			do_pending_paren(hold_stack.top().token);
 
 			// now set last precedence to highest in case no operators in ( )
 			last_precedence = Highest_Precedence;
@@ -751,15 +784,13 @@ TokenStatus Translator::add_token(Token *&token)
 	// process all operators
 	// 2010-04-02: changed stack top precedence to work with paren tokens
 	Token *top_token;
-	while (table->precedence(hold_stack.top())
+	while (table->precedence(hold_stack.top().token)
 		>= table->precedence(token->index))
 	{
-		// TODO need top_token to pass to add_operator so that token can be
-		// TODO changed in the event of an error being returned
 		// pop operator on top of stack and add it to the output
 		// 2010-04-13: set top_token so reference can be passed
-		top_token = hold_stack.pop();
-		status = add_operator(top_token);
+		top_token = hold_stack.top().token;
+		status = add_operator(top_token, hold_stack.pop().first);
 		if (status != Good_TokenStatus)
 		{
 			token = top_token;  // 2010-04-13: return token with error
@@ -789,7 +820,8 @@ TokenStatus Translator::add_token(Token *&token)
 //    - sets last_precedence for operator being added to output list
 
 // 2010-04-13: made argument a reference so different value can be returned
-TokenStatus Translator::add_operator(Token *&token)
+// 2011-01-13: added first operand token pointer (from hold stack)
+TokenStatus Translator::add_operator(Token *&token, Token *first)
 {
 	// 2010-04-25: implemented data type handling for non-assignment operators
 	//             removed popping of operands, find_code() does this
@@ -810,7 +842,7 @@ TokenStatus Translator::add_operator(Token *&token)
 	do_pending_paren(token);
 
 	// change token operator code or insert conversion codes as needed
-	TokenStatus status = process_final_operand(token,
+	TokenStatus status = process_final_operand(token, first,
 		table->is_unary_operator(token->index) ? 0 : 1);
 	if (status != Good_TokenStatus)
 	{
@@ -856,6 +888,9 @@ void Translator::do_pending_paren(Token *token)
 				// 2010-05-15: create rpn item to add to output list
 				RpnItem *rpn_item = new RpnItem(pending_paren);
 				output->append(&rpn_item);
+				// reset pending token and return (2011-01-22)
+				pending_paren = NULL;
+				return;
 			}
 			else
 			{
@@ -870,12 +905,101 @@ void Translator::do_pending_paren(Token *token)
 			// TODO something needed on done stack?
 			// TODO (reference flag already cleared by close parentheses)
 		}
+		// check if being used as last operand before deleting (2011-01-22)
+		if (pending_paren->subcode & Last_SubCode)
+		{
+			// still used as last operand token, just clear used flag
+			pending_paren->subcode &= ~Used_SubCode;
+		}
 		else  // don't need pending token
 		{
 			delete pending_paren;  // release it's memory
 		}
 		pending_paren = NULL;  // reset pending token
 	}
+}
+
+
+// function to delete a opening parentheses token that is no longer being used
+// as the first operand token of another token
+//
+//   - the first operand token pointer is passed
+//   - no action if first operand token pointer is not set
+//   - no action if first operand token does not have a table entry
+//   - no action if first operand token is not a closing parentheses token
+
+// 2011-01-22: new function to delete a open paren token
+void Translator::delete_open_paren(Token *first)
+{
+	if (first != NULL && first->table_entry()
+		&& table->code(first->index) == OpenParen_Code)
+	{
+		delete first;  // delete CloseParen token of operand
+	}
+}
+
+
+// function to delete a closing parentheses token that is no longer being used
+// as the last operand token of another token
+//
+//   - the last operand token pointer is passed
+//   - no action if last operand token pointer is not set
+//   - no action if last operand token does not have a table entry
+//   - no action if last operand token is not a closing parentheses token
+//   - if closing parentheses is being used by pending parentheses or in output
+//     as a dummy parentheses token, then last operand flag is cleared
+//   - if closing parentheses token is not being used, then it is deleted
+
+// 2011-01-15: new function to delete a close paren token
+void Translator::delete_close_paren(Token *last)
+{
+	// 2011-01-16: added check if token has table entry
+	if (last != NULL && last->table_entry()
+		&& table->code(last->index) == CloseParen_Code)
+	{
+		// 2011-01-22: check if parentheses token is still being used
+		if (last->subcode & Used_SubCode)
+		{
+			last->subcode &= ~Last_SubCode;  // no longer used as last token
+		}
+		else  // not used, close parentheses token can be deleted
+		{
+			delete last;  // delete CloseParen token of operand
+		}
+	}
+}
+
+
+// function to process the first operand for an operator
+//
+//  - called from the Operator_Handler or Equal_Handler (for equal operator)
+//  - attaches first operand token from operand on top of done stack
+//  - no first operand token for unary operators
+
+// 2011-01-14: new function created (code from Operator/Equal handlers)
+TokenStatus Translator::process_first_operand(Token *&token)
+{
+	Token *first = NULL;		// first operand token (2011-01-14)
+
+	// check first operand of binary operators (2010-08-07)
+	if (!table->is_unary_operator(token->index))
+	{
+		// changed token operator code or insert conversion codes as needed
+		TokenStatus status = find_code(token, 0, &first);
+		if (status != Good_TokenStatus)
+		{
+			return status;
+		}
+	}
+
+	// push it onto the holding stack
+	hold_stack.push().token = token;
+	hold_stack.top().first = first;  // attach first operand (2011-01-14)
+
+	// expecting another operand next (2010-06-10)
+	state = Translator::Operand;
+
+	return Good_TokenStatus;
 }
 
 
@@ -896,16 +1020,22 @@ void Translator::do_pending_paren(Token *token)
 //   - an RPN output item is created and any operands are attached
 //	 - the RPN output item is appended to the output list
 //	 - item is pushed to the done stack if not a print-only function
+//   - from add_operator, token2 if first operand attached on hold stack
+//   - from add_print_code, token2 is NULL
+//   - from CloseParen_Handler, token2 is CloseParen token
 
 // 2010-08-30: new function created
-TokenStatus Translator::process_final_operand(Token *&token, int operand_index,
-	int noperands)
+// 2011-01-13: added pointer to second token
+TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
+	int operand_index, int noperands)
 {
 	bool done_push = true;	// 2010-06-01: for print-only functions
+	Token *first;			// 2011-01-15: first operand token
+	Token *last;			// 2011-01-15: last operand token
 
 	if (noperands == 0)  // internal function or operator
 	{
-		TokenStatus status = find_code(token, operand_index);
+		TokenStatus status = find_code(token, operand_index, &first, &last);
 		if (status != Good_TokenStatus)
 		{
 			return status;
@@ -916,11 +1046,38 @@ TokenStatus Translator::process_final_operand(Token *&token, int operand_index,
 		if (token->datatype != SubStr_DataType)
 		{
 			noperands = table->nstrings(token->index);
+			// set first and last operands (2011-01-15)
+			if (token->is_operator())
+			{
+				if (operand_index == 0)  // unary op?
+				{
+					delete_open_paren(first);
+					first = token;  // set first token to unary op (2011-01-20)
+				}
+				else  // binary op
+				{
+					delete_open_paren(first);
+					first = token2;  // first operand from hold stack
+				}
+				// last operand from token that was on done stack
+			}
+			else  // non-sub-string internal function
+			{
+				delete_open_paren(first);
+				first = NULL;   // token itself is first operand
+				delete_close_paren(last);
+				last = token2;  // last operand is CloseParen token
+			}
 		}
 		// don't push non-reference sub-string function (2010-12-25)
 		else if (!token->reference)
 		{
 			done_push = false;  // don't push sub-string function on done stack
+			// set first/last operands of operand on done stack (2011-01-15)
+			delete_open_paren(done_stack.top().first);
+			done_stack.top().first = token;  // set to sub-string function token
+			delete_close_paren(done_stack.top().last);
+			done_stack.top().last = token2;  // set to CloseParen token
 		}
 
 		// 2010-06-01: process print-only internal functions
@@ -935,6 +1092,11 @@ TokenStatus Translator::process_final_operand(Token *&token, int operand_index,
 			cmd_stack.top().flag = PrintStay_CmdFlag | PrintFunc_CmdFlag;
 			done_push = false;  // don't push on done stack
 		}
+	}
+	else  // array or user function (2011-01-15)
+	{
+		first = NULL;   // token itself is first operand
+		last = token2;  // token's CloseParen is last
 	}
 
 	List<RpnItem *>::Element **operand;
@@ -952,7 +1114,11 @@ TokenStatus Translator::process_final_operand(Token *&token, int operand_index,
 			{
 				return BUG_DoneStackEmptyOperands;
 			}
-			operand[i] = done_stack.pop();
+			// TODO need to keep first/last operands for array/function args TODO
+			delete_open_paren(done_stack.top().first);
+			// check if operand's last token was CloseParen (2011-01-15)
+			delete_close_paren(done_stack.top().last);
+			operand[i] = done_stack.pop().element;
 		}
 	}
 
@@ -965,7 +1131,9 @@ TokenStatus Translator::process_final_operand(Token *&token, int operand_index,
 	{
 		// add token to output list and push element pointer on done stack
 		// 2010-05-22: moved setting of noperands to above with operand_array
-		done_stack.push(output_item);
+		done_stack.push().element = output_item;
+		done_stack.top().first = first;
+		done_stack.top().last = last;
 	}
 
 	return Good_TokenStatus;
@@ -989,14 +1157,41 @@ TokenStatus Translator::process_final_operand(Token *&token, int operand_index,
 // 2010-05-08: added last_operand argument for assignment list processing
 // 2010-07-01: removed last_operand argument, no longer needed
 // 2010-08-30: only process one operand at a time, added operand_index arg
-TokenStatus Translator::find_code(Token *&token, int operand_index)
+// 2011-01-15: added first/last token pointers arguments
+TokenStatus Translator::find_code(Token *&token, int operand_index,
+	Token **first, Token **last)
 {
+	Token *work_first;		// first token work pointer
+	Token *work_last;		// last token work pointer
+
 	if (done_stack.empty())
 	{
 		// oops, there should have been operands on done stack
 		return BUG_DoneStackEmptyFindCode;
 	}
-	Token *top_token = done_stack.top()->value->token;
+	Token *top_token = done_stack.top().element->value->token;
+	// 2011-01-15: get first and last operands for top token
+	// 2011-01-22: used work pointers instead, set arguments if requested
+	work_first = done_stack.top().first;
+	if (work_first == NULL)
+	{
+		work_first = top_token;  // first operand not set, set to operand token
+	}
+	if (first != NULL)  // requested by caller?
+	{
+		*first = work_first;
+		done_stack.top().first = NULL;  // prevent deletion below
+	}
+	work_last = done_stack.top().last;
+	if (work_last == NULL)
+	{
+		work_last = top_token;  // last operand not set, set to operand token
+	}
+	if (last != NULL)  // requested by caller?
+	{
+		*last = work_last;
+		done_stack.top().last = NULL;  // prevent deletion below
+	}
 
 	// 2010-05-08: check if reference is required for first operand
 	if (operand_index == 0 && token->reference)
@@ -1012,7 +1207,8 @@ TokenStatus Translator::find_code(Token *&token, int operand_index)
 				delete token;  // delete the token
 			}
 			// return non-reference operand
-			token = done_stack.pop()->value->token;
+			// report entire expression (2011-01-16)
+			token = (work_first)->through(work_last);
 
 			// XXX check command on top of command stack XXX
 			return ExpAssignRef_TokenStatus;
@@ -1032,10 +1228,13 @@ TokenStatus Translator::find_code(Token *&token, int operand_index)
 	if (datatype == operand_datatype)  // exact match?
 	{
 		// 2010-10-03: pop all references (for assignments) from stack
-		// TODO TmpStr
+		// TODO pop TmpStr / sub-string functions, leave all strings
 		if (operand_datatype != String_DataType || token->reference)
 		{
-			done_stack.pop();  // pop non-string from done stack
+			// pop non-string from done stack
+			delete_open_paren(done_stack.top().first);
+			// check if operand's last token was CloseParen (2011-01-15)
+			delete_close_paren(done_stack.pop().last);
 		}
 		return Good_TokenStatus;
 	}
@@ -1065,10 +1264,13 @@ TokenStatus Translator::find_code(Token *&token, int operand_index)
 			table->set_token(token, assoc_index);
 
 			// 2010-10-03: pop all references (for assignments) from stack
-			// TODO TmpStr
+			// TODO pop TmpStr / sub-string functions, leave all strings
 			if (operand_datatype2 != String_DataType || token->reference)
 			{
-				done_stack.pop();  // pop non-string from done stack
+				// pop non-string from done stack
+				delete_open_paren(done_stack.top().first);
+				// check if operand's last token was CloseParen (2011-01-15)
+				delete_close_paren(done_stack.pop().last);
 			}
 			return Good_TokenStatus;
 		}
@@ -1093,7 +1295,10 @@ TokenStatus Translator::find_code(Token *&token, int operand_index)
 		if (cvt_code != Null_Code)
 		{
 			// a conversion code implies a non-string on done stack (2010-09-11)
-			done_stack.pop();  // pop non-string from done stack
+			// pop non-string from done stack
+			delete_open_paren(done_stack.top().first);
+			// check if operand's last token was CloseParen (2011-01-15)
+			delete_close_paren(done_stack.pop().last);
 
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
@@ -1139,7 +1344,8 @@ TokenStatus Translator::find_code(Token *&token, int operand_index)
 	{
 		status = errstatus_datatype[operand_datatype].variable;
 	}
-	token = top_token;
+	// report entire expression (2011-01-16)
+	token = (work_first)->through(work_last);
 	return status;
 }
 //-
@@ -1227,7 +1433,7 @@ TokenStatus Translator::expression_end(void)
 	}
 	else
 	{
-		token = hold_stack.top();
+		token = hold_stack.top().token;
 		if (!token->table_entry())
 		{
 			return BUG_Debug2;
@@ -1309,7 +1515,7 @@ TokenStatus Translator::paren_status(void)
 
 	// internal function
 	int index;
-	Token *top_token = hold_stack.top();
+	Token *top_token = hold_stack.top().token;
 	if (count_stack.top().noperands == count_stack.top().nexpected)
 	{
 		// check if there could be more arguments (2011-01-08)
@@ -1364,9 +1570,9 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 	{
 		status = BUG_HoldStackEmpty;
 	}
-	else if (hold_stack.top()->is_operator())
+	else if (hold_stack.top().token->is_operator())
 	{
-		int index = hold_stack.top()->index;
+		int index = hold_stack.top().token->index;
 		Code code = table->code(index);
 		if (code == Null_Code)
 		{
@@ -1387,7 +1593,7 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 		else if (code == OpenParen_Code)
 		{
 			// no operator, get data type of open parantheses (could be none)
-			datatype = hold_stack.top()->datatype;
+			datatype = hold_stack.top().token->datatype;
 		}
 		else  // an regular operator on top of hold stack
 		{
@@ -1429,6 +1635,23 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 void Translator::clean_up(void)
 {
 	// clean up from error
+	while (!hold_stack.empty())
+	{
+		// 2010-04-04: added delete to free the token that was on the stack
+		delete hold_stack.pop().token;
+	}
+	while (!done_stack.empty())
+	{
+		delete_open_paren(done_stack.top().first);
+		// check if operand's last token was CloseParen (2011-01-15)
+		delete_close_paren(done_stack.pop().last);
+	}
+	// 2010-04-02: comma support - need to empty count_stack
+	while (!count_stack.empty())
+	{
+		count_stack.pop();
+	}
+	// 2011-01-16: moved to after stack cleanups (so last tokens still exist)
 	while (!output->empty())
 	{
 		// 2010-04-04: added delete to free the token that was in the list
@@ -1436,20 +1659,6 @@ void Translator::clean_up(void)
 	}
 	delete output;
 	output = NULL;
-	while (!hold_stack.empty())
-	{
-		// 2010-04-04: added delete to free the token that was on the stack
-		delete hold_stack.pop();
-	}
-	while (!done_stack.empty())
-	{
-		done_stack.pop();
-	}
-	// 2010-04-02: comma support - need to empty count_stack
-	while (!count_stack.empty())
-	{
-		count_stack.pop();
-	}
 	// 2010-03-25: parentheses support - need to delete pending parentheses
 	if (pending_paren != NULL)
 	{
@@ -1486,7 +1695,7 @@ TokenStatus Translator::add_print_code(void)
 		// create token for data type specific print token
 		Token *token = table->new_token(PrintDbl_Code);
 		// 2010-12-28: corrected status return value and arguments in call
-		return process_final_operand(token, 0);
+		return process_final_operand(token, NULL, 0);
 //-		TokenStatus status = find_code(token);
 //-		if (status != Good_TokenStatus)
 //-		{
@@ -1558,7 +1767,7 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 {
 	if (!done_stack.empty())
 	{
-		token = done_stack.pop()->value->token;
+		token = done_stack.pop().element->value->token;
 		if (!token->reference
 			|| equivalent_datatype[cmd_stack.top().token->datatype]
 			!= equivalent_datatype[token->datatype])
@@ -1627,21 +1836,8 @@ TokenStatus Operator_Handler(Translator &t, Token *&token)
 		}
 	}
 
-	// check first operand of binary operators (2010-08-07)
-	if (!t.table->is_unary_operator(token->index))
-	{
-		// changed token operator code or insert conversion codes as needed
-		TokenStatus status = t.find_code(token, 0);
-		if (status != Good_TokenStatus)
-		{
-			return status;
-		}
-	}
-
-	// push it onto the holding stack
-	t.hold_stack.push(token);
-	t.state = Translator::Operand;
-	return Good_TokenStatus;
+	// 2011-01-14: moved code and replaced with function call
+	return t.process_first_operand(token);
 }
 
 
@@ -1711,20 +1907,8 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 
 	// inside an expression, keep Eq_Code
 
-	// changed token code or insert conversion as needed (2010-09-10)
-	status = t.find_code(token, 0);  // first operand
-	if (status != Good_TokenStatus)
-	{
-		return status;
-	}
-
-	// push on hold stack
-	t.hold_stack.push(token);
-
-	// expecting another operand next (2010-06-10)
-	t.state = Translator::Operand;
-
-	return Good_TokenStatus;
+	// 2011-01-14: moved code and replaced with function call
+	return t.process_first_operand(token);
 }
 
 
@@ -1850,7 +2034,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 		}
 		else if (t.count_stack.top().nexpected > 0)  // internal function?
 		{
-			Token *top_token = t.hold_stack.top();
+			Token *top_token = t.hold_stack.top().token;
 			if (t.count_stack.top().noperands == t.count_stack.top().nexpected)
 			{
 				// number of arguments doesn't match current function's entry
@@ -2044,7 +2228,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		// oops, stack is empty
 		return BUG_DoneStackEmptyParen;
 	}
-	top_token = t.hold_stack.pop();
+	top_token = t.hold_stack.pop().token;
 
 	// 2010-04-02: implemented array/function support BEGIN
 	if (t.count_stack.empty())
@@ -2052,8 +2236,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		return NoOpenParen_TokenStatus;
 	}
 	// 2010-06-09: changed count stack to hold count items
-	noperands = t.count_stack.top().noperands;
-	t.count_stack.pop();
+	noperands = t.count_stack.pop().noperands;
 	if (noperands == 0)
 	{
 		// just a parentheses expression
@@ -2062,10 +2245,18 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			// oops, no open parentheses
 			return BUG_UnexpectedCloseParen;  // this should not happen
 		}
-		delete top_token;  // delete open parentheses token
+		// 2011-01-23: removed delete open paren, now used as first operand
 
 		// 2010-04-16: clear reference for item on top of done stack
-		t.done_stack.top()->value->token->reference = false;
+		t.done_stack.top().element->value->token->reference = false;
+		// 2011-01-23: replace first and last operands of item on done stack
+		t.delete_open_paren(t.done_stack.top().first);
+		t.done_stack.top().first = top_token;
+		t.delete_close_paren(t.done_stack.top().last);
+		t.done_stack.top().last = token;
+		// mark close paren token as used for last operand and pending paren
+		// (so that it doesn't get deleted until its not used anymore)
+		token->subcode |= Last_SubCode + Used_SubCode;
 
 		// 2010-03-30: set pending parentheses token pointer
 		t.pending_paren = token;
@@ -2202,14 +2393,13 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 //-		}
 		// delete close paren token, it's not needed (2010-04-25)
 		// 2010-10-02: moved to after error checking
-		delete token;
-
+		// 2011-01-15: don't delete token, pass as argument
 		// changed token operator code or insert conversion codes as needed
-		token = top_token;
-		TokenStatus status = t.process_final_operand(token, operand_index,
-			noperands);
+		TokenStatus status = t.process_final_operand(top_token, token,
+			operand_index, noperands);
 		if (status != Good_TokenStatus)
 		{
+			token = top_token;  // set token with error (2011-01-15)
 			return status;
 		}
 	}
@@ -2286,17 +2476,31 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 
 		// 2010-06-03: expression end check is handled by command
 
-		// pop and delete null token from top of stack
-		delete t.hold_stack.pop();
+		// 2011-01-16: moved code below so that also performed exprmode
 
 		// TODO do end of line processing here, but for now...
-
-		// 2010-06-05: removed popping/checking of result from done stack
-		if (!t.done_stack.empty())
-		{
-			return BUG_DoneStackNotEmpty;
-		}
 	}
+	else  // handle expression only test mode (2011-01-16)
+	{
+		// check if find result is only thing on done stack
+		if (t.done_stack.empty())
+		{
+			return BUG_DoneStackEmpty;
+		}
+		// pop result and delete any paren tokens in first/last operands
+		t.delete_open_paren(t.done_stack.top().first);
+		t.delete_close_paren(t.done_stack.pop().last);
+	}
+
+	// pop and delete null token from top of stack
+	delete t.hold_stack.pop().token;
+
+	// 2010-06-05: removed popping/checking of result from done stack
+	if (!t.done_stack.empty())
+	{
+		return BUG_DoneStackNotEmpty;
+	}
+
 	// 2010-05-29: make sure command stack is empty (temporary TODO)
 	if (!t.cmd_stack.empty())
 	{
@@ -2345,7 +2549,18 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		cmd_item->token = token;  // point error to end-of-statement token
 		return errstatus_datatype[datatype].expected;
 	}
-	List<RpnItem *>::Element *assign_operand = t.done_stack.pop();
+	// get first and last operand tokens of assign operand (2011-01-16)
+	Token *first = t.done_stack.top().first;
+	Token *last = t.done_stack.top().last;
+	List<RpnItem *>::Element *assign_operand = t.done_stack.pop().element;
+	if (first == NULL)
+	{
+		first = assign_operand->value->token;
+	}
+	if (last == NULL)
+	{
+		last = assign_operand->value->token;
+	}
 
 	// reset reference flag of operand
 	assign_operand->value->token->reference = false;
@@ -2355,7 +2570,8 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 	if (cvt_code == Invalid_Code)
 	{
-		cmd_item->token = assign_operand->value->token;
+		// report entire expression (2011-01-16)
+		cmd_item->token = first->through(last);
 		return errstatus_datatype[cmd_item->token->datatype].actual;
 	}
 

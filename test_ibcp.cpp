@@ -155,6 +155,8 @@
 //  2011-01-04  added translator test 14 - expression type tests
 //  2011-01-11  removed redundant code in print_error() for determining length
 //                of token (can now just use token length member)
+//	2011-01-22	ignore Used_SubCode in print_small_token()
+//				added more statements to translator test 14
 //
 
 #include <stdio.h>
@@ -832,6 +834,10 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z% = A%+",
 		"Z$ = A$+",
 		"Z = A(B+",
+		"Z$ = A$ + -B",			// additional tests (2011-01-22)
+		"Z$ = A$ + -(B+C)",
+		"Z$ = A$ + INT(B+C)",
+		"Z$ = A$ + Array(B+C)",
 		NULL
 	};
 
@@ -1191,7 +1197,8 @@ bool print_small_token(Token *token, Table *table)
 		printf("<ref>");
 	}
 	// 2010-05-29: output sub-code flags
-	if (token->subcode)
+	// 2011-01-22: ignore used sub-code
+	if (token->subcode & ~Used_SubCode)
 	{
 		printf("'");
 		if (token->subcode & Paren_SubCode)

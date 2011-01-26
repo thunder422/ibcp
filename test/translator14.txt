@@ -114,3 +114,19 @@ Input: Z = A(B+
                ^-- expected numeric expression
 
 
+Input: Z$ = A$ + -B
+                 ^^-- expected string expression
+
+
+Input: Z$ = A$ + -(B+C)
+                 ^^^^^^-- expected string expression
+
+
+Input: Z$ = A$ + INT(B+C)
+                 ^^^^^^^^-- expected string expression
+
+
+Input: Z$ = A$ + Array(B+C)
+                 ^^^^^^^^^^-- expected string expression
+
+

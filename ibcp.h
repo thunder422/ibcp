@@ -227,6 +227,18 @@
 //  2011-01-07  removed datatype from ExprInfo
 //
 //  2011-01-11  moved length from union in Token so it can be used for all types
+//	2011-01-13	implemented new Translator::HoldStackItem and changed hold_stack
+//				added argument to Translator:: add_operator()
+//				  and process_final_operand() for handling first/last operands
+//	2011-01-15	implemented new Translator::DoneStackItem and changed done_stack
+//				added argument to Translator::find_code() for handling
+//				  first/last operands
+//				implemented new Translator:: process_first_operand() and
+//				  delete_close_paren()
+//	2011-01-16	added Token::include() for reporting range of tokens for errors
+//	2011-01-22	added last and used sub-code flags for close paren tokens so
+//				  they don't get deleted until they are not used anymore
+//				added Translator::delete_open_paren()
 //
 
 #ifndef IBCP_H
@@ -445,10 +457,13 @@ enum ExprType {  // 2010-06-29
 // 2010-05-27: sub-code flags for use in Token and internal program
 // 2010-06-08: renamed Null to None and added SemiColon sub-code flag
 // 2010-08-01: removed Comma_SubCode
+// 2011-01-22: added Used and Last sub-codes for parentheses token flags
 const int None_SubCode       = 0x00000000;	// no sub-code present
 const int Paren_SubCode      = 0x00000001;	// reproduce unnecessary parenthesis
 const int Let_SubCode        = 0x00000002;	// reproduce LET keyword for assign
 const int SemiColon_SubCode  = 0x00000008;	// semicolon after print function
+const int Used_SubCode       = 0x00000020;	// parentheses used in output
+const int Last_SubCode       = 0x00000040;	// parentheses used as last token
 
 
 // 2010-06-25: moved max constants
@@ -846,6 +861,12 @@ struct Token {
 	int table_entry(void)
 	{
 		return table[type];
+	}
+	// 2011-01-16: new function to include range through to a second token
+	Token *through(Token *token2)
+	{
+		length = token2->column - column + token2->length;
+		return this;
 	}
 	// 2010-06-25: new function to get message for status
 	static const char *message(TokenStatus status)
@@ -1272,8 +1293,19 @@ class Translator {
 	Table *table;					// pointer to the table object
 	List<RpnItem *> *output;		// pointer to RPN list output
 	// 2010-05-28: changed hold_stack and done_stack from List to SimpleStack
-	SimpleStack<Token *> hold_stack;		// operator/function holding stack
-	SimpleStack<List<RpnItem *>::Element *> done_stack;	// items processed stack
+	// 2011-01-13: changed hold stack to include first token pointer
+	struct HoldStackItem {
+		Token *token;				// token pointer on hold stack
+		Token *first;				// operator token's first operand pointer
+	};
+	SimpleStack<HoldStackItem> hold_stack;		// operator/function holding stack
+	// 2011-01-15: changed done stack to include first and last token pointers
+	struct DoneStackItem {
+		List<RpnItem *>::Element *element;	// RPN item element pointer
+		Token *first;				// operator token's first operand pointer
+		Token *last;				// operator token's last operand pointer
+	};
+	SimpleStack<DoneStackItem> done_stack;	// items processed stack
 	enum State {
 		Initial,					// initial state
 		BinOp,						// expecting binary operator
@@ -1330,7 +1362,8 @@ public:
 private:
 
 	// 2010-04-13: made argument a reference so different value can be returned
-	TokenStatus add_operator(Token *&token);
+	// 2011-01-13: added first operand token pointer (from hold stack)
+	TokenStatus add_operator(Token *&token, Token *first);
 	enum Match {
 		No_Match,
 		Yes_Match,
@@ -1353,13 +1386,18 @@ private:
 			token->datatype = TmpStr_DataType;
 		}
 	}
+	// 2011-01-15: added new function
+	TokenStatus process_first_operand(Token *&token);
 	// 2010-09-03: added new function
-	TokenStatus process_final_operand(Token *&token, int operand_index,
-		int noperands = 0);
+	// 2011-01-13: added pointer to first token (for done stack)
+	TokenStatus process_final_operand(Token *&token, Token *first,
+		int operand_index, int noperands = 0);
 	// 2010-05-08: added last_operand argument
 	// 2010-07-01: removed last_operand argument
 	// 2010-09-03: added operand_index argument
-	TokenStatus find_code(Token *&token, int operand_index);
+	// 2011-01-15: added first/last token pointers arguments
+	TokenStatus find_code(Token *&token, int operand_index,
+		Token **first = NULL, Token **last = NULL);
 	// 2010-05-29: changed argument from index to token pointer
 	void do_pending_paren(Token *token);  // 2010-03-26: added for parentheses
 	// 2010-06-03: function to check if expression ended correctly
@@ -1368,6 +1406,10 @@ private:
 	TokenStatus paren_status(void);
     // 2011-01-02: function to get current expression data type
 	TokenStatus get_expr_datatype(DataType &datatype);
+	// 2011-01-22: function to delete an open paren token
+	void delete_open_paren(Token *first);
+	// 2011-01-15: function to delete a close paren token
+	void delete_close_paren(Token *last);
 
 	// COMMAND SPECIFIC FUNCTIONS
 	// 2010-06-04: function to added data type specific print code

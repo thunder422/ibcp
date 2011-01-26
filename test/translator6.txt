@@ -94,10 +94,10 @@ Input: Z$ = MID$(A$,2,3) + B
 
 
 Input: Z = B + MID$(A$,2,3)
-               ^^^^^-- expected numeric expression
+               ^^^^^^^^^^^^-- expected numeric expression
 
 
 Input: Z = A + (B$ + C$)
-                   ^-- expected numeric expression
+               ^^^^^^^^^-- expected numeric expression
 
 
