@@ -16,7 +16,7 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
+//
 //
 //  Change History:
 //
@@ -30,9 +30,11 @@
 //  2010-03-18  added test_list2() to test a list of pointers (where the
 //              structures are allocated and deallocated outside of list)
 //
+//	2011-01-29	modified for updated List class functions
+//
 
 #include <stdio.h>
-#include "list.h"
+#include "../list.h"
 
 
 void print_gpl_header(void)
@@ -50,8 +52,7 @@ void print_list(const char *str, List<int> &IntList)
 	List<int>::Element *element;
 
 	printf("%s: ", str);
-	for (element = IntList.first(); IntList.not_end(element);
-		IntList.next(element))
+	for (element = IntList.first(); element != NULL; IntList.next(element))
 	{
 		printf("%d ", element->value);
 	}
@@ -118,8 +119,7 @@ void print_list(const char *str, List<Item> &ItemList)
 	List<Item>::Element *element;
 
 	printf("%s: ", str);
-	for (element = ItemList.first(); ItemList.not_end(element);
-		ItemList.next(element))
+	for (element = ItemList.first(); element != NULL; ItemList.next(element))
 	{
 		printf("<%d,%s> ", element->value.num, element->value.str);
 	}
@@ -166,8 +166,7 @@ void print_list(const char *str, List<Operator> &OpStack)
 	List<Operator>::Element *element;
 
 	printf("%s: ", str);
-	for (element = OpStack.first(); OpStack.not_end(element);
-		OpStack.next(element))
+	for (element = OpStack.first(); element != NULL; OpStack.next(element))
 	{
 		printf("%s ", op_str[element->value]);
 	}
@@ -256,8 +255,7 @@ void print_list(const char *str, List<Item *> &ItemList)
 	List<Item *>::Element *element;
 
 	printf("%s: ", str);
-	for (element = ItemList.first(); ItemList.not_end(element);
-		ItemList.next(element))
+	for (element = ItemList.first(); element != NULL; ItemList.next(element))
 	{
 		printf("%p:<%d,%s> ", element->value, element->value->num,
 			element->value->str);
@@ -304,7 +302,8 @@ void test_list2(void)
 	print_list("remove end", ItemList);
 
 	flag = ItemList.remove(element, &item);
-	printf("remove item 2: %p,<%d,%s> (%d)\n", item, item->num, item->str, flag);
+	printf("remove item 2: %p,<%d,%s> (%d)\n", item, item->num, item->str,
+		flag);
 	delete item;
 	print_list("remove 2", ItemList);
 

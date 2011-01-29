@@ -66,6 +66,7 @@
 //  2010-07-01/05  updates to token status messages for changes
 //
 //  2011-01-02  added for error codes
+//  2011-01-27  corrected some memory leaks with error lists and table instance
 //
 
 #include <stdio.h>
@@ -316,6 +317,7 @@ int main(int argc, char *argv[])
 		// 2010-06-25: code replaced with function call
 		Error<TokenStatus>::report(error_list, &print_stderr, "TokenStsMsg",
 			"Status");
+		delete error_list;  // 2011-01-27: eliminate memory leak
 		error_occurred = true;
 	}
 	Table *table;
@@ -328,6 +330,7 @@ int main(int argc, char *argv[])
 	{
 		// 2010-06-25: code replaced with function call (code now in Error)
 		Error<Code>::report(error_list, print_stderr, "Table", "Code");
+		delete error_list;  // 2011-01-27: eliminate memory leak
 		error_occurred = true;
 	}
 	if (error_occurred)  // 2010-06-25
@@ -348,6 +351,7 @@ int main(int argc, char *argv[])
 		// 2010-05-28: replaced strrchr(argv[1],...) call with 'name'
 		printf("usage: %s -p|-t <options>\n", name);
 	}
+	delete table;  // 2011-01-27: eliminate memory leak
 	return 0;
 }
 

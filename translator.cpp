@@ -439,11 +439,6 @@ TokenStatus Translator::add_token(Token *&token)
 			if (table->token_mode(token->index) != Null_TokenMode)
 			{
 				mode = table->token_mode(token->index);
-//+				// 2010-06-29: if token mode is expression, set expression type
-//+				if (mode == Expression_TokenMode)
-//+				{
-//+					expr_type = table->expr_type(token->index);
-//+				}
 				cmd_stack.push().token = token;
 				cmd_stack.top().code = table->code(token->index);
 				cmd_stack.top().flag = None_CmdFlag;  // 2010-06-01: reset flag
@@ -535,16 +530,10 @@ TokenStatus Translator::add_token(Token *&token)
 
 					// 2010-06-29: save index of internal function's table entry
 					count_stack.top().index = token->index;
-//+
-//+					// 2010-06-29: get expression type for first argument
-//+					expr_type = exprtype_datatype[table->operand_datatype(token
-//+						->index, 0)];
 				}
 				else  // token->type != IntFuncP_TokenType
 				{
 					count_stack.top().nexpected = 0;
-//+					// 2010-06-29: array or function, set any expression type
-//+					expr_type = Any_ExprType;
 				}
 
 				hold_stack.push().token = token;
@@ -570,13 +559,6 @@ TokenStatus Translator::add_token(Token *&token)
 				done_stack.top().first = done_stack.top().last = NULL;
 				state = BinOp;  // next token must be a binary operator
 			}
-#if 0  // Comma and Equal will take care of this
-//+			// 2010-06-01: if command mode then need to change to assignment
-//+			if (mode == Command_TokenMode)
-//+			{
-//+				mode = Assignment_TokenMode;
-//+			}
-#endif
 			return Good_TokenStatus;
 		}
 		// 2010-06-06: end-of-statement code acceptable instead of operand
@@ -1348,59 +1330,6 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 	token = (work_first)->through(work_last);
 	return status;
 }
-//-
-//-
-//-// function to check if the data types in the array of operands matches the
-//-// data types for the code specified
-//-//
-//-//   - returns No_Match if the data types do not match (can't be converted)
-//-//   - returns Yes_Match if the data types are an exact match
-//-//   - returns Cvt_Match if the data types match or can be converted
-//-//   - for Cvt_Match, the cvt_code array is filled with conversion codes
-//-//     for each operarand
-//-//   - for No_Match, the cvt_code array is only filled up to the first operand
-//-//     that can be converted (conversion code set to Invalid)
-//-
-//-// 2010-04-25: implemented new function
-//-// 2010-05-15: removed operand argument, operand now a class member
-//-Translator::Match Translator::match_code(Code *cvt_code, Code code)
-//-{
-//-	int index = table->index(code);
-//-	Match match = Yes_Match;  // assume match to start
-//-	for (int i = 0; i < table->noperands(index); i++)
-//-	{
-//-		// 2010-05-08: check if first operand is a reference
-//-		if (i == 0 && operand[0]->value->token->reference)
-//-		{
-//-			// for reference, the data type must be an exact match
-//-			if (operand[0]->value->token->datatype
-//-				== table->operand_datatype(index, 0))
-//-			{
-//-				cvt_code[0] = Null_Code;
-//-			}
-//-			else  // not an exact match, so no match
-//-			{
-//-				cvt_code[0] = Invalid_Code;
-//-				return No_Match;
-//-			}
-//-		}
-//-		else  // non-reference operand
-//-		{
-//-			cvt_code[i] = cvtcode_have_need[operand[i]->value->token->datatype]
-//-				[table->operand_datatype(index, i)];
-//-		}
-//-		if (cvt_code[i] == Invalid_Code)
-//-		{
-//-			return No_Match;  // no match here, exit
-//-		}
-//-		else if (cvt_code[i] != Null_Code)  // have a conversion code?
-//-		{
-//-			match = Cvt_Match;  // then this is a convertible match
-//-		}
-//-		// else Null_Code, leave match as is
-//-	}
-//-	return match;
-//-}
 
 
 // function to do end of expression hold stack check to make sure
@@ -1696,19 +1625,6 @@ TokenStatus Translator::add_print_code(void)
 		Token *token = table->new_token(PrintDbl_Code);
 		// 2010-12-28: corrected status return value and arguments in call
 		return process_final_operand(token, NULL, 0);
-//-		TokenStatus status = find_code(token);
-//-		if (status != Good_TokenStatus)
-//-		{
-//-			return status;
-//-		}
-//-
-//-		// save operand if string operand
-//-		int noperands = table->flags(token->index) & String_Flag ? 1 : 0;
-//-
-//-		// append token to output
-//-		RpnItem *rpn_item = new RpnItem(token, noperands, operand);
-//-		output->append(&rpn_item);
-//-		return Good_TokenStatus;
 	}
 	return Null_TokenStatus;  // nothing done
 }
@@ -1869,9 +1785,6 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 			// 2010-08-01: switch straight to expression mode
 			t.mode = Expression_TokenMode;
 
-//+			// set expression type (2010-07-01)
-//+			t.expr_type = exprtype_datatype[t.cmd_stack.top().token->datatype];
-//+
 			// expecting first operand next (2010-06-10)
 			t.state = Translator::FirstOperand;
 			return Good_TokenStatus;
@@ -1888,9 +1801,6 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 
 			t.mode = Expression_TokenMode;  // end of list, expression follows
 
-//+			// set expression type (2010-07-01)
-//+			t.expr_type = exprtype_datatype[t.cmd_stack.top().token->datatype];
-//+
 			// expecting first operand next (2010-06-10)
 			t.state = Translator::FirstOperand;
 			return Good_TokenStatus;
@@ -1997,8 +1907,6 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 				// switch back to operand state (2010-06-06)
 				// expecting first operand next (2010-06-10)
 				t.state = Translator::FirstOperand;
-//+				// switch back to any expression type (2010-06-30)
-//+				t.expr_type = Any_ExprType;
 				return Good_TokenStatus;
 
 			default:
@@ -2055,30 +1963,6 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 				}
 			}
 
-//-			switch (t.mode)
-//-			{
-//-			case Command_TokenMode:
-//-			case AssignmentList_TokenMode:
-//-				if (t.count_stack.top().noperands == 1)
-//-				{
-//-					// in function at first argument (sub-string function)
-//-					if (t.done_stack.empty())
-//-					{
-//-						return BUG_DoneStackEmpty;
-//-					}
-//-					if (!t.done_stack.top()->value->token->reference)
-//-					{
-//-						return BUG_Debug;
-//-					}
-//-					if (t.done_stack.top()->value->token->datatype
-//-						!= String_DataType)
-//-					{
-//-						// point to token with wrong data type
-//-						token = t.done_stack.top()->value->token;
-//-						return ExpStrVar_TokenStatus;
-//-					}
-//-				}
-//-			}
 			// check argument, change code and insert conversion (2010-08-10)
 			status = t.find_code(top_token, t.count_stack.top().noperands - 1);
 			if (status != Good_TokenStatus)
@@ -2086,16 +1970,6 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 				token = top_token;  // return token with error (2010-10-01)
 				return status;
 			}
-//+
-//+			// 2010-06-29: get expression type for next argument
-//+			t.expr_type = exprtype_datatype[t.table->operand_datatype(
-//+				t.count_stack.top().index,
-//+				t.count_stack.top().noperands)];
-//+		}
-//+		else  // array or non-internal function
-//+		{
-//+			// 2010-06-30: expression type could be any
-//+			t.expr_type = Any_ExprType;
 		}
 		// increment the number of operands
 		t.count_stack.top().noperands++;
@@ -2163,8 +2037,6 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 		// switch back to operand state (2010-06-06)
 		// expecting first operand next (2010-06-10)
 		t.state = Translator::FirstOperand;
-//+		// switch back to any expression type (2010-06-30)
-//+		t.expr_type = Any_ExprType;
 
 		return Good_TokenStatus;
 
@@ -2278,23 +2150,6 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		{
 			top_token->reference = true;
 			operand_index = 0;  // not applicable
-
-//-			// data types for array subscripts and define/user functions
-//-			// cannot be checked here
-//-			// 2010-05-15: save operands for storage in output list
-//-			for (int i = noperands; --i >= 0;)
-//-			{
-//-				if (t.done_stack.empty())
-//-				{
-//-					return BUG_DoneStackEmptyArrFunc;
-//-				}
-//-				t.operand[i] = t.done_stack.pop();
-//-			}
-//+
-//+			// 2010-06-29: reset expression type to type of array or function
-//+			//             (if type was not right for the array of function,
-//+			//             it would have been rejected when first received)
-//+			t.expr_type = exprtype_datatype[top_token->datatype];
 		}
 		else  // INTERNAL FUNCTION
 		{
@@ -2305,92 +2160,12 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 				return ExpOpOrComma_TokenStatus;
 			}
 
-//-			if (noperands != t.table->noperands(top_token->index))
-//-			{
-//-				// number of arguments doesn't match function's entry
-//-				int index;
-//-
-//-				if ((t.table->flags(top_token->index) & Multiple_Flag) != 0
-//-					&& (index = t.table->search(top_token->index, noperands))
-//-					> 0)
-//-				{
-//-					// change token to new code (index)
-//-					top_token->index = index;
-//-				}
-//-				else
-//-				{
-//-					// 2010-06-10: renamed error
-//-					return ExpOpOrComma_TokenStatus;
-//-				}
-//-			}
-//-
 			// moved deleting of token and setting to top_token (2010-04-10)
 			operand_index = t.table->noperands(top_token->index) - 1;
 			// tell process_final_operand() to use operand_index (2010-09-10)
 			noperands = 0;
-
-//-			// check argument, change code and insert conversion (2010-08-21)
-//-			status = t.find_code(token, noperands - 1);
-//-			if (status != Good_TokenStatus)
-//-			{
-//-				return status;
-//-			}
-//-
-//-			// 2010-04-25: implemented data type handling
-//-			// process data types of arguments (find proper code)
-//-			TokenStatus status = t.find_code(token);
-//-			if (status != Good_TokenStatus)
-//-			{
-//-				return status;
-//-			}
-//-
-//-			// 2010-05-15: don't save operands if none are strings
-//-			if (!(t.table->flags(token->index) & String_Flag))
-//-			{
-//-				noperands = 0;  // no string operands, don't save operands
-//-			}
-//-
-//-			// 2010-06-01: process print-only internal functions
-//-			if (t.table->flags(token->index) & Print_Flag)
-//-			{
-//-				if (t.cmd_stack.top().code != Print_Code)
-//-				{
-//-					return PrintOnlyIntFunc_TokenStatus;
-//-				}
-//-				// tell PRINT to stay on same line
-//-				// also set print function flag (2010-06-08)
-//-				t.cmd_stack.top().flag = PrintStay_CmdFlag | PrintFunc_CmdFlag;
-//-				done_push = false;  // don't push on done stack
-//-			}
 		}
 
-//+		// 2010-07-02: check it parentheses token has correct data type
-//+		if (t.expr_type != Any_ExprType
-//+			&& t.expr_type != exprtype_datatype[top_token->datatype])
-//+		{
-//+			switch (t.expr_type)
-//+			{
-//+			case Num_ExprType:
-//+				return BUG_Debug;
-//+				return ExpNumExpr_TokenStatus;
-//+
-//+			case Str_ExprType:
-//+				return ExpStrExpr_TokenStatus;
-//+
-//+			default:
-//+				return BUG_InvalidExprType;
-//+			}
-//+		}
-//+
-//-		// add token to output list and push element pointer on done stack
-//-		// 2010-05-15: create rpn item to add to output list
-//-		RpnItem *rpn_item = new RpnItem(top_token, noperands, t.operand);
-//-		// 2010-06-01: check if output item is to be pushed on done stack
-//-		List<RpnItem *>::Element *output_item = t.output->append(&rpn_item);
-//-		if (done_push)
-//-		{
-//-			t.done_stack.push(output_item);
-//-		}
 		// delete close paren token, it's not needed (2010-04-25)
 		// 2010-10-02: moved to after error checking
 		// 2011-01-15: don't delete token, pass as argument

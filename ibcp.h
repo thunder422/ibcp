@@ -748,7 +748,6 @@ enum TokenStatus {
 	BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
 	BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
 	BUG_InvalidDataType,			// diagnostic error (2010-07-02)
-//+	BUG_InvalidExprType,			// diagnostic error (2010-07-02)
 	BUG_CmdStackEmptyExpr,			// diagnostic error (2011-01-02)
 	BUG_CountStackEmpty,			// diagnostic error (2011-01-02)
 	BUG_UnexpParenExpr,				// diagnostic error (2011-01-02)
@@ -1017,8 +1016,6 @@ struct TableEntry {
 	TokenMode token_mode;		// next token mode for command
 	// 2010-06-05: added end-of-statement token handler for commands
 	CmdHandler cmd_handler;		// pointer to translator cmd handler function
-//+	// 2010-06-29: added expression type, needed when token_mode is Expression
-//+	ExprType expr_type;			// next expression type for command
 };
 
 
@@ -1096,11 +1093,6 @@ public:
 	{
 		return entry[index].token_mode;
 	}
-//-	// 2010-06-29: added token mode access function
-//-	ExprType expr_type(int index)
-//-	{
-//-		return entry[index].expr_type;
-//-	}
 	Code unary_code(int index)
 	{
 		// 2010-05-03: get value from expression information structure
@@ -1331,7 +1323,6 @@ class Translator {
 	SimpleStack<CmdItem> cmd_stack;	// stack of commands waiting processing
 	// 2010-06-06: variable to save expression only mode in
 	bool exprmode;					// expression only mode active flag
-//-	ExprType expr_type;				// current expression type (2010-06-29)
 
 public:
 	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
@@ -1345,10 +1336,6 @@ public:
 		// 2010-04-16: start in expression mode for testing
 		mode = exprmode ? Expression_TokenMode : Command_TokenMode;
 		// 2010-06-29: if expression mode then set any expression type
-//-		if (exprmode)
-//-		{
-//-			expr_type = Any_ExprType;
-//-		}
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
 	TokenStatus add_token(Token *&token);

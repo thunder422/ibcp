@@ -47,11 +47,11 @@ Release 0.1.14-pre-4 (2011-01-26)
 	Translator preliminary developmental release - implemented the
 	saving of the first and last operands to operands (operators,
 	functions and array) that have been processed so that when
-	expression type errors are detected, to entire sub-expression in
-	error can be reported.  All but test 12 are working correctly,
-	however, test 12 was modified for the expected results for when
-	arrays on the left side of assignments are processed correctly.
-	Updated files include:
+	expression type errors are detected, the entire sub-expression
+	in error can be reported.  All but test 12 are working
+	correctly, however, test 12 was modified for the expected
+	results for when arrays on the left side of assignments are
+	processed correctly.  Updated files include:
 
 	ibcp.h           - moved datatype from ExprInfo to TableEntry
 	parser.cpp       - corrected bug where constant '0' caused error

@@ -157,6 +157,7 @@
 //                of token (can now just use token length member)
 //	2011-01-22	ignore Used_SubCode in print_small_token()
 //				added more statements to translator test 14
+//	2011-01-29	modified for updated List class functions
 //
 
 #include <stdio.h>
@@ -926,7 +927,8 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		List<RpnItem *>::Element *element;
 		printf("Output: ");
 		// 2010-05-15: added separate print loop so operands can also be printed
-		for (element = rpn_list->first(); rpn_list->not_end(element);
+		// 2011-01-29: modified for updated List class functions
+		for (element = rpn_list->first(); element != NULL;
 			rpn_list->next(element))
 		{
 			print_small_token(element->value->token, table);
