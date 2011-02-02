@@ -239,6 +239,14 @@
 //	2011-01-22	added last and used sub-code flags for close paren tokens so
 //				  they don't get deleted until they are not used anymore
 //				added Translator::delete_open_paren()
+//	2011-01-29	added list element pointer to Token for memory leak detection
+//				added new and delete operator Token functions for memory leaks
+//				added static list and del_list to Token for memory leaks
+//				moved all static members of Token to the end so that it is
+//				  easier to see the regular members when debugging
+//	2011-01-30	reset string pointer to NULL in Token deconstructor
+//				made Translator::delete_open_paren() public to be accessible
+//				  by caller of Translator (to correct a memory leak)
 //
 
 #ifndef IBCP_H
@@ -774,15 +782,7 @@ struct TokenStsMsg {  // 2010-06-25
 
 // 2010-03-07: added error length and two new set_error()
 struct Token {
-	static bool paren[sizeof_TokenType];
-	static bool op[sizeof_TokenType];
-	static int prec[sizeof_TokenType];  // 2010-04-02
-	static bool table[sizeof_TokenType];  // 2010-05-29
-	static TokenStsMsg message_array[sizeof_TokenStatus];  // 2010-06-25
-	static int index_status[sizeof_TokenStatus];  // 2010-06-25
-
-	static void initialize(void);
-
+	List<Token *>::Element *element;	// pointer to list element (2011-01-29)
 	int column;				// start column of token
 	int length;				// length of token (2011-01-11: moved from union)
 	TokenType type;			// type of the token
@@ -812,8 +812,12 @@ struct Token {
 		if (string != NULL)
 		{
 			delete string;
+			string = NULL;  // in case of double delete (2011-01-30)
 		}
 	}
+	// overload new and delete operators for leak detection (2011-01-29)
+	void *operator new(size_t size);
+	void operator delete(void *ptr);
 	void set_error(const char *msg)
 	{
 		length = 1;
@@ -867,6 +871,18 @@ struct Token {
 		length = token2->column - column + token2->length;
 		return this;
 	}
+
+	// static member (moved 2011-01-29)
+	static bool paren[sizeof_TokenType];
+	static bool op[sizeof_TokenType];
+	static int prec[sizeof_TokenType];  // 2010-04-02
+	static bool table[sizeof_TokenType];  // 2010-05-29
+	static TokenStsMsg message_array[sizeof_TokenStatus];  // 2010-06-25
+	static int index_status[sizeof_TokenStatus];  // 2010-06-25
+    static List<Token *> list;  // 2011-01-29
+    static List<Token> del_list;  // 2011-01-29
+
+	static void initialize(void);
 	// 2010-06-25: new function to get message for status
 	static const char *message(TokenStatus status)
 	{
@@ -1393,8 +1409,6 @@ private:
 	TokenStatus paren_status(void);
     // 2011-01-02: function to get current expression data type
 	TokenStatus get_expr_datatype(DataType &datatype);
-	// 2011-01-22: function to delete an open paren token
-	void delete_open_paren(Token *first);
 	// 2011-01-15: function to delete a close paren token
 	void delete_close_paren(Token *last);
 
@@ -1405,6 +1419,10 @@ private:
 	TokenStatus check_assignlist_token(Token *&token);
 	TokenStatus set_assign_command(Token *&token, Code assign_code);
 public:
+	// 2011-01-22: function to delete an open paren token
+	// 2011-01-30: made function public to be used to delete token (leak)
+	void delete_open_paren(Token *first);
+
 	// 2010-05-28: added token handler friend function definitions section
 	friend TokenStatus Operator_Handler(Translator &t, Token *&token);
 	friend TokenStatus Equal_Handler(Translator &t, Token *&token);

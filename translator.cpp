@@ -283,6 +283,8 @@
 //				  as first/last operands (don't delete open paren token),
 //				  and set last and used sub-code flags of close paren token so
 //				  it doesn't get deleted until its not used anymore
+//	2011-01-30	corrected token memory leaks
+//	2011-02-01	corrected token memory leaks
 //
 
 #include "ibcp.h"
@@ -772,12 +774,15 @@ TokenStatus Translator::add_token(Token *&token)
 		// pop operator on top of stack and add it to the output
 		// 2010-04-13: set top_token so reference can be passed
 		top_token = hold_stack.top().token;
-		status = add_operator(top_token, hold_stack.pop().first);
+		// don't pop token in case error occurs (2011-01-30 leak)
+		status = add_operator(top_token, hold_stack.top().first);
 		if (status != Good_TokenStatus)
 		{
+			delete token;       // delete token (2011-01-30 leak)
 			token = top_token;  // 2010-04-13: return token with error
 			return status;
 		}
+		hold_stack.pop();  // now pop the token (2011-01-30 leak)
 	}
 
 	// check for special token processing
@@ -967,9 +972,15 @@ TokenStatus Translator::process_first_operand(Token *&token)
 	if (!table->is_unary_operator(token->index))
 	{
 		// changed token operator code or insert conversion codes as needed
+		Token *org_token = token;
 		TokenStatus status = find_code(token, 0, &first);
 		if (status != Good_TokenStatus)
 		{
+			// check if different token has error (2011-01-30 leak)
+			if (token != org_token)
+			{
+				delete org_token;  // delete operator token
+			}
 			return status;
 		}
 	}
@@ -1025,9 +1036,11 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 
 		// save string operands only (2010-08-07)
 		// get number of strings for non-sub-string codes (2010-12-24)
-		if (token->datatype != SubStr_DataType)
+		// include sub-string reference which are put on done stack (2011-02-01)
+		if (token->datatype != SubStr_DataType || token->reference)
 		{
-			noperands = table->nstrings(token->index);
+			// no operands for sub-string references (2011-02-01)
+			noperands = token->reference ? 0 : table->nstrings(token->index);
 			// set first and last operands (2011-01-15)
 			if (token->is_operator())
 			{
@@ -1052,7 +1065,7 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 			}
 		}
 		// don't push non-reference sub-string function (2010-12-25)
-		else if (!token->reference)
+		else  // 2011-02-01: removed reference change, include sub-strings
 		{
 			done_push = false;  // don't push sub-string function on done stack
 			// set first/last operands of operand on done stack (2011-01-15)
@@ -1073,6 +1086,8 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 			// also set print function flag (2010-06-08)
 			cmd_stack.top().flag = PrintStay_CmdFlag | PrintFunc_CmdFlag;
 			done_push = false;  // don't push on done stack
+			// delete closing parentheses if print function (2011-02-01 leak)
+			delete token2;
 		}
 	}
 	else  // array or user function (2011-01-15)
@@ -1143,9 +1158,6 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 TokenStatus Translator::find_code(Token *&token, int operand_index,
 	Token **first, Token **last)
 {
-	Token *work_first;		// first token work pointer
-	Token *work_last;		// last token work pointer
-
 	if (done_stack.empty())
 	{
 		// oops, there should have been operands on done stack
@@ -1154,7 +1166,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 	Token *top_token = done_stack.top().element->value->token;
 	// 2011-01-15: get first and last operands for top token
 	// 2011-01-22: used work pointers instead, set arguments if requested
-	work_first = done_stack.top().first;
+	Token *work_first = done_stack.top().first;
 	if (work_first == NULL)
 	{
 		work_first = top_token;  // first operand not set, set to operand token
@@ -1164,7 +1176,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 		*first = work_first;
 		done_stack.top().first = NULL;  // prevent deletion below
 	}
-	work_last = done_stack.top().last;
+	Token *work_last = done_stack.top().last;
 	if (work_last == NULL)
 	{
 		work_last = top_token;  // last operand not set, set to operand token
@@ -1190,7 +1202,10 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 			}
 			// return non-reference operand
 			// report entire expression (2011-01-16)
-			token = (work_first)->through(work_last);
+			token = work_first->through(work_last);
+
+			// delete last token if close paren (2011-01-30 leak)
+			delete_close_paren(work_last);
 
 			// XXX check command on top of command stack XXX
 			return ExpAssignRef_TokenStatus;
@@ -1311,7 +1326,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 			{
 				// point error to sub-string function
 				top_token = last_token;
-			}
+	}
 			else  // possible problem (last token should match top token)
 			{
 				status = BUG_Debug9;
@@ -1327,7 +1342,11 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 		status = errstatus_datatype[operand_datatype].variable;
 	}
 	// report entire expression (2011-01-16)
-	token = (work_first)->through(work_last);
+	token = work_first->through(work_last);
+
+	// delete last token if close paren (2011-01-30 leak)
+	delete_close_paren(work_last);
+
 	return status;
 }
 
@@ -1566,6 +1585,8 @@ void Translator::clean_up(void)
 	// clean up from error
 	while (!hold_stack.empty())
 	{
+		// delete first token in command stack item (2011-01-30 leak)
+		delete_open_paren(hold_stack.top().first);
 		// 2010-04-04: added delete to free the token that was on the stack
 		delete hold_stack.pop().token;
 	}
@@ -1597,7 +1618,8 @@ void Translator::clean_up(void)
 	// 2010-06-02: command support - need to empty command_stack
 	while (!cmd_stack.empty())
 	{
-		cmd_stack.pop();
+		// delete token in command stack item (2011-01-30 leak)
+		delete cmd_stack.pop().token;
 	}
 }
 
@@ -1683,6 +1705,8 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 {
 	if (!done_stack.empty())
 	{
+		// delete close paren (array or sub-string) on operand (2011-01-30 leak)
+		delete_close_paren(done_stack.top().last);
 		token = done_stack.pop().element->value->token;
 		if (!token->reference
 			|| equivalent_datatype[cmd_stack.top().token->datatype]
@@ -1967,6 +1991,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			status = t.find_code(top_token, t.count_stack.top().noperands - 1);
 			if (status != Good_TokenStatus)
 			{
+				delete token;       // delete comma token (leak 2011-01-30)
 				token = top_token;  // return token with error (2010-10-01)
 				return status;
 			}
@@ -2018,6 +2043,8 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 			{
 				// set semicolon subcode flag on print function
 				t.output->last()->value->token->subcode |= SemiColon_SubCode;
+				// sub-code set, delete semicolon token (2011-02-01 leak)
+				delete token;
 			}
 			else  // no expression, add dummy semicolon token
 			{
@@ -2100,7 +2127,8 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		// oops, stack is empty
 		return BUG_DoneStackEmptyParen;
 	}
-	top_token = t.hold_stack.pop().token;
+	// 2011-01-30: don't pop top token yet in case error occurs (leak)
+	top_token = t.hold_stack.top().token;
 
 	// 2010-04-02: implemented array/function support BEGIN
 	if (t.count_stack.empty())
@@ -2174,6 +2202,12 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			operand_index, noperands);
 		if (status != Good_TokenStatus)
 		{
+			// 2011-01-30: if top_token was not changed, pop it now (leak)
+			if (top_token == t.hold_stack.top().token)
+			{
+				t.hold_stack.pop();
+			}
+			delete token;  // delete close paren token (2011-01-30 leak)
 			token = top_token;  // set token with error (2011-01-15)
 			return status;
 		}
@@ -2183,6 +2217,10 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	// 2010-03-26: moved pending check to before stack emptying while
 
 	// 2010-04-02: moved set pending paren, not needed for array/function
+
+	// 2011-01-30: now pop the top token (leak)
+	t.hold_stack.pop();
+
 	return Good_TokenStatus;
 }
 
@@ -2238,13 +2276,19 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 			return BUG_NotYetImplemented;
 		}
 		status = (*cmd_handler)(t, &cmd_item, token);
-		// now pop the command off of stack (2010-12-29)
-		t.cmd_stack.pop();
 		if (status != Good_TokenStatus)
 		{
-			token = cmd_item.token;  // command decides where error is
+			// delete EOL token if error at another token (2011-01-30 leak)
+			if (cmd_item.token != token)
+			{
+				delete token;
+			}
+			token = cmd_item.token;  // command decided where error is
 			return status;
 		}
+		// now pop the command off of stack (2010-12-29)
+		// moved pop to after error check (2011-01-30 leak)
+		t.cmd_stack.pop();
 		// upon return from the command handler,
 		// the hold stack should have the null token on top
 		// and done stack should be empty
@@ -2347,8 +2391,15 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	{
 		// report entire expression (2011-01-16)
 		cmd_item->token = first->through(last);
+
+		// delete last token if close paren (2011-01-30 leak)
+		t.delete_close_paren(last);
+
 		return errstatus_datatype[cmd_item->token->datatype].actual;
 	}
+	// don't need first and last operands anymore (2011-01-30 leak)
+	t.delete_open_paren(first);
+	t.delete_close_paren(last);
 
 	RpnItem *rpn_item;
 
@@ -2404,6 +2455,11 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		// append the print token to go to newline at runtime
 		RpnItem *rpn_item = new RpnItem(cmd_item->token);
 		t.output->append(&rpn_item);
+	}
+	// check if print token was not used (2011-02-01 leak)
+	else if (status == Null_TokenStatus)
+	{
+		delete cmd_item->token;  // print token not used
 	}
 	else if (status > Good_TokenStatus)
 	{

@@ -67,6 +67,8 @@
 //
 //  2011-01-02  added for error codes
 //  2011-01-27  corrected some memory leaks with error lists and table instance
+//  2011-01-29  implemented Token new and delete operator functions to detect
+//                memory leaks of tokens
 //
 
 #include <stdio.h>
@@ -210,7 +212,61 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: debug"}
 };
 int Token::index_status[sizeof_TokenStatus];
+List<Token *> Token::list;  // 2011-01-29
+List<Token> Token::del_list;  // 2011-01-29
 
+
+// This function overrides the default Token new operator function and
+// maintains a list of tokens that have been allocated.  When a new Token
+// is requested, it is added to the list of allocated tokens, the pointer
+// to the list element is put into the token.
+
+void *Token::operator new(size_t size)
+{
+	// allocate the memory for the token
+    Token *token = (Token *)new char[size];
+
+    // append token to list of tokens and save its element pointer in token
+    token->element = list.append(&token);
+
+    // return pointer to new token
+    return token;
+}
+
+
+// This function overrides the default Token delete operator function
+// and maintains list of tokens that have been allocated.  When a Token
+// is deleted, it is removed from the list of allocated tokens using the
+// element pointer put into the token when it was allocated.  If the
+// Token was already deleted (its element pointer is NULL), it is added
+// to the deleted list so that multipli-deleted tokens can be reported.
+
+void Token::operator delete(void *ptr)
+{
+	Token *token = (Token *)ptr;
+
+	// check if token has already been deleted
+	if (token->element == NULL)
+	{
+		// append a copy of the token to the multipli-deleted token list
+		del_list.append(token);
+	}
+	else
+	{
+		// remove element from the list of tokens
+		list.remove(token->element);
+
+		// mark the token as deleted (in case of a second delete attempt)
+		token->element = NULL;
+
+		// delete the token
+		delete[] (char *)token;
+	}
+}
+
+
+// This function initializes the static token data.
+// This includes checking multipli defined and missing statuses
 
 void Token::initialize(void)
 {

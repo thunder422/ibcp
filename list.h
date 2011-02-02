@@ -42,7 +42,11 @@
 //				NULL when the list is empty; the various functions were updated
 //				to maintain the tail element pointer; implemented new raw
 //				remove() for removing an element from the list, the other
-//              remove() functions now call this; removed not_end()
+//				remove() functions now call this; removed not_end()
+//
+//	2011-01-29	re-implemented List class to maintain a tail element pointer
+//				  instead of a master element
+//				implemented new raw remove function used by other removes
 //
 
 #ifndef LIST_H
@@ -302,6 +306,7 @@ typename List<T>::Element *List<T>::insert(List<T>::Element *before, T *value)
 // true is then returned.
 
 // 2010-01-29: renamed from pop
+// 2011-01-29: changed to call new raw remove function
 template <class T> bool List<T>::remove(T *value)
 {
 	if (empty())
@@ -312,8 +317,8 @@ template <class T> bool List<T>::remove(T *value)
 	{
 		*value = tail->value;
 		remove(tail);
-	return true;
-}
+		return true;
+	}
 }
 
 
@@ -325,6 +330,7 @@ template <class T> bool List<T>::remove(T *value)
 // Returns whether the list still contains elements after the element
 // argument is removed.
 
+// 2011-01-29: changed to call new raw remove function
 template <class T> bool List<T>::remove(Element *element, T *value)
 {
 	// 2010-02-13: get first element if argument is NULL
@@ -343,6 +349,7 @@ template <class T> bool List<T>::remove(Element *element, T *value)
 // element is de-linked from the list and deallocated.  If the element
 // is the tail, then a new tail is set.
 
+// 2011-01-29: new raw remove function
 template <class T> void List<T>::remove(Element *element)
 {
 	if (element->prev == element)

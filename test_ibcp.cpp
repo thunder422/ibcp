@@ -158,6 +158,9 @@
 //	2011-01-22	ignore Used_SubCode in print_small_token()
 //				added more statements to translator test 14
 //	2011-01-29	modified for updated List class functions
+//				implemented memory leak detection, inclduding new outputing
+//				  leaks with new print_token_leaks
+//	2011-01-30	corrected memory leak for errors at open parentheses
 //
 
 #include <stdio.h>
@@ -167,9 +170,10 @@
 void parse_input(Parser &parser, Table *table, const char *testinput);
 void translate_input(Translator &translator, Parser &parser, Table *table,
 	const char *testinput, bool exprmode = false);
-bool print_token(Token *token, Table *table);
+bool print_token(Token *token, Table *table, bool tab);
 bool print_small_token(Token *token, Table *table);
 void print_error(Token *token, const char *error);
+void print_token_leaks(Table *table, const char *testinput);
 
 
 // 2010-03-13: changed from main()
@@ -322,7 +326,7 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 	// 2010-03-18: fix loop since get_token() no longer returns null
 	do {
 		token = parser.get_token();
-		more = print_token(token, table);
+		more = print_token(token, table, true);
 		if (more && token->type == Operator_TokenType
 			&& table->code(token->index) == EOL_Code)
 		{
@@ -887,6 +891,7 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 			printf("\nInput: %s\n", testinput[i]);
 			translate_input(translator, parser, table, testinput[i],
 				testno < 4);
+			print_token_leaks(table, testinput[i]);
 		}
 	}
 	printf("\n");
@@ -913,7 +918,6 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			print_error(token, token->string->get_ptr());
 			delete token;
 			translator.clean_up();
-			printf("\n");
 			return;
 		}
 		//print_token(token, table);
@@ -948,10 +952,10 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			printf(" ");
 		}
 		// 2010-03-21: corrected to handle an empty rpn list
-		while (!rpn_list->empty())
+		// 2011-01-29: rewrote to remove last item instead of first item
+		RpnItem *rpn_item;
+		while (rpn_list->pop(&rpn_item))
 		{
-			RpnItem *rpn_item;
-			rpn_list->remove(NULL, &rpn_item);
 			delete rpn_item;
 		}
 	}
@@ -969,6 +973,10 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			//             already been deleted by the Translator) XXX
 			delete token;
 		}
+		else  // check if token is open paren (2011-01-30 leak)
+		{
+			translator.delete_open_paren(token);
+		}
 		translator.clean_up();
 	}
 	printf("\n");
@@ -976,7 +984,8 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 
 
 // 2010-03-11: created from parts parse_input()
-bool print_token(Token *token, Table *table)
+// 2011-01-29: added argument flag for printing out leading tab character
+bool print_token(Token *token, Table *table, bool tab)
 {
 	const char *tokentype_name[] = {
 		"ImmCmd",
@@ -1031,7 +1040,11 @@ bool print_token(Token *token, Table *table)
 	{
 		info = "Op";
 	}
-	printf("\t%2d: %-9s %s", token->column, tokentype_name[token->type], info);
+	if (tab)
+	{
+		printf("\t");
+	}
+	printf("%2d: %-9s %s", token->column, tokentype_name[token->type], info);
 	switch (token->type)
 	{
 	case ImmCmd_TokenType:
@@ -1236,4 +1249,75 @@ void print_error(Token *token, const char *error)
 		putchar('^');
 	}
 	printf("-- %s\n", error);
+}
+
+
+void print_token_leaks(Table *table, const char *testinput)
+{
+	// 2011-01-29: check for undeleted tokens
+	if (!Token::list.empty())
+	{
+		printf("Leaks: %s\n", testinput);
+		int len = strlen(testinput) + 1;  // one for EOL that may be at end
+		char *leaks = new char[len + 1];  // one for '\0' terminator
+		memset(leaks, ' ', len);
+		leaks[len] = '\0';
+		char id = '1';
+		List<Token *>::Element *element;
+		for (element = Token::list.first(); element != NULL;
+			Token::list.next(element))
+		{
+			for (int i = element->value->length; --i >= 0; )
+			{
+				leaks[element->value->column + i] = id;
+			}
+			switch (id)
+			{
+			case '9':
+				id = 'A';
+				break;
+			case 'Z':
+				id = 'a';
+				break;
+			case 'z':
+				id = '*';
+				break;
+			default:
+				id++;
+			}
+		}
+		printf("Leaks: %s\n", leaks);
+		delete[] leaks;
+		id = '1';
+		while ((element = Token::list.first()) != NULL)
+		{
+			printf("Token Leak '%c' ", id);
+			print_token(element->value, table, false);
+			delete element->value;  // this will also delete it from list
+			switch (id)
+			{
+			case '9':
+				id = 'A';
+				break;
+			case 'Z':
+				id = 'a';
+				break;
+			case 'z':
+				id = '*';
+				break;
+			default:
+				id++;
+			}
+		}
+	}
+	if (!Token::del_list.empty())
+	{
+		printf("\nExtra Token Deletes\n");
+		Token token;
+		for (int i = 1; Token::del_list.remove(NULL, &token); i++)
+		{
+			printf("Token #%d ", i);
+			print_token(&token, table, false);
+		}
+	}
 }
