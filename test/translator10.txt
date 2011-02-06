@@ -19,7 +19,7 @@ Input: PRINT A,B%,C$,
 Output: A PrintDbl , B% PrintInt , C$ PrintStr[C$] , 
 
 Input: PRINT A+B; C%+D%; E$+F$; MID$(E$,1); LEFT$(E$+F$,5)
-Output: A B + PrintDbl C% D% +% PrintInt E$ F$ +$[E$,F$] PrintStr[+$] E$ 1 MID2$( PrintStr[E$] E$ F$ +$[E$,F$] 5 LEFT$( PrintStr[+$] PRINT 
+Output: A B + PrintDbl C% D% +% PrintInt E$ F$ +$[E$,F$] PrintTmp E$ 1 MID2$( PrintStr[E$] E$ F$ +$[E$,F$] 5 LEFT$( PrintTmp PRINT 
 
 Input: PRINT "Test:"; TAB(10); A%; SPC(5); B
 Output: "Test:" PrintStr["Test:"] 10 TAB(';' A% PrintInt 5 SPC(';' B PrintDbl PRINT 

@@ -46,14 +46,14 @@ Input: Z = A < B$ + C%
 
 
 Input: Z = A <> B$ + C$ < D$
-Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$[+$,D$] <>%2 CvtDbl Assign 
+Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$1[D$] <>%2 CvtDbl Assign 
 
 Input: Z = A + B$ + C$ < D$
                ^^-- expected numeric expression
 
 
 Input: Z = A + (B$ + C$ < D$)
-Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$[+$,D$] +%2 Assign 
+Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$1[D$] +%2 Assign 
 
 Input: Z$ = A$ + B$ + C%
                       ^^-- expected string expression
@@ -78,11 +78,23 @@ Input: Z=MID$(A$,2) = B$
 Output: Z<ref> A$ 2 MID2$( B$ =$[A$,B$] CvtDbl Assign 
 
 Input: Z(INT(A+B))=C
-Output: A B + INT( CvtInt Z(<ref> C Assign 
+Output: A B + INT( Z(<ref>[INT(] C Assign 
 
 Input: Z(A$)=C
 Output: A$<ref> Z(<ref>[A$<ref>] C Assign 
 
 Input: Z(A)=Y(A$)
 Output: A<ref> Z(<ref>[A<ref>] A$<ref> Y([A$<ref>] Assign 
+
+Input: Z(A),Y(A)=X(A)
+Output: A<ref> Z(<ref>[A<ref>] A<ref> Y(<ref>[A<ref>] A<ref> X([A<ref>] AssignList 
+
+Input: Z(A,Y(B))=X(A)
+Output: A<ref> B<ref> Y(<ref>[B<ref>] Z(<ref>[A<ref>,Y(<ref>] A<ref> X([A<ref>] Assign 
+
+Input: Z%(A%),Y%(A%)=X%(A%)
+Output: A%<ref> Z%(<ref>[A%<ref>] A%<ref> Y%(<ref>[A%<ref>] A%<ref> X%([A%<ref>] AssignList% 
+
+Input: Z$(A%),Y$(A%)=X$(A%)
+Output: A%<ref> Z$(<ref>[A%<ref>] A%<ref> Y$(<ref>[A%<ref>] A%<ref> X$([A%<ref>] AssignList$[X$(] 
 

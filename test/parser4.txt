@@ -10,61 +10,61 @@ Input: A$ = "this is a test"
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |this is a test|
-	21: Operator  Op None    108-EOL
+	21: Operator  Op None    112-EOL
 
 Input: A$ = "this is a test
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |this is a test|
-	20: Operator  Op None    108-EOL
+	20: Operator  Op None    112-EOL
 
 Input: A$ = "this is a ""test"""
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |this is a "test"|
-	25: Operator  Op None    108-EOL
+	25: Operator  Op None    112-EOL
 
 Input: A$ = """this"" is a test"
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |"this" is a test|
-	25: Operator  Op None    108-EOL
+	25: Operator  Op None    112-EOL
 
 Input: A$ = "this is ""a"" test"
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |this is "a" test|
-	25: Operator  Op None    108-EOL
+	25: Operator  Op None    112-EOL
 
 Input: A$ = "this is "" a test"
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |this is " a test|
-	24: Operator  Op None    108-EOL
+	24: Operator  Op None    112-EOL
 
 Input: A$ = ""
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  ||
-	 7: Operator  Op None    108-EOL
+	 7: Operator  Op None    112-EOL
 
 Input: A$ = "
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  ||
-	 6: Operator  Op None    108-EOL
+	 6: Operator  Op None    112-EOL
 
 Input: A$ = """"
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |"|
-	 9: Operator  Op None    108-EOL
+	 9: Operator  Op None    112-EOL
 
 Input: A$ = """
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer 86-Eq
 	 5: Constant     String  |"|
-	 8: Operator  Op None    108-EOL
+	 8: Operator  Op None    112-EOL
 
 Input: A$ = LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
@@ -74,4 +74,4 @@ Input: A$ = LEFT$("TEST", 1)
 	17: Operator  Op None    94-Comma
 	19: Constant     Integer 1 |1|
 	20: Operator  Op None    93-CloseParen
-	21: Operator  Op None    108-EOL
+	21: Operator  Op None    112-EOL

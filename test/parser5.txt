@@ -26,7 +26,7 @@ Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	39: Operator  Op None    94-Comma
 	41: Constant     Integer 1 |1|
 	42: Operator  Op None    93-CloseParen
-	43: Operator  Op None    108-EOL
+	43: Operator  Op None    112-EOL
 
 Input: if index>5 and subindex<=10 then
 	 0: Command   Op 18-If
@@ -38,14 +38,14 @@ Input: if index>5 and subindex<=10 then
 	23: Operator  Op Integer 90-LtEq
 	25: Constant     Integer 10 |10|
 	28: Command   Op 19-Then
-	32: Operator  Op None    108-EOL
+	32: Operator  Op None    112-EOL
 
 Input: var = 5'initialize variable + 
 	 0: NoParen      None    |var|
 	 4: Operator  Op Integer 86-Eq
 	 6: Constant     Integer 5 |5|
 	 7: Operator  Op None    97-RemOp |initialize variable + |
-	30: Operator  Op None    108-EOL
+	30: Operator  Op None    112-EOL
 
 Input: if index<<5 && index><4 || n<4 then
 	 0: Command   Op 18-If

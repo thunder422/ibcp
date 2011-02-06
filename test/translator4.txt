@@ -19,7 +19,7 @@ Input: ASC(A$)+ASC(B$,C)+INSTR(A$,B$)+INSTR(A$,B$,C)+LEN(D$)
 Output: A$ ASC([A$] B$ C CvtInt ASC2([B$] +% A$ B$ INSTR2([A$,B$] +% A$ B$ C CvtInt INSTR3([A$,B$] +% D$ LEN([D$] +% 
 
 Input: LEFT$(D$,E)+RIGHT$(F$,G)+REPEAT$(H$,5)+SPACE$(15)
-Output: D$ E CvtInt LEFT$( F$ G CvtInt RIGHT$( +$[D$,F$] H$ 5 REPEAT$([H$] +$[+$,REPEAT$(] 15 SPACE$( +$[+$,SPACE$(] 
+Output: D$ E CvtInt LEFT$( F$ G CvtInt RIGHT$( +$[D$,F$] H$ 5 REPEAT$([H$] +$T 15 SPACE$( +$T 
 
 Input: A=VAL(STR$(1.23))
 Output: A 1.23 STR$( VAL([STR$(] = 

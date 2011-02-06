@@ -247,6 +247,7 @@
 //	2011-01-30	reset string pointer to NULL in Token deconstructor
 //				made Translator::delete_open_paren() public to be accessible
 //				  by caller of Translator (to correct a memory leak)
+//	2011-02-04	added associated codes for temporary strings
 //
 
 #ifndef IBCP_H
@@ -267,7 +268,8 @@ enum Code {
 
 	// 2010-04-24: added associated codes
 	// math operators
-	Add_Code, AddInt_Code, AddI1_Code, AddI2_Code, CatStr_Code,
+	Add_Code, AddInt_Code, AddI1_Code, AddI2_Code,
+		CatStr_Code, CatStrT1_Code, CatStrT2_Code, CatStrTT_Code,
 	Sub_Code, SubInt_Code, SubI1_Code, SubI2_Code,
 	Neg_Code, NegInt_Code,  // 2010-03-17: added unary operator
 	Mul_Code, MulInt_Code, MulI1_Code, MulI2_Code,
@@ -277,12 +279,18 @@ enum Code {
 	Power_Code, PowerMul_Code, PowerInt_Code, PowerI1_Code,
 
 	// relational operators
-	Eq_Code, EqInt_Code, EqI1_Code, EqI2_Code, EqStr_Code,
-	Gt_Code, GtInt_Code, GtI1_Code, GtI2_Code, GtStr_Code,
-	GtEq_Code, GtEqInt_Code, GtEqI1_Code, GtEqI2_Code, GtEqStr_Code,
-	Lt_Code, LtInt_Code, LtI1_Code, LtI2_Code, LtStr_Code,
-	LtEq_Code, LtEqInt_Code, LtEqI1_Code, LtEqI2_Code, LtEqStr_Code,
-	NotEq_Code, NotEqInt_Code, NotEqI1_Code, NotEqI2_Code, NotEqStr_Code,
+	Eq_Code, EqInt_Code, EqI1_Code, EqI2_Code,
+		EqStr_Code, EqStrT1_Code, EqStrT2_Code, EqStrTT_Code,
+	Gt_Code, GtInt_Code, GtI1_Code, GtI2_Code,
+		GtStr_Code, GtStrT1_Code, GtStrT2_Code, GtStrTT_Code,
+	GtEq_Code, GtEqInt_Code, GtEqI1_Code, GtEqI2_Code,
+		GtEqStr_Code, GtEqStrT1_Code, GtEqStrT2_Code, GtEqStrTT_Code,
+	Lt_Code, LtInt_Code, LtI1_Code, LtI2_Code,
+		LtStr_Code, LtStrT1_Code, LtStrT2_Code, LtStrTT_Code,
+	LtEq_Code, LtEqInt_Code, LtEqI1_Code, LtEqI2_Code,
+		LtEqStr_Code, LtEqStrT1_Code, LtEqStrT2_Code, LtEqStrTT_Code,
+	NotEq_Code, NotEqInt_Code, NotEqI1_Code, NotEqI2_Code,
+		NotEqStr_Code, NotEqStrT1_Code, NotEqStrT2_Code, NotEqStrTT_Code,
 
 	// logical operators
 	And_Code,
@@ -295,10 +303,11 @@ enum Code {
 	// 2010-04-11: assignment operators
 	// 2010-05-07: added assignment operator associated codes
 	// 2010-05-19: added assign sub-string associated code
-	Assign_Code, AssignInt_Code, AssignStr_Code, AssignSubStr_Code,
+	Assign_Code, AssignInt_Code, AssignStr_Code, AssignTmp_Code,
+		AssignSubStr_Code, AssignSubTmp_Code,
 	// 2010-05-22: added assign mix-string list associated code
-	AssignList_Code, AssignListInt_Code, AssignListStr_Code,
-		AssignListMixStr_Code,
+	AssignList_Code, AssignListInt_Code, AssignListStr_Code, AssignListTmp_Code,
+		AssignListMix_Code, AssignListMixTmp_Code,
 
 	// math internal functions
 	Abs_Code, AbsInt_Code,
@@ -323,22 +332,22 @@ enum Code {
 	Log_Code,
 
 	// string functions
-	Asc_Code, //+AscTmp_XCode,
-	Asc2_Code, //+Asc2Tmp_XCode,   // 2010-04-04: added code for two argument form
+	Asc_Code, AscTmp_Code,
+	Asc2_Code, Asc2Tmp_Code,   // 2010-04-04: added code for two argument form
 	Chr_Code,
 	// 2010-04-04: replaced Instr_Code
-	Instr2_Code,
-	Instr3_Code,
+	Instr2_Code, Instr2T1_Code, Instr2T2_Code, Instr2TT_Code,
+	Instr3_Code, Instr3T1_Code, Instr3T2_Code, Instr3TT_Code,
 	Left_Code,
-	Len_Code,
+	Len_Code, LenTmp_Code,
 	// 2010-04-04: replaced Mid_Code
 	Mid2_Code,
 	Mid3_Code,
-	Repeat_Code,
+	Repeat_Code, RepeatTmp_Code,
 	Right_Code,
 	Space_Code,
 	Str_Code, StrInt_Code,
-	Val_Code,
+	Val_Code, ValTmp_Code,
 
 	// other symbol operators
 	OpenParen_Code,
@@ -355,7 +364,7 @@ enum Code {
 	// commands
 	Let_Code,
 	// 2010-06-04: added data type specified print codes
-	Print_Code, PrintDbl_Code, PrintInt_Code, PrintStr_Code,
+	Print_Code, PrintDbl_Code, PrintInt_Code, PrintStr_Code, PrintTmp_Code,
 	Input_Code,
 	Dim_Code,
 	Def_Code,
@@ -485,7 +494,7 @@ const int Max_Assoc_Codes = 4;
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
 	// 2010-05-20: increased from 2 to 3 because of AssignSubStr_Code
-	// 2010-07-18  increased from 3 to 4 for second operand associated codes
+	// 2010-07-18: increased from 3 to 4 for second operand associated codes
 
 
 //*****************************************************************************
@@ -872,7 +881,7 @@ struct Token {
 		return this;
 	}
 
-	// static member (moved 2011-01-29)
+	// static members (moved 2011-01-29)
 	static bool paren[sizeof_TokenType];
 	static bool op[sizeof_TokenType];
 	static int prec[sizeof_TokenType];  // 2010-04-02
@@ -1393,7 +1402,7 @@ private:
 	TokenStatus process_first_operand(Token *&token);
 	// 2010-09-03: added new function
 	// 2011-01-13: added pointer to first token (for done stack)
-	TokenStatus process_final_operand(Token *&token, Token *first,
+	TokenStatus process_final_operand(Token *&token, Token *token2,
 		int operand_index, int noperands = 0);
 	// 2010-05-08: added last_operand argument
 	// 2010-07-01: removed last_operand argument

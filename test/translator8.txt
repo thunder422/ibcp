@@ -10,31 +10,31 @@ Input: LEFT$(A$,1) = B$
 Output: A$<ref> 1 LEFT$(<ref> B$ AssignSub$[B$] 
 
 Input: LEFT$(A$,1) = B$ + C$
-Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$[B$,C$] AssignSub$ 
+Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$[B$,C$] AssignSub$T 
 
 Input: MID$(A$,2) = B$
 Output: A$<ref> 2 MID2$(<ref> B$ AssignSub$[B$] 
 
 Input: MID$(A$,2) = B$ + C$
-Output: A$<ref> 2 MID2$(<ref> B$ C$ +$[B$,C$] AssignSub$ 
+Output: A$<ref> 2 MID2$(<ref> B$ C$ +$[B$,C$] AssignSub$T 
 
 Input: MID$(A$,2,3) = B$
 Output: A$<ref> 2 3 MID3$(<ref> B$ AssignSub$[B$] 
 
 Input: MID$(A$,2,3) = B$ + C$
-Output: A$<ref> 2 3 MID3$(<ref> B$ C$ +$[B$,C$] AssignSub$ 
+Output: A$<ref> 2 3 MID3$(<ref> B$ C$ +$[B$,C$] AssignSub$T 
 
 Input: RIGHT$(A$,2) = B$
 Output: A$<ref> 2 RIGHT$(<ref> B$ AssignSub$[B$] 
 
 Input: RIGHT$(A$,2) = B$ + C$
-Output: A$<ref> 2 RIGHT$(<ref> B$ C$ +$[B$,C$] AssignSub$ 
+Output: A$<ref> 2 RIGHT$(<ref> B$ C$ +$[B$,C$] AssignSub$T 
 
 Input: LEFT$(A$,1) = RIGHT$(B$,1)
 Output: A$<ref> 1 LEFT$(<ref> B$ 1 RIGHT$( AssignSub$[B$] 
 
 Input: LEFT$(A$,1) = RIGHT$(B$+C$,1)
-Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$[B$,C$] 1 RIGHT$( AssignSub$ 
+Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$[B$,C$] 1 RIGHT$( AssignSub$T 
 
 Input: RIGHT$(A$,2) = B
                       ^-- expected string expression

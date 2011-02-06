@@ -161,6 +161,8 @@
 //				implemented memory leak detection, inclduding new outputing
 //				  leaks with new print_token_leaks
 //	2011-01-30	corrected memory leak for errors at open parentheses
+//	2011-02-01	added additional array tests to translator test 12
+//	2011-02-05	added temporary strings tests in new translator test 15
 //
 
 #include <stdio.h>
@@ -749,6 +751,11 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z(INT(A+B))=C",
 		"Z(A$)=C",
 		"Z(A)=Y(A$)",
+		// added more array assignments, non-errors (2011-02-01)
+		"Z(A),Y(A)=X(A)",
+		"Z(A,Y(B))=X(A)",
+		"Z%(A%),Y%(A%)=X%(A%)",
+		"Z$(A%),Y$(A%)=X$(A%)",
 		NULL
 	};
 	static const char *testinput13[] = {  // semicolon error tests (2010-07-04)
@@ -845,11 +852,59 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z$ = A$ + Array(B+C)",
 		NULL
 	};
+	static const char *testinput15[] = {  // temporary string tests (2011-02-05)
+		"Z$ = A$ + B$",
+		"Z$ = REPEAT$(A$,4) + B$",
+		"Z$ = A$ + REPEAT$(B$+C$,3)",
+		"Z$ = STR$(A) + LEFT$(B$+C$,5)",
+		"Z% = A$ = B$",
+		"Z% = A$ + B$ = C$",
+		"Z% = A$ = B$ + C$",
+		"Z% = A$ + B$ = C$ + D$",
+		"Z% = A$ < B$",
+		"Z% = A$ + B$ < C$",
+		"Z% = A$ < B$ + C$",
+		"Z% = A$ + B$ < C$ + D$",
+		"Z% = A$ <= B$",
+		"Z% = A$ + B$ <= C$",
+		"Z% = A$ <= B$ + C$",
+		"Z% = A$ + B$ <= C$ + D$",
+		"Z% = A$ > B$",
+		"Z% = A$ + B$ > C$",
+		"Z% = A$ > B$ + C$",
+		"Z% = A$ + B$ > C$ + D$",
+		"Z% = A$ <= B$",
+		"Z% = A$ + B$ <= C$",
+		"Z% = A$ <= B$ + C$",
+		"Z% = A$ + B$ <= C$ + D$",
+		"Z% = A$ <> B$",
+		"Z% = A$ + B$ <> C$",
+		"Z% = A$ <> B$ + C$",
+		"Z% = A$ + B$ <> C$ + D$",
+		"Z$ = A$ + B$",
+		"Z$,Y$ = A$ + B$",
+		"LEFT$(Z$,1) = A$ + B$",
+		"LEFT$(Z$,1),Y$,RIGHT$(X$,1) = A$ + B$",
+		"Z% = ASC(A$) + ASC(B$+C$)",
+		"Z% = ASC(A$,4) + ASC(B$+C$,4)",
+		"Z% = INSTR(A$,B$)",
+		"Z% = INSTR(A$+B$,C$)",
+		"Z% = INSTR(A$,B$+C$)",
+		"Z% = INSTR(A$+B$,C$+D$)",
+		"Z% = INSTR(A$,B$,4)",
+		"Z% = INSTR(A$+B$,C$,4)",
+		"Z% = INSTR(A$,B$+C$,4)",
+		"Z% = INSTR(A$+B$,C$+D$,4)",
+		"Z% = LEN(A$) + LEN(B$+C$)",
+		"Z = VAL(A$) + VAL(B$+C$)",
+		"PRINT A$;B$+C$",
+		NULL
+	};
 
 	static const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
 		testinput7, testinput8, testinput9, testinput10, testinput11,
-		testinput12, testinput13, testinput14
+		testinput12, testinput13, testinput14, testinput15
 	};
 	static const int ntests = sizeof(test) / sizeof(test[0]);
 

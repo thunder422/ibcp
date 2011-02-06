@@ -28,6 +28,7 @@
 #  2011-01-09  changed name of executable from ibcp to ibcp.exe to make
 #              it work properly on Linux (this still works under windows;
 #              before the .exe was being added automatically)
+#  2011-02-05  added test 15
 #
 #
 #  Usage:
@@ -52,7 +53,7 @@ do
 	fi
 done
 
-for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 do
 	ibcp.exe -t $i >translator$i.txt
 	cmp -s test/translator$i.txt translator$i.txt

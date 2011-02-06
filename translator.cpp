@@ -285,6 +285,12 @@
 //				  it doesn't get deleted until its not used anymore
 //	2011-01-30	corrected token memory leaks
 //	2011-02-01	corrected token memory leaks
+//	2011-02-02	in find_code() upon a no match error, removed checks if last
+//				  token added was sub-string; not necessary with first/last code
+//	2011-02-05	in process_final_operand() added check if token is assignment
+//				  operator to not push to done stack (strings still attached)
+//				replaced most code in Assign_CmdHandler() with call to
+//				  process_final_operand()
 //
 
 #include "ibcp.h"
@@ -1016,6 +1022,7 @@ TokenStatus Translator::process_first_operand(Token *&token)
 //   - from add_operator, token2 if first operand attached on hold stack
 //   - from add_print_code, token2 is NULL
 //   - from CloseParen_Handler, token2 is CloseParen token
+//   - from Assign_CmdHandler, token2 will be NULL (not used)
 
 // 2010-08-30: new function created
 // 2011-01-13: added pointer to second token
@@ -1034,31 +1041,38 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 			return status;
 		}
 
+		// 2011-02-05: added check non-assignment operator
+		if ((table->flags(token->index) & Reference_Flag))
+		{
+			// for assignment operators, nothing gets pushed to the done stack
+			done_push = false;
+
+			// get number of strings for this assignment operator
+			noperands = table->nstrings(token->index);
+
+			// no longer need the first and last operands
+			delete_open_paren(first);
+			delete_close_paren(last);
+		}
 		// save string operands only (2010-08-07)
 		// get number of strings for non-sub-string codes (2010-12-24)
 		// include sub-string reference which are put on done stack (2011-02-01)
-		if (token->datatype != SubStr_DataType || token->reference)
+		else if ((token->datatype != SubStr_DataType || token->reference))
 		{
 			// no operands for sub-string references (2011-02-01)
 			noperands = token->reference ? 0 : table->nstrings(token->index);
+
 			// set first and last operands (2011-01-15)
+			delete_open_paren(first);
 			if (token->is_operator())
 			{
-				if (operand_index == 0)  // unary op?
-				{
-					delete_open_paren(first);
-					first = token;  // set first token to unary op (2011-01-20)
-				}
-				else  // binary op
-				{
-					delete_open_paren(first);
-					first = token2;  // first operand from hold stack
-				}
+				// if unary operator, then operator, else first from hold stack
+				// 2011-01-20: set first token to unary op
+				first = operand_index == 0 ? token : token2;
 				// last operand from token that was on done stack
 			}
 			else  // non-sub-string internal function
 			{
-				delete_open_paren(first);
 				first = NULL;   // token itself is first operand
 				delete_close_paren(last);
 				last = token2;  // last operand is CloseParen token
@@ -1225,7 +1239,6 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 	if (datatype == operand_datatype)  // exact match?
 	{
 		// 2010-10-03: pop all references (for assignments) from stack
-		// TODO pop TmpStr / sub-string functions, leave all strings
 		if (operand_datatype != String_DataType || token->reference)
 		{
 			// pop non-string from done stack
@@ -1261,7 +1274,6 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 			table->set_token(token, assoc_index);
 
 			// 2010-10-03: pop all references (for assignments) from stack
-			// TODO pop TmpStr / sub-string functions, leave all strings
 			if (operand_datatype2 != String_DataType || token->reference)
 			{
 				// pop non-string from done stack
@@ -1318,20 +1330,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 	if (!token->reference)
 	{
 		status = errstatus_datatype[operand_datatype].expected;
-		// check if operand on stack is argument of sub-string (2010-12-25)
-		Token *last_token = output->last()->value->token;
-		if (last_token != top_token)
-		{
-			if (last_token->datatype == SubStr_DataType)
-			{
-				// point error to sub-string function
-				top_token = last_token;
-	}
-			else  // possible problem (last token should match top token)
-			{
-				status = BUG_Debug9;
-			}
-		}
+		// 2011-02-02: sub-string no longer needed with first/last operands
 	}
 	else if (token->datatype == SubStr_DataType)
 	{
@@ -1718,8 +1717,7 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 		if (equivalent_datatype[token->datatype] == String_DataType
 			&& token->datatype != cmd_stack.top().token->datatype)
 		{
-			cmd_stack.top().token->index
-				= table->index(AssignListMixStr_Code);
+			cmd_stack.top().token->index = table->index(AssignListMix_Code);
 		}
 	}
 	return Good_TokenStatus;
@@ -1991,7 +1989,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			status = t.find_code(top_token, t.count_stack.top().noperands - 1);
 			if (status != Good_TokenStatus)
 			{
-				delete token;       // delete comma token (leak 2011-01-30)
+				delete token;       // delete comma token (2011-01-30 leak)
 				token = top_token;  // return token with error (2010-10-01)
 				return status;
 			}
@@ -2361,80 +2359,20 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	// Equal_Handler() and Comma_Handler() for each item being assigned,
 	// here the last value needs to be processed (2010-07-01)
 
-	// pop operand element pointer off of done stack
+	// check done stack is empty before calling process_final_operand()
+	// to avoid bug error check for empty done stack in find_code()
 	if (t.done_stack.empty())
 	{
 		DataType datatype = cmd_item->token->datatype;  // save expected type
 		cmd_item->token = token;  // point error to end-of-statement token
 		return errstatus_datatype[datatype].expected;
 	}
-	// get first and last operand tokens of assign operand (2011-01-16)
-	Token *first = t.done_stack.top().first;
-	Token *last = t.done_stack.top().last;
-	List<RpnItem *>::Element *assign_operand = t.done_stack.pop().element;
-	if (first == NULL)
-	{
-		first = assign_operand->value->token;
-	}
-	if (last == NULL)
-	{
-		last = assign_operand->value->token;
-	}
-
-	// reset reference flag of operand
-	assign_operand->value->token->reference = false;
-
-	Code cvt_code = cvtcode_have_need[assign_operand->value->token->datatype]
-		[cmd_item->token->datatype];
-
-	if (cvt_code == Invalid_Code)
-	{
-		// report entire expression (2011-01-16)
-		cmd_item->token = first->through(last);
-
-		// delete last token if close paren (2011-01-30 leak)
-		t.delete_close_paren(last);
-
-		return errstatus_datatype[cmd_item->token->datatype].actual;
-	}
-	// don't need first and last operands anymore (2011-01-30 leak)
-	t.delete_open_paren(first);
-	t.delete_close_paren(last);
-
-	RpnItem *rpn_item;
-
-	if (cvt_code != Null_Code)  // assignment value needs conversion?
-	{
-		// create hidden convert token with convert code
-		rpn_item = new RpnItem(t.table->new_token(cvt_code));
-		t.output->append(&rpn_item);  // 2010-10-02
-	}
-
-	// save operand if string
-	int noperands;
-	List<RpnItem *>::Element **operand;
-	// don't attach constant strings (2010-12-24)
-	if (assign_operand->value->token->datatype == String_DataType
-		&& assign_operand->value->token->type != Constant_TokenType)
-	{
-		noperands = 1;
-		operand = new List<RpnItem *>::Element *[1];
-		operand[0] = assign_operand;
-	}
-	else  // don't save value
-	{
-		noperands = 0;
-		operand = NULL;
-	}
 
 	// turn of reference flag of assign token, no longer needed (2010-10-02)
 	cmd_item->token->reference = false;
 
-	// append token to output
-	rpn_item = new RpnItem(cmd_item->token, noperands, operand);
-	t.output->append(&rpn_item);
-
-	return Good_TokenStatus;
+	// 2011-02-05: replaced code with function call
+	return t.process_final_operand(cmd_item->token, NULL, 1);
 }
 
 

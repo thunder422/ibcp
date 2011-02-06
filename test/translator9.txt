@@ -13,7 +13,7 @@ Input: LET A%=0
 Output: A%<ref> 0 Assign%'LET' 
 
 Input: LET A$=""
-Output: A$<ref> "" Assign$'LET' 
+Output: A$<ref> "" Assign$'LET'[""] 
 
 Input: LET A=B=C=0.0
 Output: A<ref> B C = 0.0 =%1 CvtDbl Assign'LET' 
@@ -32,13 +32,13 @@ Input: LET A$=B$=C$=""
 
 
 Input: LET A$,B$,C$=""
-Output: A$<ref> B$<ref> C$<ref> "" AssignList$'LET' 
+Output: A$<ref> B$<ref> C$<ref> "" AssignList$'LET'[""] 
 
 Input: LET LEFT$(A$,1) = B$
 Output: A$<ref> 1 LEFT$(<ref> B$ AssignSub$'LET'[B$] 
 
 Input: LET LEFT$(A$,1) = B$ + C$
-Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$[B$,C$] AssignSub$'LET' 
+Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$[B$,C$] AssignSub$T'LET' 
 
 Input: LET LEFT$(A$,1),RIGHT$(B$,1) = C$
 Output: A$<ref> 1 LEFT$(<ref> B$<ref> 1 RIGHT$(<ref> C$ AssignListMix$'LET'[C$] 
