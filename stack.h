@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: stack.h - contains template for generic simple stack class
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,25 +16,25 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
 //
-//  Change History:
 //
-//  2010-04-02  initial release
+//	Change History:
 //
-//  2010-04-23  changed pop() to return a reference
-//              added push() with no argument to push new item on stack
-//                and return a reference to the new item
-//              modified push(T value) to call push(void), which now
-//                contains the stack check and expansion code
+//	2010-04-02	initial release
 //
-//  2010-05-22  added nitems() function to return the number of items on stack
+//	2010-04-23	changed pop() to return a reference
+//				added push() with no argument to push new item on stack
+//				  and return a reference to the new item
+//				modified push(T value) to call push(void), which now
+//				  contains the stack check and expansion code
 //
-//  2010-07-17  made push() function inline for optimization, but separated code
-//              that grows stack as need to new grow() function so that this
-//              code is not inlined
+//	2010-05-22	added nitems() function to return the number of items on stack
 //
-//  2011-01-12  renamed stack[] to array[] to reduce confusion during debugging
+//	2010-07-17	made push() function inline for optimization, but separated code
+//				that grows stack as need to new grow() function so that this
+//				code is not inlined
+//
+//	2011-01-12	renamed stack[] to array[] to reduce confusion during debugging
 //
 
 #ifndef STACK_H
@@ -49,7 +49,7 @@
 // of the more powerful doubly linked list of the List class.  This
 // class is used in placed where insert and remove from any place within
 // the stack is not necessary.  Only the basic stack functions push, pop
-// and top are supported.  
+// and top are supported.
 //
 // Because arrays are allocated, a size is needed to allocate the array.
 // The initial size is specified with an argument to the template.
@@ -93,7 +93,7 @@ public:
 		delete[] array;			// de-allocate stack array
 	}
 
-	// function to check if list is empty 
+	// function to check if list is empty
 	bool empty(void)
 	{
 		return index == -1;
@@ -149,7 +149,7 @@ public:
 // This function makes room on top of the stack for a new item.
 // If the array is not large enough, the size of the array is increased.
 
-// 2010-04-23: changed function for no arugment and return reference
+// 2010-04-23: changed function for no argument and return reference
 // 2010-07-17: renamed and changed function to only contain grow stack code
 template <class T, int initial_size, int increase_size>
 void SimpleStack<T, initial_size, increase_size>::grow(void)

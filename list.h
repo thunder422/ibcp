@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: list.h - contains template for list generic list class
-//	Copyright (C) 2009-2010  Thunder422
+//	Copyright (C) 2009-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,24 +18,24 @@
 //	see <http://www.gnu.org/licenses/>.
 //
 //
-//  Change History:
+//	Change History:
 //
-//  2009-12-28  initial version
+//	2009-12-28	initial version
 //
-//  2010-01-30  added more "list" like functions;
-//              made stack calls inline to list functions;
-//              removed partial support for simple type list (values to
-//                append/push and remove/pop can be done by pointer) to reduce
-//                the number of functions;
-//              changed first() to return report;
-//              renamed top() to last();
-//              implemented top()
+//	2010-01-30	added more "list" like functions;
+//				made stack calls inline to list functions;
+//				removed partial support for simple type list (values to
+//				  append/push and remove/pop can be done by pointer) to reduce
+//				  the number of functions;
+//				changed first() to return report;
+//				renamed top() to last();
+//				implemented top()
 //
-//  2010-02-13  allow NULL for element pointer of remove to remove the first
-//              element of the list
-//  2010-02-15  added constructor for element to initialize value from a
-//              pointer, added value argument to new Element and removed
-//              setting of element->value in append and insert functions
+//	2010-02-13	allow NULL for element pointer of remove to remove the first
+//				element of the list
+//	2010-02-15	added constructor for element to initialize value from a
+//				pointer, added value argument to new Element and removed
+//				setting of element->value in append and insert functions
 //
 //	2010-02-29	updated List class by replacing the allocated master element
 //				with a tail element pointer; this tail element pointer is set to
@@ -322,7 +322,7 @@ template <class T> bool List<T>::remove(T *value)
 }
 
 
-// This function removes a value pointed to by the element argument.  if
+// This function removes a value pointed to by the element argument.  If
 // the element argument is NULL, then the first item in the list is
 // removed.  The function is called with a pointer to the value in which
 // to place (copy) the value that is at the element argument.  After the

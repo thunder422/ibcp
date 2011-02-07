@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: parser.cpp - contains code for the parser class
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,55 +16,55 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
+//
 //
 //  Change History:
 //
-//  2010-03-01  initial release
+//	2010-03-01	initial release
 //
-//  2010-03-06  split DefFunc_TokenType into DefFuncN_TokenType and
-//              DefFuncP_TokenType so that it can be determined if define
-//              function name has a parentheses or not
+//	2010-03-06	split DefFunc_TokenType into DefFuncN_TokenType and
+//				DefFuncP_TokenType so that it can be determined if define
+//				function name has a parentheses or not
 //
-//  2010-03-07  in get_number() changed situation of 0 leading another digit
-//                from terminating the number at the first 0 to a leading zero
-//                error (no legal BASIC would have this situation;
-//              changed several set_error() calls to have a length
-//                argument for the new length of token error field in Token
+//	2010-03-07	in get_number() changed situation of 0 leading another digit
+//				  from terminating the number at the first 0 to a leading zero
+//				  error (no legal BASIC would have this situation;
+//				changed several set_error() calls to have a length
+//				  argument for the new length of token error field in Token
 //
-//  2010-03-08  removed no closing quote check from get_string() since this
-//              condition was made acceptable in scan_string()
+//	2010-03-08	removed no closing quote check from get_string() since this
+//				condition was made acceptable in scan_string()
 //
-//  2010-03-10  rewrote get_operator() to properly handle two character
-//              operators
+//	2010-03-10	rewrote get_operator() to properly handle two character
+//				operators
 //
-//  2010-03-11  allow tabs to be white space in skip_whitespace()
+//	2010-03-11	allow tabs to be white space in skip_whitespace()
 //
-//  2010-03-17  modified get_token() to return special end-of-line token
-//                instead of a NULL pointer
-//              changed all token->code to token->index
+//	2010-03-17	modified get_token() to return special end-of-line token
+//				  instead of a NULL pointer
+//				changed all token->code to token->index
 //
-//  2010-03-18  replaced code with call to set_token()
+//	2010-03-18	replaced code with call to set_token()
 //
-//  2010-03-20  set length of token field for words, two words, string
-//              constants, one and two character operators
+//	2010-03-20	set length of token field for words, two words, string
+//				constants, one and two character operators
 //
-//  2010-03-21  FIXME removed an error check for translator simple expression
-//              testing
+//	2010-03-21	FIXME removed an error check for translator simple expression
+//				testing
 //
-//  2010-04-16  removed the unexpected character errors in scan_command() that
-//              was occurring in a statements like "A,B=3" because these were
-//              not valid immediate commands, so these errors were removed to
-//              let the Translator process it (and report an error as necessary)
+//	2010-04-16	removed the unexpected character errors in scan_command() that
+//				was occurring in a statements like "A,B=3" because these were
+//				not valid immediate commands, so these errors were removed to
+//				let the Translator process it (and report an error as necessary)
 //
-//  2010-05-29  corrected a problem in the get_number() function where a
-//              constant of a single '0' caused "invalid leading zero in numeric
-//              constant" error, the solution was to check if the next character
-//              is a digit, the number is complete, otherwise an error occurs
+//	2010-05-29	corrected a problem in the get_number() function where a
+//				constant of a single '0' caused "invalid leading zero in numeric
+//				constant" error, the solution was to check if the next character
+//				is a digit, the number is complete, otherwise an error occurs
 //
-//  2010-06-25  TableSearch replaced with SearchType
+//	2010-06-25	TableSearch replaced with SearchType
 //
-//  2011-01-11  Set token length for identifiers and number constants
+//	2011-01-11	Set token length for identifiers and number constants
 //
 
 #include <stdio.h>
@@ -183,7 +183,7 @@ bool Parser::get_command(void)
 //     xxx-zzz,nnn,zz           (RangeIncr_Flag)
 //
 // white space is allowed between any of the parts; an error is returned
-// when the line could not be a valid BASIC immediate command 
+// when the line could not be a valid BASIC immediate command
 //
 //     - returns Null_Flag if no valid command is found
 //     - returns Error_Flag with token set to error if error found
@@ -514,7 +514,7 @@ char *Parser::scan_word(char *p, DataType &datatype, bool &paren)
 	}
 	while (isalnum(*p) || *p == '_');
 	// p now points to non-alnum or '_'
-	
+
 	// see if there is a data type symbol next
 	switch (*p)
 	{
@@ -569,11 +569,10 @@ void Parser::skip_whitespace(void)
 // function to get numeric constant at the current position, which may
 // be an integer or double constant.  If the value does not contain a
 // decimal point or an exponent, and it fits into a 32-bit integer, then
-// it will be returned as an integer, otherwise is will be returned as a 
+// it will be returned as an integer, otherwise is will be returned as a
 // double.
 //
 //     - numbers starting with zero must be followed by a decimal point
-//     - 
 //     - returns false if no number (position not changed)
 //     - returns true if there is and token is filled
 //     - returns true for errors and special error token is set
@@ -829,7 +828,6 @@ bool Parser::get_operator(void)
 			return true;
 		}
 	}
-		
 	// operator could be a two character operator
 	// search table again for two characters at current position
 	int index2 = table->search(Symbol_SearchType, pos, 2);

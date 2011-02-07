@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_ibcp.cpp - contains code for testing
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,147 +18,147 @@
 //	see <http://www.gnu.org/licenses/>.
 //
 //
-//  Change History:
+//	Change History:
 //
-//  2010-03-01  initial release
+//	2010-03-01	initial release
 //
-//  2010-03-06  added support for a command line argument to indicate which test
-//              to run, added test input lines for testing identifiers, split
-//              DefFunc_TokenType into DefFuncN_TokenType and
-//              DefFuncP_TokenType
+//	2010-03-06	added support for a command line argument to indicate which test
+//				to run, added test input lines for testing identifiers, split
+//				DefFunc_TokenType into DefFuncN_TokenType and
+//				DefFuncP_TokenType
 //
-//  2010-03-07  added test input lines for testing numbers,
-//              changed error display to use new length value in token
+//	2010-03-07	added test input lines for testing numbers,
+//				changed error display to use new length value in token
 //
-//  2010-03-08  added test input lines for testing strings
+//	2010-03-08	added test input lines for testing strings
 //
-//  2010-03-10  added test input lines for testing operators
+//	2010-03-10	added test input lines for testing operators
 //
-//  2010-03-11  added command line option to input lines interactively,
-//              separated code into new parse_input() function
+//	2010-03-11	added command line option to input lines interactively,
+//				separated code into new parse_input() function
 //
-//  2010-03-13  replaced IncFunc with IntFuncN and IntFuncP token types
-//              added new Token static functions that indicate whether token
-//                has a parentheses or is and operator
-//              changed main() to test_parser(), moved print_gpl_header, and
-//                table initialization to new ibcp.cpp source file
+//	2010-03-13	replaced IncFunc with IntFuncN and IntFuncP token types
+//				added new Token static functions that indicate whether token
+//				  has a parentheses or is and operator
+//				changed main() to test_parser(), moved print_gpl_header, and
+//				  table initialization to new ibcp.cpp source file
 //
-//  2010-03-17  renamed file from test_parser.cpp - will now contain all test
-//                code
-//              separated print_token() from parse_input() so that it can be
-//                used from other functions
-//              added string for new Code values to print_token
-//              changed all token->code to token->index
+//	2010-03-17	renamed file from test_parser.cpp - will now contain all test
+//				  code
+//				separated print_token() from parse_input() so that it can be
+//				  used from other functions
+//				added string for new Code values to print_token
+//				changed all token->code to token->index
 //
-//  2010-03-18  fixed loop since get_token() no longer returns null
-//              added new functions test_translator() and translate_input() for
-//                testing translator
+//	2010-03-18	fixed loop since get_token() no longer returns null
+//				added new functions test_translator() and translate_input() for
+//				  testing translator
 //
-//  2010-03-20  implemented test translator code, made print_small_token() so
-//              that RPN list could be output in a compact form
+//	2010-03-20	implemented test translator code, made print_small_token() so
+//				that RPN list could be output in a compact form
 //
-//  2010-03-21  added check for parser errors in translator test code
-//              corrected output rpn list to handle an empty list
-//              added bad length check to print_error()
-//              corrected print_error() to handle error tokens
-//              added more simple expressions test inputs
+//	2010-03-21	added check for parser errors in translator test code
+//				corrected output RPN list to handle an empty list
+//				added bad length check to print_error()
+//				corrected print_error() to handle error tokens
+//				added more simple expressions test inputs
 //
-//  2010-03-25  added expressions for testing expressions with parentheses
-//              added additional errors for parentheses errors
+//	2010-03-25	added expressions for testing expressions with parentheses
+//				added additional errors for parentheses errors
 //
-//  2010-03-26  added more parentheses test expressions
+//	2010-03-26	added more parentheses test expressions
 //
-//  2010-04-02  added expressions for testing expressions with arrays functions
-//              added additional errors for arrays/function errors
-//              in print_small_token() for operators, use name2 for output if
-//                set, otherwise use name
+//	2010-04-02	added expressions for testing expressions with arrays functions
+//				added additional errors for arrays/function errors
+//				in print_small_token() for operators, use name2 for output if
+//				  set, otherwise use name
 //
-//  2010-04-04  added expressions for testing the number of arguments
-//              check for internal functions
-//              added an additional error
-//              added calls to debug_name() in print_small_token()
+//	2010-04-04	added expressions for testing the number of arguments
+//				check for internal functions
+//				added an additional error
+//				added calls to debug_name() in print_small_token()
 //
-//  2010-04-11  replaced unexpected comma error with two errors
-//              added assignment errors
-//              added new assignment codes to print_token()
-//  2010-04-12  added output of "<ref>" if token reference flag set
-//  2010-04-14  correct token memory allocation problem (only delete token if
-//              it is the original token passed to the Translator)
-//  2010-04-16  added assignment/reference and parentheses errors
-//              modified translator_input() to set expression test mode in
-//                Translator for previous test inputs
-//              added assignment statement test inputs
-//  2010-04-17  added another unexpected comma error
+//	2010-04-11	replaced unexpected comma error with two errors
+//				added assignment errors
+//				added new assignment codes to print_token()
+//	2010-04-12	added output of "<ref>" if token reference flag set
+//	2010-04-14	correct token memory allocation problem (only delete token if
+//				it is the original token passed to the Translator)
+//	2010-04-16	added assignment/reference and parentheses errors
+//				modified translator_input() to set expression test mode in
+//				  Translator for previous test inputs
+//				added assignment statement test inputs
+//	2010-04-17	added another unexpected comma error
 //
-//  2010-04-25  added errors for data type handling
-//              return get_str() to get_ptr()
-//              added new data handling errors
-//  2010-04-27  corrected previous translation test inputs
-//              added data type handling test inputs
+//	2010-04-25	added errors for data type handling
+//				return get_str() to get_ptr()
+//				added new data handling errors
+//	2010-04-27	corrected previous translation test inputs
+//				added data type handling test inputs
 //
-//  2010-05-09  corrected expresion in translator test input set 6
-//              added assignment data type handling test inputs (set 7)
+//	2010-05-09	corrected expresion in translator test input set 6
+//				added assignment data type handling test inputs (set 7)
 //
-//  2010-05-15  modified code because output list from Translator now contains
-//                RpnItem* instead of Token*
-//              added additional loop to output list from Translator with no
-//                deleting, necessary so that the operands of tokens saved by
-//                the Translator can also be printed
+//	2010-05-15	modified code because output list from Translator now contains
+//				  RpnItem* instead of Token*
+//				added additional loop to output list from Translator with no
+//				  deleting, necessary so that the operands of tokens saved by
+//				  the Translator can also be printed
 //
-//  2010-05-19  created testinput8 for translator substring tests
-//  2010-05-21  added rest of test inputs for substring assignment tests
+//	2010-05-19	created testinput8 for translator substring tests
+//	2010-05-21	added rest of test inputs for substring assignment tests
 //
-//  2010-05-22  added more of test inputs for substring assignment tests that
-//              contain mix string list assignments
+//	2010-05-22	added more of test inputs for substring assignment tests that
+//				contain mix string list assignments
 //
-//  2010-05-28  added static in front of all test input definitions to prevent
-//              code from being generated
-//  2010-05-29  added support for sub-code output to print_small_token()
-//              renamed Translator::Status names to _TokenStatus names
-//              added support for unexpected command error
-//              updated datatype_name[] and code_name[] arrays for changes made
-//                since parser testing was last used
-//              corrected output of double and integer token output to used
-//                originally entered string instead of stored value
-//              added '0' constants tests to parser test input set #3
-//              added message to identifier Parser or Translator testing for
-//                input mode testing
-//              added testinput9 for translator command testing with tests for
-//                LET command
-//  2010-05-30  added command stack not empty bug error
+//	2010-05-28	added static in front of all test input definitions to prevent
+//				code from being generated
+//	2010-05-29	added support for sub-code output to print_small_token()
+//				renamed Translator::Status names to _TokenStatus names
+//				added support for unexpected command error
+//				updated datatype_name[] and code_name[] arrays for changes made
+//				  since parser testing was last used
+//				corrected output of double and integer token output to used
+//				  originally entered string instead of stored value
+//				added '0' constants tests to parser test input set #3
+//				added message to identifier Parser or Translator testing for
+//				  input mode testing
+//				added testinput9 for translator command testing with tests for
+//				  LET command
+//	2010-05-30	added command stack not empty bug error
 //
-//  2010-06-02  updated print_token() for new codes
-//  2010-06-06  corrected to call name2() in print_small_token()
-//  2010-06-08  added PRINT statement test inputs
-//              added semicolon sub-code flag support to print_small_token()
-//  2010-06-09  added unexpected comma in arguments error
-//              renamed bug errors for clarity
-//  2010-06-10  added new translator test sets (10 and 11)
-//  2010-06-10  added expected unary or operand error
-//  2010-06-01/14  updated many error enumeration names and string messages for
-//                 clarity
+//	2010-06-02	updated print_token() for new codes
+//	2010-06-06	corrected to call name2() in print_small_token()
+//	2010-06-08	added PRINT statement test inputs
+//				added semicolon sub-code flag support to print_small_token()
+//	2010-06-09	added unexpected comma in arguments error
+//				renamed bug errors for clarity
+//	2010-06-10	added new translator test sets (10 and 11)
+//	2010-06-10	added expected unary or operand error
+//	2010-06-01/14  updated many error enumeration names and string messages for
+//				   clarity
 //
-//  2010-06-25  removed token status switch (messages moved to ibcp.cpp)
-//  2010-06-26  added more error test inputs
-//  2010-06-29  corrected print_error() to take into account double quotes
-//                surrounding and used internally on string constants
-//              added new translator expression type test set (12)
-//  2010-07-04  moved semicolon error tests from testinput11 to new testinput13
-//              added more error tests to testinput11
-//              added more error tests in testinput12
+//	2010-06-25	removed token status switch (messages moved to ibcp.cpp)
+//	2010-06-26	added more error test inputs
+//	2010-06-29	corrected print_error() to take into account double quotes
+//				  surrounding and used internally on string constants
+//				added new translator expression type test set (12)
+//	2010-07-04	moved semicolon error tests from testinput11 to new testinput13
+//				added more error tests to testinput11
+//				added more error tests in testinput12
 //
-//  2010-08-01  removed comma sub-code
-//  2010-10-05  added more translator tests
-//              modified to get code_name[] contents from auto-generated include
-//                file
+//	2010-08-01	removed comma sub-code
+//	2010-10-05	added more translator tests
+//				modified to get code_name[] contents from auto-generated include
+//				  file
 //
-//  2011-01-04  added translator test 14 - expression type tests
-//  2011-01-11  removed redundant code in print_error() for determining length
-//                of token (can now just use token length member)
+//	2011-01-04	added translator test 14 - expression type tests
+//	2011-01-11	removed redundant code in print_error() for determining length
+//				  of token (can now just use token length member)
 //	2011-01-22	ignore Used_SubCode in print_small_token()
 //				added more statements to translator test 14
 //	2011-01-29	modified for updated List class functions
-//				implemented memory leak detection, inclduding new outputing
+//				implemented memory leak detection, including new outputting
 //				  leaks with new print_token_leaks
 //	2011-01-30	corrected memory leak for errors at open parentheses
 //	2011-02-01	added additional array tests to translator test 12
@@ -818,30 +818,30 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		NULL
 	};
 	static const char *testinput14[] = {  // expression error tests (2011-01-04)
-		//                count		hold
-		"Z=(,",         // 0,0		OpenParen	Op
-		"Z=-,",         // -1		Neg			Op
-		"Z=A+,",        // -1		Add			Op
-		"Z=(-,",        // 0,0		Neq			Op
-		"Z=(A+,",       // 0,0		Add			Op
-		"Z=INT(,",      // 1,1		Int			HasParen
-		"Z=INT(-,",     // 1,1		Neg			Op
-		"Z=INT(A+,",    // 1,1		Add			Op
-		"Z=INT((,",     // 1,1/0,0	OpenParen	Op
-		"Z=INT((-,",    // 1,1/0,0	Neg			Op
-		"Z=INT((A+,",   // 1,1/0,0	Add			Op
-		"Z=A(,",        // 1,0		---			HasParen
-		"Z=A(-,",       // 1,0		Neg			Op
-		"Z=A(B+,",      // 1,0		Add			Op
-		"Z=A((,",       // 1,0/0,0	OpenParen	Op
-		"Z=A((-,",      // 1,0/0,0	Neg			Op
-		"Z=A((B+,",     // 1,0/0,0	Add			Op
-		"Z=A(INT(,",    // 1,0/1,1	Int			HasParen
-		"Z=A(INT(-,",   // 1,0/1,1	Neg			Op
-		"Z=A(INT(A+,",  // 1,0/1,1	Add			Op
-		"Z=A(B(,",      // 1,0/1,0	---			HasParen
-		"Z=A(B(-,",     // 1,0/1,0	Neq			Op
-		"Z=A(B(C+,",    // 1,0/1,0	Add			Op
+		//
+		"Z=(,",
+		"Z=-,",
+		"Z=A+,",
+		"Z=(-,",
+		"Z=(A+,",
+		"Z=INT(,",
+		"Z=INT(-,",
+		"Z=INT(A+,",
+		"Z=INT((,",
+		"Z=INT((-,",
+		"Z=INT((A+,",
+		"Z=A(,",
+		"Z=A(-,",
+		"Z=A(B+,",
+		"Z=A((,",
+		"Z=A((-,",
+		"Z=A((B+,",
+		"Z=A(INT(,",
+		"Z=A(INT(-,",
+		"Z=A(INT(A+,",
+		"Z=A(B(,",
+		"Z=A(B(-,",
+		"Z=A(B(C+,",
 		"Z = -",
 		"Z% = A%+",
 		"Z$ = A$+",
@@ -1006,7 +1006,7 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			}
 			printf(" ");
 		}
-		// 2010-03-21: corrected to handle an empty rpn list
+		// 2010-03-21: corrected to handle an empty RPN list
 		// 2011-01-29: rewrote to remove last item instead of first item
 		RpnItem *rpn_item;
 		while (rpn_list->pop(&rpn_item))

@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: ibcp.h - miscellaneous functions
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,57 +18,57 @@
 //	see <http://www.gnu.org/licenses/>.
 //
 //
-//  Change History:
+//	Change History:
 //
-//  2010-03-13  initial release, created to hold variables and functions
-//              related to definitions in the ibcp.h definitions file that have
-//              no other file into; and main, which includes the GPL header
-//              output, Token initialization call, Table initialization code,
-//              and a call to the test_parser() function
+//	2010-03-13	initial release, created to hold variables and functions
+//				related to definitions in the ibcp.h definitions file that have
+//				no other file into; and main, which includes the GPL header
+//				output, Token initialization call, Table initialization code,
+//				and a call to the test_parser() function
 //
-//  2010-03-17  changed return value of test_parser from int to bool (the
-//                command line options are passed to each test routine and if
-//                the options are not for them, they return false so the next
-//                test routine can be called)
-//              removed includes that weren't needed,
-//              changed exit() to a return
+//	2010-03-17	changed return value of test_parser from int to bool (the
+//				  command line options are passed to each test routine and if
+//				  the options are not for them, they return false so the next
+//				  test routine can be called)
+//				removed includes that weren't needed,
+//				changed exit() to a return
 //
-//  2010-03-18  added support for test_translator
+//	2010-03-18	added support for test_translator
 //
-//  2010-03-20  added translator instantiation to main() and translator
-//              argument to translator function calls
+//	2010-03-20	added translator instantiation to main() and translator
+//				argument to translator function calls
 //
-//  2010-04-02  added support for obtaining precedence from token types that
-//              don't have table entries (DefFuncP and Paren)
+//	2010-04-02	added support for obtaining precedence from token types that
+//				don't have table entries (DefFuncP and Paren)
 //
-//  2010-04-25  added "-t" to usage string
-//              added check if program name does not have full path
+//	2010-04-25	added "-t" to usage string
+//				added check if program name does not have full path
 //
-//  2010-05-20  added maximum operands and maximum associate code table error
-//              reporting
+//	2010-05-20	added maximum operands and maximum associate code table error
+//				reporting
 //
-//  2010-05-28  replaced strrchr(argv[1],...) call with 'name' in usage
-//              message when command line options are not recognized, this
-//              cause the program to crash when run from the Windows cmd line
-//  2010-05-29  added the initialization of the new token has table entry flags
+//	2010-05-28	replaced strrchr(argv[1],...) call with 'name' in usage
+//				message when command line options are not recognized, this
+//				cause the program to crash when run from the Windows cmd line
+//	2010-05-29	added the initialization of the new token has table entry flags
 //
-//  2010-06-25  added TokenStatus initialization to Token::initialize()
-//               for new token status message structure array
-//              replaced TokenStsMgsErr and TableError with generic Error
-//                template
-//  2010-06-28  added NULL string check to Token::initialize() message array
-//                initialization to catch missing entries
-//              added missing entry for Null_TokenStatus to
-//                Token::message_array[], which was not detected by the error
-//                checking because there was a null entry at the end of the
-//                array that happen to have a 0 (Null_TokenStatus) in it
-//  2010-06-29  updated expected expression error messages
-//  2010-07-01/05  updates to token status messages for changes
+//	2010-06-25	added TokenStatus initialization to Token::initialize()
+//				 for new token status message structure array
+//				replaced TokenStsMgsErr and TableError with generic Error
+//				  template
+//	2010-06-28	added NULL string check to Token::initialize() message array
+//				  initialization to catch missing entries
+//				added missing entry for Null_TokenStatus to
+//				  Token::message_array[], which was not detected by the error
+//				  checking because there was a null entry at the end of the
+//				  array that happen to have a 0 (Null_TokenStatus) in it
+//	2010-06-29	updated expected expression error messages
+//	2010-07-01/05  updates to token status messages for changes
 //
-//  2011-01-02  added for error codes
-//  2011-01-27  corrected some memory leaks with error lists and table instance
-//  2011-01-29  implemented Token new and delete operator functions to detect
-//                memory leaks of tokens
+//	2011-01-02	added for error codes
+//	2011-01-27	corrected some memory leaks with error lists and table instance
+//	2011-01-29	implemented Token new and delete operator functions to detect
+//				  memory leaks of tokens
 //
 
 #include <stdio.h>
@@ -82,7 +82,6 @@ void print_gpl_header(char *name)
 	printf("This is free software, and you are welcome to\n");
 	printf("redistribute it under certain conditions.\n\n");
 }
-
 
 // Token
 bool Token::paren[sizeof_TokenType];
@@ -184,8 +183,6 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: no assign list code found"},
 	{BUG_InvalidDataType,
 		"BUG: invalid data type"},
-//+	{BUG_InvalidExprType,
-//+		"BUG: invalid expression type"},
 	{BUG_CountStackEmpty,  // 2011-01-02: added
 		"BUG: count stack empty"},
 	{BUG_UnexpParenExpr,  // 2011-01-02: added
@@ -224,13 +221,13 @@ List<Token> Token::del_list;  // 2011-01-29
 void *Token::operator new(size_t size)
 {
 	// allocate the memory for the token
-    Token *token = (Token *)new char[size];
+	Token *token = (Token *)new char[size];
 
-    // append token to list of tokens and save its element pointer in token
-    token->element = list.append(&token);
+	// append token to list of tokens and save its element pointer in token
+	token->element = list.append(&token);
 
-    // return pointer to new token
-    return token;
+	// return pointer to new token
+	return token;
 }
 
 
@@ -239,7 +236,7 @@ void *Token::operator new(size_t size)
 // is deleted, it is removed from the list of allocated tokens using the
 // element pointer put into the token when it was allocated.  If the
 // Token was already deleted (its element pointer is NULL), it is added
-// to the deleted list so that multipli-deleted tokens can be reported.
+// to the deleted list so that multiple deleted tokens can be reported.
 
 void Token::operator delete(void *ptr)
 {
@@ -248,7 +245,7 @@ void Token::operator delete(void *ptr)
 	// check if token has already been deleted
 	if (token->element == NULL)
 	{
-		// append a copy of the token to the multipli-deleted token list
+		// append a copy of the token to the multiple deleted token list
 		del_list.append(token);
 	}
 	else
@@ -266,7 +263,7 @@ void Token::operator delete(void *ptr)
 
 
 // This function initializes the static token data.
-// This includes checking multipli defined and missing statuses
+// This includes checking multiple defined and missing statuses
 
 void Token::initialize(void)
 {

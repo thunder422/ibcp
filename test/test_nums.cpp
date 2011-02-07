@@ -18,9 +18,9 @@
 //	see <http://www.gnu.org/licenses/>.
 // 
 //
-//  Change History:
+//	Change History:
 //
-//  2010-01-13  initial release
+//	2010-01-13	initial release
 //
 
 #include <stdio.h>

@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: ibcp.h - main definitions file
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,215 +18,215 @@
 //	see <http://www.gnu.org/licenses/>.
 //
 //
-//  Change History:
+//	Change History:
 //
-//  2010-02-18  initial release
+//	2010-02-18	initial release
 //
-//  2010-03-01  support for Parser class added, which includes:
-//                Token and CmdArgs structures; Parser class
-//                new CmdArgs_DataType and Error_Flag
-//                renamed ImCommand_TokenType to ImmCmd_TokenType
+//	2010-03-01	support for Parser class added, which includes:
+//				  Token and CmdArgs structures; Parser class
+//				  new CmdArgs_DataType and Error_Flag
+//				  renamed ImCommand_TokenType to ImmCmd_TokenType
 //
-//  2010-03-06  replaced DefFunc_TokenType with DefFuncN_TokenType and
-//                DefFuncP_TokenType so that it can be determined if the define
-//                function name has a parentheses or not
+//	2010-03-06	replaced DefFunc_TokenType with DefFuncN_TokenType and
+//				  DefFuncP_TokenType so that it can be determined if the define
+//				  function name has a parentheses or not
 //
-//  2010-03-07  added length of token with error to Token along with two new
-//              set_error() functions
+//	2010-03-07	added length of token with error to Token along with two new
+//				set_error() functions
 //
-//  2010-03-11  support for Translator class initiated, which includes:
-//              replaced IntFunc_TokenType With IntFuncN_TokenType and
-//              IntFuncP_TokenType; and added new static members to Token
+//	2010-03-11	support for Translator class initiated, which includes:
+//				replaced IntFunc_TokenType With IntFuncN_TokenType and
+//				IntFuncP_TokenType; and added new static members to Token
 //
-//  2010-03-17  added codes Null_Code, Neq_Code, and EOL_Code
-//              added unary_code to TableEntry
-//              renamed code to index in Token to avoid confusion
+//	2010-03-17	added codes Null_Code, Neq_Code, and EOL_Code
+//				added unary_code to TableEntry
+//				renamed code to index in Token to avoid confusion
 //
-//  2010-03-18  added Translator class;
-//              added default to Token constructor
-//              added set_token() function to Table class
+//	2010-03-18	added Translator class;
+//				added default to Token constructor
+//				added set_token() function to Table class
 //
-//  2010-03-20  added precedence to TableEntry
-//              added more access functions to Table
-//              made numerous changes to Translator class
+//	2010-03-20	added precedence to TableEntry
+//				added more access functions to Table
+//				made numerous changes to Translator class
 //
-//  2010-03-21  initialized length field in Token to 1
-//              added is_unary_operator() to Table
-//              added additional diagnostic errors to Translator
+//	2010-03-21	initialized length field in Token to 1
+//				added is_unary_operator() to Table
+//				added additional diagnostic errors to Translator
 //
-//  2010-03-25  added variables to Table and Translator to support parentheses,
-//              added Highest_Precedence constant
+//	2010-03-25	added variables to Table and Translator to support parentheses,
+//				added Highest_Precedence constant
 //
-//  2010-03-26  added do_pending_paren() to Translator class
+//	2010-03-26	added do_pending_paren() to Translator class
 //
-//  2010-04-02  add support to Token and Table to get precedence values for
-//                token types that don't have table entries (DefFuncP and Paren)
-//              added count_stack of new type SimpleStack to Translator to
-//                support commas (for subscripts in arrays and arguments in
-//                functions)
-//              added more errors to Translator
+//	2010-04-02	add support to Token and Table to get precedence values for
+//				  token types that don't have table entries (DefFuncP and Paren)
+//				added count_stack of new type SimpleStack to Translator to
+//				  support commas (for subscripts in arrays and arguments in
+//				  functions)
+//				added more errors to Translator
 //
-//  2010-04-04  added support for number of argument checking for internal
-//                functions including added codes for functions with different
-//                number of arguments; adding Multiple_Flag
-//              added nargs to TableEntry; new Table access function and search
-//                function
-//              added new error to Translator
-//              made token argument a reference in Translator::add_token()
-//              added debug_name() to Table
+//	2010-04-04	added support for number of argument checking for internal
+//				  functions including added codes for functions with different
+//				  number of arguments; adding Multiple_Flag
+//				added nargs to TableEntry; new Table access function and search
+//				  function
+//				added new error to Translator
+//				made token argument a reference in Translator::add_token()
+//				added debug_name() to Table
 //
-//  2010-04-11  added assignment operator codes
-//              added mode with enumerator to Translator
-//              added more error codes to Translator
-//  2010-04-12  added reference flag to Token
-//  2010-04-13  made token argument a reference in Translator::add_operator()
-//  2010-04-16  added more error codes to Translator
-//              added expression mode flag option to Translator for testing
-//  2010-04-17  added another error code to Translator
+//	2010-04-11	added assignment operator codes
+//				added mode with enumerator to Translator
+//				added more error codes to Translator
+//	2010-04-12	added reference flag to Token
+//	2010-04-13	made token argument a reference in Translator::add_operator()
+//	2010-04-16	added more error codes to Translator
+//				added expression mode flag option to Translator for testing
+//	2010-04-17	added another error code to Translator
 //
-//  2010-04-24  added the associated codes for the specific data types codes for
-//                all the operators and internal functions where applicable
-//              add new Frac_Code
-//              rearranged DataType enumeration names so that the actual data
-//                types are listed at the beginning with Double (the default)
-//                listed first; added number_DataType for actual number of data
-//                types
-//              renamed nargs to noperands in TableEntry and Table (now
-//                applicable operators in addition to internal functions)
-//              added Max_Operands and Max_Assoc_Codes definitions; added
-//                operand_datatype[] and assoc_codes[] arrays to TableEntry;
-//                added related access functions to Table
-//  2010-04-25  added Invalid_Code set to -1
-//              updated Translator for data type handling:
-//                added exptected data type errors
-//                renamed BUG_StackEmpty to BUG_HoldStackEmpty
-//                added BUG_DoneStackEmpty
-//                added set_default_datatype() to set the data type for
-//                  operands that didn't have a specific data type
-//                added find_code() and match_code() with Match enum
+//	2010-04-24	added the associated codes for the specific data types codes for
+//				  all the operators and internal functions where applicable
+//				add new Frac_Code
+//				rearranged DataType enumeration names so that the actual data
+//				  types are listed at the beginning with Double (the default)
+//				  listed first; added number_DataType for actual number of data
+//				  types
+//				renamed nargs to noperands in TableEntry and Table (now
+//				  applicable operators in addition to internal functions)
+//				added Max_Operands and Max_Assoc_Codes definitions; added
+//				  operand_datatype[] and assoc_codes[] arrays to TableEntry;
+//				  added related access functions to Table
+//	2010-04-25	added Invalid_Code set to -1
+//				updated Translator for data type handling:
+//				  added exptected data type errors
+//				  renamed BUG_StackEmpty to BUG_HoldStackEmpty
+//				  added BUG_DoneStackEmpty
+//				  added set_default_datatype() to set the data type for
+//				    operands that didn't have a specific data type
+//				  added find_code() and match_code() with Match enum
 //
-//  2010-05-03  added ExprInfo to hold expression related information for the
-//              table entries; replaced these members with ExprInto pointer in
-//              TableEntry; modified the access functions in Table
-//  2010-05-05  added Reference_Flag and AssignList_Flag
-//  2010-05-07  added associated codes for Assign and AssignList
-//  2010-05-08  added check for null exprinfo in datatype() and unary_code()
-//                access functions of Table
-//              added last_operand argument to Table::find_code()
+//	2010-05-03	added ExprInfo to hold expression related information for the
+//				table entries; replaced these members with ExprInto pointer in
+//				TableEntry; modified the access functions in Table
+//	2010-05-05	added Reference_Flag and AssignList_Flag
+//	2010-05-07	added associated codes for Assign and AssignList
+//	2010-05-08	added check for null exprinfo in datatype() and unary_code()
+//				  access functions of Table
+//				added last_operand argument to Table::find_code()
 //
-//  2010-05-15  added TmpStr_DataType
-//              added RpnItem structure, changed done_stack and output list from
-//                holding Token* to RpnItem*
-//              moved operand[] array from find_code() to Translator as member,
-//                removed operand argument from Translator::match_code()
-//              added logic to Translator::set_default_datatype() to set data
-//                type to TmpStr for token types DefFuncN/DefFuncP when the data
-//                type is String
+//	2010-05-15	added TmpStr_DataType
+//				added RpnItem structure, changed done_stack and output list from
+//				  holding Token* to RpnItem*
+//				moved operand[] array from find_code() to Translator as member,
+//				  removed operand argument from Translator::match_code()
+//				added logic to Translator::set_default_datatype() to set data
+//				  type to TmpStr for token types DefFuncN/DefFuncP when the data
+//				  type is String
 //
-//  2010-05-19  added new SubStr_DataType
-//              added new associated code AssignSubStr_Code to Assign_Code
-//  2010-05-20  increased Max_Assoc_Codes from 2 to 3 because of
-//                AssignSubStr_Code
-//              added new maximum table errors
+//	2010-05-19	added new SubStr_DataType
+//				added new associated code AssignSubStr_Code to Assign_Code
+//	2010-05-20	increased Max_Assoc_Codes from 2 to 3 because of
+//				  AssignSubStr_Code
+//				added new maximum table errors
 //
-//  2010-05-20  added new associated code AssignListMixStr_Code to
-//                AssignList_Code
-//              added RpnItem::set() to set rpn item members without allocating
-//                a new array and copying to the array
+//	2010-05-20	added new associated code AssignListMixStr_Code to
+//				  AssignList_Code
+//				added RpnItem::set() to set rpn item members without allocating
+//				  a new array and copying to the array
 //
-//  2010-05-27  added SubCode enumeration and subcode member to Token
-//  2010-05-28  changed hold_stack and done_stack from List to SimpleStack in
-//                Translator (a linked list is unnecessary for these stacks)
-//              moved/renamed Translator::Status to TokenStatus
-//              added CmdItem struct and cmd_stack to Translator
-//              moved/renamed Translator::Mode to TokenMode along with
-//                token_mode to TableEntry (next token mode for command) and
-//                access function to Table
-//              added TokenHandler typedef along with token_handler to
-//                TableEntry and access function to Table, added friend
-//                definitions for new translator token handler functions and
-//                extern definitions for actual functions
-//  2010-05-29  added static token has table entry flag (table) to Token along
-//                with access function (used by Table access functions)
-//              added Hidden_Flag to mark table entry of hidden codes
-//              added new flags Table access function with token pointer
-//                argument - returns no flags (0) for non-table entrytokens
-//              changed argument to Translator::do_pending_paren() from index
-//                to token pointer so that it will work with tokens that don't
-//                have a table entry (arrays and functions)
+//	2010-05-27	added SubCode enumeration and subcode member to Token
+//	2010-05-28	changed hold_stack and done_stack from List to SimpleStack in
+//				  Translator (a linked list is unnecessary for these stacks)
+//				moved/renamed Translator::Status to TokenStatus
+//				added CmdItem struct and cmd_stack to Translator
+//				moved/renamed Translator::Mode to TokenMode along with
+//				  token_mode to TableEntry (next token mode for command) and
+//				  access function to Table
+//				added TokenHandler typedef along with token_handler to
+//				  TableEntry and access function to Table, added friend
+//				  definitions for new translator token handler functions and
+//				  extern definitions for actual functions
+//	2010-05-29	added static token has table entry flag (table) to Token along
+//				  with access function (used by Table access functions)
+//				added Hidden_Flag to mark table entry of hidden codes
+//				added new flags Table access function with token pointer
+//				  argument - returns no flags (0) for non-table entrytokens
+//				changed argument to Translator::do_pending_paren() from index
+//				  to token pointer so that it will work with tokens that don't
+//				  have a table entry (arrays and functions)
 //
-//  2010-06-01  added support for print-only functions
-//              added generic flag member to CmdItem that can be used by
-//  			  commands (for PRINT it will be used to determine if a PRINT
-//  			  token should be added at the end of a translated print
-//  			  statement, i.e. advance to a new line)
-//  2010-06-02  added support for semicolon with token handler
-//              added Table::new_token() for allocating a new token and setting
-//                it up for a specific code
-//  2010-06-03  added Translator::expression_end() for checking if expression
-//                was ended correctly
-//  2010-06-04  added Translator::add_print_code() for adding new data type
-//                specific print codes that were also added
-//  2010-06-05  added support for command handler function pointers
-//                (was necessary to move CmdItem structure outside Translator)
-//  2010-06-06  added EndExpr_Flag for token codes that can end an expression
-//              corrected issue with special Translator expression only mode
-//  2010-06-08  added PrintFunc_CmdFlag and SemiColon_SubCode
-//  2010-06-09  changed count_stack from <char> to new <CountItem>, which
-//                contains the old count and expected number of arguments
-//  2010-06-10  added new FirstOperand translator state - used for identifying
-//                if any tokens for expression have been received yet
-//  2010-06-13  added token pointer argument to command handlers so that
-//                command handlers have accessed to calling token
-//  2010-06-14  added Translator::paren_status() for checking if there is an
-//                outstanding token with parentheses on the hold stack and if
-//                there is, to return the appropriate error
-//  2010-06-14  removed AssignList_Flag because it is unnecessary (the code can
-//                be checked for AssignList_Code)
-//  2010-06-01/14  added, renamed and deleted many TokenStatus enumeration
-//                 values for matching error messages that were changed for
-//                 better clarity
+//	2010-06-01	added support for print-only functions
+//				added generic flag member to CmdItem that can be used by
+//				  commands (for PRINT it will be used to determine if a PRINT
+//				  token should be added at the end of a translated print
+//				  statement, i.e. advance to a new line)
+//	2010-06-02	added support for semicolon with token handler
+//				added Table::new_token() for allocating a new token and setting
+//				  it up for a specific code
+//	2010-06-03	added Translator::expression_end() for checking if expression
+//				  was ended correctly
+//	2010-06-04	added Translator::add_print_code() for adding new data type
+//				  specific print codes that were also added
+//	2010-06-05	added support for command handler function pointers
+//				  (was necessary to move CmdItem structure outside Translator)
+//	2010-06-06	added EndExpr_Flag for token codes that can end an expression
+//				corrected issue with special Translator expression only mode
+//	2010-06-08	added PrintFunc_CmdFlag and SemiColon_SubCode
+//	2010-06-09	changed count_stack from <char> to new <CountItem>, which
+//				  contains the old count and expected number of arguments
+//	2010-06-10	added new FirstOperand translator state - used for identifying
+//				  if any tokens for expression have been received yet
+//	2010-06-13	added token pointer argument to command handlers so that
+//				  command handlers have accessed to calling token
+//	2010-06-14	added Translator::paren_status() for checking if there is an
+//				  outstanding token with parentheses on the hold stack and if
+//				  there is, to return the appropriate error
+//	2010-06-14	removed AssignList_Flag because it is unnecessary (the code can
+//				  be checked for AssignList_Code)
+//	2010-06-01/14 added, renamed and deleted many TokenStatus enumeration
+//				   values for matching error messages that were changed for
+//				   better clarity
 //
-//  2010-06-24  added another TokenStatus
-//  2010-06-25  replaced TableErrType enum and TableError struct with
-//                ErrorType enum and Error struct template so that this can also
-//                be used for TokenStatus
-//              TableSearch renamed to SearchType
-//  2010-06-26  added EndStatement_Flag
-//  2010-06-29  added new ExprType enumeration
-//              added expr_type member to Translator (initialize for expr mode)
-//              added expr_type member to TableEntry (with access function)
-//              updated expected expression related token statuses
-//  2010-06-30  updated expected expression related token statuses
-//  2010-07-01  added AssignList_CmdFlag back
-//              removed last_operand argument from Table::find_code(), which was
-//                needed for assign list operators, but assign list is no
-//                handled by comma, semicolor and Assign handlers
-//              added new check_assignlist_token() and set_assign_command()
-//                to Translator
-//  2010-07-02  updated TokenStatus
-//              added new search and match functions to Table
-//  2010-07-04  updated TokenStatus
+//	2010-06-24	added another TokenStatus
+//	2010-06-25	replaced TableErrType enum and TableError struct with
+//				  ErrorType enum and Error struct template so that this can also
+//				  be used for TokenStatus
+//				TableSearch renamed to SearchType
+//	2010-06-26	added EndStatement_Flag
+//	2010-06-29	added new ExprType enumeration
+//				added expr_type member to Translator (initialize for expr mode)
+//				added expr_type member to TableEntry (with access function)
+//				updated expected expression related token statuses
+//	2010-06-30	updated expected expression related token statuses
+//	2010-07-01	added AssignList_CmdFlag back
+//				removed last_operand argument from Table::find_code(), which was
+//				  needed for assign list operators, but assign list is no
+//				  handled by comma, semicolor and Assign handlers
+//				added new check_assignlist_token() and set_assign_command()
+//				  to Translator
+//	2010-07-02	updated TokenStatus
+//				added new search and match functions to Table
+//	2010-07-04	updated TokenStatus
 //
-//  2010-08-01  removed support for multiple equal assignments (now only commas
-//                used for multiple assignments)
-//  2010-07-18  added second associated index to ExprInfo for support of
-//                checking each operand when processed instead of processing
-//                all operands at the end
-//  2010-08-10  added several multiple error types used for additional table
-//                checking during initialization
-//  2010-09-03  added new Translator::process_final_operand(),
-//                modified Translator::find_code(),
-//                removed Translator::match_code()
-//  2010-12-13  added number of string arguments to ExprInfo for Table entries
+//	2010-08-01	removed support for multiple equal assignments (now only commas
+//				  used for multiple assignments)
+//	2010-07-18	added second associated index to ExprInfo for support of
+//				  checking each operand when processed instead of processing
+//				  all operands at the end
+//	2010-08-10	added several multiple error types used for additional table
+//				  checking during initialization
+//	2010-09-03	added new Translator::process_final_operand(),
+//				  modified Translator::find_code(),
+//				  removed Translator::match_code()
+//	2010-12-13	added number of string arguments to ExprInfo for Table entries
 //
-//  2011-01-02  added Translator::get_expr_datatype()
-//  2011-01-05  put datatype back into TableEntry, removed expr_type
-//              modified datatype access function to get main datatype if there
-//                is not exprinfo (this may be temporary)
-//  2011-01-07  removed datatype from ExprInfo
+//	2011-01-02	added Translator::get_expr_datatype()
+//	2011-01-05	put datatype back into TableEntry, removed expr_type
+//				modified datatype access function to get main datatype if there
+//				  is not exprinfo (this may be temporary)
+//	2011-01-07	removed datatype from ExprInfo
 //
-//  2011-01-11  moved length from union in Token so it can be used for all types
+//	2011-01-11	moved length from union in Token so it can be used for all types
 //	2011-01-13	implemented new Translator::HoldStackItem and changed hold_stack
 //				added argument to Translator:: add_operator()
 //				  and process_final_operand() for handling first/last operands

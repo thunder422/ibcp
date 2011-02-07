@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: translator.cpp - contains code for the translator class
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,241 +18,241 @@
 //	see <http://www.gnu.org/licenses/>.
 //
 //
-//  Change History:
+//	Change History:
 //
-//  2010-03-01  initial release
+//	2010-03-01	initial release
 //
-//  2010-03-20  continued development - functions now implemented for
-//              handling simple expressions (basic operands and operators)
+//	2010-03-20	continued development - functions now implemented for
+//				handling simple expressions (basic operands and operators)
 //
-//  2010-03-21  needed to pop final result off of done stack, added checks
-//              added check for EOL at begin of line
-//              changed unary operator check, corrected in add_operator()
+//	2010-03-21	needed to pop final result off of done stack, added checks
+//				added check for EOL at begin of line
+//				changed unary operator check, corrected in add_operator()
 //
-//  2010-03-25  added parentheses support
-//              added switch for special operator token processing
+//	2010-03-25	added parentheses support
+//				added switch for special operator token processing
 //
-//  2010-03-26  corrected issue with setting last_precedence by moving it from
-//              being set with '(' to being set with ')' added
-//              do_pending_paren() to replace code in three locations, and call
-//              from two new locations
+//	2010-03-26	corrected issue with setting last_precedence by moving it from
+//				being set with '(' to being set with ')' added
+//				do_pending_paren() to replace code in three locations, and call
+//				from two new locations
 //
-//  2010-04-02  added array and function support
-//              added count stack to keep track of (count) commas within
-//                arrays (subscripts) and functions (arguments), and to make
-//                sure commas are not found within regular parentheses
-//              modified close parentheses processing to handle the operands
-//                (subscripts and arguments) within arrays and functions
+//	2010-04-02	added array and function support
+//				added count stack to keep track of (count) commas within
+//				  arrays (subscripts) and functions (arguments), and to make
+//				  sure commas are not found within regular parentheses
+//				modified close parentheses processing to handle the operands
+//				  (subscripts and arguments) within arrays and functions
 //
-//  2010-04-04  added internal function number of arguments checking
-//              changed argument of add_token() to reference so that it can
-//                modified to point to the token with the error
+//	2010-04-04	added internal function number of arguments checking
+//				changed argument of add_token() to reference so that it can
+//				  modified to point to the token with the error
 //
-//  2010-04-11  added assignment operator handling including multiple
-//              assignments (additional comma handling)
-//  2010-04-12  added reference support
-//  2010-04-13  changed add_operator() argument to reference so that different
-//              token can be returned
-//              added code to add_operator() to check for references for
-//              assignment operator
-//  2010-04-14  added code to add_operator() to check for references for
-//              list assignment operator
-//  2010-04-16  added mode checking for the open parentheses token processing
-//              clear reference flag to top item in done stack for close paren
-//              added count stack is empty check before checking mode for open
-//              parentheses, equal operator and no special operator
+//	2010-04-11	added assignment operator handling including multiple
+//				assignments (additional comma handling)
+//	2010-04-12	added reference support
+//	2010-04-13	changed add_operator() argument to reference so that different
+//				token can be returned
+//				added code to add_operator() to check for references for
+//				assignment operator
+//	2010-04-14	added code to add_operator() to check for references for
+//				list assignment operator
+//	2010-04-16	added mode checking for the open parentheses token processing
+//				clear reference flag to top item in done stack for close paren
+//				added count stack is empty check before checking mode for open
+//				parentheses, equal operator and no special operator
 //
-//  2010-04-25  set default data type for operands
-//              corrected memory leak of comma and close parentheses tokens
-//              added data type handling for internal functions and operators
-//              implemented new find_code() and match_code() functions for data
-//                type handling
-//  2010-04-26  changed bug error names
+//	2010-04-25	set default data type for operands
+//				corrected memory leak of comma and close parentheses tokens
+//				added data type handling for internal functions and operators
+//				implemented new find_code() and match_code() functions for data
+//				  type handling
+//	2010-04-26	changed bug error names
 //
-//  2010-05-08  implemented data type handling for assignment operators
-//              modified find_code() to handle references on first operand
-//              modified find_code() to get number of associated codes
-//              modified match_code() to handle references on first operand
-//              added last_operand argument to find_code()
+//	2010-05-08	implemented data type handling for assignment operators
+//				modified find_code() to handle references on first operand
+//				modified find_code() to get number of associated codes
+//				modified match_code() to handle references on first operand
+//				added last_operand argument to find_code()
 //
-//  2010-05-15  added temporary string support:
-//              changed output list and done stack from Token* to RpnItem*
-//              for arrays and functions, save pointers to operands
-//              for internal functions with string operands, saved operands
-//              for operators with string operands, saved operands
-//              moved find_code() operand[] array to class for all to access
-//              removed operandp[] argument from match_code(), now uses member
-//              added entries to match_code() conversion code table for TmpStr
+//	2010-05-15	added temporary string support:
+//				changed output list and done stack from Token* to RpnItem*
+//				for arrays and functions, save pointers to operands
+//				for internal functions with string operands, saved operands
+//				for operators with string operands, saved operands
+//				moved find_code() operand[] array to class for all to access
+//				removed operandp[] argument from match_code(), now uses member
+//				added entries to match_code() conversion code table for TmpStr
 //
-//  2010-05-16  corrected problem where saved operand was not pointing to a
-//              conversion code that was inserted after the operand - the
-//              operand was set to the return value of the append call when the
-//              conversion code is inserted
+//	2010-05-16	corrected problem where saved operand was not pointing to a
+//				conversion code that was inserted after the operand - the
+//				operand was set to the return value of the append call when the
+//				conversion code is inserted
 //
-//  2010-05-19  added sub-string support:
-//              in find_code() rearranged first operand code and added check for
-//                a sub-string function to get the string operands reference
-//                flag
-//              added SubStr entries to the convert code table in match_code()
-//  2010-05-21  when an error occurs with a sub-string function where its string
-//              operand cannot be assigned, the change the token with the error
-//              to the string operand that can't be assigned instead of pointing
-//              to the sub-string function
+//	2010-05-19	added sub-string support:
+//				in find_code() rearranged first operand code and added check for
+//				  a sub-string function to get the string operands reference
+//				  flag
+//				added SubStr entries to the convert code table in match_code()
+//	2010-05-21	when an error occurs with a sub-string function where its string
+//				operand cannot be assigned, the change the token with the error
+//				to the string operand that can't be assigned instead of pointing
+//				to the sub-string function
 //
-//  2010-05-22  corrected issue where string list assignments were not saving
-//                all of the operands instead of just the last two
-//              updated add_operator() to handle mix string list assignments
+//	2010-05-22	corrected issue where string list assignments were not saving
+//				  all of the operands instead of just the last two
+//				updated add_operator() to handle mix string list assignments
 //
-//  2010-05-28  changed hold_stack and done_stack from List to SimpleStack,
-//                which required some small changes of push and pop calls
-//              replaced switch and case code to token handler functions
-//              moved special token processing in switch statement to individual
-//                token handler functions, switch statement was removed
-//  2010-05-29  moved no special operator code was also moved to a token handler
-//                function
-//              updated for moving/renaming Translator::Status and
-//                Translator::Mode to TokenStatus and TokenMode
-//              changed do_pending_paren() from appending dummy parentheses
-//                token to output list to setting parentheses sub-code of the
-//                last token appended to list
-//              changed argument of do_pending_paren() from table entry index
-//                to token pointer (which was only used to get the precedence);
-//                this corrects a problem where the token on top of the hold
-//                stack was an identifier with parentheses (array or function)
-//                because these tokens don't have an index value, therefore the
-//                precedence access function needs to be used, which takes these
-//                token types into account
-//              added setting of comma sub-code flag of assignment list token
-//                when receiving an equal in comma assignment mode
-//              added section of code at beginning of add_token for doing
-//                initial processing for Command tokens when received,
-//                if command has token_mode table entry value then command is
-//                pushed on new command stack, otherwise unexpected command
-//                occurs
-//              added check to add_operator() that if operator is an assignment
-//                (Reference_Flag is set) then check if there is a LET command
-//                on the command stack, pop it, and set LET sub-code flag on
-//                assignment operator token
+//	2010-05-28	changed hold_stack and done_stack from List to SimpleStack,
+//				  which required some small changes of push and pop calls
+//				replaced switch and case code to token handler functions
+//				moved special token processing in switch statement to individual
+//				  token handler functions, switch statement was removed
+//	2010-05-29	moved no special operator code was also moved to a token handler
+//				  function
+//				updated for moving/renaming Translator::Status and
+//				  Translator::Mode to TokenStatus and TokenMode
+//				changed do_pending_paren() from appending dummy parentheses
+//				  token to output list to setting parentheses sub-code of the
+//				  last token appended to list
+//				changed argument of do_pending_paren() from table entry index
+//				  to token pointer (which was only used to get the precedence);
+//				  this corrects a problem where the token on top of the hold
+//				  stack was an identifier with parentheses (array or function)
+//				  because these tokens don't have an index value, therefore the
+//				  precedence access function needs to be used, which takes these
+//				  token types into account
+//				added setting of comma sub-code flag of assignment list token
+//				  when receiving an equal in comma assignment mode
+//				added section of code at beginning of add_token for doing
+//				  initial processing for Command tokens when received,
+//				  if command has token_mode table entry value then command is
+//				  pushed on new command stack, otherwise unexpected command
+//				  occurs
+//				added check to add_operator() that if operator is an assignment
+//				  (Reference_Flag is set) then check if there is a LET command
+//				  on the command stack, pop it, and set LET sub-code flag on
+//				  assignment operator token
 //
-//  2010-06-01  corrected a bug when an operand is processed, if the mode is
-//                currently Command mode, the mode needs to be changed to
-//                Assignment mode to prevent commands from being accepted
-//              additional support for commands and command stack
-//              added support for print-only functions
-//  2010-06-02  added token handler for semicolon (for PRINT command)
-//  2010-06-03  added PRINT support for comma
-//              created expression_end() from parts of EndOfLine_Handler for
-//                end of expression checks (also used by comma and semicolon)
-//  2010-06-04  implemented new add_print_code() function to be used by
-//              Comma_Handler(), SemiColon_Handler() and Print_CmdHandler()
-//  2010-06-05  implemented Assign_CmdHandler() and Print_CmdHandler()
-//              push assignment token to command stack instead of done stack so
-//                the end of statement is handled properly and simply
-//  2010-06-06  correctly check for expression only mode at end-of-line
-//              end-of-line no longer pops a result off from done stack, which
-//                should now be empty (commands deal with done stack) except for
-//                special expression only mode
-//              added support for end expression flag - codes that can end an
-//                expression (currently comma, semicolon and EOL)
-//              switch back to operand state after comma and semicolon
-//  2010-06-08  set a print function flag in print command stack item to
-//                indicate a print function flag was just added to the output,
-//                which semicolon checks for and sets the semicolon sub-code
-//                flag on the print function token in case the print function is
-//                at the end of the print statement
-//              moved end expression flag check to operand section before unary
-//                operator check, if in the middle of a parentheses expression
-//                or array/function, then return expected closing parentheses
-//                error
-//  2010-06-09  changed count stack from holding just a counter to holding the
-//                counter and the expected number of arguments for internal
-//                functions, so that the number of arguments for internal
-//                functions can be checked as each comma token is received
-//  2010-06-10  added new state FirstOperand set at the beginning of an
-//                expression
-//              renamed errors for clarity
-//  2010-06-11  added check to detect invalid print-only functions sooner
-//  2010-06-13  changed to push AssignList token to hold stack when first comma
-//                token is received instead of when equal token is received
-//                (necessary for proper error condition tests)
-//              Let_CmdHandler implemented, necessary to catch errors when a
-//                LET command statement was not completed correctly
-//  2010-06-14  added check for immediate command token (append to output list
-//                and return Done)
-//              added paren_status() from duplicated code in add_token() and
-//                expression_end()
-//  2010-06-10/14  various changes to return appropriate easy to understand
-//                 error messages
+//	2010-06-01	corrected a bug when an operand is processed, if the mode is
+//				  currently Command mode, the mode needs to be changed to
+//				  Assignment mode to prevent commands from being accepted
+//				additional support for commands and command stack
+//				added support for print-only functions
+//	2010-06-02	added token handler for semicolon (for PRINT command)
+//	2010-06-03	added PRINT support for comma
+//				created expression_end() from parts of EndOfLine_Handler for
+//				  end of expression checks (also used by comma and semicolon)
+//	2010-06-04	implemented new add_print_code() function to be used by
+//				Comma_Handler(), SemiColon_Handler() and Print_CmdHandler()
+//	2010-06-05	implemented Assign_CmdHandler() and Print_CmdHandler()
+//				push assignment token to command stack instead of done stack so
+//				  the end of statement is handled properly and simply
+//	2010-06-06	correctly check for expression only mode at end-of-line
+//				end-of-line no longer pops a result off from done stack, which
+//				  should now be empty (commands deal with done stack) except for
+//				  special expression only mode
+//				added support for end expression flag - codes that can end an
+//				  expression (currently comma, semicolon and EOL)
+//				switch back to operand state after comma and semicolon
+//	2010-06-08	set a print function flag in print command stack item to
+//				  indicate a print function flag was just added to the output,
+//				  which semicolon checks for and sets the semicolon sub-code
+//				  flag on the print function token in case the print function is
+//				  at the end of the print statement
+//				moved end expression flag check to operand section before unary
+//				  operator check, if in the middle of a parentheses expression
+//				  or array/function, then return expected closing parentheses
+//				  error
+//	2010-06-09	changed count stack from holding just a counter to holding the
+//				  counter and the expected number of arguments for internal
+//				  functions, so that the number of arguments for internal
+//				  functions can be checked as each comma token is received
+//	2010-06-10	added new state FirstOperand set at the beginning of an
+//				  expression
+//				renamed errors for clarity
+//	2010-06-11	added check to detect invalid print-only functions sooner
+//	2010-06-13	changed to push AssignList token to hold stack when first comma
+//				  token is received instead of when equal token is received
+//				  (necessary for proper error condition tests)
+//				Let_CmdHandler implemented, necessary to catch errors when a
+//				  LET command statement was not completed correctly
+//	2010-06-14	added check for immediate command token (append to output list
+//				  and return Done)
+//				added paren_status() from duplicated code in add_token() and
+//				  expression_end()
+//	2010-06-10/14  various changes to return appropriate easy to understand
+//				   error messages
 //
-//  2010-06-24  corrected errors for internal functions not in expressions
-//                except for sub-string functions that can be used for
-//                assignments
-//              at end of expression, added check if in assignment due to an
-//                an array or sub-string function, to report correct errors
-//  2010-06-26  added end of statement checking in the binary operator section
-//              made more error reporting corrections related to checking if the
-//                done stack is empty to determine the correct error to report
-//  2010-06-29  added support for expression type
-//              added data type to expression type conversion array
-//  2010-06-30  continues to add support for expression type
-//              added expected variable messages for assign list errors
-//  2010-07-01  moved cvtcode_have_need[], equivalent_datatype[] to begin of
-//                source file so all can access
-//              implemented new assign and assign list code to Comma_Handler(),
-//                Semicolon_Handler() and Assign_CmdHandler() with support
-//                functions set_assign_command() and check_assignlist_token()
-//              removed last_operand argument from find_code(), which was for
-//                assign list support
-//  2010-07-02  added more expr_type checking code
-//  2010-07-03  added errstatus_datatype[]
-//  2010-07-04  temporarily removed all expr_type code (may be removed)
-//  2010-07-05  many changes for error reporting
-//  2010-07-06  many changes for error reporting
+//	2010-06-24	corrected errors for internal functions not in expressions
+//				  except for sub-string functions that can be used for
+//				  assignments
+//				at end of expression, added check if in assignment due to an
+//				  an array or sub-string function, to report correct errors
+//	2010-06-26	added end of statement checking in the binary operator section
+//				made more error reporting corrections related to checking if the
+//				  done stack is empty to determine the correct error to report
+//	2010-06-29	added support for expression type
+//				added data type to expression type conversion array
+//	2010-06-30	continues to add support for expression type
+//				added expected variable messages for assign list errors
+//	2010-07-01	moved cvtcode_have_need[], equivalent_datatype[] to begin of
+//				  source file so all can access
+//				implemented new assign and assign list code to Comma_Handler(),
+//				  Semicolon_Handler() and Assign_CmdHandler() with support
+//				  functions set_assign_command() and check_assignlist_token()
+//				removed last_operand argument from find_code(), which was for
+//				  assign list support
+//	2010-07-02	added more expr_type checking code
+//	2010-07-03	added errstatus_datatype[]
+//	2010-07-04	temporarily removed all expr_type code (may be removed)
+//	2010-07-05	many changes for error reporting
+//	2010-07-06	many changes for error reporting
 //
-//  2010-07-29  set reference of sub-string tokens within assignments so that
-//                first operand (string being assigned) can be checked
-//  2010-08-01  removed EqualAssignment, replaced CommaAssignment with
-//                AssignmentList (multiple equal assignment statements no longer
-//                being supported)
-//  2010-08-07  begin modification of find_code() to only process one operand
-//                at a time
-//              removed match_code() since it's not necessary to match all
-//                operands of operators or internal functions
-//  2010-08-14  changed the way multiple argument codes are handled (due to
-//                processing one operand at a time)
-//  2010-08-30  begin implementation of process_final_operand() to handle
-//                processing of last operand of operand or internal function
-//  2010-09-11  begin implementation of leaving only string operands on stack
-//                to be attached to an operand or internal function token
-//  2010-10-01  corrected code to return expected type errors
-//  2010-10-10  check first operand of sub-string assignment is not a string
-//                variable
-//  2010-12-24  corrected process_final_operand() to pop the correct number of
-//                string operands to attach
-//  2010-12-25  modified to leave string operand on stack for sub-string
-//                functions and not push the sub-string token to the done stack
+//	2010-07-29	set reference of sub-string tokens within assignments so that
+//				  first operand (string being assigned) can be checked
+//	2010-08-01	removed EqualAssignment, replaced CommaAssignment with
+//				  AssignmentList (multiple equal assignment statements no longer
+//				  being supported)
+//	2010-08-07	begin modification of find_code() to only process one operand
+//				  at a time
+//				removed match_code() since it's not necessary to match all
+//				  operands of operators or internal functions
+//	2010-08-14	changed the way multiple argument codes are handled (due to
+//				  processing one operand at a time)
+//	2010-08-30	begin implementation of process_final_operand() to handle
+//				  processing of last operand of operand or internal function
+//	2010-09-11	begin implementation of leaving only string operands on stack
+//				  to be attached to an operand or internal function token
+//	2010-10-01	corrected code to return expected type errors
+//	2010-10-10	check first operand of sub-string assignment is not a string
+//				  variable
+//	2010-12-24	corrected process_final_operand() to pop the correct number of
+//				  string operands to attach
+//	2010-12-25	modified to leave string operand on stack for sub-string
+//				  functions and not push the sub-string token to the done stack
 //
-//  2010-12-28  corrected call to process_final_operand() in add_print_code()
-//  2010-12-29  modified EndOfLine_Handler() to wait to pop the command on top
-//               of the command stack until after the command handler is called
-//  2011-01-01  made None_DataType return expected error instead of bug error
-//  2011-01-03  implemented new function get_expr_datatype() to get the current
-//                datatype of the expression by looking back at what was
-//                processed so far; called when an error occurs so that the
-//                appropriate error can be reported)
-//  2011-01-04  assign datatype to open parentheses when being pushed to the
-//                hold stack (to be used later when getting the datatype for an
-//                expression)
+//	2010-12-28	corrected call to process_final_operand() in add_print_code()
+//	2010-12-29	modified EndOfLine_Handler() to wait to pop the command on top
+//				 of the command stack until after the command handler is called
+//	2011-01-01	made None_DataType return expected error instead of bug error
+//	2011-01-03	implemented new function get_expr_datatype() to get the current
+//				  datatype of the expression by looking back at what was
+//				  processed so far; called when an error occurs so that the
+//				  appropriate error can be reported)
+//	2011-01-04	assign datatype to open parentheses when being pushed to the
+//				  hold stack (to be used later when getting the datatype for an
+//				  expression)
 //
-//  2011-01-08  get datatype of expression to get appropriate error when a
-//                binary operator occurs when an operand is expected
-//              corrected paren_status() when at last argument of first form
-//                of a function with multiple forms to report the appropriate
-//                error (that a comma could also be expected)
-//              in Comma_Handler() when an error occurs and the done stack is
-//                empty, get data type of expression to get appropriate error
-//              in Comma_Handler() when moving to the next multiple form of a
-//                function, corrected the setting of the index on count stack
+//	2011-01-08	get datatype of expression to get appropriate error when a
+//				  binary operator occurs when an operand is expected
+//				corrected paren_status() when at last argument of first form
+//				  of a function with multiple forms to report the appropriate
+//				  error (that a comma could also be expected)
+//				in Comma_Handler() when an error occurs and the done stack is
+//				  empty, get data type of expression to get appropriate error
+//				in Comma_Handler() when moving to the next multiple form of a
+//				  function, corrected the setting of the index on count stack
 //
 //	2011-01-13	started implementation of storing first and last operands
 //				converted hold stack from holding token pointers to holding
@@ -476,7 +476,6 @@ TokenStatus Translator::add_token(Token *&token)
 			// 2010-04-25: set default data type for token if it has none
 			set_default_datatype(token);
 
-			// 2010-07-02: moved expr_type checking
 			// 2010-04-02: moved to after pending parentheses check
 			if (token->has_paren())
 			{
@@ -561,7 +560,7 @@ TokenStatus Translator::add_token(Token *&token)
 
 				// add token directly output list
 				// and push element pointer on done stack
-				// 2010-05-15: create rpn item to add to output list
+				// 2010-05-15: create RPN item to add to output list
 				RpnItem *rpn_item = new RpnItem(token);
 				done_stack.push().element = output->append(&rpn_item);
 				done_stack.top().first = done_stack.top().last = NULL;
@@ -760,7 +759,7 @@ TokenStatus Translator::add_token(Token *&token)
 			// now set last precedence to highest in case no operators in ( )
 			last_precedence = Highest_Precedence;
 		}
-		// 2010-06-26: added checking at end of statment
+		// 2010-06-26: added checking at end of statement
 		if (table->flags(token) & EndStatement_Flag)
 		{
 			if (mode == AssignmentList_TokenMode)
@@ -878,7 +877,7 @@ void Translator::do_pending_paren(Token *token)
 			{
 				// already has parentheses sub-code set, so
 				// add dummy token
-				// 2010-05-15: create rpn item to add to output list
+				// 2010-05-15: create RPN item to add to output list
 				RpnItem *rpn_item = new RpnItem(pending_paren);
 				output->append(&rpn_item);
 				// reset pending token and return (2011-01-22)
@@ -1134,7 +1133,7 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 	}
 
 	// add token to output list and push element pointer on done stack
-	// 2010-05-15: create rpn item to add to output list
+	// 2010-05-15: create RPN item to add to output list
 	RpnItem *rpn_item = new RpnItem(token, noperands, operand);
 	// 2010-06-01: check if output item is to be pushed on done stack
 	List<RpnItem *>::Element *output_item = output->append(&rpn_item);
@@ -1312,7 +1311,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
 			// append token to end of output list (after operand)
-			// 2010-05-15: create rpn item to add to output list
+			// 2010-05-15: create RPN item to add to output list
 			// 2010-06-02: replaced code with call to new_token()
 			RpnItem *rpn_item = new RpnItem(table->new_token(cvt_code));
 			output->append(&rpn_item);
@@ -1506,7 +1505,7 @@ TokenStatus Translator::paren_status(void)
 //   - if operator on hold stack, then get it's operand's data type
 //   - if Null (empty hold stack), then get command's expression type
 //   - if OpenParen, then get it's data type (which could be None)
-//   - if internal function, then get it's current operand's dasta type
+//   - if internal function, then get it's current operand's data type
 //   - if array or non-internal function, then data type is None
 
 // 2011-01-02: implemented new function from parts of add_token()
@@ -1539,7 +1538,7 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 		}
 		else if (code == OpenParen_Code)
 		{
-			// no operator, get data type of open parantheses (could be none)
+			// no operator, get data type of open parentheses (could be none)
 			datatype = hold_stack.top().token->datatype;
 		}
 		else  // an regular operator on top of hold stack
@@ -1552,7 +1551,7 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 	}
 	else if (count_stack.empty())  // no parentheses, array or function?
 	{
-		// this situation sould have been handled above
+		// this situation should have been handled above
 		status = BUG_CountStackEmpty;  // this shouldn't happen
 	}
 	else if (count_stack.top().nexpected > 0)  // internal function?

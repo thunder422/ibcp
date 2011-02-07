@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: string.h - contains string class
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,16 +16,16 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
 //
-//  Change History:
 //
-//  2010-01-15  initial release
+//	Change History:
 //
-//  2010-02-01  changed delete to delete[] because new[] used
-//  2010-02-09  allow string to hold generic data
+//	2010-01-15	initial release
 //
-//  2010-04-25  renamed all str to ptr (str is redundant with 'String')
+//	2010-02-01	changed delete to delete[] because new[] used
+//	2010-02-09	allow string to hold generic data
+//
+//	2010-04-25	renamed all str to ptr (str is redundant with 'String')
 //
 
 #ifndef STRING_H

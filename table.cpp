@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: table.cpp - contains operator/command/function table
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,122 +16,122 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-// 
 //
-//  Change History:
 //
-//  2010-02-18  initial release
+//	Change History:
 //
-//  2010-03-01  renamed ImCommand_TokenType to ImmCmd_TokenType
+//	2010-02-18	initial release
 //
-//  2010-03-06  changed None_DataType to String_DataType for the internal string
-//              functions
+//	2010-03-01	renamed ImCommand_TokenType to ImmCmd_TokenType
 //
-//  2010-03-10  corrected multiple entry for operators <, <=, and <>
-//              (was OneChar, changed to TwoChar)
+//	2010-03-06	changed None_DataType to String_DataType for the internal string
+//				functions
 //
-//  2010-03-11  split IntFunc_TokenType into IntFuncN_TokenType and
-//              IntFuncP_TokenType; changed tables entries accordingly
+//	2010-03-10	corrected multiple entry for operators <, <=, and <>
+//				(was OneChar, changed to TwoChar)
 //
-//  2010-03-17  added data for new unary_code field with all set to Null_Code
-//                except for Sub_Code and Not_Code
-//              added new table entries for Null_Code, Neg_Code and EOL_Code
+//	2010-03-11	split IntFunc_TokenType into IntFuncN_TokenType and
+//				IntFuncP_TokenType; changed tables entries accordingly
 //
-//  2010-03-20  added precedence values to the table entries
+//	2010-03-17	added data for new unary_code field with all set to Null_Code
+//				  except for Sub_Code and Not_Code
+//				added new table entries for Null_Code, Neg_Code and EOL_Code
 //
-//  2010-03-21  for Neg_Code temporarily replaced "-" with "Neq" for testing
-//              and changed unary_code from Null_Code to Neq_Code
+//	2010-03-20	added precedence values to the table entries
 //
-//  2010-03-25  added unary code for (, changed precedence values for ( & )
+//	2010-03-21	for Neg_Code temporarily replaced "-" with "Neq" for testing
+//				and changed unary_code from Null_Code to Neq_Code
 //
-//  2010-04-02  changed precedence value in comma entry
-//              corrected name for VAL( from "Val(" to "VAL("
-//              for operators, name is actual (recreator) output string,
-//                name2 is debug output string (only affects Neg for now)
+//	2010-03-25	added unary code for (, changed precedence values for ( & )
 //
-//  2010-04-04  added values for number of arguments variable
-//              added entry for Asc2_Code
-//              replaced Mid_Code entry Mid2_Code and Mid3_Code entries
-//              replaced Instr_Code entry Instr2_Code and Instr3_Code entries
-//              added Multiple_Flag for Asc_Code, Mid2_Code and Instr2_Code
-//              implemented new number of arguments search function
+//	2010-04-02	changed precedence value in comma entry
+//				corrected name for VAL( from "Val(" to "VAL("
+//				for operators, name is actual (recreator) output string,
+//				  name2 is debug output string (only affects Neg for now)
 //
-//  2010-04-11  added table entries for assignment operators
-//              set correct precedence for internal functions
-//              removed unnecessary 0 initializers from entries
+//	2010-04-04	added values for number of arguments variable
+//				added entry for Asc2_Code
+//				replaced Mid_Code entry Mid2_Code and Mid3_Code entries
+//				replaced Instr_Code entry Instr2_Code and Instr3_Code entries
+//				added Multiple_Flag for Asc_Code, Mid2_Code and Instr2_Code
+//				implemented new number of arguments search function
 //
-//  2010-04-24  added values for the number of operands to the operator entries
-//              added values for new operand_datatype[] and assoc_code[] arrays
-//              corrected data type for many operators and internal functions
-//              added entries for the associated codes
-//              moved the Null_Code to the end of the table
-//              added entries for FRAC, CDBL, CvtDbl and CvtDbl
+//	2010-04-11	added table entries for assignment operators
+//				set correct precedence for internal functions
+//				removed unnecessary 0 initializers from entries
 //
-//  2010-05-03  began to add support for initialization of expression
-//                information structures for the table entries
-//  2010-05-04  updated table entries for the expression information structures
-//  2010-05-05  modified the assignment operator entries for data type handling
-//              added entries for associated assignment operators
-//              added Operands and AssocCode macros
-//  2010-05-08  added expression information structures for unary operators 
+//	2010-04-24	added values for the number of operands to the operator entries
+//				added values for new operand_datatype[] and assoc_code[] arrays
+//				corrected data type for many operators and internal functions
+//				added entries for the associated codes
+//				moved the Null_Code to the end of the table
+//				added entries for FRAC, CDBL, CvtDbl and CvtDbl
 //
-//  2010-05-15  modified codes that return string to return TmpStr (Chr, Repeat,
-//                Space, Str, CatStr, and StrInt) - new ExprInfos were added
-//              added String_Flag to all codes that have string operands
+//	2010-05-03	began to add support for initialization of expression
+//				  information structures for the table entries
+//	2010-05-04	updated table entries for the expression information structures
+//	2010-05-05	modified the assignment operator entries for data type handling
+//				added entries for associated assignment operators
+//				added Operands and AssocCode macros
+//	2010-05-08	added expression information structures for unary operators
 //
-//  2010-05-19  changed data type of LEFT, MID2, MID3 and RIGHT to SubStr
-//              added new associated code AssignSubStr_Code to Assign_Code along
-//                with their new table entries
-//  2010-05-20  added code to check if the Max_Operands and Max_Assoc_Codes
-//              agree with the tables entries, reporting errors if not
+//	2010-05-15	modified codes that return string to return TmpStr (Chr, Repeat,
+//				  Space, Str, CatStr, and StrInt) - new ExprInfos were added
+//				added String_Flag to all codes that have string operands
 //
-//  2010-05-22  removed String_Flag from codes with string operands and replaced
-//                this with the automatic setting the flag by looking at the
-//                entries during table initialization
-//              added new associated code AssignListMixStr along with its new
-//                table entry
+//	2010-05-19	changed data type of LEFT, MID2, MID3 and RIGHT to SubStr
+//				added new associated code AssignSubStr_Code to Assign_Code along
+//				  with their new table entries
+//	2010-05-20	added code to check if the Max_Operands and Max_Assoc_Codes
+//				agree with the tables entries, reporting errors if not
 //
-//  2010-05-27  changed precedence values for CloseParen_Code and Comma_Code
-//                from 4 to 6 so commands are not emptied from the hold stack
-//              added precedence value of 4 (and NUll_Flag) to all commands
-//  2010-05-28  added value for new token_mode to Let_Code
-//              added values for new token_handler to Eq_Code, CloseParen_Code,
-//                Comma_Code, and EOL_Code
-//  2010-05-29  added Hidden_Flag to CvtInt_Code and CvtDbl_Code
+//	2010-05-22	removed String_Flag from codes with string operands and replaced
+//				  this with the automatic setting the flag by looking at the
+//				  entries during table initialization
+//				added new associated code AssignListMixStr along with its new
+//				  table entry
 //
-//  2010-06-01  added print-only function support (Spc_Code and Tab_Code)
-//              initiated PRINT command development
-//  2010-06-02  added data type specific print hidden code entries
-//              changed precedence and added token handler value to SemiColon
-//  2010-06-05  added command handler function pointers for PRINT and assign
-//              table entries
-//  2010-06-06  added end expression flag to Comma, SemiColon and EOL
-//  2010-06-09  swapped table entries of MID$, INSTR, and ASC so that the larger
-//              number of arguments entry is first, which is necessary for the
-//              new number of arguments checking at comma
-//  2010-06-13  added command handler to Let entry
-//  2010-06-14  removed AssignList_Flag from AssignList table entries
+//	2010-05-27	changed precedence values for CloseParen_Code and Comma_Code
+//				  from 4 to 6 so commands are not emptied from the hold stack
+//				added precedence value of 4 (and NUll_Flag) to all commands
+//	2010-05-28	added value for new token_mode to Let_Code
+//				added values for new token_handler to Eq_Code, CloseParen_Code,
+//				  Comma_Code, and EOL_Code
+//	2010-05-29	added Hidden_Flag to CvtInt_Code and CvtDbl_Code
 //
-//  2010-06-25  Replaced TableError with generic Error template
-//              renamed TableSearch enum to SearchType
-//  2010-06-26  added end statment flag to EOL
-//  2010-06-29  added expr_type value to PRINT code
-//  2010-07-02  changed assign and assign list operators expression information
-//                from two operands to one - the assign operators are no longer
-//                handled by the standard operator routines
+//	2010-06-01	added print-only function support (Spc_Code and Tab_Code)
+//				initiated PRINT command development
+//	2010-06-02	added data type specific print hidden code entries
+//				changed precedence and added token handler value to SemiColon
+//	2010-06-05	added command handler function pointers for PRINT and assign
+//				table entries
+//	2010-06-06	added end expression flag to Comma, SemiColon and EOL
+//	2010-06-09	swapped table entries of MID$, INSTR, and ASC so that the larger
+//				number of arguments entry is first, which is necessary for the
+//				new number of arguments checking at comma
+//	2010-06-13	added command handler to Let entry
+//	2010-06-14	removed AssignList_Flag from AssignList table entries
 //
-//  2010-07-18  added second associate code index to support checking each
-//                operand when first processed
-//  2010-08-10  swapped function with multiple arguments (ASC, INSTR, MID) back
-//                where least number of argument form is first
-//              validate multiple argument codes (ASC, INSTR, MID)
-//  2010-12-23  automatically generate new table entry number of string
-//                arguments
+//	2010-06-25	Replaced TableError with generic Error template
+//				renamed TableSearch enum to SearchType
+//	2010-06-26	added end statment flag to EOL
+//	2010-06-29	added expr_type value to PRINT code
+//	2010-07-02	changed assign and assign list operators expression information
+//				  from two operands to one - the assign operators are no longer
+//				  handled by the standard operator routines
 //
-//  2010-12-29  added Print_Flag to the print type codes
-//  2011-01-05  removed expr_type from table entries, added datatype values
-//  2011-01-07  moved all datatype values from exprinfo to main entry
-//              updated all ExprInfo constants (and removed duplicates)
+//	2010-07-18	added second associate code index to support checking each
+//				  operand when first processed
+//	2010-08-10	swapped function with multiple arguments (ASC, INSTR, MID) back
+//				  where least number of argument form is first
+//				validate multiple argument codes (ASC, INSTR, MID)
+//	2010-12-23	automatically generate new table entry number of string
+//				  arguments
+//
+//	2010-12-29	added Print_Flag to the print type codes
+//	2011-01-05	removed expr_type from table entries, added datatype values
+//	2011-01-07	moved all datatype values from exprinfo to main entry
+//				updated all ExprInfo constants (and removed duplicates)
 //	2011-02-03	started implementing associated entries for TmpStr type
 //	2011-02-04	continue implementing TmpStr associated entries
 //	2011-02-05	changed all AssocCode2 macro calls with 0 for index with the
@@ -143,8 +143,8 @@
 //				changed assign string code entries to have their own expression
 //				  info instances because the first string operand does not get
 //				  get counted for the number of strings
-//				modifed table initialization to not cound the first string
-//				  operand if reference flag is set (asignment operators)
+//				modified table initialization to not could the first string
+//				  operand if reference flag is set (assignment operators)
 //
 
 #include <ctype.h>
@@ -284,7 +284,7 @@ Code GtI1_AssocCode[]			= {GtInt_Code};
 Code GtStr_AssocCode[]			= {GtStrT2_Code};
 Code GtStrT1_AssocCode[]		= {GtStrTT_Code};
 Code GtEq_AssocCode[]			= {
-    GtEqI1_Code, GtEqStr_Code, GtEqStrT1_Code, GtEqI2_Code
+	GtEqI1_Code, GtEqStr_Code, GtEqStrT1_Code, GtEqI2_Code
 };
 Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
 Code GtEqStr_AssocCode[]		= {GtEqStrT2_Code};
@@ -301,7 +301,7 @@ Code LtI1_AssocCode[]			= {LtInt_Code};
 Code LtStr_AssocCode[]			= {LtStrT2_Code};
 Code LtStrT1_AssocCode[]		= {LtStrTT_Code};
 Code LtEq_AssocCode[]			= {
-    LtEqI1_Code, LtEqStr_Code, LtEqStrT1_Code, LtEqI2_Code
+	LtEqI1_Code, LtEqStr_Code, LtEqStrT1_Code, LtEqI2_Code
 };
 Code LtEqI1_AssocCode[]			= {LtEqInt_Code};
 Code LtEqStr_AssocCode[]		= {LtEqStrT2_Code};
@@ -312,7 +312,7 @@ Code Mul_AssocCode[]			= {MulI1_Code, MulI2_Code};
 Code MulI1_AssocCode[]			= {MulInt_Code};
 Code Neg_AssocCode[]			= {NegInt_Code};
 Code NotEq_AssocCode[]			= {
-    NotEqI1_Code, NotEqStr_Code, NotEqStrT1_Code, NotEqI2_Code
+	NotEqI1_Code, NotEqStr_Code, NotEqStrT1_Code, NotEqI2_Code
 };
 Code NotEqI1_AssocCode[]    	= {NotEqInt_Code};
 Code NotEqStr_AssocCode[]		= {NotEqStrT2_Code};
@@ -433,7 +433,7 @@ static TableEntry table_entries[] =
 		// 2010-06-29: added value for expr_type
 		Print_Code, Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Expression_TokenMode, Print_CmdHandler//Any_ExprType
+		Expression_TokenMode, Print_CmdHandler  //Any_ExprType
 	},
 	{
 		Input_Code, Command_TokenType, OneWord_Multiple,
@@ -737,7 +737,7 @@ static TableEntry table_entries[] =
 		BegDataTypeWord_Code, Error_TokenType
 	},
 	// Currently None
-	
+
 	//*************************
 	//   END DATA TYPE WORDS
 	//*************************
@@ -1459,7 +1459,7 @@ Table::Table(void)
 			}
 		}
 	}
-	
+
 	// 2010-05-20: check maximums found against constants
 	if (max_operands > Max_Operands)
 	{
