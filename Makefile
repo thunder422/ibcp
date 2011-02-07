@@ -9,6 +9,7 @@
 ##  Change History:
 ##
 ##  2011-01-09	initial release
+##  2011-02-06	cleaned up make file
 
 
 #### Compiler and tool definitions shared by all build targets #####
@@ -21,73 +22,149 @@ CCADMIN =
 
 
 # Define the target directories.
-TARGETDIR_objs=objects
+IBCPOBJS_dir=objects
+TESTOBJS_dir=objects/test
 
 
-all: test_codes.h codes.txt ibcp.exe
-
-## Target: test_codes.h
-test_codes.h: ibcp.h test_codes.awk
-	awk -f test_codes.awk <ibcp.h >test_codes.h
+all: codes.txt test_codes.h ibcp.exe
 
 ## Target: codes.txt
 codes.txt: ibcp.h codes.awk
 	awk -f codes.awk <ibcp.h >codes.txt
 
+## Target: test_codes.h
+test_codes.h: ibcp.h test_codes.awk
+	awk -f test_codes.awk <ibcp.h >test_codes.h
+
 ## Target: ibcp.exe
-OBJS_ibcp.exe =  \
-	$(TARGETDIR_objs)/ibcp.o \
-	$(TARGETDIR_objs)/parser.o \
-	$(TARGETDIR_objs)/string.o \
-	$(TARGETDIR_objs)/table.o \
-	$(TARGETDIR_objs)/translator.o \
-	$(TARGETDIR_objs)/test_ibcp.o
+IBCP_incs = \
+	ibcp.h \
+	list.h \
+	stack.h \
+	string.h
+
+IBCP_objs =  \
+	$(IBCPOBJS_dir)/ibcp.o \
+	$(IBCPOBJS_dir)/parser.o \
+	$(IBCPOBJS_dir)/string.o \
+	$(IBCPOBJS_dir)/table.o \
+	$(IBCPOBJS_dir)/translator.o \
+	$(IBCPOBJS_dir)/test_ibcp.o
 LDLIBS_ibcp.exe = -static-libgcc
 
 
 # Link or archive
-ibcp.exe: $(TARGETDIR_objs) $(OBJS_ibcp.exe) test_codes.h codes.txt
-	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(OBJS_ibcp.exe) $(LDLIBS_ibcp.exe)
+ibcp.exe: $(IBCP_incs) $(IBCP_objs) test_codes.h codes.txt
+	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(IBCPOBJS_dir) \
+		$(LDLIBS_ibcp.exe)
 
 
 # Compile source files into .o files
-$(TARGETDIR_objs)/ibcp.o: $(TARGETDIR_objs) ibcp.cpp
+$(IBCPOBJS_dir)/ibcp.o: $(IBCPOBJS_dir) ibcp.cpp
 	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ ibcp.cpp
 
-$(TARGETDIR_objs)/parser.o: $(TARGETDIR_objs) parser.cpp
+$(IBCPOBJS_dir)/parser.o: $(IBCPOBJS_dir) parser.cpp
 	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ parser.cpp
 
-$(TARGETDIR_objs)/string.o: $(TARGETDIR_objs) string.cpp
+$(IBCPOBJS_dir)/string.o: $(IBCPOBJS_dir) string.cpp
 	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ string.cpp
 
-$(TARGETDIR_objs)/table.o: $(TARGETDIR_objs) table.cpp
+$(IBCPOBJS_dir)/table.o: $(IBCPOBJS_dir) table.cpp
 	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ table.cpp
 
-$(TARGETDIR_objs)/translator.o: $(TARGETDIR_objs) translator.cpp
+$(IBCPOBJS_dir)/translator.o: $(IBCPOBJS_dir) translator.cpp
 	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ translator.cpp
 
-$(TARGETDIR_objs)/test_ibcp.o: $(TARGETDIR_objs) test_ibcp.cpp
+$(IBCPOBJS_dir)/test_ibcp.o: $(IBCPOBJS_dir) test_ibcp.cpp
 	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ test_ibcp.cpp
 
 
-
 #### Clean target deletes all generated files ####
-clean:
+clean: cleantests
 	rm -f \
 		ibcp.exe \
-		$(TARGETDIR_objs)/ibcp.o \
-		$(TARGETDIR_objs)/parser.o \
-		$(TARGETDIR_objs)/string.o \
-		$(TARGETDIR_objs)/table.o \
-		$(TARGETDIR_objs)/translator.o \
-		$(TARGETDIR_objs)/test_ibcp.o
+		$(IBCP_objs)
 	$(CCADMIN)
-	rm -f -r $(TARGETDIR_objs)
+	rm -f -r $(IBCPOBJS_dir)
 
 
 # Create the target directory (if needed)
-$(TARGETDIR_objs):
-	mkdir -p $(TARGETDIR_objs)
+$(IBCPOBJS_dir):
+	mkdir -p $(IBCPOBJS_dir)
+
+###########
+## TESTS ##
+###########
+
+tests: test_stack test_nums test_string test_cons test_stack2
+
+# test_stack
+test_stack: test/test_stack.exe
+
+test/test_stack.exe: $(TESTOBJS_dir)/test_stack.o
+	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(TESTOBJS_dir)/test_stack.o
+
+$(TESTOBJS_dir)/test_stack.o: $(TESTOBJS_dir) list.h test/test_stack.cpp
+	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ test/test_stack.cpp
+
+# test_nums
+test_nums: test/test_nums.exe
+
+test/test_nums.exe: $(TESTOBJS_dir)/test_nums.o
+	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(TESTOBJS_dir)/test_nums.o
+
+$(TESTOBJS_dir)/test_nums.o: $(TESTOBJS_dir) test/test_nums.cpp
+	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ test/test_nums.cpp
+
+# test_string
+test_string: test/test_string.exe
+
+test/test_string.exe: $(TESTOBJS_dir)/test_string.o $(IBCPOBJS_dir)/string.o
+	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(IBCPOBJS_dir)/string.o \
+		$(TESTOBJS_dir)/test_string.o
+
+$(TESTOBJS_dir)/test_string.o: $(TESTOBJS_dir) string.h test/test_string.cpp
+	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ test/test_string.cpp
+
+# test_cons
+test_cons: test/test_cons.exe
+
+test/test_cons.exe: $(TESTOBJS_dir)/test_cons.o
+	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(TESTOBJS_dir)/test_cons.o
+
+$(TESTOBJS_dir)/test_cons.o: $(TESTOBJS_dir) test/test_cons.cpp
+	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ test/test_cons.cpp
+
+# test_stack2
+test_stack2: test/test_stack2.exe
+
+test/test_stack2.exe: $(TESTOBJS_dir)/test_stack2.o
+	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(TESTOBJS_dir)/test_stack2.o
+
+$(TESTOBJS_dir)/test_stack2.o: $(TESTOBJS_dir) stack.h test/test_stack2.cpp
+	$(COMPILE.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ test/test_stack2.cpp
+
+
+#### Clean target deletes all generated files ####
+cleantests:
+	rm -f \
+		test/test_stack.exe \
+		test/test_nums.exe \
+		test/test_string.exe \
+		test/test_cons.exe \
+		test/test_stack2.exe \
+		$(TESTOBJS_dir)/test_stack.o \
+		$(TESTOBJS_dir)/test_nums.o \
+		$(TESTOBJS_dir)/test_string.o \
+		$(TESTOBJS_dir)/test_cons.o \
+		$(TESTOBJS_dir)/test_stack2.o \
+	$(CCADMIN)
+	rm -f -r $(TESTOBJS_dir)
+
+
+# Create the target directory (if needed)
+$(TESTOBJS_dir): $(IBCPOBJS_dir)
+	mkdir -p $(TESTOBJS_dir)
 
 
 # Enable dependency checking
