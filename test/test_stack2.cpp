@@ -18,7 +18,10 @@
 //	see <http://www.gnu.org/licenses/>.
 // 
 //
-//  1.0  2010-04-01  initial release
+//	Change History:
+//
+//	2010-04-01	initial release
+//
 
 #include <stdio.h>
 #include "../stack.h"
@@ -27,9 +30,9 @@
 void print_gpl_header(void)
 {
 	printf("test_stack.exe  Copyright (C) 2009  Thunder422\n");
-    printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
-    printf("This is free software, and you are welcome to\n");
-    printf("redistribute it under certain conditions.\n\n");
+	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
+	printf("This is free software, and you are welcome to\n");
+	printf("redistribute it under certain conditions.\n\n");
 }
 
 

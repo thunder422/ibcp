@@ -1,0 +1,16 @@
+test_cons.exe  Copyright (C) 2010  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Test 1 (each value)...
+Failed: 10
+Good: 2
+Failed: 20
+Good: 16
+
+Test 2 (should succeed)...
+Good: 2
+
+Test 3 (should fail)...
+Failed: 20

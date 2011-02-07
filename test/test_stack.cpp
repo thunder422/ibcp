@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_stack.cpp - contains test code for testing list class
-//	Copyright (C) 2009-2010  Thunder422
+//	Copyright (C) 2009-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,19 +18,22 @@
 //	see <http://www.gnu.org/licenses/>.
 //
 //
-//  Change History:
+//	Change History:
 //
-//  2009-12-28  initial release
+//	2009-12-28	initial release
 //
-//  2010-01-15  added 'const' to op_str[]
+//	2010-01-15	added 'const' to op_str[]
 //
-//  2010-01-30  added test_list() function;
-//              renamed print_stack functions to print_list
+//	2010-01-30	added test_list() function;
+//				renamed print_stack functions to print_list
 //
-//  2010-03-18  added test_list2() to test a list of pointers (where the
-//              structures are allocated and deallocated outside of list)
+//	2010-03-18	added test_list2() to test a list of pointers (where the
+//				structures are allocated and deallocated outside of list)
 //
 //	2011-01-29	modified for updated List class functions
+//
+//	2011-02-06	removed output of pointers so output can be compared between
+//				different compiles
 //
 
 #include <stdio.h>
@@ -40,9 +43,9 @@
 void print_gpl_header(void)
 {
 	printf("test_stack.exe  Copyright (C) 2009  Thunder422\n");
-    printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
-    printf("This is free software, and you are welcome to\n");
-    printf("redistribute it under certain conditions.\n\n");
+	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
+	printf("This is free software, and you are welcome to\n");
+	printf("redistribute it under certain conditions.\n\n");
 }
 
 
@@ -257,8 +260,7 @@ void print_list(const char *str, List<Item *> &ItemList)
 	printf("%s: ", str);
 	for (element = ItemList.first(); element != NULL; ItemList.next(element))
 	{
-		printf("%p:<%d,%s> ", element->value, element->value->num,
-			element->value->str);
+		printf("<%d,%s> ", element->value->num, element->value->str);
 	}
 	printf("EOL\n");
 }
@@ -271,38 +273,38 @@ void test_list2(void)
 	List<Item *> ItemList;
 
 	item = new Item(1, "AAA");
-	printf("New Item %p:<%d,%s>\n", item, item->num, item->str);
+	printf("New Item <%d,%s>\n", item->num, item->str);
 	ItemList.append(&item);
 	item = new Item(2, "BBB");
-	printf("New Item %p:<%d,%s>\n", item, item->num, item->str);
+	printf("New Item <%d,%s>\n", item->num, item->str);
 	element = ItemList.append(&item);
 	item = new Item(3, "CCC");
-	printf("New Item %p:<%d,%s>\n", item, item->num, item->str);
+	printf("New Item <%d,%s>\n", item->num, item->str);
 	ItemList.append(&item);
 	print_list("append-end 123", ItemList);
 
 	item = new Item(25, "BCD");
-	printf("New Item %p:<%d,%s>\n", item, item->num, item->str);
+	printf("New Item <%d,%s>\n", item->num, item->str);
 	ItemList.append(element, &item);
 	print_list("append after 2", ItemList);
 
 	item = new Item(15, "ABC");
-	printf("New Item %p:<%d,%s>\n", item, item->num, item->str);
+	printf("New Item <%d,%s>\n", item->num, item->str);
 	ItemList.insert(element, &item);
 	print_list("insert before 2", ItemList);
 
 	item = new Item(0, "000");
-	printf("New Item %p:<%d,%s>\n", item, item->num, item->str);
+	printf("New Item <%d,%s>\n", item->num, item->str);
 	ItemList.insert(&item);
 	print_list("insert begin", ItemList);
 
 	bool flag = ItemList.remove(&item);
-	printf("remove item: %p:<%d,%s> (%d)\n", item, item->num, item->str, flag);
+	printf("remove item: <%d,%s> (%d)\n", item->num, item->str, flag);
 	delete item;
 	print_list("remove end", ItemList);
 
 	flag = ItemList.remove(element, &item);
-	printf("remove item 2: %p,<%d,%s> (%d)\n", item, item->num, item->str,
+	printf("remove item 2: <%d,%s> (%d)\n", item->num, item->str,
 		flag);
 	delete item;
 	print_list("remove 2", ItemList);
@@ -312,7 +314,7 @@ void test_list2(void)
 	{
 		element = ItemList.first();
 		flag = ItemList.remove(element, &item);
-		printf(" %p:<%d,%s>", item, item->num, item->str);
+		printf(" <%d,%s>", item->num, item->str);
 		delete item;
 	}
 	while (flag);

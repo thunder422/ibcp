@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_string.cpp - contains test code for testing string class
-//	Copyright (C) 2010  Thunder422
+//	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -18,11 +18,13 @@
 //	see <http://www.gnu.org/licenses/>.
 // 
 //
-//  Change History:
+//	Change History:
 //
-//  2010-01-15  initial release
+//	2010-01-15	initial release
 //
-//  2010-04-20  fixed include so that program will compile in test directory
+//	2010-04-20	fixed include so that program will compile in test directory
+//
+//	2011-02-06	changed get_str() to get_ptr()
 //
 
 #include <stdio.h>
@@ -41,7 +43,7 @@ void print_gpl_header(void)
 void print_string(const char *name, String *s)
 {
 	int len = s->get_len();
-	char *str = s->get_str();
+	char *str = s->get_ptr();
 	if (len == 0)
 	{
 		printf("%s = NULL (0:%p)\n", name, str);
@@ -54,13 +56,13 @@ void print_string(const char *name, String *s)
 
 void print_strings(String *s1, String *s2, int result)
 {
-	printf("'%.*s' vs '%.*s' = %d\n", s1->get_len(), s1->get_str(), s2->get_len(),
-			s2->get_str(), result);
+	printf("'%.*s' vs '%.*s' = %d\n", s1->get_len(), s1->get_ptr(),
+		s2->get_len(), s2->get_ptr(), result);
 }
 
 void print_strings(String *s1, const char *s2, int result)
 {
-	printf("'%.*s' vs '%s' = %d\n", s1->get_len(), s1->get_str(), s2, result);
+	printf("'%.*s' vs '%s' = %d\n", s1->get_len(), s1->get_ptr(), s2, result);
 }
 
 int main(void)
