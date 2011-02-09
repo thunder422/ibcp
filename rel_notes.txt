@@ -1,6 +1,6 @@
 Interactive BASIC Compiler Project
 File: rel_notes.txt - contains release notes for each version posted
-Copyright (C) 2009-2010  Thunder422
+Copyright (C) 2009-2011  Thunder422
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,9 +20,7 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
-	Translator - Memory leak detection
-	Translator - Arrays on left side of assignment statements
-	Translator - Full support for temporary strings
+	Translator - Restructure comma, semicolon, and command handlers
 	Translator - INPUT Command
 	Translator - Colons
 	Translator - IF-THEN-ELSE-ENDIF Commands
@@ -40,6 +38,79 @@ Planned Roadmap:
 	Encoder - Program sub-module
 	Encoder - Temporary Strings
 	Recreator - From internal program
+
+
+Release 0.1.14 (2011-02-08)
+
+	Translator developmental release - full expression type handling
+	has been implemented in preparation for the implementation of
+	more commands.  A summary of changes from Release 0.1.13:
+
+	    - token status (error) messages put into an array
+	    - multiple 'equal' assignments removed
+	    - improved error reporting
+	    - additional token and table initialization checking
+	    - development moved to NetBeans (VIDE2 now abandoned)
+	    - make file included for building (NetBeans not required)
+	    - codes.txt and test_codes.h now automatically generated
+	    - all files new in DOS format (CRLF terminated lines)
+	    - corrected many token memory leaks
+	    - added token memory leak detections
+
+	The current changes include full support for temporary strings
+	(which have different codes because at run-time temporary
+	strings need to be deleted when no longer used).  Assignment
+	operators required additional changes to work correctly with
+	temporary strings.
+
+	All files were Cleaned up including the formatting of comments,
+	trailing whitespace at the end of lines removed, leading spaces
+	changed to tabs (which occurred upon first using NetBeans
+	editor), and many spelling errors in comments were corrected.
+
+	The new make file is used for building the project (assuming
+	MSYS, with awk and make, and MinGW, with GCC 4.4.0, are
+	installed; NetBeans not required).  In the IBCP directory once
+	unzipped, the 'make' command builds the ibcp.exe program, the
+	'make tests' builds all the test programs in the test directory,
+	and 'make test_xxx' builds a specific test program (test_stack,
+	test_nums, test_cons, test_string, and test_strings).  The
+	command 'make cleantests' removed all the test programs and
+	object files, and 'make clean' removes all programs and objects.
+
+	Updated files include (from Release 0.1.14-pre-4):
+
+	translator15.txt - added temporary string tests
+
+	Makefile         - cleaned up, tests added
+	ibcp.h           - leak detection, temporary string support
+	ibcp.cpp         - fix memory leaks, add token leak detection
+	list.h           - internal list class updates
+	regtest          - added translator test 15
+	regtest.bat      - added translator test 15
+	parser.cpp       - corrected bug where constant '0' caused error
+	parserX.txt      - updated for change in EOL code
+	stack.h          - cleaned up formatting of comments
+	stack.txt        - output from test stack program
+	string.h         - cleaned up formatting of comments
+	table.cpp        - temporary string support, multiple fixes
+	test_cons.cpp    - updated (include DOS format)
+	test_nums.cpp    - updated (include DOS format)
+	test_stack.cpp   - updated (include DOS format)
+	test_stack2.cpp  - updated (include DOS format)
+	test_string.cpp  - updated (include DOS format)
+	test_ibcp.h      - translator test 15, memory leak fixes
+	translator.cpp   - memory leak fixes, temporary string support
+	translator1.txt  - updated for temporary string changes
+	translator3.txt  - updated for temporary string changes
+	translator4.txt  - updated for temporary string changes
+	translator6.txt  - updated for temporary string changes
+	translator7.txt  - updated for temporary string changes
+	translator8.txt  - updated for temporary string changes
+	translator9.txt  - updated for temporary string changes
+	translator10.txt - updated for temporary string changes
+	translator12.txt - updated for temporary string changes
+	translator14.txt - updated for temporary string changes
 
 
 Release 0.1.14-pre-4 (2011-01-26)
