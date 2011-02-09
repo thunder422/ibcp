@@ -10,6 +10,7 @@
 ##
 ##  2011-01-09	initial release
 ##  2011-02-06	cleaned up make file
+##  2011-02-08	corrected mistake on linker line with objects list
 
 
 #### Compiler and tool definitions shared by all build targets #####
@@ -55,7 +56,7 @@ LDLIBS_ibcp.exe = -static-libgcc
 
 # Link or archive
 ibcp.exe: $(IBCP_incs) $(IBCP_objs) test_codes.h codes.txt
-	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(IBCPOBJS_dir) \
+	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(IBCP_objs) \
 		$(LDLIBS_ibcp.exe)
 
 
