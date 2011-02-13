@@ -86,7 +86,7 @@ Input: A,3,B=4
 
 
 Input: (A=B)
-       ^-- expected statement
+       ^-- expected command
 
 
 Input: A,B,(C)=4

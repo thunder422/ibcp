@@ -249,6 +249,11 @@
 //				  by caller of Translator (to correct a memory leak)
 //	2011-02-04	added associated codes for temporary strings
 //
+//	2011-02-10	added Translator::call_command_handler()
+//				added BUG_CmdStackEmptyCmd token status
+//	2011-02-11	added BUG_UnexpToken token status
+//	2011-02-12	renamed ExpStatement_TokenStatus to ExpCommand
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -720,7 +725,7 @@ enum TokenStatus {
 	Null_TokenStatus,				// 2010-06-04: added
 	Good_TokenStatus,
 	Done_TokenStatus,
-	ExpStatement_TokenStatus,		// 2010-06-13: renamed
+	ExpCommand_TokenStatus,			// 2011-01-12: renamed again
 	ExpExpr_TokenStatus,			// 2010-06-10: renamed
 	ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
 	ExpOpOrEnd_TokenStatus,			// 2010-06-11: renamed
@@ -766,8 +771,10 @@ enum TokenStatus {
 	BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
 	BUG_InvalidDataType,			// diagnostic error (2010-07-02)
 	BUG_CmdStackEmptyExpr,			// diagnostic error (2011-01-02)
+	BUG_CmdStackEmptyCmd,			// diagnostic error (2011-02-10)
 	BUG_CountStackEmpty,			// diagnostic error (2011-01-02)
 	BUG_UnexpParenExpr,				// diagnostic error (2011-01-02)
+	BUG_UnexpToken,					// diagnostic error (2011-02-11)
 	BUG_Debug,						// diagnostic error (2010-06-13)
 	BUG_Debug1,						// diagnostic error (2010-06-13)
 	BUG_Debug2,						// diagnostic error (2010-06-13)
@@ -1420,6 +1427,8 @@ private:
 	TokenStatus get_expr_datatype(DataType &datatype);
 	// 2011-01-15: function to delete a close paren token
 	void delete_close_paren(Token *last);
+    // 2011-02-10: function to call handler for command on top of command stack
+	TokenStatus call_command_handler(Token *&token);
 
 	// COMMAND SPECIFIC FUNCTIONS
 	// 2010-06-04: function to added data type specific print code

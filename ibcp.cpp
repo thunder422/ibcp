@@ -70,6 +70,10 @@
 //	2011-01-29	implemented Token new and delete operator functions to detect
 //				  memory leaks of tokens
 //
+//	2011-02-10	added BUG_CmdStackEmptyCmd token status and message
+//	2011-02-11	added BUG_UnexpToken token status and message
+//	2011-02-12	renamed ExpStatement_TokenStatus to ExpCommand and message
+//
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
@@ -95,8 +99,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: Good_TokenStaus"},  // should not see this
 	{Done_TokenStatus,
 		"BUG: Done_TokenStaus"},  // should not see this
-	{ExpStatement_TokenStatus,
-		"expected statement"},
+	{ExpCommand_TokenStatus,      // renamed from statement (2011-01-12)
+		"expected command"},
 	{ExpExpr_TokenStatus,
 		"expected expression"},
 	{ExpExprOrEnd_TokenStatus,
@@ -179,6 +183,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: command stack empty"},
 	{BUG_CmdStackEmptyExpr,  // 2011-01-02: added
 		"BUG: command stack empty for expression"},
+	{BUG_CmdStackEmptyCmd,   // 2011-02-10: added
+		"BUG: command stack empty for command"},
 	{BUG_NoAssignListCode,
 		"BUG: no assign list code found"},
 	{BUG_InvalidDataType,
@@ -187,6 +193,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: count stack empty"},
 	{BUG_UnexpParenExpr,  // 2011-01-02: added
 		"BUG: unexpected parentheses in expression"},
+	{BUG_UnexpToken,  // 2011-02-11: added
+		"BUG: unexpected token"},
 	{BUG_Debug1,
 		"BUG: debug #1"},
 	{BUG_Debug2,

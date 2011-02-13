@@ -71,11 +71,11 @@ Input: Z+A
 
 
 Input: +Z
-       ^-- expected statement
+       ^-- expected command
 
 
 Input: -Z
-       ^-- expected statement
+       ^-- expected command
 
 
 Input: Z Y = 1
@@ -91,7 +91,7 @@ Input: Z
 
 
 Input: ,Z
-       ^-- expected statement
+       ^-- expected command
 
 
 Input: Z,
@@ -267,19 +267,19 @@ Input: MID$(A$,B,C)=
 
 
 Input: INT(
-       ^^^^-- expected statement
+       ^^^^-- expected command
 
 
 Input: INT(A,
-       ^^^^-- expected statement
+       ^^^^-- expected command
 
 
 Input: INT(A)
-       ^^^^-- expected statement
+       ^^^^-- expected command
 
 
 Input: INT(A)=
-       ^^^^-- expected statement
+       ^^^^-- expected command
 
 
 Input: LET INT(A)=
@@ -295,7 +295,7 @@ Input: A=INT(A)=
 
 
 Input: INT(A)=B
-       ^^^^-- expected statement
+       ^^^^-- expected command
 
 
 Input: LET ,

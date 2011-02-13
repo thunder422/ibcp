@@ -75,7 +75,7 @@ Input: Z;
 
 
 Input: ;Z
-       ^-- expected statement
+       ^-- expected command
 
 
 Input: Z,;

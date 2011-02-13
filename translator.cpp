@@ -292,6 +292,15 @@
 //				replaced most code in Assign_CmdHandler() with call to
 //				  process_final_operand()
 //
+//	2011-02-10	implemented new call_command_handler() for comma and semicolon
+//				  token handlers to call for command on top of command stack
+//				moved code from comma and semicolon token handlers to assign
+//				  and print command handlers (into new switch statements)
+//	2011-02-11	in Assign_CmdHandler(), when an error occurs, need to set set
+//				  the command item's token to the passed in token
+//				in Print_CmdHandler(), make sure good status is returned when
+//				  add_print_code() returns null status for nothing done
+//
 
 #include "ibcp.h"
 
@@ -500,7 +509,7 @@ TokenStatus Translator::add_token(Token *&token)
 							if (table->datatype(token->index)
 								!= SubStr_DataType)
 							{
-								return ExpStatement_TokenStatus;
+								return ExpCommand_TokenStatus;
 							}
 
 							// 2010-07-29: set reference of sub-string function
@@ -639,7 +648,7 @@ TokenStatus Translator::add_token(Token *&token)
 			// 2010-07-01: check if count stack is empty before checking mode
 			if (count_stack.empty() && mode == Command_TokenMode)
 			{
-				return ExpStatement_TokenStatus;
+				return ExpCommand_TokenStatus;
 			}
 			Code unary_code = table->unary_code(token->index);
 			if (unary_code == Null_Code)
@@ -1392,7 +1401,7 @@ TokenStatus Translator::expression_end(void)
 			{
 			case Command_TokenMode:
 				// no command was received yet
-				return ExpStatement_TokenStatus;
+				return ExpCommand_TokenStatus;
 
 			case Assignment_TokenMode:
 				// expression hasn't started yet
@@ -1569,6 +1578,47 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 	{
 		// (cannot determine type of expression)
 		datatype = None_DataType;
+	}
+	return status;
+}
+
+
+// function to call command handler of command on top of command stack
+//
+//   - if command stack empty and expression only mode, return null
+//     status indicating token was not supported by command (caller will
+//     report appropriate error)
+//   - otherwise if command stack, then bug
+//   - if command stack top does not have a command handler, then bug
+//   - if command handler returns an error, then token passed in is
+//      deletedunless it is the token reported as the error
+//   - for errors, the token returned by the command handler is returned
+
+// 2011-02-10: implement new function from parts of the EOL token handler
+TokenStatus Translator::call_command_handler(Token *&token)
+{
+	if (cmd_stack.empty())
+	{
+		// token was not expected
+		// let caller report the appropriate error
+		return Null_TokenStatus;
+	}
+	// changed from pop, leave command on top of stack (2010-12-29)
+	CmdItem cmd_item = cmd_stack.top();
+	CmdHandler cmd_handler = table->cmd_handler(cmd_item.token->index);
+	if (cmd_handler == NULL)  // missing command handler?
+	{
+		return BUG_NotYetImplemented;
+	}
+	TokenStatus status = (*cmd_handler)(*this, &cmd_item, token);
+	if (status != Good_TokenStatus)
+	{
+		// delete token if error at another token (2011-01-30 leak)
+		if (cmd_item.token != token)
+		{
+			delete token;
+		}
+		token = cmd_item.token;  // command decided where error is
 	}
 	return status;
 }
@@ -1872,7 +1922,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			{
 				// if nothing before comma, comma unexpected (2010-06-13)
 				return t.cmd_stack.empty()
-					? ExpStatement_TokenStatus : ExpAssignItem_TokenStatus;
+					? ExpCommand_TokenStatus : ExpAssignItem_TokenStatus;
 			}
 
 			status = t.set_assign_command(token, AssignList_Code);
@@ -1901,52 +1951,14 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			// inside an expression, but not in array or function
 
 			// 2010-06-03: check if command allows comma
-			switch (t.cmd_stack.empty() ? Null_Code : t.cmd_stack.top().code)
+			// 2011-02-10: moved code to command handlers, replaced with call
+			status = t.call_command_handler(token);
+			if (status == Null_TokenStatus)  // command didn't expect comma
 			{
-			case Print_Code:
-				// make sure the expression before comma is complete
-				status = t.expression_end();
-				if (status != Good_TokenStatus)
-				{
-					return status;
-				}
-
-				status = t.add_print_code();
-				if (status > Good_TokenStatus)
-				{
-					return status;
-				}
-
-				// append comma token to output
-				rpn_item = new RpnItem(token);
-				t.output->append(&rpn_item);
-
-				// set PRINT command item flag in case last item in statement
-				// (resets PrintFunc_CmdFlag if set)
-				t.cmd_stack.top().flag = PrintStay_CmdFlag;
-
-				// switch back to operand state (2010-06-06)
-				// expecting first operand next (2010-06-10)
-				t.state = Translator::FirstOperand;
-				return Good_TokenStatus;
-
-			default:
-				// if done stack empty, get expected expr type (2011-01-08)
-				if (t.done_stack.empty())
-				{
-					DataType datatype;
-					if ((status = t.get_expr_datatype(datatype))
-						!= Good_TokenStatus)
-					{
-						return status;
-					}
-					else
-					{
-						return errstatus_datatype[datatype].expected;
-					}
-				}
+				// this can only occur in expression only test mode (2011-02-12)
 				return ExpOpOrEnd_TokenStatus;
 			}
+			return status;
 
 		default:
 			return BUG_InvalidMode;
@@ -2022,88 +2034,19 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 		return status;
 	}
 
-	switch (t.cmd_stack.empty()
-		|| !t.count_stack.empty() && t.count_stack.top().noperands > 0
-		? Null_Code : t.cmd_stack.top().code)
+	// 2011-02-10: moved code to command handlers, replaced with call
+	status = t.call_command_handler(token);
+	if (status == Null_TokenStatus)  // command stack was empty
 	{
-	case Print_Code:
-		status = t.add_print_code();
-		if (status == Good_TokenStatus)
+		if (t.done_stack.empty())
 		{
-			// print code added, delete semicolon token
-			delete token;
+			// no tokens received yet
+			return ExpCommand_TokenStatus;
 		}
-		else if (status == Null_TokenStatus)
-		{
-			// check if last token added was a print function (2010-06-08)
-			if (t.cmd_stack.top().flag & PrintFunc_CmdFlag)
-			{
-				// set semicolon subcode flag on print function
-				t.output->last()->value->token->subcode |= SemiColon_SubCode;
-				// sub-code set, delete semicolon token (2011-02-01 leak)
-				delete token;
-			}
-			else  // no expression, add dummy semicolon token
-			{
-				rpn_item = new RpnItem(token);
-				t.output->append(&rpn_item);
-			}
-		}
-		else  // an error occurred
-		{
-			return status;
-		}
-
-		// set PRINT command item flag in case last item in statement
-		// (resets PrintFunc_CmdFlag if set)
-		t.cmd_stack.top().flag = PrintStay_CmdFlag;
-
-		// switch back to operand state (2010-06-06)
-		// expecting first operand next (2010-06-10)
-		t.state = Translator::FirstOperand;
-
-		return Good_TokenStatus;
-
-	case Assign_Code:
-	case AssignList_Code:
-		switch (t.mode)
-		{
-		case AssignmentList_TokenMode:
-			return ExpEqualOrComma_TokenStatus;
-
-		case Expression_TokenMode:
-			if (t.state == Translator::BinOp)
-			{
-				return ExpOpOrEnd_TokenStatus;
-			}
-			return errstatus_datatype[t.cmd_stack.top().token->datatype]
-				.expected;
-
-		default:
-			return BUG_InvalidMode;
-		}
-
-	default:
-		switch (t.mode)
-		{
-		case Command_TokenMode:
-			if (t.done_stack.empty())
-			{
-				return ExpStatement_TokenStatus;
-			}
-			return ExpEqualOrComma_TokenStatus;
-
-		case Assignment_TokenMode:
-			if (t.done_stack.empty())
-			{
-				return ExpAssignItem_TokenStatus;
-			}
-			return ExpEqualOrComma_TokenStatus;
-
-		default:
-			return BUG_InvalidMode;
-		}
+		// an operands was received (start of an assignment)
+		return ExpEqualOrComma_TokenStatus;
 	}
+	return status;
 }
 
 
@@ -2265,22 +2208,10 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 				return BUG_InvalidMode;
 			}
 		}
-		// changed from pop, leave command on top of stack (2010-12-29)
-		CmdItem cmd_item = t.cmd_stack.top();
-		CmdHandler cmd_handler = t.table->cmd_handler(cmd_item.token->index);
-		if (cmd_handler == NULL)  // missing command handler?
-		{
-			return BUG_NotYetImplemented;
-		}
-		status = (*cmd_handler)(t, &cmd_item, token);
+		// 2011-02-10: replaced code with function call
+		status = t.call_command_handler(token);
 		if (status != Good_TokenStatus)
 		{
-			// delete EOL token if error at another token (2011-01-30 leak)
-			if (cmd_item.token != token)
-			{
-				delete token;
-			}
-			token = cmd_item.token;  // command decided where error is
 			return status;
 		}
 		// now pop the command off of stack (2010-12-29)
@@ -2352,26 +2283,59 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 //**************************************
 
 // 2010-05-28: created function from add_token() case EOL_Code
+// 2011-01-10: added code from semicolon token handler
 TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 {
 	// assignment code removed from add_operator(), now handled in
 	// Equal_Handler() and Comma_Handler() for each item being assigned,
 	// here the last value needs to be processed (2010-07-01)
+	TokenStatus status;
 
-	// check done stack is empty before calling process_final_operand()
-	// to avoid bug error check for empty done stack in find_code()
-	if (t.done_stack.empty())
+	switch (t.table->code(token->index))
 	{
-		DataType datatype = cmd_item->token->datatype;  // save expected type
-		cmd_item->token = token;  // point error to end-of-statement token
-		return errstatus_datatype[datatype].expected;
+	case EOL_Code:
+		// check done stack is empty before calling process_final_operand()
+		// to avoid bug error check for empty done stack in find_code()
+		if (t.done_stack.empty())
+		{
+			// save expected type
+			DataType datatype = cmd_item->token->datatype;
+
+			cmd_item->token = token;  // point error to end-of-statement token
+			return errstatus_datatype[datatype].expected;
+		}
+
+		// turnoff reference flag of assign token, no longer needed (2010-10-02)
+		cmd_item->token->reference = false;
+
+		// 2011-02-05: replaced code with function call
+		return t.process_final_operand(cmd_item->token, NULL, 1);
+
+	default:  // token was not expected command
+		switch (t.mode)
+		{
+		case AssignmentList_TokenMode:
+			// point error to unexpected token (2011-02-11)
+			cmd_item->token = token;
+			return ExpEqualOrComma_TokenStatus;
+
+		case Expression_TokenMode:
+			if (t.state == Translator::BinOp)
+			{
+				// point error to unexpected token (2011-02-11)
+				cmd_item->token = token;
+				return ExpOpOrEnd_TokenStatus;
+			}
+			status = errstatus_datatype[t.cmd_stack.top().token->datatype]
+				.expected;
+			// point error to unexpected token after setting error (2011-02-11)
+			cmd_item->token = token;
+			return status;
+
+		default:
+			return BUG_InvalidMode;
+		}
 	}
-
-	// turn of reference flag of assign token, no longer needed (2010-10-02)
-	cmd_item->token->reference = false;
-
-	// 2011-02-05: replaced code with function call
-	return t.process_final_operand(cmd_item->token, NULL, 1);
 }
 
 
@@ -2380,30 +2344,105 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 //*********************************
 
 // 2010-05-28: created function from add_token() case EOL_Code
+// 2011-01-10: added code from comma and semicolon token handlers
 TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 {
+    TokenStatus status;
+	RpnItem *rpn_item;
+
 	// 2010-06-10: moved end of expression check to end of statement processing
 
-	TokenStatus status = t.add_print_code();
-	if (status == Good_TokenStatus  // data type specific code added?
-		|| status == Null_TokenStatus  // or not stay on line?
-		&& !(cmd_item->flag & PrintStay_CmdFlag))
+	switch (t.table->code(token->index))
 	{
-		// append the print token to go to newline at runtime
-		RpnItem *rpn_item = new RpnItem(cmd_item->token);
-		t.output->append(&rpn_item);
-	}
-	// check if print token was not used (2011-02-01 leak)
-	else if (status == Null_TokenStatus)
-	{
-		delete cmd_item->token;  // print token not used
-	}
-	else if (status > Good_TokenStatus)
-	{
-		return status;
-	}
+	case Comma_Code:
+		// make sure the expression before comma is complete
+		status = t.expression_end();
+		if (status != Good_TokenStatus)
+		{
+			return status;
+		}
 
-	return Good_TokenStatus;
+		status = t.add_print_code();
+		if (status > Good_TokenStatus)
+		{
+			return status;
+		}
+
+		// append comma (advance to next column) token to output
+		rpn_item = new RpnItem(token);
+		t.output->append(&rpn_item);
+
+		// set PRINT command item flag in case last item in statement
+		// (resets PrintFunc_CmdFlag if set)
+		t.cmd_stack.top().flag = PrintStay_CmdFlag;
+
+		// switch back to operand state (2010-06-06)
+		// expecting first operand next (2010-06-10)
+		t.state = Translator::FirstOperand;
+		return Good_TokenStatus;
+
+	case SemiColon_Code:
+		status = t.add_print_code();
+		if (status == Good_TokenStatus)
+		{
+			// print code added, delete semicolon token
+			delete token;
+		}
+		else if (status == Null_TokenStatus)
+		{
+			// check if last token added was a print function (2010-06-08)
+			if (t.cmd_stack.top().flag & PrintFunc_CmdFlag)
+			{
+				// set semicolon subcode flag on print function
+				t.output->last()->value->token->subcode |= SemiColon_SubCode;
+				// sub-code set, delete semicolon token (2011-02-01 leak)
+				delete token;
+			}
+			else  // no expression, add dummy semicolon token
+			{
+				rpn_item = new RpnItem(token);
+				t.output->append(&rpn_item);
+			}
+		}
+		else  // an error occurred
+		{
+			return status;
+		}
+
+		// set PRINT command item flag in case last item in statement
+		// (resets PrintFunc_CmdFlag if set)
+		t.cmd_stack.top().flag = PrintStay_CmdFlag;
+
+		// switch back to operand state (2010-06-06)
+		// expecting first operand next (2010-06-10)
+		t.state = Translator::FirstOperand;
+
+		return Good_TokenStatus;
+
+	case EOL_Code:
+		status = t.add_print_code();
+		if (status == Good_TokenStatus  // data type specific code added?
+			|| status == Null_TokenStatus  // or not stay on line?
+			&& !(cmd_item->flag & PrintStay_CmdFlag))
+		{
+			// append the print token to go to newline at runtime
+			RpnItem *rpn_item = new RpnItem(cmd_item->token);
+			t.output->append(&rpn_item);
+			// set good status; could be set to null (2011-02-11)
+			status = Good_TokenStatus;
+		}
+		// check if print token was not used (2011-02-01 leak)
+		else if (status == Null_TokenStatus)
+		{
+			delete cmd_item->token;  // print token not used
+			status = Good_TokenStatus;
+		}
+		return status;
+
+	default:  // token was not expected command
+		// TODO may need a proper error here
+		return BUG_UnexpToken;
+	}
 }
 
 
