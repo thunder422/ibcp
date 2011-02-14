@@ -300,6 +300,9 @@
 //				  the command item's token to the passed in token
 //				in Print_CmdHandler(), make sure good status is returned when
 //				  add_print_code() returns null status for nothing done
+//	2011-02-13	moved code from add_token() to add_operator(), which was renamed
+//				  to process_operator()
+//				moved code from add_token() to process_binary_operator()
 //
 
 #include "ibcp.h"
@@ -477,325 +480,436 @@ TokenStatus Translator::add_token(Token *&token)
 	{
 		if (!token->is_operator())
 		{
-			// 2010-03-25: added parentheses support
-			// 2010-03-26: check for and add dummy token if necessary
-			// 2010-05-29: changed argument to token pointer
-			do_pending_paren(hold_stack.top().token);
-
-			// 2010-04-25: set default data type for token if it has none
-			set_default_datatype(token);
-
-			// 2010-04-02: moved to after pending parentheses check
-			if (token->has_paren())
-			{
-				// token is an array or a function
-				// 2010-04-02: implemented array/function support
-				// 2010-06-08: added number of operands for internal functions
-				if (token->type == IntFuncP_TokenType)
-				{
-					// 2010-06-11: detect invalid print-only function early
-					if ((table->flags(token->index) & Print_Flag)
-						&& (cmd_stack.empty()
-						|| cmd_stack.top().code != Print_Code))
-					{
-						return PrintOnlyIntFunc_TokenStatus;
-					}
-					// 2010-06-24: check if not in expression mode
-					switch (mode)
-					{
-					case Command_TokenMode:
-						if (count_stack.empty())
-						{
-							if (table->datatype(token->index)
-								!= SubStr_DataType)
-							{
-								return ExpCommand_TokenStatus;
-							}
-
-							// 2010-07-29: set reference of sub-string function
-							token->reference = true;
-						}
-						// check if first operand of sub-string (2010-10-10)
-						else if (hold_stack.top().token->reference
-							&& count_stack.top().noperands == 1)
-						{
-							return ExpStrVar_TokenStatus;
-						}
-						break;
-
-					case Assignment_TokenMode:
-					case AssignmentList_TokenMode:
-						if (table->datatype(token->index) != SubStr_DataType)
-						{
-							// in a comma separated list
-							return errstatus_datatype[cmd_stack.top().token
-								->datatype].variable;
-						}
-						// 2010-07-29: set reference flag of sub-string function
-						token->reference = true;
-						break;
-					}
-				}
-
-				// 2010-06-08: changed count stack to hold count items
-				count_stack.push().noperands = 1;  // assume at least one
-				if (token->type == IntFuncP_TokenType)
-				{
-					count_stack.top().nexpected
-						= table->noperands(token->index);
-
-					// 2010-06-29: save index of internal function's table entry
-					count_stack.top().index = token->index;
-				}
-				else  // token->type != IntFuncP_TokenType
-				{
-					count_stack.top().nexpected = 0;
-				}
-
-				hold_stack.push().token = token;
-				hold_stack.top().first = NULL;
-				// leave state == Operand
-				state = Operand;  // make sure not FirstOperand (2010-06-10)
-			}
-			else  // !token->has_paren()
-			{
-				// token is a variable or a function with no arguments
-				// 2010-04-12: set reference flag for variable or function
-				if (token->type == NoParen_TokenType
-					|| token->type == DefFuncN_TokenType)
-				{
-					token->reference = true;
-				}
-
-				// add token directly output list
-				// and push element pointer on done stack
-				// 2010-05-15: create RPN item to add to output list
-				RpnItem *rpn_item = new RpnItem(token);
-				done_stack.push().element = output->append(&rpn_item);
-				done_stack.top().first = done_stack.top().last = NULL;
-				state = BinOp;  // next token must be a binary operator
-			}
-			return Good_TokenStatus;
+			// 2011-02-13: moved code to new function, replaced with call
+			return process_operand(token);
 		}
 		// 2010-06-06: end-of-statement code acceptable instead of operand
 		else if (table->flags(token) & EndExpr_Flag)
 		{
 			if (state != FirstOperand)
 			{
-				// unexpected of end expresion - determine error to return
-				switch (mode)
-				{
-				case Command_TokenMode:
-				case Assignment_TokenMode:
-				case AssignmentList_TokenMode:
-					// 2010-06-26: make sure done stack is not empty
-					if (count_stack.empty())
-					{
-						return errstatus_datatype[cmd_stack.top().token
-							->datatype].variable;
-					}
-					else if (count_stack.top().nexpected == 0)
-					{
-						// in array
-						return ExpNumExpr_TokenStatus;
-					}
-					else if (count_stack.top().noperands == 1)
-					{
-						// in function at first argument (sub-string function)
-						return ExpStrVar_TokenStatus;
-					}
-					else  // in function not at first argument
-					{
-						return errstatus_datatype[table
-							->operand_datatype(count_stack.top().index,
-							count_stack.top().noperands - 1)].expected;
-					}
-
-				case Expression_TokenMode:
-					// 2011-01-03: replaced code with function call
-					if ((status = get_expr_datatype(datatype))
-						!= Good_TokenStatus)
-					{
-						return status;
-					}
-					else
-					{
-						return errstatus_datatype[datatype].expected;
-					}
-
-				default:
-					return BUG_InvalidMode;
-				}
+				// an operand is expected, get the appropriate error
+				// 2011-02-13: moved code to new function, replaced with call
+				return end_expression_error();
 			}
-			else  // at first operand (no operands received yet)
-			{
-				switch (mode)
-				{
-				case Expression_TokenMode:
-					// FIXME this won't happen
-					if (table->code(hold_stack.top().token->index)
-						== AssignList_Code)
-					{
-						return BUG_Debug1;
-					}
-				}
-			}
-			// otherwise fall thru to where token handler will be called
+			// fall thru to process end of expression operator token
 		}
 		else  // operator when expecting operand, must be a unary operator
 		{
-			// 2010-06-13: if command mode, then this is not the way it starts
-			// 2010-07-01: check if count stack is empty before checking mode
-			if (count_stack.empty() && mode == Command_TokenMode)
+			// 2011-02-13: moved code to new function, replaced with call
+			if (process_unary_operator(token, status) == false)
 			{
-				return ExpCommand_TokenStatus;
+				return status;
 			}
-			Code unary_code = table->unary_code(token->index);
-			if (unary_code == Null_Code)
-			{
-				// oops, not a valid unary operator
-				// get data type of expr for appropriate error (2011-01-08)
-				if ((status = get_expr_datatype(datatype)) != Good_TokenStatus)
-				{
-					return status;
-				}
-				else
-				{
-					return errstatus_datatype[datatype].expected;
-				}
-			}
-			// change token to unary operator
-			token->index = table->index(unary_code);
-			// 2010-03-25: added check for opening parentheses
-			if (unary_code == OpenParen_Code)
-			{
-				// 2010-03-26: don't initialize last_precedence here
-				// 2010-03-26: check for and add dummy token if necessary
-				// 2010-05-29: changed argument to token pointer
-				do_pending_paren(hold_stack.top().token);
-
-				// 2010-04-16: implemented assignment handling
-				if (count_stack.empty())
-				{
-					// only check mode if not within parentheses
-					// (otherwise in an expression)
-					switch (mode)
-					{
-					case Assignment_TokenMode:
-						// oops, not expecting parentheses
-						return UnexpParenInCmd_TokenStatus;
-
-					case AssignmentList_TokenMode:
-						// in a comma separated list
-						return errstatus_datatype[cmd_stack.top().token
-							->datatype].variable;
-
-					case Expression_TokenMode:
-						// inside an expression, nothing extra to do
-						break;
-
-					default:
-						return BUG_InvalidMode;
-					}
-				}
-				// 2011-01-04: assign current expr data type to paren token
-				if ((status = get_expr_datatype(token->datatype))
-					!= Good_TokenStatus)
-				{
-					return status;
-				}
-				// push open parentheses right on stack and return
-				hold_stack.push().token = token;
-				hold_stack.top().first = NULL;
-				state = Operand;
-
-				// 2010-04-02: add a null counter to prevent commas
-				// 2010-06-09: changed count stack to hold count items
-				count_stack.push().noperands = 0;
-				count_stack.top().nexpected = 0;
-				return Good_TokenStatus;
-			}
-			// fall thru to operator code
+			// fall thru to process unary operator token
 		}
 	}
 	else  // a binary operator is expected
 	{
-		if (!token->is_operator())
+		// 2011-02-13: moved code to new function, replaced with call
+		status = process_binary_operator(token);
+		if (status != Good_TokenStatus)
 		{
-			// state == BinOp, but token is not an operator
-			if ((status = paren_status()) != Good_TokenStatus)
-			{
-				return status;
-			}
-			else  // error is dependent on command
-			{
-				switch (mode)
-				{
-				case Command_TokenMode:
-				case Assignment_TokenMode:
-				case AssignmentList_TokenMode:
-					return ExpEqualOrComma_TokenStatus;
-
-				case Expression_TokenMode:
-					return ExpOpOrEnd_TokenStatus;
-
-				default:
-					return BUG_InvalidMode;
-				}
-			}
-		}
-		// 2010-03-21: changed unary operator check
-		if (table->is_unary_operator(token->index))
-		{
-			return ExpBinOpOrEnd_TokenStatus;
-		}
-		// 2010-10-10: check if after first operand of sub-string assignment
-		if (hold_stack.top().token->reference
-			&& count_stack.top().noperands == 1
-			&& table->code(token->index) != Comma_Code)
-		{
-			// only a comma is allowed here
-			return ExpComma_TokenStatus;
-		}
-		// 2010-03-26: initialize last precedence before emptying stack for ')'
-		if (table->code(token->index) == CloseParen_Code)
-		{
-			// 2010-03-26: check for and add dummy token if necessary
-			//             before emptying stack
-			// 2010-05-29: changed argument to token pointer
-			do_pending_paren(hold_stack.top().token);
-
-			// now set last precedence to highest in case no operators in ( )
-			last_precedence = Highest_Precedence;
-		}
-		// 2010-06-26: added checking at end of statement
-		if (table->flags(token) & EndStatement_Flag)
-		{
-			if (mode == AssignmentList_TokenMode)
-			{
-				// no equal token received yet
-				return ExpEqualOrComma_TokenStatus;
-			}
+			return status;
 		}
 	}
 
 	// process all operators
+	// 2011-02-13: moved code to new function, replaced with call
+	return process_operator(token);
+}
+
+
+// function to process and operand token
+//
+//   - the default data type of the operand is set
+//   - if the token has a parentheses and is an internal function, then
+//     - an error occurs if a print function is not in a print command
+//     - only sub-string functions are permitted in command mode
+//     - only sub-string functions are permitted in assignment modes
+//   - function or array is pushed onto count stack
+//   - number of expected operands put on count stack for internal functions 
+//   - state is set to operand for function or array
+//
+//   - reference flag is set for non-parentheses tokens
+//   - non-parentheses token is pushed onto done stack, appended to output
+//   - state is set to binary operator
+
+// 2011-02-13: implemented new function from parts of add_token()
+TokenStatus Translator::process_operand(Token *&token)
+{
+	// 2010-03-25: added parentheses support
+	// 2010-03-26: check for and add dummy token if necessary
+	// 2010-05-29: changed argument to token pointer
+	do_pending_paren(hold_stack.top().token);
+
+	// 2010-04-25: set default data type for token if it has none
+	set_default_datatype(token);
+
+	// 2010-04-02: moved to after pending parentheses check
+	if (token->has_paren())
+	{
+		// token is an array or a function
+		// 2010-04-02: implemented array/function support
+		// 2010-06-08: added number of operands for internal functions
+		if (token->type == IntFuncP_TokenType)
+		{
+			// 2010-06-11: detect invalid print-only function early
+			if ((table->flags(token->index) & Print_Flag)
+				&& (cmd_stack.empty() || cmd_stack.top().code != Print_Code))
+			{
+				return PrintOnlyIntFunc_TokenStatus;
+			}
+			// 2010-06-24: check if not in expression mode
+			switch (mode)
+			{
+			case Command_TokenMode:
+				if (count_stack.empty())
+				{
+					if (table->datatype(token->index) != SubStr_DataType)
+					{
+						return ExpCommand_TokenStatus;
+					}
+
+					// 2010-07-29: set reference of sub-string function
+					token->reference = true;
+				}
+				// check if first operand of sub-string (2010-10-10)
+				else if (hold_stack.top().token->reference
+					&& count_stack.top().noperands == 1)
+				{
+					return ExpStrVar_TokenStatus;
+				}
+				break;
+
+			case Assignment_TokenMode:
+			case AssignmentList_TokenMode:
+				if (table->datatype(token->index) != SubStr_DataType)
+				{
+					// in a comma separated list
+					return errstatus_datatype[cmd_stack.top().token->datatype]
+						.variable;
+				}
+				// 2010-07-29: set reference flag of sub-string function
+				token->reference = true;
+				break;
+			}
+		}
+
+		// 2010-06-08: changed count stack to hold count items
+		count_stack.push().noperands = 1;  // assume at least one
+		if (token->type == IntFuncP_TokenType)
+		{
+			count_stack.top().nexpected = table->noperands(token->index);
+
+			// 2010-06-29: save index of internal function's table entry
+			count_stack.top().index = token->index;
+		}
+		else  // token->type != IntFuncP_TokenType
+		{
+			count_stack.top().nexpected = 0;
+		}
+
+		hold_stack.push().token = token;
+		hold_stack.top().first = NULL;
+		// leave state == Operand
+		state = Operand;  // make sure not FirstOperand (2010-06-10)
+	}
+	else  // !token->has_paren()
+	{
+		// token is a variable or a function with no arguments
+		// 2010-04-12: set reference flag for variable or function
+		if (token->type == NoParen_TokenType
+			|| token->type == DefFuncN_TokenType)
+		{
+			token->reference = true;
+		}
+
+		// add token directly output list
+		// and push element pointer on done stack
+		// 2010-05-15: create RPN item to add to output list
+		RpnItem *rpn_item = new RpnItem(token);
+		done_stack.push().element = output->append(&rpn_item);
+		done_stack.top().first = done_stack.top().last = NULL;
+		state = BinOp;  // next token must be a binary operator
+	}
+	return Good_TokenStatus;
+}
+
+
+// function to get the error for a premature end to an expression when
+// another operand is expected
+//
+//   - for command and assignments modes, count stack determines error
+//   - for expression mode, current expression type determines error
+
+// 2011-02-13: implemented new function from parts of add_token()
+TokenStatus Translator::end_expression_error(void)
+{
+	TokenStatus status = Good_TokenStatus;
+	DataType datatype;
+
+	// unexpected of end expression - determine error to return
+	switch (mode)
+	{
+	case Command_TokenMode:
+	case Assignment_TokenMode:
+	case AssignmentList_TokenMode:
+		// 2010-06-26: make sure done stack is not empty
+		if (count_stack.empty())
+		{
+			status = errstatus_datatype[cmd_stack.top().token->datatype]
+				.variable;
+		}
+		else if (count_stack.top().nexpected == 0)
+		{
+			// in array
+			status = ExpNumExpr_TokenStatus;
+		}
+		else if (count_stack.top().noperands == 1)
+		{
+			// in function at first argument (sub-string function)
+			status = ExpStrVar_TokenStatus;
+		}
+		else  // in function not at first argument
+		{
+			status = errstatus_datatype[table
+				->operand_datatype(count_stack.top().index,
+				count_stack.top().noperands - 1)].expected;
+		}
+		break;
+
+	case Expression_TokenMode:
+		// 2011-01-03: replaced code with function call
+		if ((status = get_expr_datatype(datatype)) == Good_TokenStatus)
+		{
+			status = errstatus_datatype[datatype].expected;
+		}
+		break;
+
+	default:
+		status = BUG_InvalidMode;
+		break;
+	}
+	return status;
+}
+
+
+// 2011-02-13: implemented new function from parts of add_token()
+bool Translator::process_unary_operator(Token *&token, TokenStatus &status)
+{
+	// 2010-06-13: if command mode, then this is not the way it starts
+	// 2010-07-01: check if count stack is empty before checking mode
+	if (count_stack.empty() && mode == Command_TokenMode)
+	{
+		status = ExpCommand_TokenStatus;
+		return false;
+	}
+	Code unary_code = table->unary_code(token->index);
+	if (unary_code == Null_Code)
+	{
+		DataType datatype;
+
+		// oops, not a valid unary operator
+		// get data type of expr for appropriate error (2011-01-08)
+		if ((status = get_expr_datatype(datatype)) == Good_TokenStatus)
+		{
+			status = errstatus_datatype[datatype].expected;
+		}
+		return false;
+	}
+	// change token to unary operator
+	token->index = table->index(unary_code);
+	// 2010-03-25: added check for opening parentheses
+	if (unary_code == OpenParen_Code)
+	{
+		// 2010-03-26: don't initialize last_precedence here
+		// 2010-03-26: check for and add dummy token if necessary
+		// 2010-05-29: changed argument to token pointer
+		do_pending_paren(hold_stack.top().token);
+
+		// 2010-04-16: implemented assignment handling
+		if (count_stack.empty())
+		{
+			// only check mode if not within parentheses
+			// (otherwise in an expression)
+			switch (mode)
+			{
+			case Assignment_TokenMode:
+				// oops, not expecting parentheses
+				status = UnexpParenInCmd_TokenStatus;
+				return false;
+
+			case AssignmentList_TokenMode:
+				// in a comma separated list
+				status = errstatus_datatype[cmd_stack.top().token->datatype]
+					.variable;
+				return false;
+
+			case Expression_TokenMode:
+				// inside an expression, nothing extra to do
+				break;
+
+			default:
+				status = BUG_InvalidMode;
+				return false;
+			}
+		}
+		// 2011-01-04: assign current expr data type to paren token
+		if ((status = get_expr_datatype(token->datatype)) != Good_TokenStatus)
+		{
+			return false;
+		}
+		// push open parentheses right on stack and return
+		hold_stack.push().token = token;
+		hold_stack.top().first = NULL;
+		state = Operand;
+
+		// 2010-04-02: add a null counter to prevent commas
+		// 2010-06-09: changed count stack to hold count items
+		count_stack.push().noperands = 0;
+		count_stack.top().nexpected = 0;
+		status = Good_TokenStatus;
+		return false;
+	}
+	status = Good_TokenStatus;
+	return true;
+}
+
+
+// function to process a binary operator token
+//
+//   - error occurs if token is not an operator
+//   - error occurs if token is a unary operator
+//   - error occurs comma expected after variable in sub-string assignment
+//   - if closing parentheses then process any pending parentheses
+//     and set last precedence to higher value
+//   - error occurs if end statement operator in uncompleted multiple
+//     assignment statement
+
+// 2011-02-13: implemented new function from parts of add_token()
+TokenStatus Translator::process_binary_operator(Token *&token)
+{
+	TokenStatus status = Good_TokenStatus;
+
+	if (!token->is_operator())
+	{
+		// state == BinOp, but token is not an operator
+		if ((status = paren_status()) == Good_TokenStatus)
+		{
+			// error is dependent on command
+			switch (mode)
+			{
+			case Command_TokenMode:
+			case Assignment_TokenMode:
+			case AssignmentList_TokenMode:
+				status = ExpEqualOrComma_TokenStatus;
+				break;
+
+			case Expression_TokenMode:
+				status = ExpOpOrEnd_TokenStatus;
+				break;
+
+			default:
+				status = BUG_InvalidMode;
+				break;
+			}
+		}
+	}
+	// 2010-03-21: changed unary operator check
+	else if (table->is_unary_operator(token->index))
+	{
+		status = ExpBinOpOrEnd_TokenStatus;
+	}
+	// 2010-10-10: check if after first operand of sub-string assignment
+	else if (hold_stack.top().token->reference
+		&& count_stack.top().noperands == 1
+		&& table->code(token->index) != Comma_Code)
+	{
+		// only a comma is allowed here
+		status = ExpComma_TokenStatus;
+	}
+	// 2010-03-26: initialize last precedence before emptying stack for ')'
+	else if (table->code(token->index) == CloseParen_Code)
+	{
+		// 2010-03-26: check for and add dummy token if necessary
+		//             before emptying stack
+		// 2010-05-29: changed argument to token pointer
+		do_pending_paren(hold_stack.top().token);
+
+		// now set last precedence to highest in case no operators in ( )
+		last_precedence = Highest_Precedence;
+	}
+	// 2010-06-26: added checking at end of statement
+	else if (table->flags(token) & EndStatement_Flag
+		&& mode == AssignmentList_TokenMode)
+	{
+		// no equal token received yet
+		status = ExpEqualOrComma_TokenStatus;
+	}
+	return status;
+}
+
+
+// function to process an operator token received, all operators with higher
+// precedence on the hold stack are added to output list first
+//
+// for each operator added to the output list, any pending parentheses is
+// processed first, the final operand of the operator is processed
+//
+//    - if error occurs on last operand, the operator token passed in is
+//      deleted and the token with the error is returned
+//    - sets last_precedence for operator being added to output list
+//    - after higher precedence operators are processed from the hold stack,
+//      the token handler for the operator is called
+
+// 2010-04-13: made argument a reference so different value can be returned
+// 2010-04-25: implemented data type handling for non-assignment operators
+//             removed popping of operands, find_code() does this
+//             removed unary operator check
+// 2010-05-08: removed temporary assignment code, find_code() now handles
+//             assignment operators but only last assignment list operand
+// 2010-07-01: removed assignment and assignment list code, now handled in
+//             Equal_Handler(), Comma_Handler() and Assign_CmdHandler()
+// 2010-08-07: check second operator or binary operator or only operand of
+//             unary operator
+// 2010-03-25: added parentheses support
+// 2010-03-26: replaced code with process_final_operand() function call
+// 2010-05-29: changed process_final_operand() argument to token pointer
+// 2010-06-05: do before assign check, which will append to output
+// 2010-08-22: moved to before final operand processing
+// 2011-01-13: added first operand token pointer (from hold stack)
+// 2011-02-13: renamed from add_operator(), added code from add_token()
+TokenStatus Translator::process_operator(Token *&token)
+{
 	// 2010-04-02: changed stack top precedence to work with paren tokens
-	Token *top_token;
 	while (table->precedence(hold_stack.top().token)
 		>= table->precedence(token->index))
 	{
 		// pop operator on top of stack and add it to the output
 		// 2010-04-13: set top_token so reference can be passed
-		top_token = hold_stack.top().token;
+		Token *top_token = hold_stack.top().token;
 		// don't pop token in case error occurs (2011-01-30 leak)
-		status = add_operator(top_token, hold_stack.top().first);
+
+		do_pending_paren(top_token);
+
+		// change token operator code or insert conversion codes as needed
+		TokenStatus status = process_final_operand(top_token,
+			hold_stack.top().first,
+			table->is_unary_operator(top_token->index) ? 0 : 1);
+
 		if (status != Good_TokenStatus)
 		{
 			delete token;       // delete token (2011-01-30 leak)
 			token = top_token;  // 2010-04-13: return token with error
 			return status;
 		}
+
+		// save precedence of operator being added
+		// (doesn't matter if not currently within parentheses,
+		// it will be reset upon next open parentheses)
+		last_precedence = table->precedence(top_token->index);
+
 		hold_stack.pop();  // now pop the token (2011-01-30 leak)
 	}
 
@@ -809,54 +923,6 @@ TokenStatus Translator::add_token(Token *&token)
 		token_handler = Operator_Handler;
 	}
 	return (*token_handler)(*this, token);
-}
-
-
-// function to add operator token to output list and to process data types
-// for operator with the done stack
-//
-//    - for now just pops operands of operator from done stack
-//    - for now just pushes operator onto done stack
-//    - before added operator to done stack, checks for pending paren token
-//    - sets last_precedence for operator being added to output list
-
-// 2010-04-13: made argument a reference so different value can be returned
-// 2011-01-13: added first operand token pointer (from hold stack)
-TokenStatus Translator::add_operator(Token *&token, Token *first)
-{
-	// 2010-04-25: implemented data type handling for non-assignment operators
-	//             removed popping of operands, find_code() does this
-	//             removed unary operator check
-	// 2010-05-08: removed temporary assignment code
-	//             find_code() now handles assignment operators
-	//             but only last assignment list operand
-	// 2010-07-01: removed assignment and assignment list code, now handled in
-	//             Equal_Handler(), Comma_Handler() and Assign_CmdHandler()
-	// 2010-08-07: check second operator or binary operator or only operand of
-	//             unary operator
-
-	// 2010-03-25: added parentheses support BEGIN
-	// 2010-03-26: replaced code with function call
-	// 2010-05-29: changed argument to token pointer
-	// 2010-06-05: do before assign check, which will append to output
-	// 2010-08-22: moved to before final operand processing
-	do_pending_paren(token);
-
-	// change token operator code or insert conversion codes as needed
-	TokenStatus status = process_final_operand(token, first,
-		table->is_unary_operator(token->index) ? 0 : 1);
-	if (status != Good_TokenStatus)
-	{
-		return status;
-	}
-
-	// save precedence of operator being added
-	// (doesn't matter if not currently within parentheses,
-	// it will be reset upon next open parentheses)
-	last_precedence = table->precedence(token->index);
-	// 2010-03-25: added parentheses support END
-
-	return Good_TokenStatus;
 }
 
 

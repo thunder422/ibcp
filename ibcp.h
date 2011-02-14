@@ -1378,11 +1378,17 @@ public:
 		return list;
 	}
 	void clean_up(void);			// only call when add_token returns an error
-private:
 
+private:
+    // 2011-02-13: implement four new functions from parts of add_token()
+	TokenStatus process_operand(Token *&token);
+	TokenStatus end_expression_error(void);
+	bool process_unary_operator(Token *&token, TokenStatus &status);
+    TokenStatus process_binary_operator(Token *&token);
 	// 2010-04-13: made argument a reference so different value can be returned
 	// 2011-01-13: added first operand token pointer (from hold stack)
-	TokenStatus add_operator(Token *&token, Token *first);
+	// 2011-02-13: replaced add_operator()
+	TokenStatus process_operator(Token *&token);
 	enum Match {
 		No_Match,
 		Yes_Match,
