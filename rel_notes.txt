@@ -20,7 +20,6 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap:
 
-	Translator - Restructure comma, semicolon, and command handlers
 	Translator - INPUT Command
 	Translator - Colons
 	Translator - IF-THEN-ELSE-ENDIF Commands
@@ -38,6 +37,26 @@ Planned Roadmap:
 	Encoder - Program sub-module
 	Encoder - Temporary Strings
 	Recreator - From internal program
+
+
+Release 0.1.15-pre-1 (2011-02-08)
+
+	Translator preliminary developmental release - the comma and
+	semicolon token handlers have been restructured where command
+	related code was moved to the appropriate command handlers, the
+	command handlers now contain a switch statement to process the
+	token dependent on the code of the token.  The Translator's
+	add_token() function, which was getting rather large, was
+	restructured into several more reasonable sized functions.  The
+	"expected statement" error was changed to "expected command"
+	error.  Updated files include:
+
+	ibcp.h           - new translator functions
+	ibcp.cpp         - error message change
+	translator.cpp   - add_token() separated into several functions
+	translator5.txt  - updated for error message change
+	translator11.txt - updated for error message change
+	translator13.txt - updated for error message change
 
 
 Release 0.1.14 (2011-02-08)
