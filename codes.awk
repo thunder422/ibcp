@@ -31,45 +31,49 @@
 #
 #  2010-09-06  modified to only look for codes in the Code enumeration
 #
-#  usage: awk -f codes.awk <ibcp.h >codes.txt
+#  2011-02-26  modified to input from ibcp.h and output to codes.txt directly
+#              (all code performed in BEGIN block)
+#
+#  usage: awk -f codes.awk
 
 # 2010-04-28: allow for Invalid_Code=-1
 BEGIN {
 	n = -1
 	# 2010-09-06: not in Code enumeration at start
 	code_enum = 0
-}
 
-/enum Code/ {
-	# 2010-09-06: found start of Code enumeration
-	code_enum = 1
-}
-
-$1 ~ /_Code/ {
-	# 2010-09-06: only look for codes in Code enumeration
-	if (code_enum) {
-		# 2010-04-28: allow for multiple codes on line
-		for (i = 1; i <= NR; i++) {
-			# 2010-04-03: allow digits in the name of the code
-			if (match($i,"[A-Za-z0-9]*_Code") > 0) {
-				c[n] = substr($i,RSTART,RLENGTH)
-				printf "%d: %s\n", n, c[n]
-				n++
+	# 2011-02-26: read directly from ibcp.h
+	while ((getline line < "ibcp.h") > 0) {
+		if (code_enum == 0) {
+			if (line ~ /enum Code/) {
+				# 2010-09-06: found start of Code enumeration
+				code_enum = 1
+			}
+		} else {
+			# 2010-09-06: only look for codes in Code enumeration
+			if (line ~ /};/) {
+				# 2010-09-06: found end of Code enumeration
+				code_enum = 0
+			} else {
+				nf = split(line, field) 
+				if (field[1] ~ /_Code/) {
+					# 2010-04-28: allow for multiple codes on line
+					for (i = 1; i <= nf; i++) {
+						# 2010-04-03: allow digits in the name of the code
+						if (match(field[i],"[A-Za-z0-9]*_Code") > 0) {
+							c[n] = substr(field[i],RSTART,RLENGTH)
+							printf "%d: %s\n", n, c[n] > "codes.txt"
+							n++
+						}
+					}
+				}
 			}
 		}
 	}
-}
-
-/};/ {
-	# 2010-09-06: found end of Code enumeration
-	if (code_enum) {
-		code_enum = 0
-	}
-}
-
-END {
-	print ""
-	for (i = 0; i < n; i++)
+	print "" > "codes.txt"
+	for (i = 0; i < n; i++) {
 		# 2010-04-28: added -d to ignore "_" in codes names
-		printf "%s = %d\n", c[i], i | "sort -d"
+		printf "%s = %d\n", c[i], i | "sort -d >> codes.txt"
+	}
+	print "Number of codes generated:", n
 }
