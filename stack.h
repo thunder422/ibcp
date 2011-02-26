@@ -35,6 +35,8 @@
 //				code is not inlined
 //
 //	2011-01-12	renamed stack[] to array[] to reduce confusion during debugging
+//	2011-02-20	renamed SimpleStack to Stack
+//	2011-02-22	implemented new null_pop() function that does not return value
 //
 
 #ifndef STACK_H
@@ -44,12 +46,12 @@
 //       located below (not in the template so that they don't get
 //       generated as in-line functions).
 
-// The SimpleStack class contains a simple implementation of a stack
-// where an allocated array is used to contain the stack entries instead
-// of the more powerful doubly linked list of the List class.  This
-// class is used in placed where insert and remove from any place within
-// the stack is not necessary.  Only the basic stack functions push, pop
-// and top are supported.
+// The Stack class contains a simple implementation of a stack where an
+// allocated array is used to contain the stack entries instead of the
+// more powerful doubly linked list of the List class.  This class is
+// used in placed where insert and remove from any place within the
+// stack is not necessary.  Only the basic stack functions push, pop and
+// top are supported.
 //
 // Because arrays are allocated, a size is needed to allocate the array.
 // The initial size is specified with an argument to the template.
@@ -63,32 +65,32 @@
 // type like "int" or "double" or pointer.  For instance, to declare an
 // integer stack, use the following:
 //
-//      SimpleStack<int> int_stack;
+//      Stack<int> int_stack;
 //
 // To declare a stack for an enumeration, use the following:
 //
 //      enum Operator {plus, minus, multiply, divide};
-//      SimpleStack<Operator> operator_stack;
+//      Stack<Operator> operator_stack;
 //
 // To declare a stack for a structure, use the following:
 //
 //      struct Item {...};
-//      SimpleStack<Item *> item_stack;
+//      Stack<Item *> item_stack;
 
 
 template <class T, int initial_size = 10, int increase_size = 10>
-class SimpleStack {
+class Stack {
 	T *array;					// pointer to array holding stack
 	int size;					// current size of the array
 	int index;					// index to the top element in the stack
 public:
-	SimpleStack(void)
+	Stack(void)
 	{
 		size = initial_size;
 		array = new T[size];	// allocate stack array
 		index = -1;				// indicates stack is empty
 	}
-	~SimpleStack()
+	~Stack()
 	{
 		delete[] array;			// de-allocate stack array
 	}
@@ -137,6 +139,14 @@ public:
 		return array[index--];
 	}
 
+	// function to pop top item from the stack without returning item
+	// - stack must not be empty - no protection is provided, use empty()
+	// 2011-02-22: added new function
+	void null_pop(void)
+	{
+		index--;
+	}
+
 	// function to get a reference to the generic value on top of stack
 	T &top(void)
 	{
@@ -152,7 +162,7 @@ public:
 // 2010-04-23: changed function for no argument and return reference
 // 2010-07-17: renamed and changed function to only contain grow stack code
 template <class T, int initial_size, int increase_size>
-void SimpleStack<T, initial_size, increase_size>::grow(void)
+void Stack<T, initial_size, increase_size>::grow(void)
 {
 	// stack array is not big enough, increase size
 	int newsize = size + increase_size;

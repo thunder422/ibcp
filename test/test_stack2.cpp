@@ -40,7 +40,7 @@ int main(void)
 {
 	print_gpl_header();
 
-	SimpleStack<int> count_stack;
+	Stack<int> count_stack;
 
 	count_stack.push(1);
 	printf("%d\n", count_stack.top());

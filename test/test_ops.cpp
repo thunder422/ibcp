@@ -43,28 +43,28 @@ union EvalItem {
 
 
 
-void add(SimpleStack<EvalItem, 1> &eval_stack)
+void add(Stack<EvalItem, 1> &eval_stack)
 {
 	double &operand2 = eval_stack.pop().dblval;
 	eval_stack.top().dblval += operand2;
 }
 
 
-void add_i1(SimpleStack<EvalItem, 1> &eval_stack)
+void add_i1(Stack<EvalItem, 1> &eval_stack)
 {
 	double &operand2 = eval_stack.pop().dblval;
 	eval_stack.top().dblval = eval_stack.top().intval + operand2;
 }
 
 
-void add_i2(SimpleStack<EvalItem, 1> &eval_stack)
+void add_i2(Stack<EvalItem, 1> &eval_stack)
 {
 	int &operand2 = eval_stack.pop().intval;
 	eval_stack.top().dblval += operand2;
 }
 
 
-void add_int(SimpleStack<EvalItem, 1> &eval_stack)
+void add_int(Stack<EvalItem, 1> &eval_stack)
 {
 	int &operand2 = eval_stack.pop().intval;
 	eval_stack.top().intval += operand2;
@@ -73,7 +73,7 @@ void add_int(SimpleStack<EvalItem, 1> &eval_stack)
 
 int main(void)
 {
-	SimpleStack<EvalItem, 1> eval_stack;
+	Stack<EvalItem, 1> eval_stack;
 
 	print_gpl_header();
 

@@ -304,6 +304,8 @@
 //				  to process_operator()
 //				moved code from add_token() to process_binary_operator()
 //
+//	2011-02-22	changed all pop() calls not using return value to null_pop()
+//
 
 #include "ibcp.h"
 
@@ -910,7 +912,7 @@ TokenStatus Translator::process_operator(Token *&token)
 		// it will be reset upon next open parentheses)
 		last_precedence = table->precedence(top_token->index);
 
-		hold_stack.pop();  // now pop the token (2011-01-30 leak)
+		hold_stack.null_pop();  // now pop the token (2011-01-30 leak)
 	}
 
 	// check for special token processing
@@ -1713,7 +1715,7 @@ void Translator::clean_up(void)
 	// 2010-04-02: comma support - need to empty count_stack
 	while (!count_stack.empty())
 	{
-		count_stack.pop();
+		count_stack.null_pop();
 	}
 	// 2011-01-16: moved to after stack cleanups (so last tokens still exist)
 	while (!output->empty())
@@ -2211,7 +2213,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			// 2011-01-30: if top_token was not changed, pop it now (leak)
 			if (top_token == t.hold_stack.top().token)
 			{
-				t.hold_stack.pop();
+				t.hold_stack.null_pop();
 			}
 			delete token;  // delete close paren token (2011-01-30 leak)
 			token = top_token;  // set token with error (2011-01-15)
@@ -2225,7 +2227,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	// 2010-04-02: moved set pending paren, not needed for array/function
 
 	// 2011-01-30: now pop the top token (leak)
-	t.hold_stack.pop();
+	t.hold_stack.null_pop();
 
 	return Good_TokenStatus;
 }
@@ -2282,7 +2284,7 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 		}
 		// now pop the command off of stack (2010-12-29)
 		// moved pop to after error check (2011-01-30 leak)
-		t.cmd_stack.pop();
+		t.cmd_stack.null_pop();
 		// upon return from the command handler,
 		// the hold stack should have the null token on top
 		// and done stack should be empty

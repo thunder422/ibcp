@@ -253,6 +253,7 @@
 //				added BUG_CmdStackEmptyCmd token status
 //	2011-02-11	added BUG_UnexpToken token status
 //	2011-02-12	renamed ExpStatement_TokenStatus to ExpCommand
+//	2011-02-20	renamed SimpleStack to Stack
 //
 
 #ifndef IBCP_H
@@ -260,7 +261,7 @@
 
 #include "string.h"
 #include "list.h"
-#include "stack.h"  // 2010-04-02: added for SimpleStack
+#include "stack.h"  // 2010-04-02: added for Stack
 
 
 //*****************************************************************************
@@ -1316,20 +1317,20 @@ struct RpnItem {
 class Translator {
 	Table *table;					// pointer to the table object
 	List<RpnItem *> *output;		// pointer to RPN list output
-	// 2010-05-28: changed hold_stack and done_stack from List to SimpleStack
+	// 2010-05-28: changed hold_stack and done_stack from List to Stack
 	// 2011-01-13: changed hold stack to include first token pointer
 	struct HoldStackItem {
 		Token *token;				// token pointer on hold stack
 		Token *first;				// operator token's first operand pointer
 	};
-	SimpleStack<HoldStackItem> hold_stack;		// operator/function holding stack
+	Stack<HoldStackItem> hold_stack;// operator/function holding stack
 	// 2011-01-15: changed done stack to include first and last token pointers
 	struct DoneStackItem {
 		List<RpnItem *>::Element *element;	// RPN item element pointer
 		Token *first;				// operator token's first operand pointer
 		Token *last;				// operator token's last operand pointer
 	};
-	SimpleStack<DoneStackItem> done_stack;	// items processed stack
+	Stack<DoneStackItem> done_stack;// items processed stack
 	enum State {
 		Initial,					// initial state
 		BinOp,						// expecting binary operator
@@ -1347,12 +1348,12 @@ class Translator {
 		char nexpected;				// number of arguments expected
 		int index;					// table index of internal function
 	};
-	SimpleStack<CountItem> count_stack;	// number of operands counter stack
+	Stack<CountItem> count_stack;	// number of operands counter stack
 	// 2010-04-11: added mode for handling assignment statements
 	// 2010-05-29: moved enum definition outside Translator and renamed it
 	TokenMode mode;					// current assignment mode
 	// 2010-06-05: moved CmdItem outside Translator for TableEntry
-	SimpleStack<CmdItem> cmd_stack;	// stack of commands waiting processing
+	Stack<CmdItem> cmd_stack;		// stack of commands waiting processing
 	// 2010-06-06: variable to save expression only mode in
 	bool exprmode;					// expression only mode active flag
 
