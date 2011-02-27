@@ -255,6 +255,13 @@
 //	2011-02-12	renamed ExpStatement_TokenStatus to ExpCommand
 //	2011-02-20	renamed SimpleStack to Stack
 //
+//	2011-02-26	removed Code enumeration (now auto gen'd in codes.h)
+//				changed Token::index back to code
+//				moved Table::index_code[], code() and index()
+//				removed TableEntry::code (index now same as code)
+//				added new ImmCmd search type
+//				added Code operator overload functions
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -263,163 +270,24 @@
 #include "list.h"
 #include "stack.h"  // 2010-04-02: added for Stack
 
+// 2011-02-26: replaced code enumeration with include
+#include "codes.h"
 
-//*****************************************************************************
-//**                                  CODES                                  **
-//*****************************************************************************
+// 2011-02-26: Code operator functions
+inline Code operator +(Code code, int number)
+{
+	return (Code)((int)code + number);
+}
 
-enum Code {
-	Invalid_Code = -1,  // 2010-04-25: added for cvt array
-	Null_Code,	// 2010-03-17: added to indicated no code
+inline Code operator ++(Code &code)
+{
+	return code = code + 1;
+}
 
-	// 2010-04-24: added associated codes
-	// math operators
-	Add_Code, AddInt_Code, AddI1_Code, AddI2_Code,
-		CatStr_Code, CatStrT1_Code, CatStrT2_Code, CatStrTT_Code,
-	Sub_Code, SubInt_Code, SubI1_Code, SubI2_Code,
-	Neg_Code, NegInt_Code,  // 2010-03-17: added unary operator
-	Mul_Code, MulInt_Code, MulI1_Code, MulI2_Code,
-	Div_Code, DivInt_Code, DivI1_Code, DivI2_Code,
-	IntDiv_Code,
-	Mod_Code, ModInt_Code, ModI1_Code, ModI2_Code,
-	Power_Code, PowerMul_Code, PowerInt_Code, PowerI1_Code,
-
-	// relational operators
-	Eq_Code, EqInt_Code, EqI1_Code, EqI2_Code,
-		EqStr_Code, EqStrT1_Code, EqStrT2_Code, EqStrTT_Code,
-	Gt_Code, GtInt_Code, GtI1_Code, GtI2_Code,
-		GtStr_Code, GtStrT1_Code, GtStrT2_Code, GtStrTT_Code,
-	GtEq_Code, GtEqInt_Code, GtEqI1_Code, GtEqI2_Code,
-		GtEqStr_Code, GtEqStrT1_Code, GtEqStrT2_Code, GtEqStrTT_Code,
-	Lt_Code, LtInt_Code, LtI1_Code, LtI2_Code,
-		LtStr_Code, LtStrT1_Code, LtStrT2_Code, LtStrTT_Code,
-	LtEq_Code, LtEqInt_Code, LtEqI1_Code, LtEqI2_Code,
-		LtEqStr_Code, LtEqStrT1_Code, LtEqStrT2_Code, LtEqStrTT_Code,
-	NotEq_Code, NotEqInt_Code, NotEqI1_Code, NotEqI2_Code,
-		NotEqStr_Code, NotEqStrT1_Code, NotEqStrT2_Code, NotEqStrTT_Code,
-
-	// logical operators
-	And_Code,
-	Or_Code,
-	Not_Code,
-	Eqv_Code,
-	Imp_Code,
-	Xor_Code,
-
-	// 2010-04-11: assignment operators
-	// 2010-05-07: added assignment operator associated codes
-	// 2010-05-19: added assign sub-string associated code
-	Assign_Code, AssignInt_Code, AssignStr_Code, AssignTmp_Code,
-		AssignSubStr_Code, AssignSubTmp_Code,
-	// 2010-05-22: added assign mix-string list associated code
-	AssignList_Code, AssignListInt_Code, AssignListStr_Code, AssignListTmp_Code,
-		AssignListMix_Code, AssignListMixTmp_Code,
-
-	// math internal functions
-	Abs_Code, AbsInt_Code,
-	Fix_Code,
-	Frac_Code,  // 2010-04-24: added new code
-	Int_Code,
-	Rnd_Code,
-	RndArg_Code, RndArgInt_Code,
-	Sgn_Code, SgnInt_Code,
-	Cint_Code,
-	Cdbl_Code,    // 2010-04-24: added new code
-	CvtInt_Code,  // 2010-04-24: added code for hidden conversion
-	CvtDbl_Code,  // 2010-04-24: added code for hidden conversion
-
-	// scientific math internal function
-	Sqr_Code,
-	Atn_Code,
-	Cos_Code,
-	Sin_Code,
-	Tan_Code,
-	Exp_Code,
-	Log_Code,
-
-	// string functions
-	Asc_Code, AscTmp_Code,
-	Asc2_Code, Asc2Tmp_Code,   // 2010-04-04: added code for two argument form
-	Chr_Code,
-	// 2010-04-04: replaced Instr_Code
-	Instr2_Code, Instr2T1_Code, Instr2T2_Code, Instr2TT_Code,
-	Instr3_Code, Instr3T1_Code, Instr3T2_Code, Instr3TT_Code,
-	Left_Code,
-	Len_Code, LenTmp_Code,
-	// 2010-04-04: replaced Mid_Code
-	Mid2_Code,
-	Mid3_Code,
-	Repeat_Code, RepeatTmp_Code,
-	Right_Code,
-	Space_Code,
-	Str_Code, StrInt_Code,
-	Val_Code, ValTmp_Code,
-
-	// other symbol operators
-	OpenParen_Code,
-	CloseParen_Code,
-	Comma_Code,
-	SemiColon_Code,
-	Colon_Code,
-	RemOp_Code,
-
-	// print internal functions
-	Tab_Code,
-	Spc_Code,
-
-	// commands
-	Let_Code,
-	// 2010-06-04: added data type specified print codes
-	Print_Code, PrintDbl_Code, PrintInt_Code, PrintStr_Code, PrintTmp_Code,
-	Input_Code,
-	Dim_Code,
-	Def_Code,
-	Rem_Code,
-	If_Code,
-	Then_Code,
-	Else_Code,
-	EndIf_Code,
-	For_Code,
-	To_Code,
-	Step_Code,
-	Next_Code,
-	Do_Code,
-	DoWhile_Code,
-	DoUntil_Code,
-	While_Code,
-	Until_Code,
-	Loop_Code,
-	LoopWhile_Code,
-	LoopUntil_Code,
-	End_Code,
-
-	// other codes
-	EOL_Code,  // 2010-03-17: added end-of-line code
-
-	// immediate commands (will go away once gui implemented)
-	List_Code,
-	Edit_Code,
-	Delete_Code,
-	Run_Code,
-	Renum_Code,
-	Save_Code,
-	Load_Code,
-	New_Code,
-	Auto_Code,
-	Cont_Code,
-	Quit_Code,
-
-	// search bracketing codes
-	BegPlainWord_Code,
-	EndPlainWord_Code,
-	BegParenWord_Code,
-	EndParenWord_Code,
-	BegDataTypeWord_Code,
-	EndDataTypeWord_Code,
-	BegSymbol_Code,
-	EndSymbol_Code,
-	sizeof_Code
-};
+inline Code operator ++(Code &code, int postfix)
+{
+	return code = code + 1;
+}
 
 
 // changes to TokenType may require changes to ibcp.cpp: Token::initialize()
@@ -524,6 +392,7 @@ enum ErrorType {  // 2010-06-25: renamed from TableErrType
 
 // 2010-06-25: moved and renamed from TableSearch
 enum SearchType {  // table search types
+	ImmCmd_SearchType,			// 2011-02-26
 	PlainWord_SearchType,
 	ParenWord_SearchType,
 	DataTypeWord_SearchType,
@@ -563,7 +432,7 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 		} maximum;
 		struct {
 			short entry;		// index of entry with error
-			short index;		// assoc 2 code
+			short code;			// assoc 2 code
 			short n;			// number of assoc codes
 		} assoc2;
 		struct {
@@ -612,11 +481,11 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 		maximum.found = max;
 	}
 	// 2010-07-18: added new error
-	Error(short index, short index2, short nassoc)
+	Error(short code, short code2, short nassoc)
 	{
 		type = Assoc2Code_ErrorType;
-		assoc2.entry = index;
-		assoc2.index = index2;
+		assoc2.entry = code;
+		assoc2.code = code2;
 		assoc2.n = nassoc;
 	}
 	// 2010-08-10: added new error
@@ -688,7 +557,7 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 			// 2010-07-18: added new assoc 2 code bad error
 			case Assoc2Code_ErrorType:
 				(*print)("Entry:%d Assoc2Code=%d too large, maximum is %d\n",
-					error.assoc2.entry, error.assoc2.index, error.assoc2.n);
+					error.assoc2.entry, error.assoc2.code, error.assoc2.n);
 				break;
 			// 2010-08-10: added new multiple flag errors
 			case MultName_ErrorType:
@@ -806,7 +675,8 @@ struct Token {
 	DataType datatype;		// data type of token
 	String *string;			// pointer to string of token
 	// 2010-03-17: changed variable from code to index
-	int index;	 			// index into Table (internal code of token)
+	// 2011-02-26: changed variable back from index to code
+	Code code;	 			// internal code of token (index of TableEntry)
 	// 2010-04-12: added reference flag
 	bool reference;			// token is a reference flag
 	// 2010-05-27: added sub-code
@@ -1032,7 +902,6 @@ typedef TokenStatus (*CmdHandler)(Translator &t, CmdItem *cmd_item,
 
 
 struct TableEntry {
-	Code code;					// enumeration code of entry
 	TokenType type;				// type of token for entry
 	Multiple multiple;			// multiple word command/character operator
 	const char *name;			// name for table entry
@@ -1059,167 +928,149 @@ struct TableEntry {
 //**                                  TABLE                                  **
 //*****************************************************************************
 
+// 2011-02-26: removed index_code[], index(), and code(); changed index to code
 class Table {
 	TableEntry *entry;				// pointer to table entries
-	int *index_code;				// returns index from code
 	struct Range {
-		int beg;					// begin index of range
-		int end;					// end index of range
+		Code beg;					// begin index of range
+		Code end;					// end index of range
 	} range[sizeof_SearchType];	// range for each search type
 public:
 	Table(void);
-	~Table()
-	{
-		delete index_code;
-	}
+	~Table() {}
 
 	// ACCESS FUNCTIONS
-	int index(Code code)
+	TokenType type(Code code)
 	{
-		return index_code[code];
+		return entry[code].type;
 	}
-	Code code(int index)
-	{
-		return entry[index].code;
-	}
-	TokenType type(int index)
-	{
-		return entry[index].type;
-	}
-	DataType datatype(int index)
+	DataType datatype(Code code)
 	{
 		// 2010-05-03: get value from expression information structure
 		// 2010-05-08: added check for null exprinfo pointer
 		// 2010-01-05: return main data type if no expression info
 		// 2011-01-07: removed expression info
-		return entry[index].datatype;
+		return entry[code].datatype;
 	}
-	Multiple multiple(int index)
+	Multiple multiple(Code code)
 	{
-		return entry[index].multiple;
+		return entry[code].multiple;
 	}
 	// 2010-03-20: added more access functions
-	const char *name(int index)
+	const char *name(Code code)
 	{
-		return entry[index].name;
+		return entry[code].name;
 	}
-	const char *name2(int index)
+	const char *name2(Code code)
 	{
-		return entry[index].name2;
+		return entry[code].name2;
 	}
 	// 2010-03-20: added debug name access functions
-	const char *debug_name(int index)
+	const char *debug_name(Code code)
 	{
-		const char *name = entry[index].name2;
+		const char *name = entry[code].name2;
 		if (name == NULL)
 		{
-			name = entry[index].name;
+			name = entry[code].name;
 		}
 		return name;
 	}
-	int flags(int index)
+	int flags(Code code)
 	{
-		return entry[index].flags;
+		return entry[code].flags;
 	}
 	// 2010-05-29: added token mode access function
-	TokenMode token_mode(int index)
+	TokenMode token_mode(Code code)
 	{
-		return entry[index].token_mode;
+		return entry[code].token_mode;
 	}
-	Code unary_code(int index)
+	Code unary_code(Code code)
 	{
 		// 2010-05-03: get value from expression information structure
 		// 2010-05-08: added check for null exprinfo pointer
-		ExprInfo *ei = entry[index].exprinfo;
+		ExprInfo *ei = entry[code].exprinfo;
 		return ei == NULL ? Null_Code : ei->unary_code;
 	}
-	int precedence(int index)
+	int precedence(Code code)
 	{
-		return entry[index].precedence;
+		return entry[code].precedence;
 	}
 	// 2010-04-04: added new access function for nargs
 	// 2010-04-23: renamed from nargs
-	int noperands(int index)
+	int noperands(Code code)
 	{
 		// 2010-05-03: get value from expression information structure
-		return entry[index].exprinfo->noperands;
+		return entry[code].exprinfo->noperands;
 	}
 	// 2010-04-23: added two new access functions
-	DataType operand_datatype(int index, int operand)
+	DataType operand_datatype(Code code, int operand)
 	{
 		// 2010-05-03: get value from expression information structure
-		return entry[index].exprinfo->operand_datatype[operand];
+		return entry[code].exprinfo->operand_datatype[operand];
 	}
 	// 2010-05-08: added new access function for nassoc_codes
-	int nassoc_codes(int index)
+	int nassoc_codes(Code code)
 	{
-		return entry[index].exprinfo->nassoc_codes;
+		return entry[code].exprinfo->nassoc_codes;
 	}
-	Code assoc_code(int index, int number)
+	Code assoc_code(Code code, int number)
 	{
 		// 2010-05-03: get value from expression information structure
-		return entry[index].exprinfo->assoc_code[number];
+		return entry[code].exprinfo->assoc_code[number];
 	}
 	// 2010-08-07: added new access function for assoc2_index
-	int assoc2_index(int index)
+	int assoc2_index(Code code)
 	{
-		return entry[index].exprinfo->assoc2_index;
+		return entry[code].exprinfo->assoc2_index;
 	}
 	// 2010-12-23: added new access function for nstrings
-	int nstrings(int index)
+	int nstrings(Code code)
 	{
-		return entry[index].exprinfo->nstrings;
+		return entry[code].exprinfo->nstrings;
 	}
 	// 2010-04-02: added new precedence of token function
 	int precedence(Token *token)
 	{
 		int prec = token->precedence();
-		return prec != -1 ? prec : precedence(token->index);
+		return prec != -1 ? prec : precedence(token->code);
 	}
 	// 2010-05-29: added new flags of token function
 	int flags(Token *token)
 	{
 		// (non-table entry token types have no flags)
-		return token->table_entry() ? flags(token->index) : 0;
+		return token->table_entry() ? flags(token->code) : 0;
 	}
 	// 2010-04-02: added convenience function to avoid confusion
-	bool is_unary_operator(int index)
+	bool is_unary_operator(Code code)
 	{
-		return entry[index].code == unary_code(index);
+		return code == unary_code(code);
 	}
 	// 2010-05-28: added token handler function pointer access function
-	TokenHandler token_handler(int index)
+	TokenHandler token_handler(Code code)
 	{
-		return entry[index].token_handler;
+		return entry[code].token_handler;
 	}
 	// 2010-06-05: added command handler function pointer access function
-	CmdHandler cmd_handler(int index)
+	CmdHandler cmd_handler(Code code)
 	{
-		return entry[index].cmd_handler;
+		return entry[code].cmd_handler;
 	}
 
 	// TABLE FUNCTIONS
-	int search(char letter, int flag);
-	int search(SearchType type, const char *string, int len);
-	int search(const char *word1, int len1, const char *word2, int len2);
+	Code search(char letter, int flag);
+	Code search(SearchType type, const char *string, int len);
+	Code search(const char *word1, int len1, const char *word2, int len2);
 	// 2010-04-04: added new search function
-	int search(int index, int nargs);
+	Code search(Code code, int nargs);
 	// 2010-07-02: added new search and match functions
-	int search(Code code, DataType *datatype);
-	bool match(int index, DataType *datatype);
+	Code search(Code code, DataType *datatype);
+	bool match(Code code, DataType *datatype);
 	// 2010-03-18: add function to set token for code
 	void set_token(Token *token, Code code)
 	{
-		token->index = index(code);
-		token->type = type(token->index);
-		token->datatype = datatype(token->index);
-	}
-	// 2010-08-07: add function to set token for index
-	void set_token(Token *token, int index)
-	{
-		token->index = index;
-		token->type = type(token->index);
-		token->datatype = datatype(token->index);
+		token->code = code;
+		token->type = type(token->code);
+		token->datatype = datatype(token->code);
 	}
 	// 2010-06-02: create new token and initialize it from code
 	Token *new_token(Code code)
@@ -1343,10 +1194,11 @@ class Translator {
 	int last_precedence;			// precedence of last op added during paren
 	// 2010-04-02: added variables to support arrays and functions
 	// 2010-06-09: change count stack to also hold expected number of operands
+	// 2010-02-26: changed int index to Code code
 	struct CountItem {
 		char noperands;				// number of operands seen
 		char nexpected;				// number of arguments expected
-		int index;					// table index of internal function
+		Code code;					// table index of internal function
 	};
 	Stack<CountItem> count_stack;	// number of operands counter stack
 	// 2010-04-11: added mode for handling assignment statements

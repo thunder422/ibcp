@@ -27,17 +27,17 @@ Input: 0.1 .1 .01 0.01 0.01000,1000A100.001
 	 7: Constant     Double  0.01 |.01|
 	11: Constant     Double  0.01 |0.01|
 	16: Constant     Double  0.01 |0.01000|
-	23: Operator  Op None    94-Comma
+	23: Operator  Op None    97-Comma
 	24: Constant     Integer 1000 |1000|
 	28: NoParen      None    |A100|
 	32: Constant     Double  0.001 |.001|
-	36: Operator  Op None    112-EOL
+	36: Operator  Op None    115-EOL
 
 Input: 100e10 100E+10 100e-10
 	 0: Constant     Double  1e+012 |100e10|
 	 7: Constant     Double  1e+012 |100E+10|
 	15: Constant     Double  1e-008 |100e-10|
-	22: Operator  Op None    112-EOL
+	22: Operator  Op None    115-EOL
 
 Input: 100er
            ^-- exponent contains no digits
@@ -50,25 +50,25 @@ Input: 100E-r
 
 Input: 100+200
 	 0: Constant     Integer 100 |100|
-	 3: Operator  Op Double  80-Add
+	 3: Operator  Op Double  83-Add
 	 4: Constant     Integer 200 |200|
-	 7: Operator  Op None    112-EOL
+	 7: Operator  Op None    115-EOL
 
 Input: 100..001
 	 0: Constant     Double  100 |100.|
 	 4: Constant     Double  0.001 |.001|
-	 8: Operator  Op None    112-EOL
+	 8: Operator  Op None    115-EOL
 
 Input: 100e0
 	 0: Constant     Double  100 |100e0|
-	 5: Operator  Op None    112-EOL
+	 5: Operator  Op None    115-EOL
 
 Input: 2147483647 -2147483647 2147483648
 	 0: Constant     Integer 2147483647 |2147483647|
-	11: Operator  Op Double  81-Sub
+	11: Operator  Op Double  84-Sub
 	12: Constant     Integer 2147483647 |2147483647|
 	23: Constant     Double  2.14748e+009 |2147483648|
-	33: Operator  Op None    112-EOL
+	33: Operator  Op None    115-EOL
 
 Input: 1.23456e308 1.234e309
 	 0: Constant     Double  1.23456e+308 |1.23456e308|
@@ -83,14 +83,14 @@ Input: 1.23456e3081234
 
 Input: 14234453464575678567846434234234534566
 	 0: Constant     Double  1.42345e+037 |14234453464575678567846434234234534566|
-	38: Operator  Op None    112-EOL
+	38: Operator  Op None    115-EOL
 
 Input: 0
 	 0: Constant     Integer 0 |0|
-	 1: Operator  Op None    112-EOL
+	 1: Operator  Op None    115-EOL
 
 Input: 0+1
 	 0: Constant     Integer 0 |0|
-	 1: Operator  Op Double  80-Add
+	 1: Operator  Op Double  83-Add
 	 2: Constant     Integer 1 |1|
-	 3: Operator  Op None    112-EOL
+	 3: Operator  Op None    115-EOL

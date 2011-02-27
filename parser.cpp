@@ -64,7 +64,9 @@
 //
 //	2010-06-25	TableSearch replaced with SearchType
 //
-//	2011-01-11	Set token length for identifiers and number constants
+//	2011-01-11	set token length for identifiers and number constants
+//
+//	2011-02-26	changed all table index to code, search() noew returns code
 //
 
 #include <stdio.h>
@@ -131,7 +133,7 @@ bool Parser::get_command(void)
 	CmdArgs args;
 
 	letter = *pos;
-	if (table->search(letter, Null_Flag) == -1)
+	if (table->search(letter, Null_Flag) == Invalid_Code)
 	{
 		return false;  // first character not a valid immediate command
 	}
@@ -150,7 +152,7 @@ bool Parser::get_command(void)
 		return true;
 	}
 	// search table again for the proper form
-	if ((token->index = table->search(letter, flag)) == -1)
+	if ((token->code = table->search(letter, flag)) == Invalid_Code)
 	{
 		token->set_error(col, "invalid arguments for command");
 	}
@@ -429,8 +431,8 @@ bool Parser::get_identifier(void)
 	{
 		search = PlainWord_SearchType;
 	}
-	int index = table->search(search, pos, len);
-	if (index < 0)
+	Code code = table->search(search, pos, len);
+	if (code == Invalid_Code)
 	{
 		// word not found in table, therefore
 		// must be variable, array, generic function, or subroutine
@@ -448,16 +450,16 @@ bool Parser::get_identifier(void)
 	pos = p;  // move position past first word
 
 	// setup token in case this is only one word
-	token->type = table->type(index);
-	token->datatype = table->datatype(index);
+	token->type = table->type(code);
+	token->datatype = table->datatype(code);
 	token->string = NULL;  // string not needed
-	token->index = index;
+	token->code = code;
 	token->length = len;  // 2010-03-20: set length of token
 
-	if (table->multiple(index) == OneWord_Multiple)
+	if (table->multiple(code) == OneWord_Multiple)
 	{
 		// identifier can only be a single word
-		if (table->code(index) == Rem_Code)
+		if (code == Rem_Code)
 		{
 			// remark requires special handling
 			// remark string is to end of line
@@ -472,7 +474,7 @@ bool Parser::get_identifier(void)
 	skip_whitespace();
 	p = scan_word(pos, datatype, paren);
 	if (datatype != None_DataType || paren
-		|| (index = table->search(word1, len, pos, p - pos)) < 0)
+		|| (code = table->search(word1, len, pos, p - pos)) == Invalid_Code)
 	{
 		if (token->type == Error_TokenType)
 		{
@@ -484,9 +486,9 @@ bool Parser::get_identifier(void)
 		return true;
 	}
 	// get information from two word command
-	token->type = table->type(index);
-	token->datatype = table->datatype(index);
-	token->index = index;
+	token->type = table->type(code);
+	token->datatype = table->datatype(code);
+	token->code = code;
 	token->length += p - pos + 1;  // 2010-03-20: set length of token
 
 	// 2010-03-20: moved to here so pos can be used to set length
@@ -802,22 +804,22 @@ int Parser::scan_string(char *&p, String *s)
 bool Parser::get_operator(void)
 {
 	// search table for current character to see if it is a valid operator
-	int index = table->search(Symbol_SearchType, pos, 1);
-	if (index > 0)
+	Code code = table->search(Symbol_SearchType, pos, 1);
+	if (code != Invalid_Code)
 	{
 		// current character is a valid single character operator
 
 		// setup token in case this is only one character
-		token->type = table->type(index);
-		token->datatype = table->datatype(index);
-		token->index = index;
+		token->type = table->type(code);
+		token->datatype = table->datatype(code);
+		token->code = code;
 		token->length = 1;  // 2010-03-20: set length of token
 
-		if (table->multiple(index) == OneChar_Multiple)
+		if (table->multiple(code) == OneChar_Multiple)
 		{
 			// operator can only be a single character
 			pos++;  // move past operator
-			if (table->code(index) == RemOp_Code)
+			if (code == RemOp_Code)
 			{
 				// remark requires special handling
 				// remark string is to end of line
@@ -830,10 +832,10 @@ bool Parser::get_operator(void)
 	}
 	// operator could be a two character operator
 	// search table again for two characters at current position
-	int index2 = table->search(Symbol_SearchType, pos, 2);
-	if (index2 < 0)
+	Code code2 = table->search(Symbol_SearchType, pos, 2);
+	if (code2 == Invalid_Code)
 	{
-		if (index > 0)  // was first character a valid operator?
+		if (code != Invalid_Code)  // was first character a valid operator?
 		{
 			pos++;  // move past first character
 			// token already setup
@@ -845,9 +847,9 @@ bool Parser::get_operator(void)
 	// valid two character operator
 	pos += 2;  // move past two characters
 	// get information from two character operator
-	token->type = table->type(index2);
-	token->datatype = table->datatype(index2);
-	token->index = index2;
+	token->type = table->type(code2);
+	token->datatype = table->datatype(code2);
+	token->code = code2;
 	token->length = 2;  // 2010-03-20: set length of token
 	return true;
 }

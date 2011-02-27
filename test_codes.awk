@@ -22,35 +22,56 @@
 #
 #  2010-09-06  initial release (started with codes.awk)
 #
+#  2011-02-26  rewrote script to generate test_codes.h directly from the
+#              table.cpp source file (all code performed in BEGIN block)
 #
-#  Usage:
-#    awk -f test_codes.awk <ibcp.h >test_codes.h
+#
+#  Usage: awk -f test_codes.awk
+#
+#  Note: The beginning of each table entry in table.cpp must be in the
+#        format "\t{  // xxx_Code\n" to be read by this script correctly.
+#        For the special begin/end codes to be ignored, these must be in the
+#        format "\t{  // xxx_Code SEPARATOR\n".
+#        This script should be run after the codes.awk script
 
 BEGIN {
 	code_enum = 0
-}
+	c = ""
+	printf "// File: test_codes.h - text of code enumeration values\n" > "test_codes.h"
+	printf "//\n" > "test_codes.h"
+	printf "// This file generated automatically by test_codes.awk\n" > "test_codes.h"
+	printf "//\n" > "test_codes.h"
+	printf "// ***  DO NOT EDIT  ***\n" > "test_codes.h"
+	printf "\n" > "test_codes.h"
 
-/enum Code/ {
-	code_enum = 1
-}
-
-/Null_Code/ {
-	code_enum = 2
-}
-
-$1 ~ /_Code/ {
-	if (code_enum == 2) {
-		for (i = 1; i <= NR; i++) {
-			if (match($i,"[A-Za-z0-9]*_Code") > 0) {
-				c = substr($i,RSTART,RLENGTH-5)
-				printf "\"%s\"", c
-				if (c == "Quit") {
-					code_enum = 0
-				} else {
-					printf ", "
-				}
+	while ((getline line < "table.cpp") > 0)
+	{
+		if (code_enum == 0)
+		{
+			if (line ~ /static TableEntry table_entries/) 
+			{
+				# found start of table entries
+				code_enum = 1
 			}
 		}
-		printf "\n"
+		else if (line !~ /};/)
+		{
+			nf = split(line, field) 
+			if (field[1] == "{" && field[2] == "//" && field[3] ~ /_Code/)
+			{
+				if (c != "")
+				{
+					printf ",\n" > "test_codes.h"
+				}
+				c = substr(field[3], 1, length(field[3]) - 5)
+				printf "\"%s\"", c > "test_codes.h"
+			}
+		}
+		else
+		{
+			# found end of table entries
+			printf "\n" > "test_codes.h"
+			code_enum = 0
+		}
 	}
 }

@@ -12,6 +12,7 @@
 ##  2011-02-06	cleaned up make file
 ##  2011-02-08	corrected mistake on linker line with objects list
 ##  2011-02-26	awk scripts modified to read and write files directly
+##		awk generates codes.h from table.cpp
 
 
 #### Compiler and tool definitions shared by all build targets #####
@@ -28,15 +29,15 @@ IBCPOBJS_dir=objects
 TESTOBJS_dir=objects/test
 
 
-all: codes.txt test_codes.h ibcp.exe
+all: codes.h test_codes.h ibcp.exe
 
-## Target: codes.txt
-codes.txt: ibcp.h codes.awk
+## Target: codes.h (also generates codes.txt)
+codes.h: table.cpp codes.awk
 	awk -f codes.awk
 
 ## Target: test_codes.h
-test_codes.h: ibcp.h test_codes.awk
-	awk -f test_codes.awk <ibcp.h >test_codes.h
+test_codes.h: table.cpp codes.h test_codes.awk
+	awk -f test_codes.awk
 
 ## Target: ibcp.exe
 IBCP_incs = \

@@ -164,6 +164,8 @@
 //	2011-02-01	added additional array tests to translator test 12
 //	2011-02-05	added temporary strings tests in new translator test 15
 //
+//	2011-02-26	updated for change of table index to code
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -330,7 +332,7 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 		token = parser.get_token();
 		more = print_token(token, table, true);
 		if (more && token->type == Operator_TokenType
-			&& table->code(token->index) == EOL_Code)
+			&& token->code == EOL_Code)
 		{
 			more = false;
 		}
@@ -1103,8 +1105,7 @@ bool print_token(Token *token, Table *table, bool tab)
 	switch (token->type)
 	{
 	case ImmCmd_TokenType:
-		printf(" %3d-%s", token->index,
-			code_name[table->code(token->index)]);
+		printf(" %3d-%s", token->code, code_name[token->code]);
 		if (token->datatype == CmdArgs_DataType)
 		{
 			args = (CmdArgs *)token->string->get_data();
@@ -1122,8 +1123,7 @@ bool print_token(Token *token, Table *table, bool tab)
 		}
 		break;
 	case Remark_TokenType:
-		printf(" %d-%s", token->index,
-			code_name[table->code(token->index)]);
+		printf(" %d-%s", token->code, code_name[token->code]);
 		// fall thru
 	case DefFuncN_TokenType:
 	case DefFuncP_TokenType:
@@ -1156,10 +1156,8 @@ bool print_token(Token *token, Table *table, bool tab)
 	case IntFuncP_TokenType:
 		printf(" %-7s", datatype_name[token->datatype]);
 	case Command_TokenType:
-		printf(" %d-%s", token->index,
-			code_name[table->code(token->index)]);
-		if (table->code(token->index) == Rem_Code
-			|| table->code(token->index) == RemOp_Code)
+		printf(" %d-%s", token->code, code_name[token->code]);
+		if (token->code == Rem_Code || token->code == RemOp_Code)
 		{
 			printf(" |%.*s|", token->string->get_len(),
 				token->string->get_ptr());
@@ -1183,7 +1181,7 @@ bool print_small_token(Token *token, Table *table)
 	switch (token->type)
 	{
 	case ImmCmd_TokenType:
-		printf("%s:", table->name(token->index));
+		printf("%s:", table->name(token->code));
 		if (token->datatype == CmdArgs_DataType)
 		{
 			args = (CmdArgs *)token->string->get_data();
@@ -1224,36 +1222,36 @@ bool print_small_token(Token *token, Table *table)
 		}
 		break;
 	case Operator_TokenType:
-		if (table->code(token->index) == RemOp_Code)
+		if (token->code == RemOp_Code)
 		{
-			printf("%s|%.*s|", table->name(token->index),
+			printf("%s|%.*s|", table->name(token->code),
 				token->string->get_len(), token->string->get_ptr());
 		}
 		else
 		{
 			// 2010-04-02: output name2 (if set) for debug output string
 			// 2010-04-04: replaced with debug_name call
-			printf("%s", table->debug_name(token->index));
+			printf("%s", table->debug_name(token->code));
 		}
 		break;
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
 		// 2010-04-04: replaced with debug_name call
-		printf("%s", table->debug_name(token->index));
+		printf("%s", table->debug_name(token->code));
 		break;
 	case Command_TokenType:
-		if (table->code(token->index) == Rem_Code)
+		if (token->code == Rem_Code)
 		{
-			printf("%s|%.*s|", table->name(token->index),
+			printf("%s|%.*s|", table->name(token->code),
 				token->string->get_len(), token->string->get_ptr());
 		}
 		else
 		{
-			printf("%s", table->name(token->index));
+			printf("%s", table->name(token->code));
 			// 2010-06-06: call name2() instead of name()
-			if (table->name2(token->index) != NULL)
+			if (table->name2(token->code) != NULL)
 			{
-				printf("-%s", table->name2(token->index));
+				printf("-%s", table->name2(token->code));
 			}
 		}
 		break;

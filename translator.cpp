@@ -305,6 +305,7 @@
 //				moved code from add_token() to process_binary_operator()
 //
 //	2011-02-22	changed all pop() calls not using return value to null_pop()
+//	2011-02-26	updated for change of table index to code
 //
 
 #include "ibcp.h"
@@ -427,8 +428,7 @@ TokenStatus Translator::add_token(Token *&token)
 	if (state == Initial)
 	{
 		// 2010-03-21: check for end of line at begin of input
-		if (token->type == Operator_TokenType
-			&& table->code(token->index) == EOL_Code)
+		if (token->type == Operator_TokenType && token->code == EOL_Code)
 		{
 			delete token;  // 2010-04-04: delete EOL token
 			return Done_TokenStatus;
@@ -458,11 +458,11 @@ TokenStatus Translator::add_token(Token *&token)
 	{
 		if (mode == Command_TokenMode)
 		{
-			if (table->token_mode(token->index) != Null_TokenMode)
+			if (table->token_mode(token->code) != Null_TokenMode)
 			{
-				mode = table->token_mode(token->index);
+				mode = table->token_mode(token->code);
 				cmd_stack.push().token = token;
-				cmd_stack.top().code = table->code(token->index);
+				cmd_stack.top().code = token->code;
 				cmd_stack.top().flag = None_CmdFlag;  // 2010-06-01: reset flag
 				return Good_TokenStatus;  // nothing more to do
 			}
@@ -557,7 +557,7 @@ TokenStatus Translator::process_operand(Token *&token)
 		if (token->type == IntFuncP_TokenType)
 		{
 			// 2010-06-11: detect invalid print-only function early
-			if ((table->flags(token->index) & Print_Flag)
+			if ((table->flags(token->code) & Print_Flag)
 				&& (cmd_stack.empty() || cmd_stack.top().code != Print_Code))
 			{
 				return PrintOnlyIntFunc_TokenStatus;
@@ -568,7 +568,7 @@ TokenStatus Translator::process_operand(Token *&token)
 			case Command_TokenMode:
 				if (count_stack.empty())
 				{
-					if (table->datatype(token->index) != SubStr_DataType)
+					if (table->datatype(token->code) != SubStr_DataType)
 					{
 						return ExpCommand_TokenStatus;
 					}
@@ -586,7 +586,7 @@ TokenStatus Translator::process_operand(Token *&token)
 
 			case Assignment_TokenMode:
 			case AssignmentList_TokenMode:
-				if (table->datatype(token->index) != SubStr_DataType)
+				if (table->datatype(token->code) != SubStr_DataType)
 				{
 					// in a comma separated list
 					return errstatus_datatype[cmd_stack.top().token->datatype]
@@ -602,10 +602,10 @@ TokenStatus Translator::process_operand(Token *&token)
 		count_stack.push().noperands = 1;  // assume at least one
 		if (token->type == IntFuncP_TokenType)
 		{
-			count_stack.top().nexpected = table->noperands(token->index);
+			count_stack.top().nexpected = table->noperands(token->code);
 
 			// 2010-06-29: save index of internal function's table entry
-			count_stack.top().index = token->index;
+			count_stack.top().code = token->code;
 		}
 		else  // token->type != IntFuncP_TokenType
 		{
@@ -676,7 +676,7 @@ TokenStatus Translator::end_expression_error(void)
 		else  // in function not at first argument
 		{
 			status = errstatus_datatype[table
-				->operand_datatype(count_stack.top().index,
+				->operand_datatype(count_stack.top().code,
 				count_stack.top().noperands - 1)].expected;
 		}
 		break;
@@ -707,7 +707,7 @@ bool Translator::process_unary_operator(Token *&token, TokenStatus &status)
 		status = ExpCommand_TokenStatus;
 		return false;
 	}
-	Code unary_code = table->unary_code(token->index);
+	Code unary_code = table->unary_code(token->code);
 	if (unary_code == Null_Code)
 	{
 		DataType datatype;
@@ -721,7 +721,7 @@ bool Translator::process_unary_operator(Token *&token, TokenStatus &status)
 		return false;
 	}
 	// change token to unary operator
-	token->index = table->index(unary_code);
+	token->code = unary_code;
 	// 2010-03-25: added check for opening parentheses
 	if (unary_code == OpenParen_Code)
 	{
@@ -819,20 +819,19 @@ TokenStatus Translator::process_binary_operator(Token *&token)
 		}
 	}
 	// 2010-03-21: changed unary operator check
-	else if (table->is_unary_operator(token->index))
+	else if (table->is_unary_operator(token->code))
 	{
 		status = ExpBinOpOrEnd_TokenStatus;
 	}
 	// 2010-10-10: check if after first operand of sub-string assignment
 	else if (hold_stack.top().token->reference
-		&& count_stack.top().noperands == 1
-		&& table->code(token->index) != Comma_Code)
+		&& count_stack.top().noperands == 1 && token->code != Comma_Code)
 	{
 		// only a comma is allowed here
 		status = ExpComma_TokenStatus;
 	}
 	// 2010-03-26: initialize last precedence before emptying stack for ')'
-	else if (table->code(token->index) == CloseParen_Code)
+	else if (token->code == CloseParen_Code)
 	{
 		// 2010-03-26: check for and add dummy token if necessary
 		//             before emptying stack
@@ -886,7 +885,7 @@ TokenStatus Translator::process_operator(Token *&token)
 {
 	// 2010-04-02: changed stack top precedence to work with paren tokens
 	while (table->precedence(hold_stack.top().token)
-		>= table->precedence(token->index))
+		>= table->precedence(token->code))
 	{
 		// pop operator on top of stack and add it to the output
 		// 2010-04-13: set top_token so reference can be passed
@@ -898,7 +897,7 @@ TokenStatus Translator::process_operator(Token *&token)
 		// change token operator code or insert conversion codes as needed
 		TokenStatus status = process_final_operand(top_token,
 			hold_stack.top().first,
-			table->is_unary_operator(top_token->index) ? 0 : 1);
+			table->is_unary_operator(top_token->code) ? 0 : 1);
 
 		if (status != Good_TokenStatus)
 		{
@@ -910,7 +909,7 @@ TokenStatus Translator::process_operator(Token *&token)
 		// save precedence of operator being added
 		// (doesn't matter if not currently within parentheses,
 		// it will be reset upon next open parentheses)
-		last_precedence = table->precedence(top_token->index);
+		last_precedence = table->precedence(top_token->code);
 
 		hold_stack.null_pop();  // now pop the token (2011-01-30 leak)
 	}
@@ -918,7 +917,7 @@ TokenStatus Translator::process_operator(Token *&token)
 	// check for special token processing
 	// 2010-03-25: change code to switch and added closing parentheses support
 	// 2010-05-28: change code from switch to token handler functions
-	TokenHandler token_handler = table->token_handler(token->index);
+	TokenHandler token_handler = table->token_handler(token->code);
 	if (token_handler == NULL)  // no special handler?
 	{
 		// use default operator token handler
@@ -1000,8 +999,7 @@ void Translator::do_pending_paren(Token *token)
 // 2011-01-22: new function to delete a open paren token
 void Translator::delete_open_paren(Token *first)
 {
-	if (first != NULL && first->table_entry()
-		&& table->code(first->index) == OpenParen_Code)
+	if (first != NULL && first->table_entry() && first->code == OpenParen_Code)
 	{
 		delete first;  // delete CloseParen token of operand
 	}
@@ -1023,8 +1021,7 @@ void Translator::delete_open_paren(Token *first)
 void Translator::delete_close_paren(Token *last)
 {
 	// 2011-01-16: added check if token has table entry
-	if (last != NULL && last->table_entry()
-		&& table->code(last->index) == CloseParen_Code)
+	if (last != NULL && last->table_entry() && last->code == CloseParen_Code)
 	{
 		// 2011-01-22: check if parentheses token is still being used
 		if (last->subcode & Used_SubCode)
@@ -1051,7 +1048,7 @@ TokenStatus Translator::process_first_operand(Token *&token)
 	Token *first = NULL;		// first operand token (2011-01-14)
 
 	// check first operand of binary operators (2010-08-07)
-	if (!table->is_unary_operator(token->index))
+	if (!table->is_unary_operator(token->code))
 	{
 		// changed token operator code or insert conversion codes as needed
 		Token *org_token = token;
@@ -1118,13 +1115,13 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 		}
 
 		// 2011-02-05: added check non-assignment operator
-		if ((table->flags(token->index) & Reference_Flag))
+		if ((table->flags(token->code) & Reference_Flag))
 		{
 			// for assignment operators, nothing gets pushed to the done stack
 			done_push = false;
 
 			// get number of strings for this assignment operator
-			noperands = table->nstrings(token->index);
+			noperands = table->nstrings(token->code);
 
 			// no longer need the first and last operands
 			delete_open_paren(first);
@@ -1136,7 +1133,7 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 		else if ((token->datatype != SubStr_DataType || token->reference))
 		{
 			// no operands for sub-string references (2011-02-01)
-			noperands = token->reference ? 0 : table->nstrings(token->index);
+			noperands = token->reference ? 0 : table->nstrings(token->code);
 
 			// set first and last operands (2011-01-15)
 			delete_open_paren(first);
@@ -1166,7 +1163,7 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 		}
 
 		// 2010-06-01: process print-only internal functions
-		if (table->flags(token->index) & Print_Flag)
+		if (table->flags(token->code) & Print_Flag)
 		{
 			if (cmd_stack.top().code != Print_Code)
 			{
@@ -1309,7 +1306,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 
 	// see if main code's data type matches
 	DataType datatype = top_token->datatype;
-	DataType operand_datatype = table->operand_datatype(token->index,
+	DataType operand_datatype = table->operand_datatype(token->code,
 		operand_index);
 	// 2010-10-04: actually check for exact match, not cvt_code is Null_Code
 	if (datatype == operand_datatype)  // exact match?
@@ -1325,29 +1322,28 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 		return Good_TokenStatus;
 	}
 	Code cvt_code = cvtcode_have_need[datatype][operand_datatype];
-	int cvt_index = cvt_code == Invalid_Code ? -1 : token->index;
+	Code new_code = cvt_code == Invalid_Code ? Null_Code : token->code;
 
 	// see if any associated code's data types match
 	// 2010-05-08: get actual number of associated codes
 	// 2010-08-07: get start/end indexes to support second assoc codes group
-	int start = operand_index != 1 ? 0 : table->assoc2_index(token->index);
-	int end = table->nassoc_codes(token->index);
-	if (operand_index == 0 && table->assoc2_index(token->index) != 0)
+	int start = operand_index != 1 ? 0 : table->assoc2_index(token->code);
+	int end = table->nassoc_codes(token->code);
+	if (operand_index == 0 && table->assoc2_index(token->code) != 0)
 	{
 		// for first operand, end at begin of second group of associated codes
-		end = table->assoc2_index(token->index);
+		end = table->assoc2_index(token->code);
 	}
 	for (int i = start; i < end; i++)
 	{
-		Code assoc_code = table->assoc_code(token->index, i);
-		int assoc_index = table->index(assoc_code);
-		DataType operand_datatype2 = table->operand_datatype(assoc_index,
+		Code assoc_code = table->assoc_code(token->code, i);
+		DataType operand_datatype2 = table->operand_datatype(assoc_code,
 			operand_index);
 		// 2010-10-04: actually check for exact match, not cvt_code is Null_Code
 		if (datatype == operand_datatype2)  // exact match?
 		{
 			// change token's code and data type to associated code
-			table->set_token(token, assoc_index);
+			table->set_token(token, assoc_code);
 
 			// 2010-10-03: pop all references (for assignments) from stack
 			if (operand_datatype2 != String_DataType || token->reference)
@@ -1360,20 +1356,20 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 			return Good_TokenStatus;
 		}
 		Code cvt_code2 = cvtcode_have_need[datatype][operand_datatype2];
-		if (cvt_code2 != Invalid_Code && cvt_index == -1)
+		if (cvt_code2 != Invalid_Code && new_code == Null_Code)
 		{
-			cvt_index = assoc_index;
+			new_code = assoc_code;
 			cvt_code = cvt_code2;
 		}
 	}
 
-	if (cvt_index != -1)  // found a convertible code?
+	if (new_code != Null_Code)  // found a convertible code?
 	{
-		if (cvt_index != token->index)  // not the main code?
+		if (new_code != token->code)  // not the main code?
 		{
 			// change token's code and data type to associated code
-			table->set_token(token, cvt_index);
-			token->datatype = table->datatype(token->index);
+			table->set_token(token, new_code);
+			token->datatype = table->datatype(token->code);
 		}
 
 		// is there an actual conversion code to insert? (2010-10-04)
@@ -1461,7 +1457,7 @@ TokenStatus Translator::expression_end(void)
 		{
 			return BUG_Debug2;
 		}
-		if (table->code(token->index) != Null_Code)
+		if (token->code != Null_Code)
 		{
 			// check if there is some unexpected token on hold stack
 			// could be assignment on hold stack
@@ -1542,7 +1538,7 @@ TokenStatus Translator::paren_status(void)
 	if (count_stack.top().noperands == count_stack.top().nexpected)
 	{
 		// check if there could be more arguments (2011-01-08)
-		if ((table->flags(top_token->index) & Multiple_Flag) == 0)
+		if ((table->flags(top_token->code) & Multiple_Flag) == 0)
 		{
 			// internal function - at last argument (no more expected)
 			return ExpOpOrParen_TokenStatus;
@@ -1555,8 +1551,8 @@ TokenStatus Translator::paren_status(void)
 
 	// internal function - more arguments expected
 	// (number of arguments doesn't match function's entry)
-	if ((table->flags(top_token->index) & Multiple_Flag) != 0
-		&& (index = table->search(top_token->index,
+	if ((table->flags(top_token->code) & Multiple_Flag) != 0
+		&& (index = table->search(top_token->code,
 		count_stack.top().noperands)) > 0)
 	{
 		// found alternate code matching current number of operands
@@ -1595,8 +1591,7 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 	}
 	else if (hold_stack.top().token->is_operator())
 	{
-		int index = hold_stack.top().token->index;
-		Code code = table->code(index);
+		Code code = hold_stack.top().token->code;
 		if (code == Null_Code)
 		{
 			// nothing on hold stack, get expected type for command
@@ -1622,8 +1617,8 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 		{
 			// datatype from operand of operator on top of hold stack
 			// (first operand for unary and second operand for binary operator)
-			datatype = table->operand_datatype(index,
-				table->is_unary_operator(index) ? 0 : 1);
+			datatype = table->operand_datatype(code,
+				table->is_unary_operator(code) ? 0 : 1);
 		}
 	}
 	else if (count_stack.empty())  // no parentheses, array or function?
@@ -1634,7 +1629,7 @@ TokenStatus Translator::get_expr_datatype(DataType &datatype)
 	else if (count_stack.top().nexpected > 0)  // internal function?
 	{
 		// datatype from current operator of internal function
-		datatype = table->operand_datatype(count_stack.top().index,
+		datatype = table->operand_datatype(count_stack.top().code,
 			count_stack.top().noperands - 1);
 	}
 	else if (count_stack.top().noperands == 0)  // in parentheses?
@@ -1673,7 +1668,7 @@ TokenStatus Translator::call_command_handler(Token *&token)
 	}
 	// changed from pop, leave command on top of stack (2010-12-29)
 	CmdItem cmd_item = cmd_stack.top();
-	CmdHandler cmd_handler = table->cmd_handler(cmd_item.token->index);
+	CmdHandler cmd_handler = table->cmd_handler(cmd_item.token->code);
 	if (cmd_handler == NULL)  // missing command handler?
 	{
 		return BUG_NotYetImplemented;
@@ -1834,7 +1829,7 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 		if (equivalent_datatype[token->datatype] == String_DataType
 			&& token->datatype != cmd_stack.top().token->datatype)
 		{
-			cmd_stack.top().token->index = table->index(AssignListMix_Code);
+			cmd_stack.top().token->code =AssignListMix_Code;
 		}
 	}
 	return Good_TokenStatus;
@@ -2048,15 +2043,15 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			{
 				// number of arguments doesn't match current function's entry
 				// see if function has multiple entries (2010-08-14)
-				if ((t.table->flags(top_token->index) & Multiple_Flag) != 0)
+				if ((t.table->flags(top_token->code) & Multiple_Flag) != 0)
 				{
 					// change token to next code (index)
 					// (table entries have been validated during initialization)
 					// 2011-01-08: need to increment index before assignment
-					t.count_stack.top().index = ++top_token->index;
+					t.count_stack.top().code = ++top_token->code;
 					// update number of expected operands
 					t.count_stack.top().nexpected
-						= t.table->noperands(top_token->index);
+						= t.table->noperands(top_token->code);
 				}
 				else
 				{
@@ -2148,7 +2143,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	if (noperands == 0)
 	{
 		// just a parentheses expression
-		if (t.table->code(top_token->index) != OpenParen_Code)
+		if (top_token->code != OpenParen_Code)
 		{
 			// oops, no open parentheses
 			return BUG_UnexpectedCloseParen;  // this should not happen
@@ -2191,13 +2186,13 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		{
 			// 2010-04-04: check for number of arguments for internal functions
 			// changed to pointer to close parentheses for error (2010-04-10)
-			if (noperands != t.table->noperands(top_token->index))
+			if (noperands != t.table->noperands(top_token->code))
 			{
 				return ExpOpOrComma_TokenStatus;
 			}
 
 			// moved deleting of token and setting to top_token (2010-04-10)
-			operand_index = t.table->noperands(top_token->index) - 1;
+			operand_index = t.table->noperands(top_token->code) - 1;
 			// tell process_final_operand() to use operand_index (2010-09-10)
 			noperands = 0;
 		}
@@ -2359,7 +2354,7 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	// here the last value needs to be processed (2010-07-01)
 	TokenStatus status;
 
-	switch (t.table->code(token->index))
+	switch (token->code)
 	{
 	case EOL_Code:
 		// check done stack is empty before calling process_final_operand()
@@ -2420,7 +2415,7 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 	// 2010-06-10: moved end of expression check to end of statement processing
 
-	switch (t.table->code(token->index))
+	switch (token->code)
 	{
 	case Comma_Code:
 		// make sure the expression before comma is complete
