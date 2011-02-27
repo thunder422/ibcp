@@ -15,6 +15,7 @@
 ##		awk generates codes.h from table.cpp
 ##  2011-02-27	changed main program codes.h and test_codes.h dependencies to be
 ##		  listed first
+##		added removal of auto generated files to clean rule
 
 
 #### Compiler and tool definitions shared by all build targets #####
@@ -87,6 +88,8 @@ $(IBCPOBJS_dir)/test_ibcp.o: $(IBCPOBJS_dir) test_ibcp.cpp
 #### Clean target deletes all generated files ####
 clean: cleantests
 	rm -f \
+		codes.h codes.txt \
+		test_codes.h \
 		ibcp.exe \
 		$(IBCP_objs)
 	$(CCADMIN)
