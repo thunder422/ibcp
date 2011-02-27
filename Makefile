@@ -13,6 +13,8 @@
 ##  2011-02-08	corrected mistake on linker line with objects list
 ##  2011-02-26	awk scripts modified to read and write files directly
 ##		awk generates codes.h from table.cpp
+##  2011-02-27	changed main program codes.h and test_codes.h dependencies to be
+##		  listed first
 
 
 #### Compiler and tool definitions shared by all build targets #####
@@ -57,7 +59,7 @@ LDLIBS_ibcp.exe = -static-libgcc
 
 
 # Link or archive
-ibcp.exe: $(IBCP_incs) $(IBCP_objs) test_codes.h codes.txt
+ibcp.exe: codes.h test_codes.h $(IBCP_incs) $(IBCP_objs)
 	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(IBCP_objs) \
 		$(LDLIBS_ibcp.exe)
 
