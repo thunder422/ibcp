@@ -30,8 +30,6 @@
 #
 #  Note: The beginning of each table entry in table.cpp must be in the
 #        format "\t{  // xxx_Code\n" to be read by this script correctly.
-#        For the special begin/end codes to be ignored, these must be in the
-#        format "\t{  // xxx_Code SEPARATOR\n".
 #        This script should be run after the codes.awk script
 
 BEGIN {

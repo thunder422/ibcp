@@ -380,7 +380,7 @@ static TableEntry table_entries[] =
 	//******************************
 	//   IMMEDIATE COMMANDS FIRST
 	//******************************
-	{	// BegImmCmd_Code SEPARATOR
+	{	// BegImmCmd_Code
 		Error_TokenType
 	},
 	// (these will go away once gui interface is implemented)
@@ -428,14 +428,14 @@ static TableEntry table_entries[] =
 		ImmCmd_TokenType, OneWord_Multiple,
 		"Q", NULL, Blank_Flag
 	},
-	{	// EndImmCmd_Code SEPARATOR
+	{	// EndImmCmd_Code
 		Error_TokenType
 	},
 	// end of immediate commands marked by NULL name (next entry)
 	//***********************
 	//   BEGIN PLAIN WORDS
 	//***********************
-	{	// BegPlainWord_Code SEPARATOR
+	{	// BegPlainWord_Code
 		Error_TokenType
 	},
 	//--------------
@@ -585,13 +585,13 @@ static TableEntry table_entries[] =
 	//*********************
 	//   END PLAIN WORDS
 	//*********************
-	{	// EndPlainWord_Code SEPARATOR
+	{	// EndPlainWord_Code
 		Error_TokenType
 	},
 	//*****************************
 	//   BEGIN PARENTHESES WORDS
 	//*****************************
-	{	// BegParenWord_Code SEPARATOR
+	{	// BegParenWord_Code
 		Error_TokenType
 	},
 	//--------------------------------------
@@ -748,13 +748,13 @@ static TableEntry table_entries[] =
 	//***************************
 	//   END PARENTHESES WORDS
 	//***************************
-	{	// EndParenWord_Code SEPARATOR
+	{	// EndParenWord_Code
 		Error_TokenType
 	},
 	//***************************
 	//   BEGIN DATA TYPE WORDS
 	//***************************
-	{	// BegDataTypeWord_Code SEPARATOR
+	{	// BegDataTypeWord_Code
 		Error_TokenType
 	},
 	// Currently None
@@ -762,13 +762,13 @@ static TableEntry table_entries[] =
 	//*************************
 	//   END DATA TYPE WORDS
 	//*************************
-	{	// EndDataTypeWord_Code SEPARATOR
+	{	// EndDataTypeWord_Code
 		Error_TokenType
 	},
 	//*******************
 	//   BEGIN SYMBOLS
 	//*******************
-	{	// BegSymbol_Code SEPARATOR
+	{	// BegSymbol_Code
 		Error_TokenType
 	},
 	//----------------------
@@ -878,7 +878,7 @@ static TableEntry table_entries[] =
 	//*****************
 	//   END SYMBOLS
 	//*****************
-	{	// EndSymbol_Code SEPARATOR
+	{	// EndSymbol_Code
 		Error_TokenType
 	},
 	//***************************
