@@ -165,6 +165,7 @@
 //	2011-02-05	added temporary strings tests in new translator test 15
 //
 //	2011-02-26	updated for change of table index to code
+//	2011-03-03	added more print function expression tests
 //
 
 #include <stdio.h>
@@ -618,6 +619,15 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"PRINT (A+B",
 		"PRINT (A+B,",
 		"PRINT MID$(A$+B$",
+		// 2011-03-03: more PRINT error tests
+		"PRINT (TAB(10)",
+		"PRINT INT(TAB(10))",
+		"PRINT VAL(TAB(10))",
+		"PRINT A(TAB(10))",
+		"PRINT A+TAB(10)",
+		"PRINT A%+TAB(10)",
+		"PRINT A$+TAB(10)",
+		"PRINT TAB(10)+A",
 		NULL
 	};
 	static const char *testinput11[] = {  // error tests (2010-06-13)

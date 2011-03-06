@@ -155,6 +155,9 @@
 //				  necessary since codes are new generated directly from table)
 //				added bracketing around immediate commands
 //				updated search() functions to return Code enumeration value
+//	2011-03-01	started INPUT command handler, added INPUT PROMPT table entry,
+//				  add InputBegin tale entries
+//				removed String flags - automatically set in Table::Table()
 //
 
 #include <ctype.h>
@@ -299,6 +302,7 @@ Code GtEq_AssocCode[]			= {
 Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
 Code GtEqStr_AssocCode[]		= {GtEqStrT2_Code};
 Code GtEqStrT1_AssocCode[]		= {GtEqStrTT_Code};
+Code InputBeginStr_AssocCode[]	= {InputBeginTmp_Code};
 Code Instr2_AssocCode[]			= {Instr2T1_Code, Instr2T2_Code};
 Code Instr2T1_AssocCode[]		= {Instr2TT_Code};
 Code Instr3_AssocCode[]			= {Instr3T1_Code, Instr3T2_Code};
@@ -457,8 +461,17 @@ static TableEntry table_entries[] =
 		Expression_TokenMode, Print_CmdHandler  //Any_ExprType
 	},
 	{	// Input_Code
-		Command_TokenType, OneWord_Multiple,
-		"INPUT", NULL, Null_Flag, 4, None_DataType
+		Command_TokenType, TwoWord_Multiple,
+		"INPUT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
+		Expression_TokenMode/*Reference_TokenMode*/, Input_CmdHandler
+
+	},
+	{	// InputPrompt_Code
+		// 2011-03-01: added two-word form of command
+		Command_TokenType, TwoWord_Multiple,
+		"INPUT", "PROMPT", Null_Flag, 4, None_DataType, NULL, NULL,
+		Expression_TokenMode, Input_CmdHandler
+
 	},
 	{	// Dim_Code
 		Command_TokenType, OneWord_Multiple,
@@ -912,25 +925,25 @@ static TableEntry table_entries[] =
 	},
 	{	// AssignStr_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "Assign$", Reference_Flag | String_Flag, 4, String_DataType,
+		"=", "Assign$", Reference_Flag, 4, String_DataType,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignTmp_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "Assign$T", Reference_Flag | String_Flag, 4, TmpStr_DataType,
+		"=", "Assign$T", Reference_Flag, 4, TmpStr_DataType,
 		&Assign_StrTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-19: added entries for assign sub-string associated code
 	{	// AssignSubStr_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignSub$", Reference_Flag | String_Flag, 4, String_DataType,
+		"=", "AssignSub$", Reference_Flag, 4, String_DataType,
 		new ExprInfo(Null_Code, Operands(SubStr), AssocCode(AssignSubStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignSubTmp_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignSub$T", Reference_Flag | String_Flag, 4, TmpStr_DataType,
+		"=", "AssignSub$T", Reference_Flag, 4, TmpStr_DataType,
 		&Assign_SubTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-05: added reference and assign list flags
@@ -950,25 +963,25 @@ static TableEntry table_entries[] =
 	},
 	{	// AssignListStr_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList$", Reference_Flag | String_Flag, 4, String_DataType,
+		"=", "AssignList$", Reference_Flag, 4, String_DataType,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignListStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignListTmp_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList$T", Reference_Flag | String_Flag, 4, TmpStr_DataType,
+		"=", "AssignList$T", Reference_Flag, 4, TmpStr_DataType,
 		&Assign_StrTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	// 2010-05-22: added entry for assign mix string list associated code
 	{	// AssignListMix_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignListMix$", Reference_Flag | String_Flag, 4, String_DataType,
+		"=", "AssignListMix$", Reference_Flag, 4, String_DataType,
 		new ExprInfo(Null_Code, Operands(SubStr), AssocCode(AssignListMix)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignListMixTmp_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignListMix$T", Reference_Flag | String_Flag, 4,
+		"=", "AssignListMix$T", Reference_Flag, 4,
 		TmpStr_DataType, &Assign_SubTmp_ExprInfo, NULL, Null_TokenMode,
 		Assign_CmdHandler
 	},
@@ -1361,14 +1374,29 @@ static TableEntry table_entries[] =
 	},
 	{	// PrintStr_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"", "PrintStr", Print_Flag | String_Flag, 2, None_DataType,
+		"", "PrintStr", Print_Flag, 2, None_DataType,
 		&Str_ExprInfo
 	},
 	{	// PrintTmp_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"", "PrintTmp", Print_Flag | String_Flag, 2, None_DataType,
+		"", "PrintTmp", Print_Flag, 2, None_DataType,
 		&Tmp_ExprInfo
-	}
+	},
+	// 2011-03-01: added InputBegin entries
+    {	// InputBegin_Code
+        IntFuncN_TokenType, OneWord_Multiple,
+        "", "InputBegin", Null_Flag, 2, None_DataType
+    },
+	{	// InputBeginStr_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputBeginStr", Null_Flag, 2, None_DataType,
+		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputBeginStr))
+	},
+	{	// InputBeginTmp_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputBeginTmp", Null_Flag, 2, None_DataType,
+		&Tmp_ExprInfo
+	},
 };
 
 

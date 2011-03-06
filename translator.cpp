@@ -306,6 +306,16 @@
 //
 //	2011-02-22	changed all pop() calls not using return value to null_pop()
 //	2011-02-26	updated for change of table index to code
+//	2011-03-01	initialized new element member for command stack item
+//				removed code member from command stack item (now token->code)
+//				started implementation of Input_CmdHandler()
+//	2011-03-03	changed process_final_operand() from checking for print
+//				  functions to functions with no return value, fixed problem
+//				  with deleting second token when not set (for print functions)
+//	2011-03-05	added non-empty hold stack to print function token check
+//				added "_State" to enum Translator::State values
+//				added new EndExpr_State, check to process_binary_operator()
+//				replaced PrintOnlyIntFunc with expected xxx expression error
 //
 
 #include "ibcp.h"
@@ -425,7 +435,7 @@ TokenStatus Translator::add_token(Token *&token)
 	TokenStatus status;
 	DataType datatype;
 
-	if (state == Initial)
+	if (state == Initial_State)
 	{
 		// 2010-03-21: check for end of line at begin of input
 		if (token->type == Operator_TokenType && token->code == EOL_Code)
@@ -441,7 +451,7 @@ TokenStatus Translator::add_token(Token *&token)
 		hold_stack.top().first = NULL;
 
 		// 2010-06-10: initialize to FirstOperand instead of Operand
-		state = FirstOperand;
+		state = FirstOperand_State;
 	}
 
 	// 2010-06-14: check for immediate command
@@ -462,8 +472,9 @@ TokenStatus Translator::add_token(Token *&token)
 			{
 				mode = table->token_mode(token->code);
 				cmd_stack.push().token = token;
-				cmd_stack.top().code = token->code;
+				// 2011-03-01: removed code member initialization
 				cmd_stack.top().flag = None_CmdFlag;  // 2010-06-01: reset flag
+				cmd_stack.top().element = NULL;  // 2011-03-01: reset pointer
 				return Good_TokenStatus;  // nothing more to do
 			}
 			else
@@ -478,7 +489,7 @@ TokenStatus Translator::add_token(Token *&token)
 	}
 
 	// check for both operand states (2010-06-10)
-	if (state == Operand || state == FirstOperand)
+	if (state == Operand_State || state == FirstOperand_State)
 	{
 		if (!token->is_operator())
 		{
@@ -488,7 +499,7 @@ TokenStatus Translator::add_token(Token *&token)
 		// 2010-06-06: end-of-statement code acceptable instead of operand
 		else if (table->flags(token) & EndExpr_Flag)
 		{
-			if (state != FirstOperand)
+			if (state != FirstOperand_State)
 			{
 				// an operand is expected, get the appropriate error
 				// 2011-02-13: moved code to new function, replaced with call
@@ -557,10 +568,19 @@ TokenStatus Translator::process_operand(Token *&token)
 		if (token->type == IntFuncP_TokenType)
 		{
 			// 2010-06-11: detect invalid print-only function early
-			if ((table->flags(token->code) & Print_Flag)
-				&& (cmd_stack.empty() || cmd_stack.top().code != Print_Code))
+			// 2011-03-05: added check for non-empty hold stack
+			if ((table->flags(token->code) & Print_Flag) && (cmd_stack.empty()
+				|| cmd_stack.top().token->code != Print_Code
+				|| hold_stack.top().token->code != Null_Code))
 			{
-				return PrintOnlyIntFunc_TokenStatus;
+				// 2011-03-05: replaced error with expression type error
+				TokenStatus status;
+				DataType datatype;
+				if ((status = get_expr_datatype(datatype)) == Good_TokenStatus)
+				{
+					status = errstatus_datatype[datatype].expected;
+				}
+				return status;
 			}
 			// 2010-06-24: check if not in expression mode
 			switch (mode)
@@ -615,7 +635,7 @@ TokenStatus Translator::process_operand(Token *&token)
 		hold_stack.push().token = token;
 		hold_stack.top().first = NULL;
 		// leave state == Operand
-		state = Operand;  // make sure not FirstOperand (2010-06-10)
+		state = Operand_State;  // make sure not FirstOperand (2010-06-10)
 	}
 	else  // !token->has_paren()
 	{
@@ -633,7 +653,7 @@ TokenStatus Translator::process_operand(Token *&token)
 		RpnItem *rpn_item = new RpnItem(token);
 		done_stack.push().element = output->append(&rpn_item);
 		done_stack.top().first = done_stack.top().last = NULL;
-		state = BinOp;  // next token must be a binary operator
+		state = BinOp_State;  // next token must be a binary operator
 	}
 	return Good_TokenStatus;
 }
@@ -765,7 +785,7 @@ bool Translator::process_unary_operator(Token *&token, TokenStatus &status)
 		// push open parentheses right on stack and return
 		hold_stack.push().token = token;
 		hold_stack.top().first = NULL;
-		state = Operand;
+		state = Operand_State;
 
 		// 2010-04-02: add a null counter to prevent commas
 		// 2010-06-09: changed count stack to hold count items
@@ -794,9 +814,17 @@ TokenStatus Translator::process_binary_operator(Token *&token)
 {
 	TokenStatus status = Good_TokenStatus;
 
+	// 2011-03-05: added end of expression token expected check
+	if (state == EndExpr_State && !(table->flags(token) & EndExpr_Flag))
+	{
+		// TODO currently only occurs after print function
+		// TODO add correct error based on current command
+		return ExpSemiCommaOrEnd_TokenStatus;
+	}
+
 	if (!token->is_operator())
 	{
-		// state == BinOp, but token is not an operator
+		// state == BinOp_State, but token is not an operator
 		if ((status = paren_status()) == Good_TokenStatus)
 		{
 			// error is dependent on command
@@ -946,7 +974,7 @@ void Translator::do_pending_paren(Token *token)
 		// 2010-05-29: changed index argument to token
 		int precedence = table->precedence(token);
 		if (last_precedence > precedence
-			|| state == Operand && last_precedence == precedence)
+			|| state == Operand_State && last_precedence == precedence)
 		{
 			// 2010-05-29: replaced dummy token with parentheses sub-code flag
 			if (output->last()->value->token->subcode & Paren_SubCode)
@@ -1069,7 +1097,7 @@ TokenStatus Translator::process_first_operand(Token *&token)
 	hold_stack.top().first = first;  // attach first operand (2011-01-14)
 
 	// expecting another operand next (2010-06-10)
-	state = Translator::Operand;
+	state = Translator::Operand_State;
 
 	return Good_TokenStatus;
 }
@@ -1163,18 +1191,28 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 		}
 
 		// 2010-06-01: process print-only internal functions
-		if (table->flags(token->code) & Print_Flag)
+		// 2011-03-03: check for and function with no return value
+		if (token->datatype == None_DataType)
 		{
-			if (cmd_stack.top().code != Print_Code)
+			if (table->flags(token->code) & Print_Flag)
 			{
-				return PrintOnlyIntFunc_TokenStatus;
+				// 2011-03-03: removed PRINT command check, already performed
+				// tell PRINT to stay on same line
+				// also set print function flag (2010-06-08)
+				cmd_stack.top().flag = PrintStay_CmdFlag | PrintFunc_CmdFlag;
 			}
-			// tell PRINT to stay on same line
-			// also set print function flag (2010-06-08)
-			cmd_stack.top().flag = PrintStay_CmdFlag | PrintFunc_CmdFlag;
 			done_push = false;  // don't push on done stack
 			// delete closing parentheses if print function (2011-02-01 leak)
-			delete token2;
+			// 2011-03-05: added check, token2 could be null (e.g. print code)
+			if (token2 != NULL)
+			{
+				// if print function, make sure expression ends (2011-03-05)
+				if (table->flags(token->code) & Print_Flag)
+				{
+					state = EndExpr_State;
+				}
+				delete token2;
+			}
 		}
 	}
 	else  // array or user function (2011-01-15)
@@ -1198,7 +1236,7 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 			{
 				return BUG_DoneStackEmptyOperands;
 			}
-			// TODO need to keep first/last operands for array/function args TODO
+			// TODO need to keep first/last operands for array/function args
 			delete_open_paren(done_stack.top().first);
 			// check if operand's last token was CloseParen (2011-01-15)
 			delete_close_paren(done_stack.top().last);
@@ -1796,7 +1834,6 @@ TokenStatus Translator::set_assign_command(Token *&token, Code assign_code)
 		delete cmd_stack.top().token;   // delete the let token
 	}
 	cmd_stack.top().token = token;
-	cmd_stack.top().code = assign_code;
 	cmd_stack.top().flag = None_CmdFlag;
 	return Good_TokenStatus;
 }
@@ -1829,7 +1866,7 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 		if (equivalent_datatype[token->datatype] == String_DataType
 			&& token->datatype != cmd_stack.top().token->datatype)
 		{
-			cmd_stack.top().token->code =AssignListMix_Code;
+			cmd_stack.top().token->code = AssignListMix_Code;
 		}
 	}
 	return Good_TokenStatus;
@@ -1920,7 +1957,7 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 			t.mode = Expression_TokenMode;
 
 			// expecting first operand next (2010-06-10)
-			t.state = Translator::FirstOperand;
+			t.state = Translator::FirstOperand_State;
 			return Good_TokenStatus;
 
 		case AssignmentList_TokenMode:
@@ -1936,7 +1973,7 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 			t.mode = Expression_TokenMode;  // end of list, expression follows
 
 			// expecting first operand next (2010-06-10)
-			t.state = Translator::FirstOperand;
+			t.state = Translator::FirstOperand_State;
 			return Good_TokenStatus;
 
 		// 2010-08-01: removed EqualAssignment case
@@ -2074,7 +2111,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 		delete token;
 	}
 
-	t.state = Translator::Operand;
+	t.state = Translator::Operand_State;
 	return Good_TokenStatus;
 }
 
@@ -2255,7 +2292,7 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 			switch (t.mode)
 			{
 			case Assignment_TokenMode:
-				if (t.state != Translator::BinOp)
+				if (t.state != Translator::BinOp_State)
 				{
 					return ExpAssignItem_TokenStatus;
 				}
@@ -2383,7 +2420,7 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			return ExpEqualOrComma_TokenStatus;
 
 		case Expression_TokenMode:
-			if (t.state == Translator::BinOp)
+			if (t.state == Translator::BinOp_State)
 			{
 				// point error to unexpected token (2011-02-11)
 				cmd_item->token = token;
@@ -2441,7 +2478,7 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 		// switch back to operand state (2010-06-06)
 		// expecting first operand next (2010-06-10)
-		t.state = Translator::FirstOperand;
+		t.state = Translator::FirstOperand_State;
 		return Good_TokenStatus;
 
 	case SemiColon_Code:
@@ -2478,7 +2515,7 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 		// switch back to operand state (2010-06-06)
 		// expecting first operand next (2010-06-10)
-		t.state = Translator::FirstOperand;
+		t.state = Translator::FirstOperand_State;
 
 		return Good_TokenStatus;
 
@@ -2525,6 +2562,134 @@ TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		return ExpAssignItem_TokenStatus;
 	}
 	return ExpEqualOrComma_TokenStatus;
+}
+
+
+//*********************************
+//**    INPUT COMMAND HANDLER    **
+//*********************************
+
+// 2011-03-01: started implementaion of new command handler function
+TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
+{
+    TokenStatus status;
+	RpnItem *rpn_item;
+
+	Code code = token->code;
+
+	if (cmd_item->element == NULL)  // no begin code yet?
+	{
+		if (cmd_item->token->code == InputPrompt_Code)
+		{
+			if (t.done_stack.empty() || equivalent_datatype[t.done_stack.top()
+				.element->value->token->datatype] != String_DataType)
+			{
+				return ExpStrExpr_TokenStatus;
+			}
+			t.table->set_token(token, InputBeginStr_Code);
+			token->subcode = code == Comma_Code
+				? Question_SubCode : None_SubCode;
+			status = t.process_final_operand(token, NULL, 0);
+			// need to set done_pust = false;
+			if (status != Good_TokenStatus)
+			{
+				return status;
+			}
+		}
+	}
+#if 0
+	switch (token->code)
+	{
+	case Comma_Code:
+		// make sure the expression before comma is complete
+		status = t.expression_end();
+		if (status != Good_TokenStatus)
+		{
+			return status;
+		}
+
+		status = t.add_print_code();
+		if (status > Good_TokenStatus)
+		{
+			return status;
+		}
+
+		// append comma (advance to next column) token to output
+		rpn_item = new RpnItem(token);
+		t.output->append(&rpn_item);
+
+		// set PRINT command item flag in case last item in statement
+		// (resets PrintFunc_CmdFlag if set)
+		t.cmd_stack.top().flag = PrintStay_CmdFlag;
+
+		// switch back to operand state (2010-06-06)
+		// expecting first operand next (2010-06-10)
+		t.state = Translator::FirstOperand_State;
+		return Good_TokenStatus;
+
+	case SemiColon_Code:
+		status = t.add_print_code();
+		if (status == Good_TokenStatus)
+		{
+			// print code added, delete semicolon token
+			delete token;
+		}
+		else if (status == Null_TokenStatus)
+		{
+			// check if last token added was a print function (2010-06-08)
+			if (t.cmd_stack.top().flag & PrintFunc_CmdFlag)
+			{
+				// set semicolon subcode flag on print function
+				t.output->last()->value->token->subcode |= SemiColon_SubCode;
+				// sub-code set, delete semicolon token (2011-02-01 leak)
+				delete token;
+			}
+			else  // no expression, add dummy semicolon token
+			{
+				rpn_item = new RpnItem(token);
+				t.output->append(&rpn_item);
+			}
+		}
+		else  // an error occurred
+		{
+			return status;
+		}
+
+		// set PRINT command item flag in case last item in statement
+		// (resets PrintFunc_CmdFlag if set)
+		t.cmd_stack.top().flag = PrintStay_CmdFlag;
+
+		// switch back to operand state (2010-06-06)
+		// expecting first operand next (2010-06-10)
+		t.state = Translator::FirstOperand_State;
+
+		return Good_TokenStatus;
+
+	case EOL_Code:
+		status = t.add_print_code();
+		if (status == Good_TokenStatus  // data type specific code added?
+			|| status == Null_TokenStatus  // or not stay on line?
+			&& !(cmd_item->flag & PrintStay_CmdFlag))
+		{
+			// append the print token to go to newline at runtime
+			RpnItem *rpn_item = new RpnItem(cmd_item->token);
+			t.output->append(&rpn_item);
+			// set good status; could be set to null (2011-02-11)
+			status = Good_TokenStatus;
+		}
+		// check if print token was not used (2011-02-01 leak)
+		else if (status == Null_TokenStatus)
+		{
+			delete cmd_item->token;  // print token not used
+			status = Good_TokenStatus;
+		}
+		return status;
+
+	default:  // token was not expected command
+		// TODO may need a proper error here
+		return BUG_UnexpToken;
+	}
+#endif
 }
 
 

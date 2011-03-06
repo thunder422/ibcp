@@ -72,11 +72,11 @@ Input: PRINT C(A;B)
 
 
 Input: A=SPC(10)
-         ^^^^-- invalid use of print function
+         ^^^^-- expected numeric expression
 
 
 Input: A=TAB(10)
-         ^^^^-- invalid use of print function
+         ^^^^-- expected numeric expression
 
 
 Input: PRINT (A,,B)
@@ -121,5 +121,37 @@ Input: PRINT (A+B,
 
 Input: PRINT MID$(A$+B$
                        ^-- expected operator or comma
+
+
+Input: PRINT (TAB(10)
+              ^^^^-- expected expression
+
+
+Input: PRINT INT(TAB(10))
+                 ^^^^-- expected numeric expression
+
+
+Input: PRINT VAL(TAB(10))
+                 ^^^^-- expected string expression
+
+
+Input: PRINT A(TAB(10))
+               ^^^^-- expected expression
+
+
+Input: PRINT A+TAB(10)
+               ^^^^-- expected numeric expression
+
+
+Input: PRINT A%+TAB(10)
+                ^^^^-- expected numeric expression
+
+
+Input: PRINT A$+TAB(10)
+                ^^^^-- expected string expression
+
+
+Input: PRINT TAB(10)+A
+                    ^-- expected semicolon, comma or end-of-statement
 
 

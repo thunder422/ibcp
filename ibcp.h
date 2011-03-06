@@ -261,6 +261,12 @@
 //				removed TableEntry::code (index now same as code)
 //				added new ImmCmd search type
 //				added Code operator overload functions
+//	2011-03-01	started INPUT command handler implementation
+//				added Question_SubCode
+//	2011-03-04	added non-IntFunc check to Translator::set_default_datatype()
+//	2011-03-05	removed PrintOnlyIntFunc, added ExpSemiCommaOrEnd_TokenStatus
+//				added "_State" to enum Translator::State values
+//				added Translator::EndExpr_State
 //
 
 #ifndef IBCP_H
@@ -349,10 +355,12 @@ enum ExprType {  // 2010-06-29
 // 2010-06-08: renamed Null to None and added SemiColon sub-code flag
 // 2010-08-01: removed Comma_SubCode
 // 2011-01-22: added Used and Last sub-codes for parentheses token flags
+// 2011-03-01: added Question sub-code for INPUT PROMPT command
 const int None_SubCode       = 0x00000000;	// no sub-code present
 const int Paren_SubCode      = 0x00000001;	// reproduce unnecessary parenthesis
 const int Let_SubCode        = 0x00000002;	// reproduce LET keyword for assign
 const int SemiColon_SubCode  = 0x00000008;	// semicolon after print function
+const int Question_SubCode   = 0x00000010;	// add "? " to input prompt
 const int Used_SubCode       = 0x00000020;	// parentheses used in output
 const int Last_SubCode       = 0x00000040;	// parentheses used as last token
 
@@ -618,7 +626,7 @@ enum TokenStatus {
 	ExpNumExpr_TokenStatus,			// 2010-06-29: added
 	ExpStrExpr_TokenStatus,			// 2010-06-29: added
 	UnExpCommand_TokenStatus,		// 2010-05-29: added
-	PrintOnlyIntFunc_TokenStatus,	// 2010-06-01: added
+	ExpSemiCommaOrEnd_TokenStatus,	// 2011-03-05: added
 	ExpDblVar_TokenStatus,			// 2010-06-30: added
 	ExpIntVar_TokenStatus,			// 2010-06-30: added
 	ExpStrVar_TokenStatus,			// 2010-06-24: added
@@ -890,10 +898,12 @@ const int AssignList_CmdFlag	= 0x00010000;	// currently an assign list
 
 // 2010-05-28: added command item and command stack
 // 2010-06-05: moved CmdItem outside Translator for TableEntry
+// 2011-03-01: removed code, added element
+struct RpnItem;
 struct CmdItem {
 	Token *token;				// pointer to command token
-	Code code;					// code of command token
 	int flag;					// 2010-06-01: generic flag for command use
+	List<RpnItem *>::Element *element;	// 2011-03-01: pointer for command user
 };
 
 // 2010-06-13: added token pointer argument to command handlers
@@ -1183,10 +1193,11 @@ class Translator {
 	};
 	Stack<DoneStackItem> done_stack;// items processed stack
 	enum State {
-		Initial,					// initial state
-		BinOp,						// expecting binary operator
-		Operand,					// expecting unary operator or operand
-		FirstOperand,				// expecting first operand (2010-06-10)
+		Initial_State,				// initial state
+		BinOp_State,				// expecting binary operator
+		Operand_State,				// expecting unary operator or operand
+		FirstOperand_State,			// expecting first operand (2010-06-10)
+		EndExpr_State,				// expecting end of expression (2011-03-05)
 		sizeof_State
 	} state;						// current state of translator
 	// 2010-03-25: added variables to support parentheses
@@ -1216,7 +1227,7 @@ public:
 	{
 		exprmode = _exprmode;  // 2010-06-06: save flag
 		output = new List<RpnItem *>;
-		state = Initial;
+		state = Initial_State;
 		// 2010-04-11: initialize mode to command
 		// 2010-04-16: start in expression mode for testing
 		mode = exprmode ? Expression_TokenMode : Command_TokenMode;
@@ -1251,7 +1262,9 @@ private:
 	// 2010-04-25: add two functions for data type handling
 	void set_default_datatype(Token *token)
 	{
-		if (token->datatype == None_DataType)
+		// only set to double if not an internal function (2011-03-04)
+		if (token->datatype == None_DataType
+			&& token->type != IntFuncP_TokenType)
 		{
 			// TODO for now just set default to double
 			token->datatype = Double_DataType;
@@ -1312,12 +1325,15 @@ public:
 	// 2010-06-05: added command handler friend function definitions section
 	// 2010-06-13: added token pointer argument to command handlers
 	friend TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item,
-	Token *token);
+		Token *token);
 	friend TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item,
-	Token *token);
+		Token *token);
 	// 2010-06-13: added command handler
 	friend TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item,
-	Token *token);
+		Token *token);
+	// 2011-03-01: added command handler
+	friend TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item,
+		Token *token);
 };
 
 
@@ -1338,6 +1354,9 @@ extern TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item,
 	Token *token);
 // 2010-06-13: added command handler
 extern TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item,
+	Token *token);
+// 2011-03-01: added command handler
+extern TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item,
 	Token *token);
 
 

@@ -73,6 +73,7 @@
 //	2011-02-10	added BUG_CmdStackEmptyCmd token status and message
 //	2011-02-11	added BUG_UnexpToken token status and message
 //	2011-02-12	renamed ExpStatement_TokenStatus to ExpCommand and message
+//	2011-03-05	removed PrintOnlyIntFunc, added ExpSemiCommaOrEnd_TokenStatus
 //
 
 #include <stdio.h>
@@ -143,8 +144,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected string expression"},
 	{UnExpCommand_TokenStatus,
 		"unexpected command"},
-	{PrintOnlyIntFunc_TokenStatus,
-		"invalid use of print function"},
+	{ExpSemiCommaOrEnd_TokenStatus,  // 2011-03-05: added
+		"expected semicolon, comma or end-of-statement"},
 	{ExpDblVar_TokenStatus,
 		"expected double variable"},
 	{ExpIntVar_TokenStatus,
