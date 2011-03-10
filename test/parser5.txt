@@ -1,5 +1,5 @@
 
-ibcp.exe  Copyright (C) 2010  Thunder422
+ibcp.exe  Copyright (C) 2010-2011  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -8,49 +8,49 @@ Table initialization successful.
 
 Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
-	 5: IntFuncP  () SubStr  73-Mid2
+	 3: Operator  Op Integer Eq
+	 5: IntFuncP  () SubStr  Mid2
 	10: Constant     String  |b|
-	13: Operator  Op None    98-Comma
+	13: Operator  Op None    Comma
 	14: NoParen      None    |A|
-	15: Operator  Op Double  84-Add
+	15: Operator  Op Double  Add
 	16: NoParen      None    |B|
-	17: Operator  Op Double  86-Mul
+	17: Operator  Op Double  Mul
 	18: Constant     Integer 2 |2|
-	19: Operator  Op None    98-Comma
+	19: Operator  Op None    Comma
 	20: NoParen      None    |index|
-	25: Operator  Op None    97-CloseParen
-	26: Operator  Op Double  84-Add
-	27: IntFuncP  () SubStr  71-Left
+	25: Operator  Op None    CloseParen
+	26: Operator  Op Double  Add
+	27: IntFuncP  () SubStr  Left
 	33: Constant     String  |TEST|
-	39: Operator  Op None    98-Comma
+	39: Operator  Op None    Comma
 	41: Constant     Integer 1 |1|
-	42: Operator  Op None    97-CloseParen
-	43: Operator  Op None    116-EOL
+	42: Operator  Op None    CloseParen
+	43: Operator  Op None    EOL
 
 Input: if index>5 and subindex<=10 then
-	 0: Command   Op 22-If
+	 0: Command   Op If
 	 3: NoParen      None    |index|
-	 8: Operator  Op Integer 91-Gt
+	 8: Operator  Op Integer Gt
 	 9: Constant     Integer 5 |5|
-	11: Operator  Op Integer 41-And
+	11: Operator  Op Integer And
 	15: NoParen      None    |subindex|
-	23: Operator  Op Integer 94-LtEq
+	23: Operator  Op Integer LtEq
 	25: Constant     Integer 10 |10|
-	28: Command   Op 23-Then
-	32: Operator  Op None    116-EOL
+	28: Command   Op Then
+	32: Operator  Op None    EOL
 
 Input: var = 5'initialize variable + 
 	 0: NoParen      None    |var|
-	 4: Operator  Op Integer 90-Eq
+	 4: Operator  Op Integer Eq
 	 6: Constant     Integer 5 |5|
-	 7: Operator  Op None    101-RemOp |initialize variable + |
-	30: Operator  Op None    116-EOL
+	 7: Operator  Op None    RemOp |initialize variable + |
+	30: Operator  Op None    EOL
 
 Input: if index<<5 && index><4 || n<4 then
-	 0: Command   Op 22-If
+	 0: Command   Op If
 	 3: NoParen      None    |index|
-	 8: Operator  Op Integer 93-Lt
-	 9: Operator  Op Integer 93-Lt
+	 8: Operator  Op Integer Lt
+	 9: Operator  Op Integer Lt
 	10: Constant     Integer 5 |5|
                    ^-- unrecognizable character

@@ -1,5 +1,5 @@
 
-ibcp.exe  Copyright (C) 2010  Thunder422
+ibcp.exe  Copyright (C) 2010-2011  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -16,7 +16,7 @@ Input: fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
 	26: DefFuncN     Double  |fnword#|
 	34: DefFuncN     String  |fnhello$|
 	43: DefFuncN     Integer |fnindex%|
-	51: Operator  Op None    116-EOL
+	51: Operator  Op None    EOL
 
 Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
 	 0: DefFuncP  () None    |fna(|
@@ -28,7 +28,7 @@ Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
 	30: DefFuncP  () Double  |fnword#(|
 	39: DefFuncP  () String  |fnhello$(|
 	49: DefFuncN     Integer |fnindex%|
-	57: Operator  Op None    116-EOL
+	57: Operator  Op None    EOL
 
 Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
 	 0: NoParen      None    |a|
@@ -42,30 +42,30 @@ Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
 	33: Paren     () Integer |QWER%(|
 	40: Paren     () String  |Nbb_34$(|
 	49: Paren     () Double  |h_544_4#(|
-	58: Operator  Op None    116-EOL
+	58: Operator  Op None    EOL
 
 Input: LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
-	 0: Command   Op 15-Let
-	 4: Command   Op 16-Print
-	10: Command   Op 25-End
-	14: Command   Op 23-Then
-	19: Operator  Op Integer 46-Xor
-	23: IntFuncP  () Double  49-Abs
-	27: IntFuncP  () TmpStr  68-Chr
-	32: IntFuncP  () Double  79-Val
-	37: Command   Op 26-EndIf
+	 0: Command   Op Let
+	 4: Command   Op Print
+	10: Command   Op End
+	14: Command   Op Then
+	19: Operator  Op Integer Xor
+	23: IntFuncP  () Double  Abs
+	27: IntFuncP  () TmpStr  Chr
+	32: IntFuncP  () Double  Val
+	37: Command   Op EndIf
 	44: NoParen      String  |left$|
-	50: IntFuncP  () SubStr  71-Left
-	56: Operator  Op None    116-EOL
+	50: IntFuncP  () SubStr  Left
+	56: Operator  Op None    EOL
 
 Input: rem this should be a comment
-	 0: Command   Op 21-Rem | this should be a comment|
-	28: Operator  Op None    116-EOL
+	 0: Command   Op Rem | this should be a comment|
+	28: Operator  Op None    EOL
 
 Input: rem:this should be a comment
-	 0: Command   Op 21-Rem |:this should be a comment|
-	28: Operator  Op None    116-EOL
+	 0: Command   Op Rem |:this should be a comment|
+	28: Operator  Op None    EOL
 
 Input: rem-this should be a comment
-	 0: Command   Op 21-Rem |-this should be a comment|
-	28: Operator  Op None    116-EOL
+	 0: Command   Op Rem |-this should be a comment|
+	28: Operator  Op None    EOL

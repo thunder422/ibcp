@@ -1,5 +1,5 @@
 
-ibcp.exe  Copyright (C) 2010  Thunder422
+ibcp.exe  Copyright (C) 2010-2011  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -8,70 +8,70 @@ Table initialization successful.
 
 Input: A$ = "this is a test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |this is a test|
-	21: Operator  Op None    116-EOL
+	21: Operator  Op None    EOL
 
 Input: A$ = "this is a test
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |this is a test|
-	20: Operator  Op None    116-EOL
+	20: Operator  Op None    EOL
 
 Input: A$ = "this is a ""test"""
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |this is a "test"|
-	25: Operator  Op None    116-EOL
+	25: Operator  Op None    EOL
 
 Input: A$ = """this"" is a test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |"this" is a test|
-	25: Operator  Op None    116-EOL
+	25: Operator  Op None    EOL
 
 Input: A$ = "this is ""a"" test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |this is "a" test|
-	25: Operator  Op None    116-EOL
+	25: Operator  Op None    EOL
 
 Input: A$ = "this is "" a test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |this is " a test|
-	24: Operator  Op None    116-EOL
+	24: Operator  Op None    EOL
 
 Input: A$ = ""
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  ||
-	 7: Operator  Op None    116-EOL
+	 7: Operator  Op None    EOL
 
 Input: A$ = "
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  ||
-	 6: Operator  Op None    116-EOL
+	 6: Operator  Op None    EOL
 
 Input: A$ = """"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |"|
-	 9: Operator  Op None    116-EOL
+	 9: Operator  Op None    EOL
 
 Input: A$ = """
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
+	 3: Operator  Op Integer Eq
 	 5: Constant     String  |"|
-	 8: Operator  Op None    116-EOL
+	 8: Operator  Op None    EOL
 
 Input: A$ = LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer 90-Eq
-	 5: IntFuncP  () SubStr  71-Left
+	 3: Operator  Op Integer Eq
+	 5: IntFuncP  () SubStr  Left
 	11: Constant     String  |TEST|
-	17: Operator  Op None    98-Comma
+	17: Operator  Op None    Comma
 	19: Constant     Integer 1 |1|
-	20: Operator  Op None    97-CloseParen
-	21: Operator  Op None    116-EOL
+	20: Operator  Op None    CloseParen
+	21: Operator  Op None    EOL
