@@ -94,18 +94,21 @@ BEGIN {
 		printf "\n" > "codes.h"
 		printf "enum Code {\n" > "codes.h"
 		printf "\tInvalid_Code = -1,\n" > "codes.h"
-		for (i = 0; i < n; i++) {
+		for (i = 0; i < n; i++)
+		{
 			printf "\t%s,\n", c[i] > "codes.h"
 		}
 		printf "\tsizeof_Code\n" > "codes.h"
 		printf "};\n" > "codes.h"
 
 		# write 'codes.txt'
-		for (i = 0; i < n; i++) {
+		for (i = 0; i < n; i++)
+		{
 			printf "%d: %s\n", i, c[i] > "codes.txt"
 		}
 		printf "\n" > "codes.txt"
-		for (i = 0; i < n; i++) {
+		for (i = 0; i < n; i++)
+		{
 			# 2010-04-28: added -d to ignore "_" in codes names
 			printf "%s = %d\n", c[i], i | "sort -d >> codes.txt"
 		}
