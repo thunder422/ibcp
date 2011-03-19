@@ -303,6 +303,7 @@ Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
 Code GtEqStr_AssocCode[]		= {GtEqStrT2_Code};
 Code GtEqStrT1_AssocCode[]		= {GtEqStrTT_Code};
 Code InputBeginStr_AssocCode[]	= {InputBeginTmp_Code};
+Code InputParse_AssocCode[]		= {InputParseInt_Code, InputParseStr_Code};
 Code Instr2_AssocCode[]			= {Instr2T1_Code, Instr2T2_Code};
 Code Instr2T1_AssocCode[]		= {Instr2TT_Code};
 Code Instr3_AssocCode[]			= {Instr3T1_Code, Instr3T2_Code};
@@ -463,7 +464,7 @@ static TableEntry table_entries[] =
 	{	// Input_Code
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Expression_TokenMode/*Reference_TokenMode*/, Input_CmdHandler
+		Reference_TokenMode, Input_CmdHandler
 
 	},
 	{	// InputPrompt_Code
@@ -523,7 +524,7 @@ static TableEntry table_entries[] =
 	},
 	{	// Do_Code
 		Command_TokenType, TwoWord_Multiple,
-		"Do", NULL, Null_Flag, 4, None_DataType
+		"DO", NULL, Null_Flag, 4, None_DataType
 	},
 	{	// DoWhile_Code
 		Command_TokenType, TwoWord_Multiple,
@@ -1364,23 +1365,21 @@ static TableEntry table_entries[] =
 	// 2010-06-02: added hidden print codes (main plus associated codes)
 	// 2010-12-29: added Print_Flag to these codes
 	{	// PrintDbl_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		IntFuncN_TokenType, OneWord_Multiple,
 		"", "PrintDbl", Print_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Print))
 	},
 	{	// PrintInt_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		IntFuncN_TokenType, OneWord_Multiple,
 		"", "PrintInt", Print_Flag, 2, None_DataType, &Int_ExprInfo
 	},
 	{	// PrintStr_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"", "PrintStr", Print_Flag, 2, None_DataType,
-		&Str_ExprInfo
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "PrintStr", Print_Flag, 2, None_DataType, &Str_ExprInfo
 	},
 	{	// PrintTmp_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"", "PrintTmp", Print_Flag, 2, None_DataType,
-		&Tmp_ExprInfo
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "PrintTmp", Print_Flag, 2, None_DataType, &Tmp_ExprInfo
 	},
 	// 2011-03-01: added InputBegin entries
     {	// InputBegin_Code
@@ -1396,6 +1395,20 @@ static TableEntry table_entries[] =
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "InputBeginTmp", Null_Flag, 2, None_DataType,
 		&Tmp_ExprInfo
+	},
+	// 2011-03-06: added hidden input codes (main plus associated codes)
+	{	// InputParse_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputParseDbl", Null_Flag, 2, None_DataType,
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(InputParse))
+	},
+	{	// InputParseInt_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputParseInt", Null_Flag, 2, None_DataType, &Int_ExprInfo
+	},
+	{	// InputParseStr_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputParseStr", Null_Flag, 2, None_DataType, &Str_ExprInfo
 	},
 };
 

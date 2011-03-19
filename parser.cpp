@@ -68,6 +68,8 @@
 //
 //	2011-02-26	changed all table index to code, search() noew returns code
 //
+//	2011-03-14	also set token length for FN identifiers
+//
 
 #include <stdio.h>
 
@@ -416,6 +418,7 @@ bool Parser::get_identifier(void)
 		token->type = paren ? DefFuncP_TokenType : DefFuncN_TokenType;
 		token->datatype = datatype;
 		token->string = new String(pos, p);
+		token->length = len;  // 2011-03-14: set length of token
 		pos = p;  // move position past defined function identifier
 		return true;
 	}

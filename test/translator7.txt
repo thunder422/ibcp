@@ -90,7 +90,7 @@ Input: A,B%,1 = 1
 
 
 Input: 1,A,B% = 1
-       ^-- item cannot be assigned
+       ^-- expected item for assignment
 
 
 Input: A%,B,C% = 1

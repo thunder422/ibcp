@@ -267,6 +267,9 @@
 //	2011-03-05	removed PrintOnlyIntFunc, added ExpSemiCommaOrEnd_TokenStatus
 //				added "_State" to enum Translator::State values
 //				added Translator::EndExpr_State
+//	2011-03-10	renamed ExpCommand_TokenStatus to ExpCmd_TokenStatus
+//	2011-03-13	removed ExpAssignRef_TokenStatus, UnExpCommand_TokenStatus,
+//				  UnexpAssignComma_TokenStatus, UnexpParenInComma_TokenStatus
 //
 
 #ifndef IBCP_H
@@ -603,7 +606,7 @@ enum TokenStatus {
 	Null_TokenStatus,				// 2010-06-04: added
 	Good_TokenStatus,
 	Done_TokenStatus,
-	ExpCommand_TokenStatus,			// 2011-01-12: renamed again
+	ExpCmd_TokenStatus,				// 2011-01-12: renamed again
 	ExpExpr_TokenStatus,			// 2010-06-10: renamed
 	ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
 	ExpOpOrEnd_TokenStatus,			// 2010-06-11: renamed
@@ -613,23 +616,20 @@ enum TokenStatus {
 	NoOpenParen_TokenStatus,		// 2010-03-25: added
 	ExpOpOrParen_TokenStatus,		// 2010-03-25: added (renamed 2010-06-11)
 	// 2010-04-11: replaced Error_UnexpectedComma
-	UnexpAssignComma_TokenStatus,	// 2010-04-11: added
 	ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
 	ExpComma_TokenStatus,			// 2010-07-04: added
 	ExpAssignItem_TokenStatus,		// 2010-06-13: added
-	ExpAssignRef_TokenStatus,		// 2010-04-16: added
-	UnexpParenInCmd_TokenStatus,	// 2010-04-16: added
-	UnexpParenInComma_TokenStatus,	// 2010-04-16: added
 	ExpDouble_TokenStatus,			// 2010-04-25: added
 	ExpInteger_TokenStatus,			// 2010-04-25: added
 	ExpString_TokenStatus,			// 2010-04-25: added
 	ExpNumExpr_TokenStatus,			// 2010-06-29: added
 	ExpStrExpr_TokenStatus,			// 2010-06-29: added
-	UnExpCommand_TokenStatus,		// 2010-05-29: added
 	ExpSemiCommaOrEnd_TokenStatus,	// 2011-03-05: added
+	ExpSemiOrComma_TokenStatus,		// 2011-03-06: added
 	ExpDblVar_TokenStatus,			// 2010-06-30: added
 	ExpIntVar_TokenStatus,			// 2010-06-30: added
 	ExpStrVar_TokenStatus,			// 2010-06-24: added
+	ExpVar_TokenStatus,				// 2011-03-06: added
 	ExpStrItem_TokenStatus,			// 2010-07-04: added
 	// the following statuses used during development
 	BUG_NotYetImplemented,			// somethings is not implemented
@@ -794,6 +794,7 @@ enum TokenMode {
 	Assignment_TokenMode,			// expecting assignment
 	AssignmentList_TokenMode,		// comma separated assignment started
 	Expression_TokenMode,			// inside expression
+	Reference_TokenMode,			// reference expected (2011-03-07)
 	sizeof_TokenMode
 };
 
@@ -1259,6 +1260,8 @@ private:
 		Cvt_Match,
 		sizeof_Match
 	};
+    // 2011-03-12: added new function
+	TokenStatus operator_error(void);
 	// 2010-04-25: add two functions for data type handling
 	void set_default_datatype(Token *token)
 	{

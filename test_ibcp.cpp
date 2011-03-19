@@ -166,6 +166,8 @@
 //
 //	2011-02-26	updated for change of table index to code
 //	2011-03-03	added more print function expression tests
+//	2011-03-08	removed output of token codes in print_token() to prevent
+//				  parser test failures due to code/table entry changes
 //
 
 #include <stdio.h>
@@ -768,6 +770,38 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"Z(A,Y(B))=X(A)",
 		"Z%(A%),Y%(A%)=X%(A%)",
 		"Z$(A%),Y$(A%)=X$(A%)",
+		// added more command error tests (2011-03-10)
+		"TAB(10)=A",
+		"+",
+		"NOT",
+		"A PRINT B",
+		"A(I) PRINT B",
+		"MID$(A$ PRINT,4)=\"\"",
+		"LET (",
+		"A,PRINT",
+		"A = (0 LET 5)",
+		"A = 0 PRINT 5",
+		"A = (0 PRINT 5)",
+		"A$ = MID$(B$ PRINT, 4)",
+		"A = INT(0 LET 5)",
+		"A = INT(0 PRINT 5)",
+		"A$ = MID$(B$, 4 PRINT)",
+		"A$ = MID$(B$, 4, 5 PRINT)",
+		"MID$((A$),4)=B$",
+		"MID$(-A$,4)=B$",
+		"MID$(+A$,4)=B$",
+		"FNA=B",
+		"FNA(I)=B",
+		"LET FNA=B",
+		"LET FNA(I)=B",
+		"C,FNA=B",
+		"C,FNA(I)=B",
+		"LET C,FNA=B",
+		"LET C,FNA(I)=B",
+		"C,FNA,D=B",
+		"C,FNA(I),D=B",
+		"LET C,FNA,D=B",
+		"LET C,FNA(I),D=B",
 		NULL
 	};
 	static const char *testinput13[] = {  // semicolon error tests (2010-07-04)
@@ -912,11 +946,16 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"PRINT A$;B$+C$",
 		NULL
 	};
+	static const char *testinput16[] = {  // INPUT tests (2011-03-07)
+		"INPUT A B",
+		"INPUT -A",
+		NULL
+	};
 
 	static const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
 		testinput7, testinput8, testinput9, testinput10, testinput11,
-		testinput12, testinput13, testinput14, testinput15
+		testinput12, testinput13, testinput14, testinput15, testinput16
 	};
 	static const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -1115,7 +1154,8 @@ bool print_token(Token *token, Table *table, bool tab)
 	switch (token->type)
 	{
 	case ImmCmd_TokenType:
-		printf(" %3d-%s", token->code, code_name[token->code]);
+		// 2011-03-08: removed output of token code
+		printf(" %s", code_name[token->code]);
 		if (token->datatype == CmdArgs_DataType)
 		{
 			args = (CmdArgs *)token->string->get_data();
@@ -1133,7 +1173,8 @@ bool print_token(Token *token, Table *table, bool tab)
 		}
 		break;
 	case Remark_TokenType:
-		printf(" %d-%s", token->code, code_name[token->code]);
+		// 2011-03-08: removed output of token code
+		printf(" %s", code_name[token->code]);
 		// fall thru
 	case DefFuncN_TokenType:
 	case DefFuncP_TokenType:
@@ -1166,7 +1207,8 @@ bool print_token(Token *token, Table *table, bool tab)
 	case IntFuncP_TokenType:
 		printf(" %-7s", datatype_name[token->datatype]);
 	case Command_TokenType:
-		printf(" %d-%s", token->code, code_name[token->code]);
+		// 2011-03-08: removed output of token code
+		printf(" %s", code_name[token->code]);
 		if (token->code == Rem_Code || token->code == RemOp_Code)
 		{
 			printf(" |%.*s|", token->string->get_len(),

@@ -110,6 +110,6 @@ Input: (A + B
 
 
 Input: A + B)
-            ^-- missing opening parentheses
+            ^-- expected operator or end-of-expression
 
 

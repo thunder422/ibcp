@@ -74,6 +74,9 @@
 //	2011-02-11	added BUG_UnexpToken token status and message
 //	2011-02-12	renamed ExpStatement_TokenStatus to ExpCommand and message
 //	2011-03-05	removed PrintOnlyIntFunc, added ExpSemiCommaOrEnd_TokenStatus
+//	2011-03-10	renamed ExpCommand_TokenStatus to ExpCmd_TokenStatus
+//	2011-03-13	removed ExpAssignRef_TokenStatus, UnExpCommand_TokenStatus
+//				changed message to NoOpenParen_TokenStatus
 //
 
 #include <stdio.h>
@@ -82,7 +85,7 @@
 
 void print_gpl_header(char *name)
 {
-	printf("\n%s  Copyright (C) 2010  Thunder422\n", name);
+	printf("\n%s  Copyright (C) 2010-2011  Thunder422\n", name);
 	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
 	printf("This is free software, and you are welcome to\n");
 	printf("redistribute it under certain conditions.\n\n");
@@ -100,7 +103,7 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"BUG: Good_TokenStaus"},  // should not see this
 	{Done_TokenStatus,
 		"BUG: Done_TokenStaus"},  // should not see this
-	{ExpCommand_TokenStatus,      // renamed from statement (2011-01-12)
+	{ExpCmd_TokenStatus,	      // renamed from statement (2011-01-12)
 		"expected command"},
 	{ExpExpr_TokenStatus,
 		"expected expression"},
@@ -120,18 +123,10 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected operator or comma"},
 	{ExpOpCommaOrParen_TokenStatus,
 		"expected operator, comma or closing parentheses"},
-	{NoOpenParen_TokenStatus,
-		"missing opening parentheses"},
+	{NoOpenParen_TokenStatus,  // 2011-03-13: changed message
+		"expected operator or end-of-expression"},
 	{ExpOpOrParen_TokenStatus,
 		"expected operator or closing parentheses"},
-	{UnexpAssignComma_TokenStatus,
-		"expected operator in assignment"},
-	{ExpAssignRef_TokenStatus,
-		"item cannot be assigned"},
-	{UnexpParenInCmd_TokenStatus,
-		"unexpected parentheses in command"},
-	{UnexpParenInComma_TokenStatus,
-		"unexpected parentheses in assignment list"},
 	{ExpDouble_TokenStatus,
 		"expected double expression"},
 	{ExpInteger_TokenStatus,
@@ -142,16 +137,18 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected numeric expression"},
 	{ExpStrExpr_TokenStatus,
 		"expected string expression"},
-	{UnExpCommand_TokenStatus,
-		"unexpected command"},
 	{ExpSemiCommaOrEnd_TokenStatus,  // 2011-03-05: added
 		"expected semicolon, comma or end-of-statement"},
+	{ExpSemiOrComma_TokenStatus,  // 2011-03-06: added
+		"expected semicolon or comma"},
 	{ExpDblVar_TokenStatus,
 		"expected double variable"},
 	{ExpIntVar_TokenStatus,
 		"expected integer variable"},
 	{ExpStrVar_TokenStatus,
 		"expected string variable"},
+	{ExpVar_TokenStatus,  // 2011-03-06: added
+		"expected variable"},
 	{ExpStrItem_TokenStatus,
 		"expected string item for assignment"},
 	{BUG_NotYetImplemented,

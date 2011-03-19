@@ -1,5 +1,5 @@
 
-ibcp.exe  Copyright (C) 2010  Thunder422
+ibcp.exe  Copyright (C) 2010-2011  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -97,4 +97,122 @@ Output: A%<ref> Z%(<ref>[A%<ref>] A%<ref> Y%(<ref>[A%<ref>] A%<ref> X%([A%<ref>]
 
 Input: Z$(A%),Y$(A%)=X$(A%)
 Output: A%<ref> Z$(<ref>[A%<ref>] A%<ref> Y$(<ref>[A%<ref>] A%<ref> X$([A%<ref>] AssignList$[X$(] 
+
+Input: TAB(10)=A
+       ^^^^-- expected command
+
+
+Input: +
+       ^-- expected command
+
+
+Input: NOT
+       ^^^-- expected command
+
+
+Input: A PRINT B
+         ^^^^^-- expected equal or comma for assignment
+
+
+Input: A(I) PRINT B
+            ^^^^^-- expected equal or comma for assignment
+
+
+Input: MID$(A$ PRINT,4)=""
+               ^^^^^-- expected comma
+
+
+Input: LET (
+           ^-- expected item for assignment
+
+
+Input: A,PRINT
+         ^^^^^-- expected double variable
+
+
+Input: A = (0 LET 5)
+              ^^^-- expected operator or closing parentheses
+
+
+Input: A = 0 PRINT 5
+             ^^^^^-- expected operator or end-of-statement
+
+
+Input: A = (0 PRINT 5)
+              ^^^^^-- expected operator or closing parentheses
+
+
+Input: A$ = MID$(B$ PRINT, 4)
+                    ^^^^^-- expected operator or comma
+
+
+Input: A = INT(0 LET 5)
+                 ^^^-- expected operator or closing parentheses
+
+
+Input: A = INT(0 PRINT 5)
+                 ^^^^^-- expected operator or closing parentheses
+
+
+Input: A$ = MID$(B$, 4 PRINT)
+                       ^^^^^-- expected operator, comma or closing parentheses
+
+
+Input: A$ = MID$(B$, 4, 5 PRINT)
+                          ^^^^^-- expected operator or closing parentheses
+
+
+Input: MID$((A$),4)=B$
+            ^-- expected string variable
+
+
+Input: MID$(-A$,4)=B$
+            ^-- expected string variable
+
+
+Input: MID$(+A$,4)=B$
+            ^-- expected string variable
+
+
+Input: FNA=B
+Output: FNA<ref> B Assign 
+
+Input: FNA(I)=B
+          ^-- expected equal or comma for assignment
+
+
+Input: LET FNA=B
+Output: FNA<ref> B Assign'LET' 
+
+Input: LET FNA(I)=B
+              ^-- expected equal or comma for assignment
+
+
+Input: C,FNA=B
+Output: C<ref> FNA<ref> B AssignList 
+
+Input: C,FNA(I)=B
+            ^-- expected equal or comma for assignment
+
+
+Input: LET C,FNA=B
+Output: C<ref> FNA<ref> B AssignList'LET' 
+
+Input: LET C,FNA(I)=B
+                ^-- expected equal or comma for assignment
+
+
+Input: C,FNA,D=B
+Output: C<ref> FNA<ref> D<ref> B AssignList 
+
+Input: C,FNA(I),D=B
+            ^-- expected equal or comma for assignment
+
+
+Input: LET C,FNA,D=B
+Output: C<ref> FNA<ref> D<ref> B AssignList'LET' 
+
+Input: LET C,FNA(I),D=B
+                ^-- expected equal or comma for assignment
+
 

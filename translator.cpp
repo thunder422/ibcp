@@ -316,6 +316,31 @@
 //				added "_State" to enum Translator::State values
 //				added new EndExpr_State, check to process_binary_operator()
 //				replaced PrintOnlyIntFunc with expected xxx expression error
+//	2011-03-07	implemented reference mode
+//				corrected problem with print functions within parentheses
+//	2011-03-09	moved sub-string function operand check to begin of
+//				  process_binary_operator() to prevent acceptance of operators
+//	2011-03-10	removed unexpected command error, just pass command token on
+//	2011-03-11	changed to assignment mode after an operand is received while
+//				  in command mode, changed code for with mode change
+//				return appropriate error for mode in process_operand() and
+//				  Comma_Handler()
+// 	2011-03-12	added new operator_error() to determine error when token is not
+//				  an expected operator from parts of process_binary_operator()
+//				  and now also called from process_operator() for command tokens
+//				  that have no token handler
+//				check for command token with no handler in process_operator()
+//				implemented new operator_error() from parts of
+//				  process_binary_operator() so that code in process_operator()
+//				  can also call it
+//				removed extra empty count stack mode check from middle of
+//				  processed_unary_operator() - now at begin of function
+//	2011-03-13	added check to make sure first operand of a sub-string function
+//				  assignment is not a unary operator in process_unary_operator()
+//				changed non-reference return error in find_code()
+//	2011-03-14	return error at parentheses for DefFuncP tokens in
+//				  process_operand() and check_assignlist_item()
+//				don't set DefFuncP reference flag in CloseParen_Handler()
 //
 
 #include "ibcp.h"
@@ -482,10 +507,7 @@ TokenStatus Translator::add_token(Token *&token)
 				return BUG_NotYetImplemented;
 			}
 		}
-		else  // command not permitted if not in command mode
-		{
-			return UnExpCommand_TokenStatus;
-		}
+		// 2011-03-10: removed error, fall through so proper error is reported
 	}
 
 	// check for both operand states (2010-06-10)
@@ -569,8 +591,9 @@ TokenStatus Translator::process_operand(Token *&token)
 		{
 			// 2010-06-11: detect invalid print-only function early
 			// 2011-03-05: added check for non-empty hold stack
-			if ((table->flags(token->code) & Print_Flag) && (cmd_stack.empty()
-				|| cmd_stack.top().token->code != Print_Code
+			// 2011-03-07: modified check to not catch empty command stack here
+			if ((table->flags(token->code) & Print_Flag) && (!cmd_stack.empty()
+				&& cmd_stack.top().token->code != Print_Code
 				|| hold_stack.top().token->code != Null_Code))
 			{
 				// 2011-03-05: replaced error with expression type error
@@ -586,11 +609,14 @@ TokenStatus Translator::process_operand(Token *&token)
 			switch (mode)
 			{
 			case Command_TokenMode:
+			case Assignment_TokenMode:  // moved here (2011-03-11)
 				if (count_stack.empty())
 				{
 					if (table->datatype(token->code) != SubStr_DataType)
 					{
-						return ExpCommand_TokenStatus;
+						// return appropriate error for mode (2011-03-11)
+						return mode == Command_TokenMode
+							? ExpCmd_TokenStatus : ExpAssignItem_TokenStatus;
 					}
 
 					// 2010-07-29: set reference of sub-string function
@@ -604,7 +630,6 @@ TokenStatus Translator::process_operand(Token *&token)
 				}
 				break;
 
-			case Assignment_TokenMode:
 			case AssignmentList_TokenMode:
 				if (table->datatype(token->code) != SubStr_DataType)
 				{
@@ -615,6 +640,35 @@ TokenStatus Translator::process_operand(Token *&token)
 				// 2010-07-29: set reference flag of sub-string function
 				token->reference = true;
 				break;
+
+			case Reference_TokenMode:  // added mode (2011-03-07)
+				if (count_stack.empty())
+				{
+					return ExpVar_TokenStatus;
+				}
+				break;
+			}
+		}
+		// for reference mode, only no parentheses tokens allowed (2011-03-07)
+		// added check for command mod, (2011-03-13)
+		else if (count_stack.empty() && token->type != Paren_TokenType)
+		{
+			// return appropriate error for mode (2011-03-14)
+			if (mode == Command_TokenMode || mode == Assignment_TokenMode)
+			{
+				if (token->type == DefFuncP_TokenType)
+				{
+					// TODO these are allowed in the DEF command
+					// just point to open parentheses on token
+					// FIXME remove "- 1" when paren removed from string
+					token->column += token->length - 1;
+					token->length = 1;
+				}
+				return ExpEqualOrComma_TokenStatus;
+			}
+			else if (mode == Reference_TokenMode)
+			{
+				return ExpVar_TokenStatus;
 			}
 		}
 
@@ -639,6 +693,13 @@ TokenStatus Translator::process_operand(Token *&token)
 	}
 	else  // !token->has_paren()
 	{
+		// for reference mode, only no parentheses tokens allowed (2011-03-07)
+		if (mode == Reference_TokenMode && count_stack.empty()
+			&& token->type != NoParen_TokenType)
+		{
+			return ExpVar_TokenStatus;
+		}
+
 		// token is a variable or a function with no arguments
 		// 2010-04-12: set reference flag for variable or function
 		if (token->type == NoParen_TokenType
@@ -653,8 +714,18 @@ TokenStatus Translator::process_operand(Token *&token)
 		RpnItem *rpn_item = new RpnItem(token);
 		done_stack.push().element = output->append(&rpn_item);
 		done_stack.top().first = done_stack.top().last = NULL;
-		state = BinOp_State;  // next token must be a binary operator
+		// in reference mode, have variable, set end expr state (2011-03-07)
+		// otherwise next token must be a binary operator
+		state = mode == Reference_TokenMode && count_stack.empty()
+			? EndExpr_State : BinOp_State;
 	}
+
+	// if command mode then change to assignment mode (2011-03-11)
+	if (mode == Command_TokenMode)
+	{
+		mode = Assignment_TokenMode;
+	}
+
 	return Good_TokenStatus;
 }
 
@@ -722,11 +793,38 @@ bool Translator::process_unary_operator(Token *&token, TokenStatus &status)
 {
 	// 2010-06-13: if command mode, then this is not the way it starts
 	// 2010-07-01: check if count stack is empty before checking mode
-	if (count_stack.empty() && mode == Command_TokenMode)
+	// 2011-03-07: added check for assignment and reference modes
+	if (count_stack.empty())
 	{
-		status = ExpCommand_TokenStatus;
+        switch (mode)
+        {
+        case Command_TokenMode:
+            status = ExpCmd_TokenStatus;
+            return false;
+
+		case Assignment_TokenMode:
+			status = ExpAssignItem_TokenStatus;
+			return false;
+
+		case AssignmentList_TokenMode:
+			status = errstatus_datatype[cmd_stack.top().token->datatype]
+				.variable;
+			return false;
+
+        case Reference_TokenMode:
+			status = ExpVar_TokenStatus;
+			return false;
+		}
+	}
+	// 2011-03-13: added check for sub-string assignment
+	else if (hold_stack.top().token->datatype == SubStr_DataType
+		&& hold_stack.top().token->reference
+		&& count_stack.top().noperands == 1)
+	{
+		status = ExpStrVar_TokenStatus;
 		return false;
 	}
+
 	Code unary_code = table->unary_code(token->code);
 	if (unary_code == Null_Code)
 	{
@@ -750,33 +848,8 @@ bool Translator::process_unary_operator(Token *&token, TokenStatus &status)
 		// 2010-05-29: changed argument to token pointer
 		do_pending_paren(hold_stack.top().token);
 
-		// 2010-04-16: implemented assignment handling
-		if (count_stack.empty())
-		{
-			// only check mode if not within parentheses
-			// (otherwise in an expression)
-			switch (mode)
-			{
-			case Assignment_TokenMode:
-				// oops, not expecting parentheses
-				status = UnexpParenInCmd_TokenStatus;
-				return false;
+		// 2011-03-12: removed, empty count stack mode check above
 
-			case AssignmentList_TokenMode:
-				// in a comma separated list
-				status = errstatus_datatype[cmd_stack.top().token->datatype]
-					.variable;
-				return false;
-
-			case Expression_TokenMode:
-				// inside an expression, nothing extra to do
-				break;
-
-			default:
-				status = BUG_InvalidMode;
-				return false;
-			}
-		}
 		// 2011-01-04: assign current expr data type to paren token
 		if ((status = get_expr_datatype(token->datatype)) != Good_TokenStatus)
 		{
@@ -814,50 +887,35 @@ TokenStatus Translator::process_binary_operator(Token *&token)
 {
 	TokenStatus status = Good_TokenStatus;
 
+	// 2010-10-10: check if after first operand of sub-string assignment
+    // 2011-03-09: moved command check to beginning
+	if (hold_stack.top().token->reference && count_stack.top().noperands == 1
+		&& token->code != Comma_Code)
+	{
+		// only a comma is allowed here
+		return ExpComma_TokenStatus;
+	}
 	// 2011-03-05: added end of expression token expected check
 	if (state == EndExpr_State && !(table->flags(token) & EndExpr_Flag))
 	{
 		// TODO currently only occurs after print function
 		// TODO add correct error based on current command
+		// TODO call command handler to get appropriate error here
 		return ExpSemiCommaOrEnd_TokenStatus;
 	}
 
 	if (!token->is_operator())
 	{
 		// state == BinOp_State, but token is not an operator
-		if ((status = paren_status()) == Good_TokenStatus)
-		{
-			// error is dependent on command
-			switch (mode)
-			{
-			case Command_TokenMode:
-			case Assignment_TokenMode:
-			case AssignmentList_TokenMode:
-				status = ExpEqualOrComma_TokenStatus;
-				break;
-
-			case Expression_TokenMode:
-				status = ExpOpOrEnd_TokenStatus;
-				break;
-
-			default:
-				status = BUG_InvalidMode;
-				break;
-			}
-		}
+		// 2011-03-12: replaced code with call to new function
+		return operator_error();
 	}
 	// 2010-03-21: changed unary operator check
 	else if (table->is_unary_operator(token->code))
 	{
 		status = ExpBinOpOrEnd_TokenStatus;
 	}
-	// 2010-10-10: check if after first operand of sub-string assignment
-	else if (hold_stack.top().token->reference
-		&& count_stack.top().noperands == 1 && token->code != Comma_Code)
-	{
-		// only a comma is allowed here
-		status = ExpComma_TokenStatus;
-	}
+	// 2011-03-09: moved check for first operand to beginning above
 	// 2010-03-26: initialize last precedence before emptying stack for ')'
 	else if (token->code == CloseParen_Code)
 	{
@@ -948,10 +1006,51 @@ TokenStatus Translator::process_operator(Token *&token)
 	TokenHandler token_handler = table->token_handler(token->code);
 	if (token_handler == NULL)  // no special handler?
 	{
+		// check for command token with no token handler (2011-03-12)
+		if (token->type == Command_TokenType)
+		{
+			// valid commands in BinOp state must have a token handler
+			return operator_error();
+		}
+
 		// use default operator token handler
 		token_handler = Operator_Handler;
 	}
 	return (*token_handler)(*this, token);
+}
+
+
+// function to return error when an operator is expected, first paren_status()
+// is called to get appropriate error when inside parentheses, internal function
+// of array/user function, and if not inside parentheses, then error is
+// dependent on current token mode
+
+// 2011-03-12: implemented new function from parts of process_binary_operator()
+TokenStatus Translator::operator_error(void)
+{
+	TokenStatus status;
+
+	if ((status = paren_status()) == Good_TokenStatus)
+	{
+		// error is dependent on mode
+		switch (mode)
+		{
+		case Command_TokenMode:
+		case Assignment_TokenMode:
+		case AssignmentList_TokenMode:
+			status = ExpEqualOrComma_TokenStatus;
+			break;
+
+		case Expression_TokenMode:
+			status = ExpOpOrEnd_TokenStatus;
+			break;
+
+		default:
+			status = BUG_InvalidMode;
+			break;
+		}
+	}
+	return status;
 }
 
 
@@ -1219,6 +1318,12 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 	{
 		first = NULL;   // token itself is first operand
 		last = token2;  // token's CloseParen is last
+		// check for end of array in reference mode (2011-03-07)
+		if (mode == Reference_TokenMode && count_stack.empty())
+		{
+			// have array element, set end expression state
+			state = EndExpr_State;
+		}
 	}
 
 	List<RpnItem *>::Element **operand;
@@ -1333,7 +1438,8 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 			delete_close_paren(work_last);
 
 			// XXX check command on top of command stack XXX
-			return ExpAssignRef_TokenStatus;
+			// 2011-03-13: changed return value
+			return ExpAssignItem_TokenStatus;
 		}
 	}
 	else
@@ -1501,9 +1607,7 @@ TokenStatus Translator::expression_end(void)
 			// could be assignment on hold stack
 			switch (mode)
 			{
-			case Command_TokenMode:
-				// no command was received yet
-				return ExpCommand_TokenStatus;
+			// 2011-03-12: removed command mode (can't happen)
 
 			case Assignment_TokenMode:
 				// expression hasn't started yet
@@ -1597,7 +1701,8 @@ TokenStatus Translator::paren_status(void)
 		// (could be at last argument, could be more arguments)
 		return ExpOpCommaOrParen_TokenStatus;
 	}
-	else if (mode == Command_TokenMode || mode == AssignmentList_TokenMode)
+	// 2011-03-12: removed command mode (can't happen)
+	else if (mode == AssignmentList_TokenMode)
 	{
 		// sub-string function
 		return ExpComma_TokenStatus;
@@ -1860,6 +1965,15 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 			|| equivalent_datatype[cmd_stack.top().token->datatype]
 			!= equivalent_datatype[token->datatype])
 		{
+			// point to just open parentheses of DefFuncP tokens (2011-03-14)
+			if (token->type == DefFuncP_TokenType)
+			{
+				// just point to open parentheses on token
+				// FIXME remove "- 1" when paren removed from string
+				token->column += token->length - 1;
+				token->length = 1;
+				return ExpEqualOrComma_TokenStatus;
+			}
 			// 2010-06-30: replaced with expected variable errors
 			return errstatus_datatype[cmd_stack.top().token->datatype].variable;
 		}
@@ -2021,8 +2135,9 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			if (t.done_stack.empty())
 			{
 				// if nothing before comma, comma unexpected (2010-06-13)
-				return t.cmd_stack.empty()
-					? ExpCommand_TokenStatus : ExpAssignItem_TokenStatus;
+				// return appropriate error for mode (2011-03-11)
+				return t.mode == Command_TokenMode
+					? ExpCmd_TokenStatus : ExpAssignItem_TokenStatus;
 			}
 
 			status = t.set_assign_command(token, AssignList_Code);
@@ -2141,7 +2256,7 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 		if (t.done_stack.empty())
 		{
 			// no tokens received yet
-			return ExpCommand_TokenStatus;
+			return ExpCmd_TokenStatus;
 		}
 		// an operands was received (start of an assignment)
 		return ExpEqualOrComma_TokenStatus;
@@ -2213,10 +2328,14 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		}
 
 		// 2010-04-12: set reference flag for array or function
-		// FIXME not sure DefFuncP should have reference set, set it for now
-		if (top_token->type != IntFuncP_TokenType)
+		// 2011-03-14: DefFuncP should not have reference set
+		if (top_token->type == Paren_TokenType)
 		{
 			top_token->reference = true;
+			operand_index = 0;  // not applicable
+		}
+		else if (top_token->type == DefFuncP_TokenType)
+		{
 			operand_index = 0;  // not applicable
 		}
 		else  // INTERNAL FUNCTION
@@ -2576,7 +2695,9 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	RpnItem *rpn_item;
 
 	Code code = token->code;
+	// TODO check for invalid token, report correct error
 
+	// PROCESS BEGIN/PROMPT
 	if (cmd_item->element == NULL)  // no begin code yet?
 	{
 		if (cmd_item->token->code == InputPrompt_Code)
@@ -2586,18 +2707,35 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			{
 				return ExpStrExpr_TokenStatus;
 			}
+			if (code == EOL_Code)
+			{
+				return ExpSemiOrComma_TokenStatus;
+			}
 			t.table->set_token(token, InputBeginStr_Code);
 			token->subcode = code == Comma_Code
 				? Question_SubCode : None_SubCode;
-			status = t.process_final_operand(token, NULL, 0);
-			// need to set done_pust = false;
-			if (status != Good_TokenStatus)
-			{
-				return status;
-			}
+			return t.process_final_operand(token, NULL, 0);
 		}
+
+		// Input_Code
+		if (code == EOL_Code)
+		{
+			return ExpVar_TokenStatus;
+		}
+		t.table->set_token(token, InputBegin_Code);
+		RpnItem *rpn_item = new RpnItem(token);
+		t.output->append(&rpn_item);
+		// now continue with input variable
 	}
 #if 0
+	// PROCESS INPUT VARIABLE
+	if (t.state != EndStatement_State)
+	{
+		if (t.done_stack.empty())
+		{
+			return ExpVar_TokenStatus;
+		}
+
 	switch (token->code)
 	{
 	case Comma_Code:

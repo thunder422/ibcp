@@ -78,7 +78,7 @@ Input: A,B+C
 
 
 Input: 3=A
-       ^-- item cannot be assigned
+       ^-- expected item for assignment
 
 
 Input: A,3,B=4

@@ -13,7 +13,7 @@ Input: int(Arr(A,B*(C+2))+(D))
 Output: A<ref> B C 2 +%2 * Arr([A<ref>,*] D')' + INT( 
 
 Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
-Output: X<ref> Y I Neg J + * I<ref> FNZ(<ref>[I<ref>] B([X<ref>,*,FNZ(<ref>] INT( NUM$ VAL([NUM$] Array(<ref>[INT(,VAL(] 
+Output: X<ref> Y I Neg J + * I<ref> FNZ([I<ref>] B([X<ref>,*,FNZ(] INT( NUM$ VAL([NUM$] Array(<ref>[INT(,VAL(] 
 
 Input: INT(A+B
               ^-- expected operator or closing parentheses

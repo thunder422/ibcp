@@ -1,5 +1,5 @@
 
-ibcp.exe  Copyright (C) 2010  Thunder422
+ibcp.exe  Copyright (C) 2010-2011  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
@@ -47,11 +47,11 @@ Input: LET A$,LEFT$(B$,1) = C$
 Output: A$<ref> B$<ref> 1 LEFT$(<ref> C$ AssignListMix$'LET'[C$] 
 
 Input: LET LET A=0
-           ^^^-- unexpected command
+           ^^^-- expected item for assignment
 
 
 Input: A = 0 LET 5
-             ^^^-- unexpected command
+             ^^^-- expected operator or end-of-statement
 
 
 Input: PRINT
