@@ -221,7 +221,7 @@ template <class T> typename List<T>::Element *List<T>::append(T *value)
 	{
 		element->prev = element;
 		element->next = element;
-}
+	}
 	else
 	{
 		element->prev = tail;
@@ -272,7 +272,7 @@ template <class T> typename List<T>::Element *List<T>::insert(T *value)
 	{
 		element->next = tail->next;
 		element->prev = tail;
-	element->next->prev = element;
+		element->next->prev = element;
 		tail->next = element;
 	}
 	return element;
