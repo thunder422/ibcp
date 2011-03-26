@@ -16,6 +16,7 @@
 ##  2011-02-27	changed main program codes.h and test_codes.h dependencies to be
 ##		  listed first
 ##		added removal of auto generated files to clean rule
+##  2011-03-26	replaced codes.awk with enums.awk, which generates autoenums.h
 
 
 #### Compiler and tool definitions shared by all build targets #####
@@ -32,14 +33,14 @@ IBCPOBJS_dir=objects
 TESTOBJS_dir=objects/test
 
 
-all: codes.h test_codes.h ibcp.exe
+all: autoenums.h test_codes.h ibcp.exe
 
-## Target: codes.h (also generates codes.txt)
-codes.h: table.cpp codes.awk
-	awk -f codes.awk
+## Target: autoenums.h (also generates codes.txt)
+autoenums.h: table.cpp enums.awk
+	awk -f enums.awk
 
 ## Target: test_codes.h
-test_codes.h: table.cpp codes.h test_codes.awk
+test_codes.h: table.cpp test_codes.awk
 	awk -f test_codes.awk
 
 ## Target: ibcp.exe
@@ -60,7 +61,7 @@ LDLIBS_ibcp.exe = -static-libgcc
 
 
 # Link or archive
-ibcp.exe: codes.h test_codes.h $(IBCP_incs) $(IBCP_objs)
+ibcp.exe: autoenums.h test_codes.h $(IBCP_incs) $(IBCP_objs)
 	$(LINK.cc) $(CCFLAGS_ibcp.exe) $(CPPFLAGS_ibcp.exe) -o $@ $(IBCP_objs) \
 		$(LDLIBS_ibcp.exe)
 
@@ -88,7 +89,7 @@ $(IBCPOBJS_dir)/test_ibcp.o: $(IBCPOBJS_dir) test_ibcp.cpp
 #### Clean target deletes all generated files ####
 clean: cleantests
 	rm -f \
-		codes.h codes.txt \
+		autoenums.h codes.txt \
 		test_codes.h \
 		ibcp.exe \
 		$(IBCP_objs)

@@ -1,7 +1,7 @@
 # vim:ts=4:sw=4:
 #
 #	Interactive BASIC Compiler Project
-#	File: codes.awk - awk script for creating codes.txt file from ibcp.h
+#	File: enums.awk - awk script for creating autoenums.h from source files
 #	Copyright (C) 2010-2011  Thunder422
 #
 #	This program is free software: you can redistribute it and/or modify
@@ -34,14 +34,22 @@
 #  2011-02-26  rewrote script to generate codes.h and codes.txt directly from
 #              the table.cpp source file (all code performed in BEGIN block)
 #
+#  2011-03-26  renamed from codes.awk to enums.awk
+#              updated to write autoenums.h that includes enum Code and
+#                enum TokenStatus (which comes from ibcp.cpp)
 #
-#  Usage: awk -f codes.awk
+#
+#  Usage: awk -f enums.awk
 #
 #  Note: The beginning of each table entry in table.cpp must be in the
 #        format "\t{  // xxx_Code\n" to be read by this script correctly.
 #        This script will check for duplicate codes, and if found, the
 #        output files will not be written (compiler errors will occur when
 #        building the ibcp program).
+#
+#  Note: The token status enumeration values are obtained from ibcp.cpp,
+#        each value must be at the beginning of the line after a "{" and
+#        followed by a "," to be parsed correctly.
 
 BEGIN {
 	n = 0
@@ -71,7 +79,7 @@ BEGIN {
 				# check for duplicates
 				if (field[3] in codes)
 				{
-					print "Duplicate code found:", field[3]
+					print "Duplicate code found: ", field[3]
 					dups++
 				}
 				else
@@ -83,23 +91,75 @@ BEGIN {
 		}
 	}
 
+	msg_array = 0
+	nts = 0
+	while ((getline line < "ibcp.cpp") > 0)
+	{
+		if (msg_array == 0)
+		{
+			if (line ~ /TokenStsMsg Token::message_array/)
+			{
+				# found start of token message array
+				msg_array = 1
+			}
+		}
+		else if (line ~ /};/)
+		{
+			# found end of token message array
+			msg_array = 0
+		}
+		else {
+			nf = split(line, field)
+			if (field[1] ~ /^{.+,$/)
+			{
+				# remove the "{", leave the ","
+				ts = substr(field[1], 2)
+
+				# check for duplicates
+				if (ts in tokensts)
+				{
+					s = substr(ts, 1, length(ts) - 1)
+					print "Duplicate token status found: ", s
+					dups++
+				}
+				else
+				{
+					tokensts[ts] = 1
+				}
+				ts_array[nts++] = ts
+			}
+		}
+	}
+
 	if (dups == 0)
 	{
-		# write 'codes.h'
-		printf "// File: codes.h - code enumeration\n" > "codes.h"
-		printf "//\n" > "codes.h"
-		printf "// This file generated automatically by codes.awk\n" > "codes.h"
-		printf "//\n" > "codes.h"
-		printf "// ***  DO NOT EDIT  ***\n" > "codes.h"
-		printf "\n" > "codes.h"
-		printf "enum Code {\n" > "codes.h"
-		printf "\tInvalid_Code = -1,\n" > "codes.h"
+		# write header to 'autoenums.h'
+		printf "// File: autoenums.h - ibcp enumerations\n" > "autoenums.h"
+		printf "//\n" > "autoenums.h"
+		printf "// This file generated automatically by enums.awk\n" > "autoenums.h"
+		printf "//\n" > "autoenums.h"
+		printf "// ***  DO NOT EDIT  ***\n" > "autoenums.h"
+
+		# write 'enum Code' to 'autoenums.h'
+		printf "\n" > "autoenums.h"
+		printf "enum Code {\n" > "autoenums.h"
+		printf "\tInvalid_Code = -1,\n" > "autoenums.h"
 		for (i = 0; i < n; i++)
 		{
-			printf "\t%s,\n", c[i] > "codes.h"
+			printf "\t%s,\n", c[i] > "autoenums.h"
 		}
-		printf "\tsizeof_Code\n" > "codes.h"
-		printf "};\n" > "codes.h"
+		printf "\tsizeof_Code\n" > "autoenums.h"
+		printf "};\n" > "autoenums.h"
+
+		# write 'enum TokenStatus' to 'autoenums.h'
+		printf "\n" > "autoenums.h"
+		printf "enum TokenStatus {\n" > "autoenums.h"
+		for (i = 0; i < nts; i++)
+		{
+			printf "\t%s\n", ts_array[i] > "autoenums.h"
+		}
+		printf "\tsizeof_TokenStatus\n" > "autoenums.h"
+		printf "};\n" > "autoenums.h"
 
 		# write 'codes.txt'
 		for (i = 0; i < n; i++)
@@ -115,12 +175,13 @@ BEGIN {
 
 		# output summary
 		print "Size of Code enumeration:", n
+		print "Size of TokenStatus enumeration:", nts
 	}
 	else  # error found
 	{
-		print "" > "codes.h"
+		print "" > "autoenums.h"
 		print "" > "codes.txt"
 		print ""
-		print "Duplicate codes found in table.cpp - please fix"
+		print "Duplicate found in table.cpp or ibcp.cpp - please correct"
 	}
 }

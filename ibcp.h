@@ -280,6 +280,11 @@
 //	2011-03-22	renamed Translator::FirstOperand_State to OperandOrEnd_State
 //	2011-03-24	added ExpOpSemiOrComma_TokenStatus
 //
+//	2011-03-26	enum TokenStatus is now automatically generated from the
+//				  ibcp.cpp source file by the enums.awk script so it was
+//				  removed,
+//				The automatic codes.h was renamed autoenums.h
+//
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -289,7 +294,8 @@
 #include "stack.h"  // 2010-04-02: added for Stack
 
 // 2011-02-26: replaced code enumeration with include
-#include "codes.h"
+// 2011-03-26: changed from codes.h, now includes all automatic enumerations
+#include "autoenums.h"
 
 // 2011-02-26: Code operator functions
 inline Code operator +(Code code, int number)
@@ -615,71 +621,7 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 // 2010-05-28: moved from Translator::Status, and renamed the values
 // 2010-06-01/14: added, renamed or deleted many status enumeration values
 // 2010-06-25: moved to begin of TOKEN section
-enum TokenStatus {
-	Null_TokenStatus,				// 2010-06-04: added
-	Good_TokenStatus,
-	Done_TokenStatus,
-	ExpCmd_TokenStatus,				// 2011-01-12: renamed again
-	ExpExpr_TokenStatus,			// 2010-06-10: renamed
-	ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
-	ExpOpOrEnd_TokenStatus,			// 2010-06-11: renamed
-	ExpBinOpOrEnd_TokenStatus,		// 2010-06-12: renamed
-	ExpOpOrComma_TokenStatus,		// 2010-06-11: added
-	ExpOpCommaOrParen_TokenStatus,	// 2010-06-11: added
-	NoOpenParen_TokenStatus,		// 2010-03-25: added
-	ExpOpOrParen_TokenStatus,		// 2010-03-25: added (renamed 2010-06-11)
-	// 2010-04-11: replaced Error_UnexpectedComma
-	ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
-	ExpComma_TokenStatus,			// 2010-07-04: added
-	ExpAssignItem_TokenStatus,		// 2010-06-13: added
-	ExpDouble_TokenStatus,			// 2010-04-25: added
-	ExpInteger_TokenStatus,			// 2010-04-25: added
-	ExpString_TokenStatus,			// 2010-04-25: added
-	ExpNumExpr_TokenStatus,			// 2010-06-29: added
-	ExpStrExpr_TokenStatus,			// 2010-06-29: added
-	ExpSemiCommaOrEnd_TokenStatus,	// 2011-03-05: added
-	ExpSemiOrComma_TokenStatus,		// 2011-03-06: added
-	ExpOpSemiOrComma_TokenStatus,	// 2011-03-24: added
-	ExpDblVar_TokenStatus,			// 2010-06-30: added
-	ExpIntVar_TokenStatus,			// 2010-06-30: added
-	ExpStrVar_TokenStatus,			// 2010-06-24: added
-	ExpVar_TokenStatus,				// 2011-03-06: added
-	ExpStrItem_TokenStatus,			// 2010-07-04: added
-	ExpEndStmt_TokenStatus,			// 2011-03-19: added
-	// the following statuses used during development
-	BUG_NotYetImplemented,			// somethings is not implemented
-	BUG_InvalidMode,				// added 2010-06-13
-	BUG_HoldStackEmpty,				// diagnostic message
-	BUG_HoldStackNotEmpty,			// diagnostic message
-	BUG_DoneStackNotEmpty,			// diagnostic message
-	BUG_DoneStackEmptyParen,		// diagnostic error (2010-03-25)
-	BUG_DoneStackEmptyOperands,		// diagnostic error (2010-04-02)
-	BUG_DoneStackEmptyOperands2,	// diagnostic error (2010-10-11)
-	BUG_DoneStackEmptyFindCode,		// diagnostic error (2010-07-01)
-	BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
-	BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
-	BUG_DoneStackEmpty,				// diagnostic error (2010-04-25)
-	BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
-	BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
-	BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
-	BUG_InvalidDataType,			// diagnostic error (2010-07-02)
-	BUG_CmdStackEmptyExpr,			// diagnostic error (2011-01-02)
-	BUG_CmdStackEmptyCmd,			// diagnostic error (2011-02-10)
-	BUG_CountStackEmpty,			// diagnostic error (2011-01-02)
-	BUG_UnexpParenExpr,				// diagnostic error (2011-01-02)
-	BUG_UnexpToken,					// diagnostic error (2011-02-11)
-	BUG_Debug,						// diagnostic error (2010-06-13)
-	BUG_Debug1,						// diagnostic error (2010-06-13)
-	BUG_Debug2,						// diagnostic error (2010-06-13)
-	BUG_Debug3,						// diagnostic error (2010-06-13)
-	BUG_Debug4,						// diagnostic error (2010-06-13)
-	BUG_Debug5,						// diagnostic error (2010-06-13)
-	BUG_Debug6,						// diagnostic error (2010-06-13)
-	BUG_Debug7,						// diagnostic error (2010-06-13)
-	BUG_Debug8,						// diagnostic error (2010-06-13)
-	BUG_Debug9,						// diagnostic error (2010-06-13)
-	sizeof_TokenStatus
-};
+// 2011-03-26: enum TokenStatus now automatically generated
 
 struct TokenStsMsg {  // 2010-06-25
 	TokenStatus status;		// status code

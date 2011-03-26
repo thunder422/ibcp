@@ -80,6 +80,10 @@
 //	2011-03-19	added ExpEndStmt_TokenStatus
 //	2011-03-24	added ExpOpSemiOrComma_TokenStatus
 //
+//	2011-03-26	enum TokenStatus is now automatically generated from the
+//				  Token::message_array[] is this source file, added comments
+//				  were captured from ibcp.h since they were being deleted
+//
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
@@ -98,126 +102,129 @@ bool Token::paren[sizeof_TokenType];
 bool Token::op[sizeof_TokenType];
 int Token::prec[sizeof_TokenType];  // 2010-04-02
 bool Token::table[sizeof_TokenType];  // 2010-05-29
+// 2011-03-26: capture comments from ibcp.h
 TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
-	{Null_TokenStatus,
-		"BUG: Null_TokenStaus"},  // should not see this (2010-06-28)
+	{Null_TokenStatus,				// 2010-06-04: added
+		"BUG: Null_TokenStaus"},	// should not see this (2010-06-28)
 	{Good_TokenStatus,
-		"BUG: Good_TokenStaus"},  // should not see this
+		"BUG: Good_TokenStaus"},	// should not see this
 	{Done_TokenStatus,
-		"BUG: Done_TokenStaus"},  // should not see this
-	{ExpCmd_TokenStatus,	      // renamed from statement (2011-01-12)
+		"BUG: Done_TokenStaus"},	// should not see this
+	{ExpCmd_TokenStatus,			// renamed from statement (2011-01-12)
 		"expected command"},
-	{ExpExpr_TokenStatus,
+	{ExpExpr_TokenStatus,			// 2010-06-10: renamed
 		"expected expression"},
-	{ExpExprOrEnd_TokenStatus,
+	{ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
 		"expected expression or end-of-statement"},
-	{ExpOpOrEnd_TokenStatus,
+	{ExpOpOrEnd_TokenStatus,		// 2010-06-11: renamed
 		"expected operator or end-of-statement"},
-	{ExpBinOpOrEnd_TokenStatus,
+	{ExpBinOpOrEnd_TokenStatus,		// 2010-06-12: renamed
 		"expected binary operator or end-of-statement"},
-	{ExpEqualOrComma_TokenStatus,
+	// 2010-04-11: replaced Error_UnexpectedComma
+	{ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
 		"expected equal or comma for assignment"},
-	{ExpComma_TokenStatus,
+	{ExpComma_TokenStatus,			// 2010-07-04: added
 		"expected comma"},
-	{ExpAssignItem_TokenStatus,
+	{ExpAssignItem_TokenStatus,		// 2010-06-11: added
 		"expected item for assignment"},
 	{ExpOpOrComma_TokenStatus,
 		"expected operator or comma"},
-	{ExpOpCommaOrParen_TokenStatus,
+	{ExpOpCommaOrParen_TokenStatus,	// 2010-06-11: added
 		"expected operator, comma or closing parentheses"},
-	{NoOpenParen_TokenStatus,  // 2011-03-13: changed message
-		"expected operator or end-of-expression"},
-	{ExpOpOrParen_TokenStatus,
+	{NoOpenParen_TokenStatus,		// 2010-03-25: added
+		"expected operator or end-of-expression"},  // 2011-03-13: changed
+	{ExpOpOrParen_TokenStatus,		// 2010-03-25: added (renamed 2010-06-11)
 		"expected operator or closing parentheses"},
-	{ExpDouble_TokenStatus,
+	{ExpDouble_TokenStatus,			// 2010-04-25: added
 		"expected double expression"},
-	{ExpInteger_TokenStatus,
+	{ExpInteger_TokenStatus,		// 2010-04-25: added
 		"expected integer expression"},
-	{ExpString_TokenStatus,
+	{ExpString_TokenStatus,			// 2010-04-25: added
 		"expected string expression (old)"},
-	{ExpNumExpr_TokenStatus,
+	{ExpNumExpr_TokenStatus,		// 2010-06-29: added
 		"expected numeric expression"},
-	{ExpStrExpr_TokenStatus,
+	{ExpStrExpr_TokenStatus,		// 2010-06-29: added
 		"expected string expression"},
-	{ExpSemiCommaOrEnd_TokenStatus,  // 2011-03-05: added
+	{ExpSemiCommaOrEnd_TokenStatus,	// 2011-03-05: added
 		"expected semicolon, comma or end-of-statement"},
-	{ExpSemiOrComma_TokenStatus,  // 2011-03-06: added
+	{ExpSemiOrComma_TokenStatus,	// 2011-03-06: added
 		"expected semicolon or comma"},
-	{ExpOpSemiOrComma_TokenStatus,  // 2011-03-24: added
+	{ExpOpSemiOrComma_TokenStatus,	// 2011-03-24: added
 		"expected operator, semicolon or comma"},
-	{ExpDblVar_TokenStatus,
+	{ExpDblVar_TokenStatus,			// 2010-06-30: added
 		"expected double variable"},
-	{ExpIntVar_TokenStatus,
+	{ExpIntVar_TokenStatus,			// 2010-06-30: added
 		"expected integer variable"},
-	{ExpStrVar_TokenStatus,
+	{ExpStrVar_TokenStatus,			// 2010-06-24: added
 		"expected string variable"},
-	{ExpVar_TokenStatus,  // 2011-03-06: added
+	{ExpVar_TokenStatus,			// 2011-03-06: added
 		"expected variable"},
-	{ExpStrItem_TokenStatus,
+	{ExpStrItem_TokenStatus,		// 2010-07-04: added
 		"expected string item for assignment"},
-	{ExpEndStmt_TokenStatus,  // 2011-03-19: added
+	{ExpEndStmt_TokenStatus,		// 2011-03-19: added
 		"expected end-of-statement"},
-	{BUG_NotYetImplemented,
+	// the following statuses used during development
+	{BUG_NotYetImplemented,			// somethings is not implemented
 		"BUG: not yet implemented"},
-	{BUG_InvalidMode,
+	{BUG_InvalidMode,				// added 2010-06-13
 		"BUG: invalid mode"},
-	{BUG_HoldStackEmpty,
+	{BUG_HoldStackEmpty,			// diagnostic message
 		"BUG: hold stack empty, expected Null"},
-	{BUG_HoldStackNotEmpty,
+	{BUG_HoldStackNotEmpty,			// diagnostic message
 		"BUG: hold stack not empty"},
-	{BUG_DoneStackNotEmpty,
+	{BUG_DoneStackNotEmpty,			// diagnostic message
 		"BUG: done stack not empty"},
-	{BUG_DoneStackEmptyParen,
+	{BUG_DoneStackEmptyParen,		// diagnostic error (2010-03-25)
 		"BUG: done stack empty, expected token for ')'"},
-	{BUG_DoneStackEmptyOperands,
+	{BUG_DoneStackEmptyOperands,	// diagnostic error (2010-04-02)
 		"BUG: done stack empty, expected token for operands"},
-	{BUG_DoneStackEmptyOperands2,
+	{BUG_DoneStackEmptyOperands2,	// diagnostic error (2010-10-11)
 		"BUG: insufficient items on done stack empty for operands"},
-	{BUG_DoneStackEmptyFindCode,
+	{BUG_DoneStackEmptyFindCode,	// diagnostic error (2010-07-01)
 		"BUG: done stack empty, expected token for operand"},
-	{BUG_UnexpectedCloseParen,
+	{BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
 		"BUG: unexpected closing parentheses"},
-	{BUG_UnexpectedToken,
+	{BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
 		"BUG: expected token on stack for array/function"},
-	{BUG_DoneStackEmpty,
+	{BUG_DoneStackEmpty,			// diagnostic error (2010-04-25)
 		"BUG: expected operand on done stack"},
-	{BUG_CmdStackNotEmpty,
+	{BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
 		"BUG: command stack not empty"},
-	{BUG_CmdStackEmpty,
+	{BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
 		"BUG: command stack empty"},
-	{BUG_CmdStackEmptyExpr,  // 2011-01-02: added
+	{BUG_CmdStackEmptyExpr,			// diagnostic error (2011-01-02)
 		"BUG: command stack empty for expression"},
-	{BUG_CmdStackEmptyCmd,   // 2011-02-10: added
+	{BUG_CmdStackEmptyCmd,			// diagnostic error (2011-02-10)
 		"BUG: command stack empty for command"},
-	{BUG_NoAssignListCode,
+	{BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
 		"BUG: no assign list code found"},
-	{BUG_InvalidDataType,
+	{BUG_InvalidDataType,			// diagnostic error (2010-07-02)
 		"BUG: invalid data type"},
-	{BUG_CountStackEmpty,  // 2011-01-02: added
+	{BUG_CountStackEmpty,			// diagnostic error (2011-01-02)
 		"BUG: count stack empty"},
-	{BUG_UnexpParenExpr,  // 2011-01-02: added
+	{BUG_UnexpParenExpr,			// diagnostic error (2011-01-02)
 		"BUG: unexpected parentheses in expression"},
-	{BUG_UnexpToken,  // 2011-02-11: added
+	{BUG_UnexpToken,				// diagnostic error (2011-02-11)
 		"BUG: unexpected token"},
-	{BUG_Debug1,
+	{BUG_Debug1,					// diagnostic error (2010-06-13)
 		"BUG: debug #1"},
-	{BUG_Debug2,
+	{BUG_Debug2,					// diagnostic error (2010-06-13)
 		"BUG: debug #2"},
-	{BUG_Debug3,
+	{BUG_Debug3,					// diagnostic error (2010-06-13)
 		"BUG: debug #3"},
-	{BUG_Debug4,
+	{BUG_Debug4,					// diagnostic error (2010-06-13)
 		"BUG: debug #4"},
-	{BUG_Debug5,
+	{BUG_Debug5,					// diagnostic error (2010-06-13)
 		"BUG: debug #5"},
-	{BUG_Debug6,
+	{BUG_Debug6,					// diagnostic error (2010-06-13)
 		"BUG: debug #6"},
-	{BUG_Debug7,
+	{BUG_Debug7,					// diagnostic error (2010-06-13)
 		"BUG: debug #7"},
-	{BUG_Debug8,
+	{BUG_Debug8,					// diagnostic error (2010-06-13)
 		"BUG: debug #8"},
-	{BUG_Debug9,
+	{BUG_Debug9,					// diagnostic error (2010-06-13)
 		"BUG: debug #9"},
-	{BUG_Debug,
+	{BUG_Debug,						// diagnostic error (2010-06-13)
 		"BUG: debug"}
 };
 int Token::index_status[sizeof_TokenStatus];
