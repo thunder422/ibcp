@@ -18,25 +18,63 @@ see <http://www.gnu.org/licenses/>.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-Planned Roadmap:
+Planned Roadmap (Updated):
 
-	Translator - INPUT Command
-	Translator - Colons
-	Translator - IF-THEN-ELSE-ENDIF Commands
-	Translator - FOR-NEXT Commands
-	Translator - DO-LOOP Commands
+	Translator - Colons (Parser issues, Token Status Enumeration)
+	Encoder - (for commands implemented so far)
+	Dictionary Definition (variables and arrays)
+	Dim command (translation and encoding)
+	Recreator (for command implemented so far)
 	Internal Language Definition
-	Dictionary Definition
-	Encoder - To single lines (not to internal program)
-	Recreator - For single lines (of implemented commands)
-	Translator - Single line DEF FN
-	Translator - More Commands
 	Translator - Line Numbers
 	Translator - Immediate Commands
-	Internal Program Definition
-	Encoder - Program sub-module
-	Encoder - Temporary Strings
-	Recreator - From internal program
+	Program (maintainer and simple line editor)
+	Run-time module (for command implemented so far)
+	Command - IF
+	Command - FOR-NEXT
+	Command - DO-LOOP
+	Command - Single line DEF FN
+	To be defined...
+
+
+Release 0.1.15 (2011-03-25)
+
+	Translator developmental release - the INPUT and INPUT PROMPT commands
+	have been implemented along with several updates
+	including:
+
+	    - token codes and table entries indexes now the same
+	    - corrected print function issues
+	    - corrected sub-string assignment issues
+	    - handling assignment token mode differently
+	    - handling define function tokens correctly
+	    - implementing end statement Translator state
+	    - implementing reference token mode
+
+	New (listed first) and updated files include:
+
+	translator16.txt - contains INPUT command test inputs
+
+	codes.awk        - read from table.cpp instead of ibcp.h
+	Makefile         - awk script dependency changes
+	ibcp.h           - numerous changes
+	ibcp.cpp         - error message changes
+	parser.cpp       - minor correction for define function tokens
+	parser1-5.txt    - removed code numbers
+	regtest          - added translator test 16
+	regtest.bat      - added translator test 16
+	table.cpp        - new input codes
+	test_codes.awk   - read from table.cpp instead of ibcp.h
+	test_ibcp.cpp    - new tests and sub-codes, parser output change
+	translator.cpp   - input command plus other changes
+	translator2.txt  - updated for error message changes
+	translator3.txt  - updated define function translation
+	translator5.txt  - updated for error message changes
+	translator6.txt  - updated for error message changes
+	translator9.txt  - updated for error message changes
+	translator10.txt - updated errors and added more PRINT tests
+	translator11.txt - updated for error message changes
+	translator12.txt - updated errors and added more error tests
 
 
 Release 0.1.15-pre-1 (2011-02-08)
@@ -310,6 +348,7 @@ Release 0.1.13 (2010-06-15)
 
 	ibcp.h           - PRINT command support plus more
 	parser5.txt      - updated for MID3$ code change
+	stack.h          - renamed SimplyStack to Stack
 	table.cpp        - added support for PRINT command and functions
 	test_ibcp.cpp    - added PRINT and statement error tests
 	translator.cpp   - PRINT command support/better error reporting
