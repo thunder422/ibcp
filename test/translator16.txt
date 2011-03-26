@@ -1,0 +1,103 @@
+
+ibcp.exe  Copyright (C) 2010-2011  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: INPUT A
+Output: InputBegin InputParse'End' A<ref> InputAssign INPUT 
+
+Input: INPUT A,B
+Output: InputBegin InputParse InputParse'End' A<ref> InputAssign B<ref> InputAssign INPUT 
+
+Input: INPUT A,B%,C$
+Output: InputBegin InputParse InputParseInt InputParseStr'End' A<ref> InputAssign B%<ref> InputAssignInt C$<ref> InputAssignStr INPUT 
+
+Input: INPUT A$;
+Output: InputBegin InputParseStr'End' A$<ref> InputAssignStr INPUT'Keep' 
+
+Input: INPUT A(I%),B%(I%);
+Output: InputBegin InputParse InputParseInt'End' I%<ref> A(<ref>[I%<ref>] InputAssign I%<ref> B%(<ref>[I%<ref>] InputAssignInt INPUT'Keep' 
+
+Input: INPUT PROMPT "Enter Number: "; N%
+Output: "Enter Number: " InputBeginStr["Enter Number: "] InputParseInt'End' N%<ref> InputAssignInt INPUT-PROMPT 
+
+Input: INPUT PROMPT A$+":"; A
+Output: A$ ":" +$[A$,":"] InputBeginTmp InputParse'End' A<ref> InputAssign INPUT-PROMPT 
+
+Input: INPUT PROMPT "Two Values", A, B;
+Output: "Two Values" InputBeginStr'Question'["Two Values"] InputParse InputParse'End' A<ref> InputAssign B<ref> InputAssign INPUT-PROMPT'Keep' 
+
+Input: INPUT PROMPT P$(I%), S$(I%)
+Output: I%<ref> P$([I%<ref>] InputBeginStr'Question'[P$(] InputParseStr'End' I%<ref> S$(<ref>[I%<ref>] InputAssignStr INPUT-PROMPT 
+
+Input: INPUT
+            ^-- expected variable
+
+
+Input: INPUT,
+            ^-- expected variable
+
+
+Input: INPUT;
+            ^-- expected variable
+
+
+Input: INPUT; -A
+            ^-- expected variable
+
+
+Input: INPUT (A)
+             ^-- expected variable
+
+
+Input: INPUT INT(A)
+             ^^^^-- expected variable
+
+
+Input: INPUT LEFT$(A$,1)
+             ^^^^^^-- expected variable
+
+
+Input: INPUT FNA
+             ^^^-- expected variable
+
+
+Input: INPUT FNA(X)
+             ^^^^-- expected variable
+
+
+Input: INPUT A B
+               ^-- expected semicolon, comma or end-of-statement
+
+
+Input: INPUT A+B
+              ^-- expected semicolon, comma or end-of-statement
+
+
+Input: INPUT A,
+               ^-- expected variable
+
+
+Input: INPUT PROMPT
+                   ^-- expected string expression
+
+
+Input: INPUT PROMPT A+B*C
+                    ^^^^^-- expected string expression
+
+
+Input: INPUT PROMPT A$
+                      ^-- expected operator, semicolon or comma
+
+
+Input: INPUT PROMPT A$+
+                       ^-- expected string expression
+
+
+Input: INPUT PROMPT A$;
+                       ^-- expected variable
+
+

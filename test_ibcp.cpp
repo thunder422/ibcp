@@ -168,6 +168,9 @@
 //	2011-03-03	added more print function expression tests
 //	2011-03-08	removed output of token codes in print_token() to prevent
 //				  parser test failures due to code/table entry changes
+//	2011-03-20	added input statment tests
+//				added keep and end  subcodes to print_small_token()
+//	2011-03-22	added question subcode to print_small_token()
 //
 
 #include <stdio.h>
@@ -946,9 +949,34 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"PRINT A$;B$+C$",
 		NULL
 	};
-	static const char *testinput16[] = {  // INPUT tests (2011-03-07)
+	static const char *testinput16[] = {  // INPUT tests (2011-03-20)
+		"INPUT A",
+		"INPUT A,B",
+		"INPUT A,B%,C$",
+		"INPUT A$;",
+		"INPUT A(I%),B%(I%);",
+		"INPUT PROMPT \"Enter Number: \"; N%",
+		"INPUT PROMPT A$+\":\"; A",
+		"INPUT PROMPT \"Two Values\", A, B;",
+		"INPUT PROMPT P$(I%), S$(I%)",
+		// error tests
+		"INPUT",
+		"INPUT,",
+		"INPUT;",
+		"INPUT; -A",
+		"INPUT (A)",
+		"INPUT INT(A)",
+		"INPUT LEFT$(A$,1)",
+		"INPUT FNA",
+		"INPUT FNA(X)",
 		"INPUT A B",
-		"INPUT -A",
+		"INPUT A+B",
+		"INPUT A,",
+		"INPUT PROMPT",
+		"INPUT PROMPT A+B*C",
+		"INPUT PROMPT A$",
+		"INPUT PROMPT A$+",
+		"INPUT PROMPT A$;",
 		NULL
 	};
 
@@ -1334,6 +1362,20 @@ bool print_small_token(Token *token, Table *table)
 		if (token->subcode & SemiColon_SubCode)
 		{
 			printf(";");
+		}
+		// 2011-03-20: added keep and end subcodes
+		if (token->subcode & Keep_SubCode)
+		{
+			printf("Keep");
+		}
+		if (token->subcode & End_SubCode)
+		{
+			printf("End");
+		}
+		// 2011-03-22: added question subcodes
+		if (token->subcode & Question_SubCode)
+		{
+			printf("Question");
 		}
 		printf("'");
 	}

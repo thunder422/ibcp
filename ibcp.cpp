@@ -77,6 +77,8 @@
 //	2011-03-10	renamed ExpCommand_TokenStatus to ExpCmd_TokenStatus
 //	2011-03-13	removed ExpAssignRef_TokenStatus, UnExpCommand_TokenStatus
 //				changed message to NoOpenParen_TokenStatus
+//	2011-03-19	added ExpEndStmt_TokenStatus
+//	2011-03-24	added ExpOpSemiOrComma_TokenStatus
 //
 
 #include <stdio.h>
@@ -141,6 +143,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected semicolon, comma or end-of-statement"},
 	{ExpSemiOrComma_TokenStatus,  // 2011-03-06: added
 		"expected semicolon or comma"},
+	{ExpOpSemiOrComma_TokenStatus,  // 2011-03-24: added
+		"expected operator, semicolon or comma"},
 	{ExpDblVar_TokenStatus,
 		"expected double variable"},
 	{ExpIntVar_TokenStatus,
@@ -151,6 +155,8 @@ TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 		"expected variable"},
 	{ExpStrItem_TokenStatus,
 		"expected string item for assignment"},
+	{ExpEndStmt_TokenStatus,  // 2011-03-19: added
+		"expected end-of-statement"},
 	{BUG_NotYetImplemented,
 		"BUG: not yet implemented"},
 	{BUG_InvalidMode,

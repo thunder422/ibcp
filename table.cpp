@@ -158,6 +158,9 @@
 //	2011-03-01	started INPUT command handler, added INPUT PROMPT table entry,
 //				  add InputBegin tale entries
 //				removed String flags - automatically set in Table::Table()
+//	2011-03-19	added input assign codes plus their associated code lists,
+//				  which sets the input parse codes as second associated codes
+//				renamed EndStatment_Flag to EndStmt_Flag
 //
 
 #include <ctype.h>
@@ -183,8 +186,8 @@
 	/ sizeof(code ## _AssocCode[0])), 0, code ## _AssocCode
 
 // 2010-07-18: new macro with second operand assoc code index
-#define AssocCode2(code, index)  (sizeof(code ## _AssocCode) \
-	/ sizeof(code ## _AssocCode[0])), index, code ## _AssocCode
+#define AssocCode2(code, index2)  (sizeof(code ## _AssocCode) \
+	/ sizeof(code ## _AssocCode[0])), index2, code ## _AssocCode
 
 
 // 2010-05-05: operand data type arrays
@@ -303,7 +306,12 @@ Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
 Code GtEqStr_AssocCode[]		= {GtEqStrT2_Code};
 Code GtEqStrT1_AssocCode[]		= {GtEqStrTT_Code};
 Code InputBeginStr_AssocCode[]	= {InputBeginTmp_Code};
-Code InputParse_AssocCode[]		= {InputParseInt_Code, InputParseStr_Code};
+// 2011-03-19: added input related associated code lists
+Code InputAssign_AssocCode[]	= {
+	InputAssignInt_Code, InputAssignStr_Code, InputParse_Code
+};
+Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
+Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
 Code Instr2_AssocCode[]			= {Instr2T1_Code, Instr2T2_Code};
 Code Instr2T1_AssocCode[]		= {Instr2TT_Code};
 Code Instr3_AssocCode[]			= {Instr3T1_Code, Instr3T2_Code};
@@ -991,7 +999,7 @@ static TableEntry table_entries[] =
 		// 2010-06-06: added end expression flag
 		// 2010-06-26: added end statment flag
 		Operator_TokenType, OneWord_Multiple,
-		NULL, NULL, EndExpr_Flag | EndStatement_Flag, 4, None_DataType, NULL,
+		NULL, NULL, EndExpr_Flag | EndStmt_Flag, 4, None_DataType, NULL,
 		EndOfLine_Handler
 	},
 	// 2011-02-04: added entries for associated string functions
@@ -1396,20 +1404,35 @@ static TableEntry table_entries[] =
 		"", "InputBeginTmp", Null_Flag, 2, None_DataType,
 		&Tmp_ExprInfo
 	},
-	// 2011-03-06: added hidden input codes (main plus associated codes)
+	// 2011-03-19: added hidden input assign codes (main plus associated codes)
+	{	// InputAssign_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputAssign", Reference_Flag, 2, None_DataType,
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode2(InputAssign, 2))
+	},
+	{	// InputAssignInt_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputAssignInt", Reference_Flag, 2, None_DataType,
+		new ExprInfo(Null_Code, Operands(Int), AssocCode(InputAssignInt))
+	},
+	{	// InputAssignStr_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputAssignStr", Reference_Flag, 2, None_DataType,
+		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputAssignStr))
+	},
+	// 2011-03-06: added hidden input parse codes
 	{	// InputParse_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputParseDbl", Null_Flag, 2, None_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(InputParse))
+		"", "InputParse", Null_Flag, 2, None_DataType
 	},
 	{	// InputParseInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputParseInt", Null_Flag, 2, None_DataType, &Int_ExprInfo
+		"", "InputParseInt", Null_Flag, 2, None_DataType
 	},
 	{	// InputParseStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputParseStr", Null_Flag, 2, None_DataType, &Str_ExprInfo
-	},
+		"", "InputParseStr", Null_Flag, 2, None_DataType
+	}
 };
 
 

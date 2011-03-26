@@ -270,6 +270,15 @@
 //	2011-03-10	renamed ExpCommand_TokenStatus to ExpCmd_TokenStatus
 //	2011-03-13	removed ExpAssignRef_TokenStatus, UnExpCommand_TokenStatus,
 //				  UnexpAssignComma_TokenStatus, UnexpParenInComma_TokenStatus
+//	2011-03-19	renamed EndStatement_Flag to EndStmt_Flag
+//				added Keep_SubCode (for INPUT), ExpEndStmt_TokenStatus
+//				renamed EndStatment_Flag to EndStmt_Flag
+//				added Translator::EndStmt_State
+//				added ExpEndStmt_TokenStatus
+//				implemented Translator::assoc2_code() access function
+//	2011-03-20	added End_SubCode (for INPUT), added input command flags
+//	2011-03-22	renamed Translator::FirstOperand_State to OperandOrEnd_State
+//	2011-03-24	added ExpOpSemiOrComma_TokenStatus
 //
 
 #ifndef IBCP_H
@@ -359,13 +368,17 @@ enum ExprType {  // 2010-06-29
 // 2010-08-01: removed Comma_SubCode
 // 2011-01-22: added Used and Last sub-codes for parentheses token flags
 // 2011-03-01: added Question sub-code for INPUT PROMPT command
+// 2011-03-19: added Keep sub-code for INPUT commands
+// 2011-03-20: added End sub-code for INPUT parse codes
 const int None_SubCode       = 0x00000000;	// no sub-code present
 const int Paren_SubCode      = 0x00000001;	// reproduce unnecessary parenthesis
 const int Let_SubCode        = 0x00000002;	// reproduce LET keyword for assign
+const int Keep_SubCode       = 0x00000004;	// keep cursor on same line of input
 const int SemiColon_SubCode  = 0x00000008;	// semicolon after print function
 const int Question_SubCode   = 0x00000010;	// add "? " to input prompt
 const int Used_SubCode       = 0x00000020;	// parentheses used in output
 const int Last_SubCode       = 0x00000040;	// parentheses used as last token
+const int End_SubCode        = 0x00000080;	// end of INPUT parsing codes
 
 
 // 2010-06-25: moved max constants
@@ -626,11 +639,13 @@ enum TokenStatus {
 	ExpStrExpr_TokenStatus,			// 2010-06-29: added
 	ExpSemiCommaOrEnd_TokenStatus,	// 2011-03-05: added
 	ExpSemiOrComma_TokenStatus,		// 2011-03-06: added
+	ExpOpSemiOrComma_TokenStatus,	// 2011-03-24: added
 	ExpDblVar_TokenStatus,			// 2010-06-30: added
 	ExpIntVar_TokenStatus,			// 2010-06-30: added
 	ExpStrVar_TokenStatus,			// 2010-06-24: added
 	ExpVar_TokenStatus,				// 2011-03-06: added
 	ExpStrItem_TokenStatus,			// 2010-07-04: added
+	ExpEndStmt_TokenStatus,			// 2011-03-19: added
 	// the following statuses used during development
 	BUG_NotYetImplemented,			// somethings is not implemented
 	BUG_InvalidMode,				// added 2010-06-13
@@ -828,7 +843,7 @@ const int Hidden_Flag         = 0x00000008;  // code is hidden operator/function
 const int Print_Flag          = 0x00000010;  // print-only function
 // note: don't use 0x00000020 - String_Flag is being used for codes
 const int EndExpr_Flag        = 0x00000040;	 // end expression
-const int EndStatement_Flag   = 0x00000080;  // end statement
+const int EndStmt_Flag        = 0x00000080;  // end statement
 
 // 2010-03-25: added highest precedence value
 const int Highest_Precedence = 127;
@@ -885,6 +900,7 @@ typedef TokenStatus (*TokenHandler)(Translator &t, Token *&token);
 // some flags are used for all commands and some are used only for
 // specific commands, the values of command specific flags may be reused
 // for different commands so each flag will be assigned a value
+// 2011-03-20: added input command flags
 
 // FLAGS FOR ALL COMMANDS
 const int None_CmdFlag			= 0x00000000;	// initial value of command flag
@@ -895,6 +911,10 @@ const int PrintFunc_CmdFlag		= 0x00020000;	// print func flag (2010-06-08)
 
 // FLAGS FOR ASSIGNMENT COMMANDS
 const int AssignList_CmdFlag	= 0x00010000;	// currently an assign list
+
+// FLAGS FOR INPUT COMMAND
+const int InputBegin_CmdFlag	= 0x00010000;	// beginning processed
+const int InputStay_CmdFlag		= 0x00020000;	// INPUT stay on line flag
 
 
 // 2010-05-28: added command item and command stack
@@ -1024,15 +1044,21 @@ public:
 	{
 		return entry[code].exprinfo->nassoc_codes;
 	}
-	Code assoc_code(Code code, int number)
+	Code assoc_code(Code code, int index)
 	{
 		// 2010-05-03: get value from expression information structure
-		return entry[code].exprinfo->assoc_code[number];
+		return entry[code].exprinfo->assoc_code[index];
 	}
 	// 2010-08-07: added new access function for assoc2_index
 	int assoc2_index(Code code)
 	{
 		return entry[code].exprinfo->assoc2_index;
+	}
+	// 2011-03-19: new function to get an associate 2 code
+	Code assoc2_code(Code code, int index = 0)
+	{
+		// 2010-05-03: get value from expression information structure
+		return entry[code].exprinfo->assoc_code[assoc2_index(code) + index];
 	}
 	// 2010-12-23: added new access function for nstrings
 	int nstrings(Code code)
@@ -1197,8 +1223,9 @@ class Translator {
 		Initial_State,				// initial state
 		BinOp_State,				// expecting binary operator
 		Operand_State,				// expecting unary operator or operand
-		FirstOperand_State,			// expecting first operand (2010-06-10)
+		OperandOrEnd_State,			// expecting operand or end (2010-06-10)
 		EndExpr_State,				// expecting end of expression (2011-03-05)
+        EndStmt_State,				// expecting end of statement (2011-03-19)
 		sizeof_State
 	} state;						// current state of translator
 	// 2010-03-25: added variables to support parentheses
