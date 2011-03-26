@@ -162,6 +162,8 @@
 //				  which sets the input parse codes as second associated codes
 //				renamed EndStatment_Flag to EndStmt_Flag
 //
+//	2011-03-26	corrected Assoc2Code_ErrorType error
+//
 
 #include <ctype.h>
 #include <stdio.h>
@@ -1477,7 +1479,8 @@ Table::Table(void)
 				&& exprinfo->assoc2_index > exprinfo->nassoc_codes)
 			{
 				// Assoc2Code_ErrorType
-				Error<Code> error(i, exprinfo->assoc2_index,
+				// 2011-03-26: added code type cast
+				Error<Code> error((Code)i, exprinfo->assoc2_index,
 					exprinfo->nassoc_codes);
 				error_list->append(&error);
 			}

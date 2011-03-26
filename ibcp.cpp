@@ -83,6 +83,8 @@
 //	2011-03-26	enum TokenStatus is now automatically generated from the
 //				  Token::message_array[] is this source file, added comments
 //				  were captured from ibcp.h since they were being deleted
+//				removed TokenStatus error checking and index_status[] array
+//				  initialization from Token::initialize()
 //
 
 #include <stdio.h>
@@ -102,132 +104,70 @@ bool Token::paren[sizeof_TokenType];
 bool Token::op[sizeof_TokenType];
 int Token::prec[sizeof_TokenType];  // 2010-04-02
 bool Token::table[sizeof_TokenType];  // 2010-05-29
-// 2011-03-26: capture comments from ibcp.h
-TokenStsMsg Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
-	{Null_TokenStatus,				// 2010-06-04: added
-		"BUG: Null_TokenStaus"},	// should not see this (2010-06-28)
-	{Good_TokenStatus,
-		"BUG: Good_TokenStaus"},	// should not see this
-	{Done_TokenStatus,
-		"BUG: Done_TokenStaus"},	// should not see this
-	{ExpCmd_TokenStatus,			// renamed from statement (2011-01-12)
-		"expected command"},
-	{ExpExpr_TokenStatus,			// 2010-06-10: renamed
-		"expected expression"},
-	{ExpExprOrEnd_TokenStatus,		// 2010-06-10: added
-		"expected expression or end-of-statement"},
-	{ExpOpOrEnd_TokenStatus,		// 2010-06-11: renamed
-		"expected operator or end-of-statement"},
-	{ExpBinOpOrEnd_TokenStatus,		// 2010-06-12: renamed
-		"expected binary operator or end-of-statement"},
-	// 2010-04-11: replaced Error_UnexpectedComma
-	{ExpEqualOrComma_TokenStatus,	// 2010-04-11: added
-		"expected equal or comma for assignment"},
-	{ExpComma_TokenStatus,			// 2010-07-04: added
-		"expected comma"},
-	{ExpAssignItem_TokenStatus,		// 2010-06-11: added
-		"expected item for assignment"},
-	{ExpOpOrComma_TokenStatus,
-		"expected operator or comma"},
-	{ExpOpCommaOrParen_TokenStatus,	// 2010-06-11: added
-		"expected operator, comma or closing parentheses"},
-	{NoOpenParen_TokenStatus,		// 2010-03-25: added
-		"expected operator or end-of-expression"},  // 2011-03-13: changed
-	{ExpOpOrParen_TokenStatus,		// 2010-03-25: added (renamed 2010-06-11)
-		"expected operator or closing parentheses"},
-	{ExpDouble_TokenStatus,			// 2010-04-25: added
-		"expected double expression"},
-	{ExpInteger_TokenStatus,		// 2010-04-25: added
-		"expected integer expression"},
-	{ExpString_TokenStatus,			// 2010-04-25: added
-		"expected string expression (old)"},
-	{ExpNumExpr_TokenStatus,		// 2010-06-29: added
-		"expected numeric expression"},
-	{ExpStrExpr_TokenStatus,		// 2010-06-29: added
-		"expected string expression"},
-	{ExpSemiCommaOrEnd_TokenStatus,	// 2011-03-05: added
-		"expected semicolon, comma or end-of-statement"},
-	{ExpSemiOrComma_TokenStatus,	// 2011-03-06: added
-		"expected semicolon or comma"},
-	{ExpOpSemiOrComma_TokenStatus,	// 2011-03-24: added
-		"expected operator, semicolon or comma"},
-	{ExpDblVar_TokenStatus,			// 2010-06-30: added
-		"expected double variable"},
-	{ExpIntVar_TokenStatus,			// 2010-06-30: added
-		"expected integer variable"},
-	{ExpStrVar_TokenStatus,			// 2010-06-24: added
-		"expected string variable"},
-	{ExpVar_TokenStatus,			// 2011-03-06: added
-		"expected variable"},
-	{ExpStrItem_TokenStatus,		// 2010-07-04: added
-		"expected string item for assignment"},
-	{ExpEndStmt_TokenStatus,		// 2011-03-19: added
-		"expected end-of-statement"},
+// 2011-03-26: changed to a simply array of strings
+const char *Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
+	"Null_TokenStatus (BUG)",							// Null
+	"Good_TokenStatus (BUG)",							// Good
+	"Done_TokenStatus (BUG)",							// Done
+	"expected command",									// ExpCmd
+	"expected expression",								// ExpExpr
+	"expected expression or end-of-statement",			// ExpExprOrEnd
+	"expected operator or end-of-statement",			// ExpOpOrEnd
+	"expected binary operator or end-of-statement",		// ExpBinOpOrEnd
+	"expected equal or comma for assignment",			// ExpEqualOrComma
+	"expected comma",									// ExpComma
+	"expected item for assignment",						// ExpAssignItem
+	"expected operator or comma",						// ExpOpOrComma
+	"expected operator, comma or closing parentheses",	// ExpOpCommaOrParen
+	"expected operator or end-of-expression",			// NoOpenParen
+	"expected operator or closing parentheses",			// ExpOpOrParen
+	"expected double expression",						// ExpDouble
+	"expected integer expression",						// ExpInteger
+	"expected string expression (old)",					// ExpString
+	"expected numeric expression",						// ExpNumExpr
+	"expected string expression",						// ExpStrExpr
+	"expected semicolon, comma or end-of-statement",	// ExpSemiCommaOrEnd
+	"expected semicolon or comma",						// ExpSemiOrComma
+	"expected operator, semicolon or comma",			// ExpOpSemiOrComma
+	"expected double variable",							// ExpDblVar
+	"expected integer variable",						// ExpIntVar
+	"expected string variable",							// ExpStrVar
+	"expected variable",								// ExpVar
+	"expected string item for assignment",				// ExpStrItem
+	"expected end-of-statement",						// ExpEndStmt
 	// the following statuses used during development
-	{BUG_NotYetImplemented,			// somethings is not implemented
-		"BUG: not yet implemented"},
-	{BUG_InvalidMode,				// added 2010-06-13
-		"BUG: invalid mode"},
-	{BUG_HoldStackEmpty,			// diagnostic message
-		"BUG: hold stack empty, expected Null"},
-	{BUG_HoldStackNotEmpty,			// diagnostic message
-		"BUG: hold stack not empty"},
-	{BUG_DoneStackNotEmpty,			// diagnostic message
-		"BUG: done stack not empty"},
-	{BUG_DoneStackEmptyParen,		// diagnostic error (2010-03-25)
-		"BUG: done stack empty, expected token for ')'"},
-	{BUG_DoneStackEmptyOperands,	// diagnostic error (2010-04-02)
-		"BUG: done stack empty, expected token for operands"},
-	{BUG_DoneStackEmptyOperands2,	// diagnostic error (2010-10-11)
-		"BUG: insufficient items on done stack empty for operands"},
-	{BUG_DoneStackEmptyFindCode,	// diagnostic error (2010-07-01)
-		"BUG: done stack empty, expected token for operand"},
-	{BUG_UnexpectedCloseParen,		// diagnostic error (2010-04-02)
-		"BUG: unexpected closing parentheses"},
-	{BUG_UnexpectedToken,			// diagnostic error (2010-04-02)
-		"BUG: expected token on stack for array/function"},
-	{BUG_DoneStackEmpty,			// diagnostic error (2010-04-25)
-		"BUG: expected operand on done stack"},
-	{BUG_CmdStackNotEmpty,			// diagnostic error (2010-05-30)
-		"BUG: command stack not empty"},
-	{BUG_CmdStackEmpty,				// diagnostic error (2010-05-30)
-		"BUG: command stack empty"},
-	{BUG_CmdStackEmptyExpr,			// diagnostic error (2011-01-02)
-		"BUG: command stack empty for expression"},
-	{BUG_CmdStackEmptyCmd,			// diagnostic error (2011-02-10)
-		"BUG: command stack empty for command"},
-	{BUG_NoAssignListCode,			// diagnostic error (2010-07-02)
-		"BUG: no assign list code found"},
-	{BUG_InvalidDataType,			// diagnostic error (2010-07-02)
-		"BUG: invalid data type"},
-	{BUG_CountStackEmpty,			// diagnostic error (2011-01-02)
-		"BUG: count stack empty"},
-	{BUG_UnexpParenExpr,			// diagnostic error (2011-01-02)
-		"BUG: unexpected parentheses in expression"},
-	{BUG_UnexpToken,				// diagnostic error (2011-02-11)
-		"BUG: unexpected token"},
-	{BUG_Debug1,					// diagnostic error (2010-06-13)
-		"BUG: debug #1"},
-	{BUG_Debug2,					// diagnostic error (2010-06-13)
-		"BUG: debug #2"},
-	{BUG_Debug3,					// diagnostic error (2010-06-13)
-		"BUG: debug #3"},
-	{BUG_Debug4,					// diagnostic error (2010-06-13)
-		"BUG: debug #4"},
-	{BUG_Debug5,					// diagnostic error (2010-06-13)
-		"BUG: debug #5"},
-	{BUG_Debug6,					// diagnostic error (2010-06-13)
-		"BUG: debug #6"},
-	{BUG_Debug7,					// diagnostic error (2010-06-13)
-		"BUG: debug #7"},
-	{BUG_Debug8,					// diagnostic error (2010-06-13)
-		"BUG: debug #8"},
-	{BUG_Debug9,					// diagnostic error (2010-06-13)
-		"BUG: debug #9"},
-	{BUG_Debug,						// diagnostic error (2010-06-13)
-		"BUG: debug"}
+	"BUG: not yet implemented",						// NotYetImplemented
+	"BUG: invalid mode",							// InvalidMode
+	"BUG: hold stack empty",						// HoldStackEmpty
+	"BUG: hold stack not empty",					// HoldStackNotEmpty
+	"BUG: done stack not empty",					// DoneStackNotEmpty
+	"BUG: done stack empty - parentheses",			// DoneStackEmptyParen
+	"BUG: done stack empty - operands",				// DoneStackEmptyOperands
+	"BUG: done stack empty - operands 2",			// DoneStackEmptyOperands2
+	"BUG: done stack empty - find code",			// DoneStackEmptyFindCode
+	"BUG: unexpected closing parentheses",			// UnexpectedCloseParen
+	"BUG: unexpected token on hold stack",			// UnexpectedToken
+	"BUG: expected operand on done stack",			// DoneStackEmpty
+	"BUG: command stack not empty",					// CmdStackNotEmpty
+	"BUG: command stack empty",						// CmdStackEmpty
+	"BUG: command stack empty for expression",		// CmdStackEmptyExpr
+	"BUG: command stack empty for command",			// CmdStackEmptyCmd
+	"BUG: no assign list code found",				// NoAssignListCode
+	"BUG: invalid data type",						// InvalidDataType
+	"BUG: count stack empty",						// CountStackEmpty
+	"BUG: unexpected parentheses in expression",	// UnexpParenExpr
+	"BUG: unexpected token",						// UnexpToken
+	"BUG: debug #1",								// Debug1
+	"BUG: debug #2",								// Debug2
+	"BUG: debug #3",								// Debug3
+	"BUG: debug #4",								// Debug4
+	"BUG: debug #5",								// Debug5
+	"BUG: debug #6",								// Debug6
+	"BUG: debug #7",								// Debug7
+	"BUG: debug #8",								// Debug8
+	"BUG: debug #9",								// Debug9
+	"BUG: debug"									// Debug
 };
-int Token::index_status[sizeof_TokenStatus];
 List<Token *> Token::list;  // 2011-01-29
 List<Token> Token::del_list;  // 2011-01-29
 
@@ -311,46 +251,7 @@ void Token::initialize(void)
 
 	// 2010-06-25: build message index and check message array
 	// 2010-06-25: replaced with Error template
-	List<Error<TokenStatus> > *error_list = new List<Error<TokenStatus> >;
-	int i;
-	for (i = 0; i < sizeof_TokenStatus; i++)  // initialize index array
-	{
-		index_status[i] = -1;
-	}
-	for (i = 0; i < sizeof_TokenStatus; i++)  // fill in index array
-	{
-		TokenStatus status = message_array[i].status;
-		// 2010-06-28: added missing string check
-		if (message_array[i].string == NULL)
-		{
-			continue;  // will be caught in the missing check below
-		}
-		else if (index_status[status] == -1)
-		{
-			index_status[status] = i;
-		}
-		else  // already assigned
-		{
-			Error<TokenStatus> error(status, index_status[status], i);
-			error_list->append(&error);
-		}
-	}
-	for (i = 0; i < sizeof_TokenStatus; i++)  // check for missing statuses
-	{
-		if (index_status[i] == -1)
-		{
-			Error<TokenStatus> error((TokenStatus)i);
-			error_list->append(&error);
-		}
-	}
-
-	// throw exception if error_list is not empty
-	if (!error_list->empty())
-	{
-		throw error_list;
-	}
-
-	delete error_list;
+    // 2011-03-26: removed error checking (done by enums.awk) and index_status[]
 }
 
 

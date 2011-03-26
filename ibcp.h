@@ -284,6 +284,9 @@
 //				  ibcp.cpp source file by the enums.awk script so it was
 //				  removed,
 //				The automatic codes.h was renamed autoenums.h
+//				removed Duplicate and Missing error types (no longer used)
+//				changed several shorts (index values) to type T in Error
+//				changed Token::message_array[] to simply string pointer array
 //
 
 #ifndef IBCP_H
@@ -407,8 +410,7 @@ const int Max_Assoc_Codes = 4;
 
 enum ErrorType {  // 2010-06-25: renamed from TableErrType
 	Unset_ErrorType,
-	Duplicate_ErrorType,
-	Missing_ErrorType,
+	// 2011-03-26: removed Duplicate_ErrorType and Missing_ErrorType
 	Range_ErrorType,
 	Overlap_ErrorType,
 	MaxOperands_ErrorType,		// 2010-05-20
@@ -435,34 +437,28 @@ typedef void (*PrintFunction)(const char *fmt, ...);
 
 // generic error structure template
 // 2010-08-10: changed ints to shorts, added multiple error types
+// 2011-03-26: changed shorts (indexes) to type T
 template <class T> struct Error {  // 2010-06-25: created from TableError
 	ErrorType type;			// type of the error
 	union {
-		struct {
-			T item;				// item with duplicate
-			short ifirst;		// index first found
-			short idup;			// index of duplicate
-		} duplicate;
-		struct {
-			T item;				// missing item
-		} missing;
+		// 2011-03-26: removed duplicate and missing structures
 		struct {
 			SearchType type;	// search type that is incomplete
-			short ibeg;			// index of beginning bracket item
-			short iend;			// index of ending bracket item
+			T ibeg;				// index of beginning bracket item
+			T iend;				// index of ending bracket item
 		} range;
 		struct {
 			SearchType type1;	// first search type of overlap
 			SearchType type2;	// second search type of overlap
-			short ibeg;			// index of beginning bracket item
-			short iend;			// index of ending bracket item
+			T ibeg;				// index of beginning bracket item
+			T iend;				// index of ending bracket item
 		} overlap;
 		struct {
 			int found;			// actual maximum found
 		} maximum;
 		struct {
-			short entry;		// index of entry with error
-			short code;			// assoc 2 code
+			T entry;			// index of entry with error
+			short index;		// assoc 2 index
 			short n;			// number of assoc codes
 		} assoc2;
 		struct {
@@ -477,26 +473,15 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 		} multiple;
 	};
 
-	Error(T item, int ifirst, int idup)
-	{
-		type = Duplicate_ErrorType;
-		duplicate.item = item;
-		duplicate.ifirst = ifirst;
-		duplicate.idup = idup;
-	}
-	Error(T item)
-	{
-		type = Missing_ErrorType;
-		missing.item = item;
-	}
-	Error(SearchType searchtype, int ibeg, int iend)
+	// 2011-03-26: removed Duplicate_ErrorType and Missing_ErrorType
+	Error(SearchType searchtype, T ibeg, T iend)
 	{
 		type = Range_ErrorType;
 		range.type = searchtype;
 		range.ibeg = ibeg;
 		range.iend = iend;
 	}
-	Error(SearchType type1, SearchType type2, int ibeg, int iend)
+	Error(SearchType type1, SearchType type2, T ibeg, T iend)
 	{
 		type = Overlap_ErrorType;
 		overlap.type1 = type1;
@@ -511,11 +496,11 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 		maximum.found = max;
 	}
 	// 2010-07-18: added new error
-	Error(short code, short code2, short nassoc)
+	Error(T code, short index, short nassoc)
 	{
 		type = Assoc2Code_ErrorType;
 		assoc2.entry = code;
-		assoc2.code = code2;
+		assoc2.index = index;
 		assoc2.n = nassoc;
 	}
 	// 2010-08-10: added new error
@@ -557,15 +542,7 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 			(*print)("Error #%d: ", ++n);
 			switch (error.type)
 			{
-			case Duplicate_ErrorType:
-				(*print)("%s %d in table more than once at entries %d and "
-					"%d\n", item, error.duplicate.item,
-					error.duplicate.ifirst, error.duplicate.idup);
-				break;
-			case Missing_ErrorType:
-				(*print)("%s %d missing from table\n", item,
-					error.missing.item);
-				break;
+			// 2011-03-26: removed Duplicate_ErrorType and Missing_ErrorType
 			case Range_ErrorType:
 				(*print)("Search type %d indexes (%d, %d) not correct\n",
 					error.range.type, error.range.ibeg, error.range.iend);
@@ -586,8 +563,8 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 				break;
 			// 2010-07-18: added new assoc 2 code bad error
 			case Assoc2Code_ErrorType:
-				(*print)("Entry:%d Assoc2Code=%d too large, maximum is %d\n",
-					error.assoc2.entry, error.assoc2.code, error.assoc2.n);
+				(*print)("Entry:%d Assoc2Index=%d too large, maximum is %d\n",
+					error.assoc2.entry, error.assoc2.index, error.assoc2.n);
 				break;
 			// 2010-08-10: added new multiple flag errors
 			case MultName_ErrorType:
@@ -623,11 +600,7 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 // 2010-06-25: moved to begin of TOKEN section
 // 2011-03-26: enum TokenStatus now automatically generated
 
-struct TokenStsMsg {  // 2010-06-25
-	TokenStatus status;		// status code
-	const char *string;		// associate message
-};
-
+// 2011-03-26: removed TokenStsMsg
 // 2010-06-25: TokenStsMsgErr/Type replaced with Error template
 
 
@@ -729,16 +702,17 @@ struct Token {
 	static bool op[sizeof_TokenType];
 	static int prec[sizeof_TokenType];  // 2010-04-02
 	static bool table[sizeof_TokenType];  // 2010-05-29
-	static TokenStsMsg message_array[sizeof_TokenStatus];  // 2010-06-25
-	static int index_status[sizeof_TokenStatus];  // 2010-06-25
+	// 2011-03-26: changes message_array to const char *, removed index_status
+	static const char *message_array[sizeof_TokenStatus];  // 2010-06-25
     static List<Token *> list;  // 2011-01-29
     static List<Token> del_list;  // 2011-01-29
 
 	static void initialize(void);
 	// 2010-06-25: new function to get message for status
+	// 2011-03-26: changed message_array to simply array of string pointers
 	static const char *message(TokenStatus status)
 	{
-		return message_array[index_status[status]].string;
+		return message_array[status];
 	}
 };
 

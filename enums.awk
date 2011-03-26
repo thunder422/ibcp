@@ -37,6 +37,7 @@
 #  2011-03-26  renamed from codes.awk to enums.awk
 #              updated to write autoenums.h that includes enum Code and
 #                enum TokenStatus (which comes from ibcp.cpp)
+#              added exit code upon failure to terminate build
 #
 #
 #  Usage: awk -f enums.awk
@@ -47,9 +48,13 @@
 #        output files will not be written (compiler errors will occur when
 #        building the ibcp program).
 #
-#  Note: The token status enumeration values are obtained from ibcp.cpp,
-#        each value must be at the beginning of the line after a "{" and
-#        followed by a "," to be parsed correctly.
+#  Note: The token status enumeration values are obtained from the
+#        Token::message_array[] in the ibcp.cpp source file, each line must
+#        start with the string, followed by the "//" comment, a space and the
+#        name of the TokenStatus value (the "_TokenStatus" string will be added
+#        to to the end of this name).  If the string starts with "BUG", the
+#        string value is is a developmental TokenStatus value (the "BUG_"
+#        string will be prefixed to the name).
 
 BEGIN {
 	n = 0
@@ -97,7 +102,7 @@ BEGIN {
 	{
 		if (msg_array == 0)
 		{
-			if (line ~ /TokenStsMsg Token::message_array/)
+			if (line ~ /const char \*Token::message_array/)
 			{
 				# found start of token message array
 				msg_array = 1
@@ -110,16 +115,21 @@ BEGIN {
 		}
 		else {
 			nf = split(line, field)
-			if (field[1] ~ /^{.+,$/)
+			if (field[nf - 1] == "//")
 			{
-				# remove the "{", leave the ","
-				ts = substr(field[1], 2)
+				if (field[1] !~ /BUG/)
+				{
+					ts = field[nf] "_TokenStatus"
+				}
+				else
+				{
+					ts = "BUG_" field[nf]
+				}
 
 				# check for duplicates
 				if (ts in tokensts)
 				{
-					s = substr(ts, 1, length(ts) - 1)
-					print "Duplicate token status found: ", s
+					print "Duplicate token status found: ", ts
 					dups++
 				}
 				else
@@ -156,7 +166,7 @@ BEGIN {
 		printf "enum TokenStatus {\n" > "autoenums.h"
 		for (i = 0; i < nts; i++)
 		{
-			printf "\t%s\n", ts_array[i] > "autoenums.h"
+			printf "\t%s,\n", ts_array[i] > "autoenums.h"
 		}
 		printf "\tsizeof_TokenStatus\n" > "autoenums.h"
 		printf "};\n" > "autoenums.h"
@@ -183,5 +193,7 @@ BEGIN {
 		print "" > "codes.txt"
 		print ""
 		print "Duplicate found in table.cpp or ibcp.cpp - please correct"
+		# return failure code (2011-03-26)
+		exit 1
 	}
 }
