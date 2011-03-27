@@ -357,6 +357,10 @@
 //				added reference mode to end_expression_error()
 //	2011-03-25	removed token delete with prompt error in Input_CmdHandler()
 //
+//	2011-03-26	modified the token error pointer for DefFuncP tokens to
+//				  to compensate for the lack of the open parentheses that is no
+//				  longer stored in the token string
+//
 
 #include "ibcp.h"
 
@@ -683,8 +687,8 @@ TokenStatus Translator::process_operand(Token *&token)
 				{
 					// TODO these are allowed in the DEF command
 					// just point to open parentheses on token
-					// FIXME remove "- 1" when paren removed from string
-					token->column += token->length - 1;
+					// 2011-03-26: removed "- 1" as paren not in string
+					token->column += token->length;
 					token->length = 1;
 				}
 				return ExpEqualOrComma_TokenStatus;
@@ -1996,8 +2000,8 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 			if (token->type == DefFuncP_TokenType)
 			{
 				// just point to open parentheses on token
-				// FIXME remove "- 1" when paren removed from string
-				token->column += token->length - 1;
+				// 2011-03-26: removed "- 1" as paren not in string
+				token->column += token->length;
 				token->length = 1;
 				return ExpEqualOrComma_TokenStatus;
 			}

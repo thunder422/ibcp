@@ -172,6 +172,10 @@
 //				added keep and end  subcodes to print_small_token()
 //	2011-03-22	added question subcode to print_small_token()
 //
+//	2011-03-26	modified print_token() and print_small_token() to output an
+//				  open parentheses for DefFuncP and Paren token types that are
+//				  no longer stored in the tokens string
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1183,6 +1187,7 @@ bool print_token(Token *token, Table *table, bool tab)
 	{
 	case ImmCmd_TokenType:
 		// 2011-03-08: removed output of token code
+
 		printf(" %s", code_name[token->code]);
 		if (token->datatype == CmdArgs_DataType)
 		{
@@ -1205,11 +1210,16 @@ bool print_token(Token *token, Table *table, bool tab)
 		printf(" %s", code_name[token->code]);
 		// fall thru
 	case DefFuncN_TokenType:
-	case DefFuncP_TokenType:
 	case NoParen_TokenType:
-	case Paren_TokenType:
 		printf(" %-7s", datatype_name[token->datatype]);
 		printf(" |%.*s|", token->string->get_len(),
+			token->string->get_ptr());
+		break;
+	// 2011-03-26: separated tokens with parens, add paren to output
+	case DefFuncP_TokenType:
+	case Paren_TokenType:
+		printf(" %-7s", datatype_name[token->datatype]);
+		printf(" |%.*s(|", token->string->get_len(),
 			token->string->get_ptr());
 		break;
 	case Constant_TokenType:
@@ -1281,10 +1291,13 @@ bool print_small_token(Token *token, Table *table)
 	case Remark_TokenType:
 		// fall thru
 	case DefFuncN_TokenType:
-	case DefFuncP_TokenType:
 	case NoParen_TokenType:
-	case Paren_TokenType:
 		printf("%.*s", token->string->get_len(), token->string->get_ptr());
+		break;
+	// 2011-03-26: separated tokens with parens, add paren to output
+	case DefFuncP_TokenType:
+	case Paren_TokenType:
+		printf("%.*s(", token->string->get_len(), token->string->get_ptr());
 		break;
 	case Constant_TokenType:
 		switch (token->datatype)

@@ -66,9 +66,12 @@
 //
 //	2011-01-11	set token length for identifiers and number constants
 //
-//	2011-02-26	changed all table index to code, search() noew returns code
+//	2011-02-26	changed all table index to code, search() now returns code
 //
 //	2011-03-14	also set token length for FN identifiers
+//
+//	2011-03-26	modified get_identifier() to not store the open parentheses of
+//				  DefFuncP and Paren token types
 //
 
 #include <stdio.h>
@@ -84,7 +87,7 @@
 // function to get a token at the current position
 //
 //     - a pointer to the token if returned
-//     - the token must be dellocated when it is no longer needed
+//     - the token must be deallocated when it is no longer needed
 //     - the token may contain an error message if an error was found
 
 Token *Parser::get_token(void)
@@ -415,10 +418,20 @@ bool Parser::get_identifier(void)
 	if (strncasecmp(pos, "FN", 2) == 0)  // defined function?
 	{
 		// 2010-03-06: split DefFunc_TokenType
-		token->type = paren ? DefFuncP_TokenType : DefFuncN_TokenType;
+		if (paren)
+		{
+			// don't include parentheses in string or length (2011-03-26)
+			token->type = DefFuncP_TokenType;
+			token->string = new String(pos, p - 1);
+			token->length = len - 1;  // 2011-03-14: set length of token
+		}
+		else  // no parentheses
+		{
+			token->type = DefFuncN_TokenType;
+			token->string = new String(pos, p);
+			token->length = len;  // 2011-03-14: set length of token
+		}
 		token->datatype = datatype;
-		token->string = new String(pos, p);
-		token->length = len;  // 2011-03-14: set length of token
 		pos = p;  // move position past defined function identifier
 		return true;
 	}
@@ -441,10 +454,20 @@ bool Parser::get_identifier(void)
 		// must be variable, array, generic function, or subroutine
 		// but that can't be determined here, so just return data type,
 		// whether opening parenthesis is present, and string of identifier
-		token->type = paren ? Paren_TokenType : NoParen_TokenType;
+		if (paren)
+		{
+			// don't include parentheses in string or length (2011-03-26)
+			token->type = Paren_TokenType;
+			token->string = new String(pos, len - 1);
+			token->length = len - 1;  // 2011-01-11: set length of token
+		}
+		else
+		{
+			token->type = NoParen_TokenType;
+			token->string = new String(pos, len);
+			token->length = len;  // 2011-01-11: set length of token
+		}
 		token->datatype = datatype;
-		token->string = new String(pos, len);
-		token->length = len;  // 2011-01-11: set length of token
 		pos = p;  // move position past word
 		return true;
 	}
