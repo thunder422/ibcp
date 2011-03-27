@@ -287,6 +287,8 @@
 //				removed Duplicate and Missing error types (no longer used)
 //				changed several shorts (index values) to type T in Error
 //				changed Token::message_array[] to simply string pointer array
+//	2011-03-27	added operand_state flag to Parser with set access function
+//				added get operand state access function to Translator
 //
 
 #ifndef IBCP_H
@@ -1057,6 +1059,7 @@ class Parser {
 	char *input;			// pointer to input line being parsed
 	char *pos;				// pointer to current position in input string
 	Token *token;			// pointer to working token (to be returned)
+	bool operand_state;		// currently operand state flag (2011-03-27)
 
 	// main functions
 	bool get_command(void);
@@ -1075,8 +1078,14 @@ public:
 	void start(char *i)
 	{
 		pos = input = i;
+		operand_state = false;
 	}
 	Token *get_token();
+	// 2011-03-27: added function to access operand state
+	void set_operand_state(bool state)
+	{
+		operand_state = state;
+	}
 };
 
 
@@ -1176,6 +1185,11 @@ public:
 		// 2010-04-16: start in expression mode for testing
 		mode = exprmode ? Expression_TokenMode : Command_TokenMode;
 		// 2010-06-29: if expression mode then set any expression type
+	}
+	// 2011-03-27: added function to access if operand state
+	bool get_operand_state(void)
+	{
+		return state == Operand_State || state == OperandOrEnd_State;
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
 	TokenStatus add_token(Token *&token);

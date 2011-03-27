@@ -168,13 +168,15 @@
 //	2011-03-03	added more print function expression tests
 //	2011-03-08	removed output of token codes in print_token() to prevent
 //				  parser test failures due to code/table entry changes
-//	2011-03-20	added input statment tests
+//	2011-03-20	added translator test 16 for input statment tests
 //				added keep and end  subcodes to print_small_token()
 //	2011-03-22	added question subcode to print_small_token()
 //
 //	2011-03-26	modified print_token() and print_small_token() to output an
 //				  open parentheses for DefFuncP and Paren token types that are
 //				  no longer stored in the tokens string
+//	2011-03-27	set parser operand state from translator before each token
+//				added translator test 17 for negative constant tests
 //
 
 #include <stdio.h>
@@ -983,11 +985,35 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		"INPUT PROMPT A$;",
 		NULL
 	};
+	static const char *testinput17[] = {  // negative const tests (2011-03-27)
+		"A=---B",
+		"A=-1.0",
+		"A%=--1",
+		"A=B-1.5",
+		"A=B+-1.5",
+		"A=B+--1.5",
+		"PRINT-1;--1;---1;- 1;",
+		"A=- 1.0 + -.001 + -0.12",
+		"A%=-1 + - 2",
+		"A=-1.2E-23 + -1.2e+23 + -1.2e23",
+		"A=- 1.2E-23 + - 1.2e+23 + - 1.2e23",
+		"A% = NOT -B%",
+		"A% = NOT -2147483648",  // negative integer limit
+		"A% = - NOT 123",
+		"A% = -2147483649 ",	// integer limit test
+		"A = B^-C + B*-C",
+		"A = -B^C + -B^-C",
+		"A = -B*C + -B*-C",
+		"A = (-B^NOT C) + -B*NOT C",  // TODO check with recreator
+		"A = -B^NOT C + -B*NOT C",
+		NULL
+	};
 
 	static const char **test[] = {
 		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
 		testinput7, testinput8, testinput9, testinput10, testinput11,
-		testinput12, testinput13, testinput14, testinput15, testinput16
+		testinput12, testinput13, testinput14, testinput15, testinput16,
+		testinput17
 	};
 	static const int ntests = sizeof(test) / sizeof(test[0]);
 
@@ -1049,6 +1075,8 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 	translator.start(exprmode);
 	parser.start((char *)testinput);
 	do {
+        // set parser operand state from translator (2011-03-27)
+        parser.set_operand_state(translator.get_operand_state());
 		org_token = token = parser.get_token();
 		// 2010-03-18: need to check for a parser error
 		if (token->type == Error_TokenType)

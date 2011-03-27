@@ -72,6 +72,8 @@
 //
 //	2011-03-26	modified get_identifier() to not store the open parentheses of
 //				  DefFuncP and Paren token types
+//	2011-03-27	modified get_number() to look for a negative sign in front of
+//				  constants if the new operand_state flag is set
 //
 
 #include <stdio.h>
@@ -611,6 +613,7 @@ bool Parser::get_number(void)
 {
 	bool digits = false;		// digits were found flag
 	bool decimal = false;		// decimal point was found flag
+	bool sign = false;			// have negative sign flag (2011-03-27)
 
 	char *p = pos;
 	for (;;)
@@ -677,7 +680,7 @@ bool Parser::get_number(void)
 			digits = false;
 			while (isdigit(*p))
 			{
-				p++;  //move past exponent digit
+				p++;  // move past exponent digit
 				digits = true;
 			}
 			if (!digits)  // no exponent digits found?
@@ -692,14 +695,26 @@ bool Parser::get_number(void)
 		{
 			if (!digits && !decimal)  // nothing found?
 			{
-				return false;  // not a numeric constant
+				// look for negative sign (2011-03-27)
+				if (operand_state && !sign && *p == '-')
+				{
+					p++;  // move past negative sign
+					sign = true;
+				}
+				else
+				{
+					return false;  // not a numeric constant
+				}
 			}
-			if (!digits)  // only a decimal point found?
+			else if (!digits)  // only a decimal point found?
 			{
 				token->set_error("constant only contains a decimal point");
 				return true;
 			}
-			break;  // no more valid number characters, go process what we got
+			else
+			{
+				break;  // no more valid number characters, go process what we got
+			}
 		}
 	}
 	// p pointing to first character that is not part of constant

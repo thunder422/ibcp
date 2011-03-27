@@ -30,6 +30,7 @@
 #              before the .exe was being added automatically)
 #  2011-02-05  added translator test 15
 #  2011-03-20  added translator test 16
+#  2011-03-27  added translator test 17
 #
 #
 #  Usage:
@@ -54,7 +55,7 @@ do
 	fi
 done
 
-for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
 do
 	ibcp.exe -t $i >translator$i.txt
 	cmp -s test/translator$i.txt translator$i.txt

@@ -360,6 +360,8 @@
 //	2011-03-26	modified the token error pointer for DefFuncP tokens to
 //				  to compensate for the lack of the open parentheses that is no
 //				  longer stored in the token string
+//	2011-03-27	modified process_operator() to not allow unary operators to
+//				  force other tokens from hold stack
 //
 
 #include "ibcp.h"
@@ -1001,8 +1003,10 @@ TokenStatus Translator::process_binary_operator(Token *&token)
 TokenStatus Translator::process_operator(Token *&token)
 {
 	// 2010-04-02: changed stack top precedence to work with paren tokens
+	// 2011-03-27: unary operators don't force other tokens from hold stack
 	while (table->precedence(hold_stack.top().token)
-		>= table->precedence(token->code))
+		>= table->precedence(token->code)
+		&& !table->is_unary_operator(token->code))
 	{
 		// pop operator on top of stack and add it to the output
 		// 2010-04-13: set top_token so reference can be passed
