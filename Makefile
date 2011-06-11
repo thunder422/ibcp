@@ -17,6 +17,11 @@
 ##		  listed first
 ##		added removal of auto generated files to clean rule
 ##  2011-03-26	replaced codes.awk with enums.awk, which generates autoenums.h
+##  2011-06-07	removed codes.h as dependency, it no longer exists
+##  2011-06-08	added -static-libstdc++ so that executable does not require
+##		  libstdc++.dll (windows) or libstdc++.so (linux)
+##		  note: this option requires GCC 4.5 and later, GCC 4.4 and
+##		  prior issues warning
 
 
 #### Compiler and tool definitions shared by all build targets #####
@@ -57,7 +62,7 @@ IBCP_objs =  \
 	$(IBCPOBJS_dir)/table.o \
 	$(IBCPOBJS_dir)/translator.o \
 	$(IBCPOBJS_dir)/test_ibcp.o
-LDLIBS_ibcp.exe = -static-libgcc
+LDLIBS_ibcp.exe = -static-libgcc -static-libstdc++
 
 
 # Link or archive
