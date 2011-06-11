@@ -74,7 +74,8 @@
 //				  DefFuncP and Paren token types
 //	2011-03-27	modified get_number() to look for a negative sign in front of
 //				  constants if the new operand_state flag is set
-//
+//	2011-06-07	added checks for maximum integer in scan_command() and
+//				get_number(), necessary when compiling on with 64-bit
 
 #include <stdio.h>
 
@@ -205,7 +206,7 @@ int Parser::scan_command(CmdArgs &args)
 	const char *BadIncr   = "invalid increment";
 	const char *ZeroIncr  = "zero increment invalid";
 	int flag;
-	int num;
+	long num;  // 2011-06-07: changed to long for strtol()
 	int col;
 	char *end;
 
@@ -232,7 +233,8 @@ int Parser::scan_command(CmdArgs &args)
 	if (isdigit(*pos))
 	{
 		num = strtol(pos, &end, 10);  // (base 10)
-		if (errno == ERANGE)
+		// also check for maximum 32-bit integer (2011-06-07)
+		if (errno == ERANGE || num > INT_MAX)
 		{
 			errno = 0;
 			token->set_error(pos - input, BadLineNo, end - pos);
@@ -262,7 +264,8 @@ int Parser::scan_command(CmdArgs &args)
 		if (isdigit(*pos))
 		{
 			num = strtol(pos, &end, 10);  // (base 10)
-			if (errno == ERANGE)
+			// also check for maximum 32-bit integer (2011-06-07)
+			if (errno == ERANGE || num > INT_MAX)
 			{
 				errno = 0;
 				token->set_error(pos - input, BadLineNo, end - pos);
@@ -312,7 +315,8 @@ int Parser::scan_command(CmdArgs &args)
 	}
 	num = strtol(pos, &end, 10);  // (base 10)
 	col = pos - input;  // save column in case number is invalid
-	if (errno == ERANGE)  // bad number?
+	// also check for maximum 32-bit integer (2011-06-07)
+	if (errno == ERANGE || num > INT_MAX)  // bad number?
 	{
 		errno = 0;
 		token->set_error(col, *end == '\0' ? BadIncr : BadLineNo, end - pos);
@@ -370,7 +374,8 @@ int Parser::scan_command(CmdArgs &args)
 	}
 	num = strtol(pos, &end, 10);  // (base 10)
 	col = pos - input;  // save column in case number is invalid
-	if (errno == ERANGE || end == pos)  // bad or no number?
+	// also check for maximum 32-bit integer (2011-06-07)
+	if (errno == ERANGE || num > INT_MAX || end == pos)  // bad or no number?
 	{
 		errno = 0;
 		token->set_error(col, BadIncr, end - pos);
@@ -723,8 +728,9 @@ bool Parser::get_number(void)
 	if (!decimal)  // no decimal or exponent?
 	{
 		// try to convert to integer first
-		token->int_value = strtol(pos, &end, 10);  // (base 10)
-		if (errno == ERANGE)
+		long num = strtol(pos, &end, 10);  // (base 10)
+		// also check for maximum 32-bit signed integer (2011-06-07)
+		if (errno == ERANGE || num > INT_MAX || num < INT_MIN)
 		{
 			// overflow or underflow, won't fit into an integer
 			errno = 0;  // reset error number
@@ -735,6 +741,7 @@ bool Parser::get_number(void)
 			token->type = Constant_TokenType;
 			token->datatype = Integer_DataType;
 		}
+		token->int_value = num;
 	}
 	if (decimal)
 	{

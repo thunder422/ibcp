@@ -177,7 +177,7 @@
 //				  no longer stored in the tokens string
 //	2011-03-27	set parser operand state from translator before each token
 //				added translator test 17 for negative constant tests
-//
+//	2011-06-07	added checks for gets() return value to remove compiler warnings
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -315,7 +315,12 @@ bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
 		printf("\nParser Testing...");  // 2010-05-29: added
 		do {
 			printf("\nInput: ");
-			gets(inputline);
+			// 2011-06-07: check return value of gets()
+			if (gets(inputline) == NULL)
+			{
+				printf("\nFailure: gets() returned NULL");
+				return true;
+			}
 			parse_input(parser, table, inputline);
 		} while (inputline[0] != '\0');
 	}
@@ -1043,7 +1048,12 @@ bool test_translator(Translator &translator, Parser &parser, Table *table,
 		printf("\nTranslator Testing...");  // 2010-05-29: added
 		do {
 			printf("\nInput: ");
-			gets(inputline);
+			// 2011-06-07: check return value of gets()
+			if (gets(inputline) == NULL)
+			{
+				printf("\nFailure: gets() returned NULL");
+				return true;
+			}
 			translate_input(translator, parser, table, inputline);
 		} while (inputline[0] != '\0');
 	}
