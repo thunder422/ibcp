@@ -42,6 +42,12 @@ set(ibcp_VERSION_PATCH 16)
 
 set(ibcp_COPYRIGHT_YEAR 2011)
 
+# find awk executable
+find_program (PROGRAM_AWK awk)
+if (PROGRAM_AWK STREQUAL "PROGRAM_AWK-NOTFOUND")
+	message(FATAL_ERROR "required awk program was not found")
+endif (PROGRAM_AWK STREQUAL "PROGRAM_AWK-NOTFOUND")
+
 # configure a header file to pass some of the CMake settings to the source code
 configure_file(
 	"${PROJECT_SOURCE_DIR}/ibcp_config.h.in"
@@ -54,14 +60,16 @@ include_directories("${PROJECT_BINARY_DIR}")
 
 # custom target
 add_custom_command(OUTPUT autoenums.h
-	COMMAND awk -f ${PROJECT_SOURCE_DIR}/enums.awk ${PROJECT_SOURCE_DIR}/
+	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/enums.awk
+		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY enums.awk
 	DEPENDS table.cpp
 	)
 
 # custom target
 add_custom_command(OUTPUT test_codes.h
-	COMMAND awk -f ${PROJECT_SOURCE_DIR}/test_codes.awk ${PROJECT_SOURCE_DIR}/
+	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/test_codes.awk
+		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY test_codes.awk
 	DEPENDS table.cpp
 	)
