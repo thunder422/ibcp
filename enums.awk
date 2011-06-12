@@ -38,9 +38,11 @@
 #              updated to write autoenums.h that includes enum Code and
 #                enum TokenStatus (which comes from ibcp.cpp)
 #              added exit code upon failure to terminate build
+#  2011-06-12  for use with cmake, added an optional path to the source files
+#              as the first argument on the awk command line
 #
 #
-#  Usage: awk -f enums.awk
+#  Usage: awk -f enums.awk [source path]
 #
 #  Note: The beginning of each table entry in table.cpp must be in the
 #        format "\t{  // xxx_Code\n" to be read by this script correctly.
@@ -61,7 +63,19 @@ BEGIN {
 	code_enum = 0
 	dups = 0
 
-	while ((getline line < "table.cpp") > 0)
+	# get source path from optional first argument (2011-06-12)
+	if (ARGC >= 2)
+	{
+		path = ARGV[1]
+	}
+	else
+	{
+		path = ""
+	}
+	table_source = path "table.cpp"
+	ibcp_source = path "ibcp.cpp"
+
+	while ((getline line < table_source) > 0)
 	{
 		if (code_enum == 0)
 		{
@@ -98,7 +112,7 @@ BEGIN {
 
 	msg_array = 0
 	nts = 0
-	while ((getline line < "ibcp.cpp") > 0)
+	while ((getline line < ibcp_source) > 0)
 	{
 		if (msg_array == 0)
 		{

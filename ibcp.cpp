@@ -85,15 +85,20 @@
 //				  were captured from ibcp.h since they were being deleted
 //				removed TokenStatus error checking and index_status[] array
 //				  initialization from Token::initialize()
-//
+//	2011-06-11	added ibcp_config.h for receiving values from cmake
+//				added ibcp_version() for outputting current version
+//				corrected executable name to allow for '\' (windows) and
+//				  '/' (linux) in the path
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
 #include "ibcp.h"
+#include "ibcp_config.h"  // 2011-06-11: for cmake
 
 void print_gpl_header(char *name)
 {
-	printf("\n%s  Copyright (C) 2010-2011  Thunder422\n", name);
+	printf("\n%s  Copyright (C) 2010-%d  Thunder422\n", name,
+		ibcp_COPYRIGHT_YEAR);
 	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
 	printf("This is free software, and you are welcome to\n");
 	printf("redistribute it under certain conditions.\n\n");
@@ -255,6 +260,21 @@ void Token::initialize(void)
 }
 
 
+// function to print version number (2011-06-11)
+bool ibcp_version(char *name, int argc, char *argv[])
+{
+	if (argc != 2 || strcmp(argv[1], "-v") != 0)
+	{
+		return false;  // not our options
+	}
+	// 2010-03-13: changed to output actual program name
+	// 2010-04-02: added + 1 so that '\' is no output
+	printf("%s version %d.%d.%d\n", name, ibcp_VERSION_MAJOR,
+		ibcp_VERSION_MINOR, ibcp_VERSION_PATCH);
+	return true;
+}
+
+
 bool test_parser(Parser &parser, Table *table, int argc, char *argv[]);
 bool test_translator(Translator &translator, Parser &parser, Table *table,
 	int argc, char *argv[]);
@@ -276,6 +296,11 @@ int main(int argc, char *argv[])
 
 	// 2010-04-25: added check if program name does not have path
 	char *name = strrchr(argv[0], '\\');
+	// 2011-06-11: if not found then type '/' for linux
+	if (name == NULL)
+	{
+		char *name = strrchr(argv[0], '/');
+	}
 	name = name == NULL ? argv[0] : name + 1;
 	print_gpl_header(name);
 
@@ -318,11 +343,14 @@ int main(int argc, char *argv[])
 
 	// 2010-03-18: added call to test_translator
 	// 2010-04-25: added "-t" to usage string
-	if (!test_parser(parser, table, argc, argv)
+	// 2011-06-11: added check for version option
+	if (!ibcp_version(name, argc, argv)
+		&& !test_parser(parser, table, argc, argv)
 		&& !test_translator(translator, parser, table, argc, argv))
 	{
 		// 2010-05-28: replaced strrchr(argv[1],...) call with 'name'
-		printf("usage: %s -p|-t <options>\n", name);
+		// 2011-06-11: added "-v" to usage string
+		printf("usage: %s -v -p|-t <options>\n", name);
 	}
 	delete table;  // 2011-01-27: eliminate memory leak
 	return 0;

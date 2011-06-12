@@ -25,6 +25,9 @@
 #  2011-02-26  rewrote script to generate test_codes.h directly from the
 #              table.cpp source file (all code performed in BEGIN block)
 #
+#  2011-06-12  for use with cmake, added an optional path to the source files
+#              as the first argument on the awk command line
+#
 #
 #  Usage: awk -f test_codes.awk
 #
@@ -35,6 +38,18 @@
 BEGIN {
 	code_enum = 0
 	c = ""
+
+	# get source path from optional first argument (2011-06-12)
+	if (ARGC >= 2)
+	{
+		path = ARGV[1]
+	}
+	else
+	{
+		path = ""
+	}
+	table_source = path "table.cpp"
+
 	printf "// File: test_codes.h - text of code enumeration values\n" > "test_codes.h"
 	printf "//\n" > "test_codes.h"
 	printf "// This file generated automatically by test_codes.awk\n" > "test_codes.h"
@@ -42,11 +57,11 @@ BEGIN {
 	printf "// ***  DO NOT EDIT  ***\n" > "test_codes.h"
 	printf "\n" > "test_codes.h"
 
-	while ((getline line < "table.cpp") > 0)
+	while ((getline line < table_source) > 0)
 	{
 		if (code_enum == 0)
 		{
-			if (line ~ /static TableEntry table_entries/) 
+			if (line ~ /static TableEntry table_entries/)
 			{
 				# found start of table entries
 				code_enum = 1
@@ -54,7 +69,7 @@ BEGIN {
 		}
 		else if (line !~ /};/)
 		{
-			nf = split(line, field) 
+			nf = split(line, field)
 			if (field[1] == "{" && field[2] == "//" && field[3] ~ /_Code/)
 			{
 				if (c != "")
