@@ -23,6 +23,10 @@
 
 cmake_minimum_required(VERSION 2.8)
 
+if (MSYS)
+	set(CMAKE_RC_COMPILER "C:/MinGW/bin/windres.exe")
+endif (MSYS)
+
 project(ibcp)
 
 # check GCC versionn
@@ -80,11 +84,11 @@ set(ibcp_SRCS
 	test_ibcp.cpp
 	)
 
-# link in libgcc.a and libstrc++.a
+# make linker link in static libgcc.a and libstrc++.a
 add_definitions(-static-libgcc -static-libstdc++)
 
 # add the executable
-add_executable(ibcp.exe
+add_executable(ibcp
 		autoenums.h
 		test_codes.h
 		${ibcp_INCS}
