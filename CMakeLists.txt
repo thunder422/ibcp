@@ -52,7 +52,7 @@ endif (PROGRAM_AWK STREQUAL "PROGRAM_AWK-NOTFOUND")
 configure_file(
 	"${PROJECT_SOURCE_DIR}/ibcp_config.h.in"
 	"${PROJECT_BINARY_DIR}/ibcp_config.h"
-	)
+)
 
 # add the binary tree to the search path for include files
 # so that ibcp_config.h, autoenums.h, test_codes.h can be found
@@ -64,7 +64,7 @@ add_custom_command(OUTPUT autoenums.h
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY enums.awk
 	DEPENDS table.cpp
-	)
+)
 
 # custom target
 add_custom_command(OUTPUT test_codes.h
@@ -72,15 +72,15 @@ add_custom_command(OUTPUT test_codes.h
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY test_codes.awk
 	DEPENDS table.cpp
-	)
+)
 
 # list the include files
-set(ibcp_INCS
+set(ibcp_HDRS
 	ibcp.h
 	list.h
 	stack.h
 	string.h
-	)
+)
 
 # list the main program sources
 set(ibcp_SRCS
@@ -90,7 +90,7 @@ set(ibcp_SRCS
 	table.cpp
 	translator.cpp
 	test_ibcp.cpp
-	)
+)
 
 # make linker link in static libgcc.a and libstrc++.a
 add_definitions(-static-libgcc -static-libstdc++)
@@ -101,4 +101,4 @@ add_executable(ibcp
 		test_codes.h
 		${ibcp_INCS}
 		${ibcp_SRCS}
-		)
+)
