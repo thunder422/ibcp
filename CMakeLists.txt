@@ -23,10 +23,6 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-if (MSYS)
-	set(CMAKE_RC_COMPILER "C:/MinGW/bin/windres.exe")
-endif (MSYS)
-
 project(ibcp)
 
 # check GCC versionn
