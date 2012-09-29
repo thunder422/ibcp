@@ -20,6 +20,7 @@
 #  Change History:
 #
 #  2011-06-11	initial version
+#  2011-09-23	changed GCC 4.5+ fatal error to just a warning
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -29,7 +30,9 @@ project(ibcp)
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
 	OUTPUT_VARIABLE GCC_VERSION)
 if (GCC_VERSION VERSION_LESS 4.5)
-	message(FATAL_ERROR "GCC 4.5+ Required")
+	message(WARNING_ERROR
+		"GCC 4.5+ Required for static building with libstdc++"
+	)
 endif (GCC_VERSION VERSION_LESS 4.5)
 
 set(ibcp_VERSION_MAJOR 0)
