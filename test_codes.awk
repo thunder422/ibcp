@@ -25,6 +25,9 @@
 #  2011-02-26  rewrote script to generate test_codes.h directly from the
 #              table.cpp source file (all code performed in BEGIN block)
 #
+#  2012-10-03  added RS and ORS set to "\r\n" so that awak script will work
+#              properly on Windows
+#
 #
 #  Usage: awk -f test_codes.awk
 #
@@ -35,6 +38,8 @@
 BEGIN {
 	code_enum = 0
 	c = ""
+	RS = "\r\n"   # read dos format file
+	ORS = "\r\n"  # write dos format files
 	printf "// File: test_codes.h - text of code enumeration values\n" > "test_codes.h"
 	printf "//\n" > "test_codes.h"
 	printf "// This file generated automatically by test_codes.awk\n" > "test_codes.h"
