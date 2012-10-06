@@ -27,6 +27,11 @@
 #
 #  2011-06-12  for use with cmake, added an optional path to the source files
 #              as the first argument on the awk command line
+#  2012-10-06  changed the length argument of the substr() that extracts the
+#              name of the code from the "_Code" suffix so that it will also
+#              work with a DOS format file that contains the extra CR character
+#              on the end of the line, because if the RS variable was set to
+#              "/r/n" then this script no longer works on Linux
 #
 #
 #  Usage: awk -f test_codes.awk
@@ -76,7 +81,8 @@ BEGIN {
 				{
 					printf ",\n" > "test_codes.h"
 				}
-				c = substr(field[3], 1, length(field[3]) - 5)
+				# 2012-10-06: changed n argument from length of field[3]
+				c = substr(field[3], 1, index(field[3], "_Code") - 1)
 				printf "\"%s\"", c > "test_codes.h"
 			}
 		}
