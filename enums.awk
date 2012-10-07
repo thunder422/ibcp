@@ -40,6 +40,8 @@
 #              added exit code upon failure to terminate build
 #  2011-06-12  for use with cmake, added an optional path to the source files
 #              as the first argument on the awk command line
+#  2012-10-06  modified to remove the CR at the end of the lines in DOS format
+#              files, but do nothing with Unix format files
 #
 #
 #  Usage: awk -f enums.awk [source path]
@@ -95,6 +97,12 @@ BEGIN {
 			nf = split(line, field)
 			if (field[1] == "{" && field[2] == "//" && field[3] ~ /_Code/)
 			{
+				# 2012-10-06: remove the CR if present
+				cr = index(field[3], "\r")
+				if (cr > 0)
+				{
+					field[3] = substr(field[3], 0, cr - 1)
+				}
 				# check for duplicates
 				if (field[3] in codes)
 				{
@@ -131,6 +139,12 @@ BEGIN {
 			nf = split(line, field)
 			if (field[nf - 1] == "//")
 			{
+				# 2012-10-06: remove the CR if present
+				cr = index(field[nf], "\r")
+				if (cr > 0)
+				{
+					field[nf] = substr(field[nf], 0, cr - 1)
+				}
 				if (field[1] !~ /BUG/)
 				{
 					ts = field[nf] "_TokenStatus"
