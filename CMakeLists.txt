@@ -22,6 +22,7 @@
 #  2011-06-11	initial version
 #  2012-09-23	changed GCC 4.5+ fatal error to just a warning
 #  2012-10-07	add if GCC < 4.5 then don't add static libraries
+#  2012-10-08	corrected in source directory builds
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -57,7 +58,12 @@ configure_file(
 
 # add the binary tree to the search path for include files
 # so that ibcp_config.h, autoenums.h, test_codes.h can be found
-include_directories("${PROJECT_BINARY_DIR}")
+# which is not necessary for in source build
+string(COMPARE NOTEQUAL ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR} OUT_SOURCE)
+if (OUT_SOURCE)
+	include_directories("${PROJECT_BINARY_DIR}")
+endif (OUT_SOURCE)
+
 
 # custom target
 add_custom_command(OUTPUT autoenums.h
