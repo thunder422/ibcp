@@ -20,7 +20,8 @@
 #  Change History:
 #
 #  2011-06-11	initial version
-#  2011-09-23	changed GCC 4.5+ fatal error to just a warning
+#  2012-09-23	changed GCC 4.5+ fatal error to just a warning
+#  2012-10-07	add if GCC < 4.5 then don't add static libraries
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -28,7 +29,8 @@ project(ibcp)
 
 # check GCC versionn
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-	OUTPUT_VARIABLE GCC_VERSION)
+	OUTPUT_VARIABLE GCC_VERSION
+)
 if (GCC_VERSION VERSION_LESS 4.5)
 	message(WARNING_ERROR
 		"GCC 4.5+ Required for static building with libstdc++"
@@ -92,7 +94,9 @@ set(ibcp_SRCS
 )
 
 # make linker link in static libgcc.a and libstrc++.a
-add_definitions(-static-libgcc -static-libstdc++)
+if (GCC_VERSION VERSION_LESS 4.5)
+	add_definitions(-static-libgcc -static-libstdc++)
+endif (GCC_VERSION VERSION_LESS 4.5)
 
 # add the executable
 add_executable(ibcp
