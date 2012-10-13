@@ -1,0 +1,24 @@
+####################################################
+#  Translator Test #5: Command Tests (2010-05-29)  #
+####################################################
+
+#  LET tests
+LET A=0.0
+LET A%=0
+LET A$=""
+LET A=B=C=0.0
+LET A,B,C=0.0
+LET A%=B%=C%=0
+LET A%,B%,C%=0
+LET A$=B$=C$=""
+LET A$,B$,C$=""
+LET LEFT$(A$,1) = B$
+LET LEFT$(A$,1) = B$ + C$
+LET LEFT$(A$,1),RIGHT$(B$,1) = C$
+LET A$,LEFT$(B$,1) = C$
+
+# LET error tests
+LET LET A=0
+A = 0 LET 5
+
+PRINT

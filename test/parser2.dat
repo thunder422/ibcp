@@ -1,0 +1,17 @@
+##################################
+#  Parser Test #2: Indentifiers  #
+##################################
+
+fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
+
+fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
+
+a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
+
+LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
+
+rem this should be a comment
+
+rem:this should be a comment
+
+rem-this should be a comment

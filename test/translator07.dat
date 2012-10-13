@@ -1,0 +1,111 @@
+#############################################
+#  Translator Test #7: Errors (2010-06-13)  #
+#############################################
+
+Z = C(A,,B)
+Z = INT(A,
+Z = (A+
+Z = A+
+Z = (A+B
+Z = (,
+Z = (A,
+Z = (A+,
+Z = (A+A+,
+Z = (A+B,
+Z = MID$(A$+B$
+Z = A NOT B
+Z = A + * B
+Z = A + B,
+Z = A,B = 1
+Z+A
++Z
+-Z
+Z Y = 1
+Z , A B
+Z
+,Z
+Z,
+Z,,
+Z,Y
+Z,Y,
+Z,Y,X
+Z,Y,X,
+Z=A,
+LET A
+LET A,
+Z=
+Z=,
+Z=+
+Z=Y=
+Z,Y=
+Z,Y=,
+LET A=
+Z(
+Z(,
+Z,Y(
+Z,Y(A
+Z,Y(A,
+Z,Y(A+
+Z = A A
+Z = (A A
+Z = Arr(A A
+Z = INT(A A
+Z = ASC(A$ A
+Z = ASC(A$,A A
+Z$ = MID$(A$ A
+Z$ = MID$(A$,A A
+Z$ = MID$(A$,A,A A
+MID$(
+MID$(A$
+MID$(A$,
+MID$(A$ B
+MID$(A$,B
+MID$(A$,B,
+MID$(A$,B C
+MID$(A$,B,C
+MID$(A$,B,C,
+MID$(A$,B,C D
+MID$(A$,B,C)
+MID$(A$,B,C)=
+INT(
+INT(A,
+INT(A)
+INT(A)=
+LET INT(A)=
+A,INT(A)=
+A=INT(A)=
+INT(A)=B
+LET ,
+LET A,,
+LET
+Z%,
+Z%,,
+Z%,Y%,
+Z%,Y%,X%,
+LET A%,
+LET A%,,
+Z$,
+Z$,,
+Z$,Y$,
+Z$,Y$,X,
+LET A$,
+LET A$,,
+Z%=
+Z%=,
+Z%=+
+Z%=Y%=
+Z%,Y%=
+Z%,Y%=,
+LET A%=
+Z$=
+Z$=,
+Z$=+
+Z$=Y$=
+Z$,Y$=
+Z$,Y$=,
+LET A$=
+MID$(A$+
+MID$(A$+B$
+MID$(A$+B$,
+A(INT(B+C))=4
+MID$(A$,LEFT$(B$,1)<C$)=D$

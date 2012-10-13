@@ -89,20 +89,31 @@
 //				added ibcp_version() for outputting current version
 //				corrected executable name to allow for '\' (windows) and
 //				  '/' (linux) in the path
+//
+//	2012-10-10	replaced calls to test_parser() and test_translator() with
+//				  call to new function test_ibcp() updated usage message
+//	2012-10-11	store program name as global along with length of name, which
+//				  does not include extension (.exe) if present to make
+//				  consistent between windows and linux; also fixed bug for
+//				  linux name (was incorrectly defining new variable within if)
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
 #include "ibcp.h"
 #include "ibcp_config.h"  // 2011-06-11: for cmake
 
-void print_gpl_header(char *name)
+void print_gpl_header(char *name, int len)
 {
-	printf("\n%s  Copyright (C) 2010-%d  Thunder422\n", name,
+	printf("\n%.*s  Copyright (C) 2010-%d  Thunder422\n", len, name,
 		ibcp_COPYRIGHT_YEAR);
 	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
 	printf("This is free software, and you are welcome to\n");
 	printf("redistribute it under certain conditions.\n\n");
 }
+
+// Program Name and Length less extension (2012-10-11)
+char *program_name;
+int program_name_len;
 
 // Token
 bool Token::paren[sizeof_TokenType];
@@ -275,9 +286,8 @@ bool ibcp_version(char *name, int argc, char *argv[])
 }
 
 
-bool test_parser(Parser &parser, Table *table, int argc, char *argv[]);
-bool test_translator(Translator &translator, Parser &parser, Table *table,
-	int argc, char *argv[]);
+bool test_ibcp(Translator &translator, Parser &parser, Table *table, int argc,
+	char *argv[]);
 
 
 // 2010-06-25: generic print function for printing to stderr for Error
@@ -295,14 +305,18 @@ int main(int argc, char *argv[])
 	bool error_occurred = false;  // 2010-06-25
 
 	// 2010-04-25: added check if program name does not have path
-	char *name = strrchr(argv[0], '\\');
-	// 2011-06-11: if not found then type '/' for linux
-	if (name == NULL)
+	// 2012-10-11: store pointer to name as a global
+	program_name = strrchr(argv[0], '\\');
+	// 2011-06-11: if not found then try '/' for linux
+	if (program_name == NULL)
 	{
-		char *name = strrchr(argv[0], '/');
+		program_name = strrchr(argv[0], '/');
 	}
-	name = name == NULL ? argv[0] : name + 1;
-	print_gpl_header(name);
+	// 2012-10-11: find length of name not including extension
+	program_name = program_name == NULL ? argv[0] : program_name + 1;
+	char *ext = strrchr(program_name, '.');
+	program_name_len = ext == NULL ? strlen(program_name) : ext - program_name;
+	print_gpl_header(program_name, program_name_len);
 
 	// 2010-06-25: added try block for token initialization
 	try
@@ -344,13 +358,13 @@ int main(int argc, char *argv[])
 	// 2010-03-18: added call to test_translator
 	// 2010-04-25: added "-t" to usage string
 	// 2011-06-11: added check for version option
-	if (!ibcp_version(name, argc, argv)
-		&& !test_parser(parser, table, argc, argv)
-		&& !test_translator(translator, parser, table, argc, argv))
+	// 2012-10-10: replaced test_parser and test_translator with test_ibcp
+	if (!ibcp_version(program_name, argc, argv)
+		&& !test_ibcp(translator, parser, table, argc, argv))
 	{
-		// 2010-05-28: replaced strrchr(argv[1],...) call with 'name'
+		// 2010-05-28: replaced strrchr(argv[1],...) call with 'program_name'
 		// 2011-06-11: added "-v" to usage string
-		printf("usage: %s -v -p|-t <options>\n", name);
+		printf("usage: %s -v -t <test_file>|-tp|-te|-tt\n", program_name);
 	}
 	delete table;  // 2011-01-27: eliminate memory leak
 	return 0;

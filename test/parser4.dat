@@ -1,0 +1,25 @@
+#############################
+#  Parser Test #4: Strings  #
+#############################
+
+A$ = "this is a test"
+# no closing quote
+A$ = "this is a test
+# embedded quotes end
+A$ = "this is a ""test"""
+# embedded quotes begin
+A$ = """this"" is a test"
+# embedded quotes middle
+A$ = "this is ""a"" test"
+# single embedded quote
+A$ = "this is "" a test"
+# empty string
+A$ = ""
+# empty string/no closing quote
+A$ = "
+# single embedded quote
+A$ = """"
+# embedded quote/no closing quote
+A$ = """
+# something after string
+A$ = LEFT$("TEST", 1)

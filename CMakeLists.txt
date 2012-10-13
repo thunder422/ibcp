@@ -23,6 +23,7 @@
 #  2012-09-23	changed GCC 4.5+ fatal error to just a warning
 #  2012-10-07	add if GCC < 4.5 then don't add static libraries
 #  2012-10-08	corrected in source directory builds
+#  2012-12-12	added a configure_file command for the regtest script
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -54,6 +55,12 @@ endif (PROGRAM_AWK STREQUAL "PROGRAM_AWK-NOTFOUND")
 configure_file(
 	"${PROJECT_SOURCE_DIR}/ibcp_config.h.in"
 	"${PROJECT_BINARY_DIR}/ibcp_config.h"
+)
+
+# configure a regtest script to pass source directory to the script
+configure_file(
+	"${PROJECT_SOURCE_DIR}/regtest.in"
+	"${PROJECT_BINARY_DIR}/regtest" @ONLY
 )
 
 # add the binary tree to the search path for include files

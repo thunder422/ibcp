@@ -1,0 +1,19 @@
+###################################################
+#  Expression Test #3: Parenthetical Expressions  #
+###################################################
+
+MID$(A$+B$,(C+5)*D,4)+" Test"
+int(Arr(A,B*(C+2))+(D))
+Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
+
+# begin of error tests
+INT(A+B
+B,F+G
+Arr(B,,C)
+MID$(,,C)
+MID$(A,,C)
+MID$(A$,,C)
+MID$(A$,B$,C)
+MID$(A$,B,,C)
+MID$(A$,B,C$)
+MID$(A$,B,C,)

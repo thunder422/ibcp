@@ -1,0 +1,19 @@
+############################################
+#  Expression Test #1: Simple Expressions  #
+############################################
+
+A - B
+A + B
+A + B * C
+A * B + C
+A * -B + -C^D
+Value1 + Value2 - Value3 - Value4
+var_A * Var_A + Var_B * Var_B
+not A < 5 = B > 2
+not A < 5 and B > 2 or C < 1 and D <> 2
+# 2010-01-27: rename c to C
+A * B / C \ D MOD E
+# 2010-01-27: rename c to C
+A mod B \ C / D * E
+A * B ^ 2
+a$ = "this" + "test"

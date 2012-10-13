@@ -1,0 +1,41 @@
+###################################################
+#  Expression Test #2: Parenthetical Expressions  #
+###################################################
+
+(A + B) + C
+(A * B) + C
+(A + B) * C
+A + (B + C)
+A + (B + C) + D
+A + (B + C) * D
+(A + (B + C)) + D
+(A + (B + C)) * D
+A + (B * C)
+A + (B * C) + D
+A + (B * C) * D
+A + (B * C) ^ D
+A + ((B * C) + D)
+A + ((B * C) * D)
+A + ((B * C) ^ D)
+A * (B + C)
+A * (B + C) + D
+A * (B + C) * D
+A + (B) + C
+A + ((B)) + C
+A + B + ((C))
+(A + B + C)
+((A + B)) + C
+A + ((B * C))
+A + B * C ^ D
+((A + B) * C) ^ D
+-A ^ 2 + (-B) ^ 3
+(A + B) * (C + D)
+(A + B) + (C + D)
+A + B + (C + D)
+(A * B) + (C * D)
+(A + (B * (C ^ D))) + E
+(A ^ (B * (C + D))) + E
+# test missing close parentheses
+(A + B
+# test missing open parentheses
+A + B)

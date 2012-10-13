@@ -1,0 +1,37 @@
+#################################################
+#  Translator Test #4: Substrings (2010-05-19)  #
+#################################################
+
+LEFT$(A$,1) = B$
+LEFT$(A$,1) = B$ + C$
+MID$(A$,2) = B$
+MID$(A$,2) = B$ + C$
+MID$(A$,2,3) = B$
+MID$(A$,2,3) = B$ + C$
+RIGHT$(A$,2) = B$
+RIGHT$(A$,2) = B$ + C$
+LEFT$(A$,1) = RIGHT$(B$,1)
+LEFT$(A$,1) = RIGHT$(B$+C$,1)
+
+# begin of error tests
+RIGHT$(A$,2) = B
+RIGHT$(A$,2) = B%
+RIGHT$(A,2) = B$
+RIGHT$(A%,2) = B$
+RIGHT$(A$+B$,2) = C$
+RIGHT$(LEFT$(A$,1),2) = B$
+RIGHT$(LEFT$(A$+B$,1),2) = C$
+
+# list assignments (2010-05-22)
+LEFT$(A$,1),RIGHT$(B$,1) = C$
+LEFT$(A$,1),MID$(B$,2,1),RIGHT$(C$,1) = D$
+LEFT$(A$,1),B$ = C$
+LEFT$(A$,1),B$,C$ = D$
+A$,LEFT$(B$,1) = C$
+A$,LEFT$(B$,1),C$ = D$
+A$,B$,C$ = D$
+A$,B$,LEFT$(C$,1) = D$
+LEFT$(A$,1),B$,RIGHT$(C$,1) = D$
+
+# more related tests (2010-10-05)
+A(int(B))=C

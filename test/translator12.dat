@@ -1,0 +1,31 @@
+######################################################
+#  Translator Test #12: INPUT Commands (2011-03-20)  #
+######################################################
+
+INPUT A
+INPUT A,B
+INPUT A,B%,C$
+INPUT A$;
+INPUT A(I%),B%(I%);
+INPUT PROMPT "Enter Number: "; N%
+INPUT PROMPT A$+":"; A
+INPUT PROMPT "Two Values", A, B;
+INPUT PROMPT P$(I%), S$(I%)
+# error tests
+INPUT
+INPUT,
+INPUT;
+INPUT; -A
+INPUT (A)
+INPUT INT(A)
+INPUT LEFT$(A$,1)
+INPUT FNA
+INPUT FNA(X)
+INPUT A B
+INPUT A+B
+INPUT A,
+INPUT PROMPT
+INPUT PROMPT A+B*C
+INPUT PROMPT A$
+INPUT PROMPT A$+
+INPUT PROMPT A$;

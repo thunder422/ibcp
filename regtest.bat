@@ -29,6 +29,12 @@ rem  2011-02-05  added translator test 15
 rem  2011-03-20  added translator test 16
 rem  2011-03-27  added translator test 17
 rem
+rem  2012-10-13  modified to change in test code that now reads test inputs
+rem                from test input files
+rem              removed specific test numbers, batch file now runs tests for
+rem                add the *.dat files present in the test directory
+rem              added compare for expression tests
+rem
 rem
 rem  Usage:
 rem    regtest
@@ -44,8 +50,10 @@ rem    be answered No for batch to continue - comp has no option to not
 rem    ask this question)
 rem
 
-del parser*.txt translator*.txt
-for %%i in (1 2 3 4 5) do ibcp.exe -p %%i >parser%%i.txt
-for %%i in (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17) do ibcp.exe -t %%i >translator%%i.txt
+del parser*.txt expression*.txt translator*.txt
+for %%i in (test/parser*.dat test/expression*.dat test/translator*.dat) do (
+	ibcp -t test\%%i >%%~ni.txt
+)
 comp test\parser*.txt parser*.txt
+comp test\expression*.txt expression*.txt
 comp test\translator*.txt translator*.txt

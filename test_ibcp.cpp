@@ -178,6 +178,11 @@
 //	2011-03-27	set parser operand state from translator before each token
 //				added translator test 17 for negative constant tests
 //	2011-06-07	added checks for gets() return value to remove compiler warnings
+//
+//	2012-10-11	implemented new function test_ibcp() to replace test_parser()
+//				  and test_translator(), which reads the test input from a file
+//				  specified on the command line (all test inputs moved to test
+//				  input data files from the code here)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -192,145 +197,167 @@ void print_error(Token *token, const char *error);
 void print_token_leaks(Table *table, const char *testinput);
 
 
-// 2010-03-13: changed from main()
-bool test_parser(Parser &parser, Table *table, int argc, char *argv[])
+// 2012-10-11: new function to replace test_parser() and test_translator()
+bool test_ibcp(Translator &translator, Parser &parser, Table *table, int argc,
+	char *argv[])
 {
-	static const char *testinput1[] = {  // immediate commands
-		"L500=1000",
-		" L500 = 1000 ",
-		" L 500 = 1000 ",
-		"L500-1000",
-		" L 500 - 1000 ",
-		"10L500-1000",
-		" 10 L500 - 1000 ",
-		" 10 L 500 - 1000 ",
-		"l\"file",
-		" l \"file\" ",
-		" l ",
-		"a", "A500,1000", "A,1000", "A500,", "A,", "A500;1000",
-		"L500,1000",
-		"  L500,1000",
-		"  L500,L1000=5",
-		"r", "r100", "R100,",
-		"r100-", "r-200", "r-", "r100-200",
-		"r100-,", "r-200,", "r-,", "r100-200,",
-		"r100-,10", "r-200,10", "r-,10", "r100-200,10",
-		"r100-,400,", "r-200,400,", "r-,400,", "r100-200,400,",
-		"r100-,400,10", "r-200,400,10", "r-,400,10", "r100-200,400,10",
-		"s\"file\",a",				// error: something after string
-		"l444444444444",			// error: begin too big
-		"l100-444444444444",		// error: end too big
-		"l100-200;",				// error: wrong character after range
-		"r100-200,4444444444",		// error: number after range too big
-		"r100-200,4444444444,10",	// error: number after range too big
-		"r100-200,l100",			// error: something invalid afer range
-		"r100-200,400,0",			// error: invalid zero increment
-		"a100,0",					// error: invalid zero increment
-		"a100,10;L100",				// error: something after increment
-		"r100,200,10",				// error: unexpected character
-		"r100-200,400,10,20",		// error: something after increment
-		"r100-200,400,4444444444",	// error: increment too big
-		"r100-200,-10", 			// error: unexpected character
-		"r100-200,400,-10",			// error: unexpected character
-		NULL
-	};
+	extern char *program_name;
+	extern int program_name_len;
 
-	static const char *testinput2[] = {  // identifiers
-		"fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%",
-		"fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%",
-		"a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(",
-		"LET PRINT end then xor Abs(CHR$(val( end if left$ left$(",
-		"rem this should be a comment",
-		"rem:this should be a comment",
-		"rem-this should be a comment",
-		NULL
-	};
+	const int max_inputline = 200;
+	char parser_name[] = "parser";
+	const size_t parser_len = sizeof(parser_name) - 1;
+	char expression_name[] = "expression";
+	const size_t expression_len = sizeof(expression_name) - 1;
+	char translator_name[] = "translator";
+	const size_t translator_len = sizeof(translator_name) - 1;
 
-	static const char *testinput3[] = {  // numbers
-		"00", "01", ".A", ".e",	"..01",			// error tests
-		"0.1 .1 .01 0.01 0.01000,1000A100.001",
-		"100e10 100E+10 100e-10",
-		"100er", "100E+r", "100E-r", "100+200", "100..001", "100e0",
-		"2147483647 -2147483647 2147483648",	// integer limits tests
-		"1.23456e308 1.234e309",				// double limits tests
-		"1.2345e-307 1.234e-308",
-		"1.23456e3081234",						// double limits tests
-		"14234453464575678567846434234234534566",
-		"0", "0+1",								// added 2010-05-29
-		NULL
+	enum {
+		test_parser, test_expression, test_translator
+	} testmode;
+	char *name[] = {  // must match enumeration above
+		parser_name, expression_name, translator_name
 	};
+	bool inputmode;
 
-	static const char *testinput4[] = {  // strings
-		"A$ = \"this is a test\"",
-		"A$ = \"this is a test",			// no closing quote
-		"A$ = \"this is a \"\"test\"\"\"",	// embedded quotes end
-		"A$ = \"\"\"this\"\" is a test\"",	// embedded quotes begin
-		"A$ = \"this is \"\"a\"\" test\"",	// embedded quotes middle
-		"A$ = \"this is \"\" a test\"",		// single embedded quote
-		"A$ = \"\"",						// empty string
-		"A$ = \"",							// empty string/no closing quote
-		"A$ = \"\"\"\"",					// single embedded quote
-		"A$ = \"\"\"",						// embedded quote/no closing quote
-		"A$ = LEFT$(\"TEST\", 1)",			// something after string
-		NULL
-	};
-
-	static const char *testinput5[] = {  // strings
-		"A$ = mid$(\"b\",A+B*2,index)+LEFT$(\"TEST\", 1)",
-		"if index>5 and subindex<=10 then",
-		"var = 5'initialize variable + ",
-		"if index<<5 && index><4 || n<4 then",					// error
-		NULL
-	};
-
-	static const char **test[] = {
-		testinput1, testinput2, testinput3, testinput4, testinput5
-	};
-	static const int ntests = sizeof(test) / sizeof(test[0]);
-
-	int testno;
-	int inputmode;
-	if (argc < 2 || strcmp(argv[1], "-p") != 0)
+	if (argc == 2 && strcmp(argv[1], "-tp") == 0)
 	{
-		return false;  // not our options
+		testmode = test_parser;
+		inputmode = true;
 	}
-	if (argc == 3)
+	else if (argc == 2 && strcmp(argv[1], "-te") == 0)
 	{
-		testno = atoi(argv[2]) - 1;
-		inputmode = strcmp(argv[2], "i") == 0;
+		testmode = test_expression;
+		inputmode = true;
 	}
-	if (argc != 3 || (testno < 0 || testno >= ntests) && inputmode == 0)
+	else if (argc == 2 && strcmp(argv[1], "-tt") == 0)
 	{
-		// 2010-03-13: changed to output actual program name
-		printf("usage: %s -p <test number 1-%d>|i\n", strrchr(argv[0], '\\')
-			+ 1, ntests);
-		return true;  // our options are bad
+		testmode = test_translator;
+		inputmode = true;
 	}
-
-	// 2010-03-13: removed Table initialization code
-
-	if (inputmode)
+	else if (argc == 3 && strcmp(argv[1], "-t") == 0)
 	{
-		char inputline[200];
-		printf("\nParser Testing...");  // 2010-05-29: added
-		do {
-			printf("\nInput: ");
-			// 2011-06-07: check return value of gets()
-			if (gets(inputline) == NULL)
-			{
-				printf("\nFailure: gets() returned NULL");
-				return true;
-			}
-			parse_input(parser, table, inputline);
-		} while (inputline[0] != '\0');
+		// find start of file name less path
+		char *filnam = strrchr(argv[2], '\\');  // dos path character
+		if (filnam == NULL)
+		{
+			filnam = strrchr(argv[2], '/');  // linux path character
+		}
+		filnam = filnam == NULL ? argv[2] : filnam + 1;
+
+		// get and check beginning of file name
+		if (strncmp(filnam, parser_name, parser_len) == 0)
+		{
+			testmode = test_parser;
+		}
+		else if (strncmp(filnam, expression_name, expression_len) == 0)
+		{
+			testmode = test_expression;
+		}
+		else if (strncmp(filnam, translator_name, translator_len) == 0)
+		{
+			testmode = test_translator;
+		}
+		else
+		{
+			printf("usage: %.*s -t (%s|%s|%s)[XX]\n", program_name_len,
+				program_name, parser_name, expression_name, translator_name);
+			return true;  // our options were bad
+		}
+		inputmode = false;
 	}
 	else
 	{
-		const char **testinput = test[testno];
-		for (int i = 0; testinput[i] != NULL; i++)
+		return false;  // not our options
+	}
+
+	char inputline[max_inputline];
+	FILE *fd;
+	if (inputmode)
+	{
+		printf("\nTesting %s...", name[testmode]);
+	}
+	else
+	{
+		fd = fopen(argv[2], "r");
+		if (fd == NULL)
 		{
-			printf("\nInput: %s\n", testinput[i]);
-			parse_input(parser, table, testinput[i]);
+			printf("%.*s: error opening '%s'\n", program_name_len, program_name,
+				argv[2]);
+			return true;
+		}
+	}
+	for (int lineno = 1;; lineno++)
+	{
+		if (inputmode)
+		{
+			printf("\nInput: ");
+			if (gets(inputline) == NULL)
+			{
+				printf("\n%.*s: gets() failure - returned null\n",
+					program_name_len, program_name);
+				return true;
+			}
+			if (inputline[0] == '\0')
+			{
+				break;
+			}
+		}
+		else
+		{
+			if (feof(fd))
+			{
+				break;
+			}
+			if (fgets(inputline, max_inputline, fd) == NULL)
+			{
+				if (feof(fd))
+				{
+					break;
+				}
+				printf("%.*s: error reading line %d from file '%s'\n",
+					program_name_len, program_name, lineno, argv[2]);
+				fclose(fd);
+				return true;
+			}
+			int nl = strlen(inputline) - 1;
+			if (inputline[nl] != '\n')
+			{
+				printf("%.*s: expected newline on line %d from file '%s'\n"
+					"    (line too long?  maximum = %d\n", program_name_len,
+					program_name, lineno, argv[2], max_inputline);
+				fclose(fd);
+				return true;
+			}
+			inputline[nl] = '\0';  // remove newline
+			if (inputline[0] == '\0' || inputline[0] == '#')
+			{
+				continue;  // skip blank and comment lines
+			}
+			printf("\nInput: %s\n", inputline);
+		}
+
+		switch (testmode)
+		{
+		case test_parser:
+			parse_input(parser, table, inputline);
+			break;
+		case test_expression:
+			translate_input(translator, parser, table, inputline, true);
+			print_token_leaks(table, inputline);
+			break;
+		case test_translator:
+			translate_input(translator, parser, table, inputline, false);
+			print_token_leaks(table, inputline);
+			break;
+		}
+	}
+	if (!inputmode)
+	{
+		fclose(fd);
+		if (testmode != test_parser)
+		{
+			printf("\n");  // not for parser testing
 		}
 	}
 	return true;
@@ -356,720 +383,6 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 		delete token;
 	}
 	while (more);
-}
-
-
-// 2010-03-18: added new function for testing translator
-bool test_translator(Translator &translator, Parser &parser, Table *table,
-	int argc, char *argv[])
-{
-	static const char *testinput1[] = {  // simple expressions tests
-		"A - B",
-		"A + B",
-		"A + B * C",
-		"A * B + C",
-		"A * -B + -C^D",
-		"Value1 + Value2 - Value3 - Value4",
-		"var_A * Var_A + Var_B * Var_B",
-		"not A < 5 = B > 2",
-		"not A < 5 and B > 2 or C < 1 and D <> 2",
-		"A * B / C \\ D MOD E",  // 2010-01-27: rename c to C
-		"A mod B \\ C / D * E",  // 2010-01-27: rename c to C
-		"A * B ^ 2",
-		"a$ = \"this\" + \"test\"",
-		NULL
-	};
-	static const char *testinput2[] = {  // parentheses expressions tests
-		"(A + B) + C",
-		"(A * B) + C",
-		"(A + B) * C",
-		"A + (B + C)",
-		"A + (B + C) + D",
-		"A + (B + C) * D",
-		"(A + (B + C)) + D",
-		"(A + (B + C)) * D",
-		"A + (B * C)",
-		"A + (B * C) + D",
-		"A + (B * C) * D",
-		"A + (B * C) ^ D",
-		"A + ((B * C) + D)",
-		"A + ((B * C) * D)",
-		"A + ((B * C) ^ D)",
-		"A * (B + C)",
-		"A * (B + C) + D",
-		"A * (B + C) * D",
-		"A + (B) + C",
-		"A + ((B)) + C",
-		"A + B + ((C))",
-		"(A + B + C)",
-		"((A + B)) + C",
-		"A + ((B * C))",
-		"A + B * C ^ D",
-		"((A + B) * C) ^ D",
-		"-A ^ 2 + (-B) ^ 3",
-		"(A + B) * (C + D)",
-		"(A + B) + (C + D)",
-		"A + B + (C + D)",
-		"(A * B) + (C * D)",
-		"(A + (B * (C ^ D))) + E",
-		"(A ^ (B * (C + D))) + E",
-		"(A + B",			// test missing close parentheses
-		"A + B)",			// test missing open parentheses
-		NULL
-	};
-	static const char *testinput3[] = {  // parentheses expressions tests
-		"MID$(A$+B$,(C+5)*D,4)+\" Test\"",
-		"int(Arr(A,B*(C+2))+(D))",
-		"Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))",
-		// begin of error tests
-		"INT(A+B",
-		"B,F+G",
-		"Arr(B,,C)",
-		"MID$(,,C)",
-		"MID$(A,,C)",
-		"MID$(A$,,C)",
-		"MID$(A$,B$,C)",
-		"MID$(A$,B,,C)",
-		"MID$(A$,B,C$)",
-		"MID$(A$,B,C,)",
-		NULL
-	};
-	static const char *testinput4[] = {  // internal function tests
-		"MID$(MID$(A$+B$,2),(C+5)*D,4)",
-		"abs(A)+FIX(B)+INT(C)+RND(D)+SGN(E)+CINT(F)",
-		"SQR(G)+ATN(H)+COS(I)+SIN(J)+TAN(K)+EXP(L)+LOG(M)",
-		"ASC(A$)+ASC(B$,C)+INSTR(A$,B$)+INSTR(A$,B$,C)+LEN(D$)",
-		"LEFT$(D$,E)+RIGHT$(F$,G)+REPEAT$(H$,5)+SPACE$(15)",
-		"A=VAL(STR$(1.23))",  // 2010-01-27: corrected expression
-		"MID$(A$)",
-		"MID$(A$,1,2,3)",
-		"INSTR(A$)",
-		"INSTR(A$,B$,C,D)",
-		"ASC(A$,B,C)",
-		"INT(1.23,A)",
-		NULL
-	};
-	static const char *testinput5[] = {  // assignment tests
-		"A=3",
-		"A,B=3",
-		"A=B=3",
-		"A=(B)=3",
-		"A=(B=3)",
-		"A,B=(C=3)",
-		"A,B=C=4",
-		"A(B,C)=D",
-		"A(B,C),E=D",
-		"E,A(B,C)=D",
-		"E,A(B,C),F=D",
-		"A(B,(C))=D",
-		"A(B+C)=D",
-		"A(B=C)=D",
-		"A(B+C,D=E)=F",
-		"A(B,C)=D(E)",
-		"A(B,C),D(E)=INT(F)+Function(G)+Array(H)",
-		// begin of error tests
-		"A=B,C=4",
-		"A=B+C,4",
-		"A(B+C,(D,E)=F",
-		"A(B+C,(D=E)=(F,G)",
-		"A,B+C",
-		"3=A",
-		"A,3,B=4",
-		"(A=B)",
-		"A,B,(C)=4",
-		"A+B",
-		NULL
-	};
-	static const char *testinput6[] = {  // data type tests (2010-04-28)
-		"Z = not A < 5.0 = B > 2.0",
-		"Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2",
-		"Z$=STR$(VAL(\"1.23\"))",
-		"Z$=MID$(A$+B$,(C%+5)*D%,4)+\" Test\"",
-		"Z% = (a$ = \"this\" + \"test\")",  // 2010-05-09: corrected expression
-		"Z = A% + B",
-		"Z = A + B%",
-		"Z% = A% + B%",
-		"Z = A% + B% + C",
-		"Z = A% - B",
-		"Z = A - B%",
-		"Z% = A% - B%",
-		"Z = A% - B% * C",
-		"Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D)",
-		"Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)",
-		"Z$ = STR$(A) + STR$(A%)",
-		"Z = A% + B * C ^ D",
-		// begin of error tests
-		"Z = A$ + B",
-		"Z = A$ + B%",
-		"Z = A + B$",
-		"Z = A% + B$",
-		"Z$ = A$ - B$",
-		"Z$ = MID$(A$,B$,1)",
-		"Z$ = MID$(A$,2,C$)",
-		"Z$ = MID$(A,2,3)",
-		"Z$ = MID$(A$,2,3) + B",
-		"Z = B + MID$(A$,2,3)",
-		"Z = A + (B$ + C$)",
-		NULL
-	};
-	static const char *testinput7[] = {  // data type assign tests (2010-05-09)
-		"A% = B% + 5",
-		"A% = B + 5",
-		"A% = B + 5.0",
-		"A = B = C = 1.0",
-		"A, B, C = 1.0",
-		"A, B, C = 1",
-		"A%,B% = C% + D%",
-		"A% = B% = C% + D%",
-		"A$,B$,C$ = \"Test\"",
-		"A$ = B$ = C$ = \"Test\"",
-		// begin of error tests
-		"Z, Y = A$ + B%",
-		"Z, Y = A$ + B$",
-		"A,B%,C = 1.0",
-		"A,B,C% = 1.0",
-		"A%,B,C = 1.0",
-		"A,\"T\",B = 1",
-		"A = \"T\" = B = 1",
-		"A,B,C = STR$(1)",
-		"A,B,C$ = STR$(1)",
-		"A,B,C$ = 1",
-		"A,B$,C = 1",
-		"A,B,1 = 1",
-		"A,B%,1 = 1",
-		"1,A,B% = 1",
-		"A%,B,C% = 1",
-		"A%,B$,C% = 1",
-		"A$,B$,C% = 1",
-		"A$,B$,C$ = 1",
-		"Z = A$ + B * C",
-		NULL
-	};
-	static const char *testinput8[] = {  // substring tests (2010-05-19)
-		"LEFT$(A$,1) = B$",
-		"LEFT$(A$,1) = B$ + C$",
-		"MID$(A$,2) = B$",
-		"MID$(A$,2) = B$ + C$",
-		"MID$(A$,2,3) = B$",
-		"MID$(A$,2,3) = B$ + C$",
-		"RIGHT$(A$,2) = B$",
-		"RIGHT$(A$,2) = B$ + C$",
-		"LEFT$(A$,1) = RIGHT$(B$,1)",
-		"LEFT$(A$,1) = RIGHT$(B$+C$,1)",
-		// begin of error tests
-		"RIGHT$(A$,2) = B",
-		"RIGHT$(A$,2) = B%",
-		"RIGHT$(A,2) = B$",
-		"RIGHT$(A%,2) = B$",
-		"RIGHT$(A$+B$,2) = C$",
-		"RIGHT$(LEFT$(A$,1),2) = B$",
-		"RIGHT$(LEFT$(A$+B$,1),2) = C$",
-		// list assignments (2010-05-22)
-		"LEFT$(A$,1),RIGHT$(B$,1) = C$",
-		"LEFT$(A$,1),MID$(B$,2,1),RIGHT$(C$,1) = D$",
-		"LEFT$(A$,1),B$ = C$",
-		"LEFT$(A$,1),B$,C$ = D$",
-		"A$,LEFT$(B$,1) = C$",
-		"A$,LEFT$(B$,1),C$ = D$",
-		"A$,B$,C$ = D$",
-		"A$,B$,LEFT$(C$,1) = D$",
-		"LEFT$(A$,1),B$,RIGHT$(C$,1) = D$",
-		// more related tests (2010-10-05)
-		"A(int(B))=C",
-		NULL
-	};
-	static const char *testinput9[] = {  // command tests (2010-05-29)
-		// LET tests
-		"LET A=0.0",
-		"LET A%=0",
-		"LET A$=\"\"",
-		"LET A=B=C=0.0",
-		"LET A,B,C=0.0",
-		"LET A%=B%=C%=0",
-		"LET A%,B%,C%=0",
-		"LET A$=B$=C$=\"\"",
-		"LET A$,B$,C$=\"\"",
-		"LET LEFT$(A$,1) = B$",
-		"LET LEFT$(A$,1) = B$ + C$",
-		"LET LEFT$(A$,1),RIGHT$(B$,1) = C$",
-		"LET A$,LEFT$(B$,1) = C$",
-		// LET error tests
-		"LET LET A=0",
-		"A = 0 LET 5",
-		"PRINT",
-		NULL
-	};
-	static const char *testinput10[] = {  // PRINT tests (2010-06-01)
-		"PRINT A;B%;C$",
-		"PRINT A;B%;C$;",
-		"PRINT A,B%,C$",
-		"PRINT A,B%,C$,",
-		"PRINT A+B; C%+D%; E$+F$; MID$(E$,1); LEFT$(E$+F$,5)",
-		"PRINT \"Test:\"; TAB(10); A%; SPC(5); B",
-		"PRINT \"Test:\"; TAB(10); A; LOG(5); B",
-		"PRINT A; TAB(10)",
-		"PRINT A; TAB(10);",
-		"PRINT A; SPC(10)",
-		"PRINT A; SPC(10);",
-		"PRINT ,,A",
-		"PRINT ,,A,",
-		"PRINT A,,B",
-		"PRINT A,,B,",
-		"PRINT A;;B",
-		"PRINT;A;;B;;",
-		"PRINT;",
-		"PRINT,",
-		// PRINT error tests
-		"PRINT C(A,,B)",
-		"PRINT C(A;B)",
-		"A=SPC(10)",
-		"A=TAB(10)",
-		"PRINT (A,,B)",
-		"PRINT A+;",
-		"PRINT A+,",
-		"PRINT A+",
-		"PRINT INT(A+;",
-		"PRINT INT(A+,",
-		"PRINT INT(A+",
-		"PRINT INT(B,,C)",
-		"PRINT (A+B",
-		"PRINT (A+B,",
-		"PRINT MID$(A$+B$",
-		// 2011-03-03: more PRINT error tests
-		"PRINT (TAB(10)",
-		"PRINT INT(TAB(10))",
-		"PRINT VAL(TAB(10))",
-		"PRINT A(TAB(10))",
-		"PRINT A+TAB(10)",
-		"PRINT A%+TAB(10)",
-		"PRINT A$+TAB(10)",
-		"PRINT TAB(10)+A",
-		NULL
-	};
-	static const char *testinput11[] = {  // error tests (2010-06-13)
-		"Z = C(A,,B)",
-		"Z = INT(A,",
-		"Z = (A+",
-		"Z = A+",
-		"Z = (A+B",
-		"Z = (,",
-		"Z = (A,",
-		"Z = (A+,",
-		"Z = (A+A+,",
-		"Z = (A+B,",
-		"Z = MID$(A$+B$",
-		"Z = A NOT B",
-		"Z = A + * B",
-		"Z = A + B,",
-		"Z = A,B = 1",
-		"Z+A",
-		"+Z",
-		"-Z",
-		"Z Y = 1",
-		"Z , A B",
-		"Z",
-		",Z",
-		"Z,",
-		"Z,,",
-		"Z,Y",
-		"Z,Y,",
-		"Z,Y,X",
-		"Z,Y,X,",
-		"Z=A,",
-		"LET A",
-		"LET A,",
-		"Z=",
-		"Z=,",
-		"Z=+",
-		"Z=Y=",
-		"Z,Y=",
-		"Z,Y=,",
-		"LET A=",
-		"Z(",
-		"Z(,",
-		"Z,Y(",
-		"Z,Y(A",
-		"Z,Y(A,",
-		"Z,Y(A+",
-		"Z = A A",
-		"Z = (A A",
-		"Z = Arr(A A",
-		"Z = INT(A A",
-		"Z = ASC(A$ A",
-		"Z = ASC(A$,A A",
-		"Z$ = MID$(A$ A",
-		"Z$ = MID$(A$,A A",
-		"Z$ = MID$(A$,A,A A",
-		"MID$(",
-		"MID$(A$",
-		"MID$(A$,",
-		"MID$(A$ B",
-		"MID$(A$,B",
-		"MID$(A$,B,",
-		"MID$(A$,B C",
-		"MID$(A$,B,C",
-		"MID$(A$,B,C,",
-		"MID$(A$,B,C D",
-		"MID$(A$,B,C)",
-		"MID$(A$,B,C)=",
-		"INT(",
-		"INT(A,",
-		"INT(A)",
-		"INT(A)=",
-		"LET INT(A)=",
-		"A,INT(A)=",
-		"A=INT(A)=",
-		"INT(A)=B",
-		"LET ,",
-		"LET A,,",
-		"LET",
-		"Z%,",
-		"Z%,,",
-		"Z%,Y%,",
-		"Z%,Y%,X%,",
-		"LET A%,",
-		"LET A%,,",
-		"Z$,",
-		"Z$,,",
-		"Z$,Y$,",
-		"Z$,Y$,X,",
-		"LET A$,",
-		"LET A$,,",
-		"Z%=",
-		"Z%=,",
-		"Z%=+",
-		"Z%=Y%=",
-		"Z%,Y%=",
-		"Z%,Y%=,",
-		"LET A%=",
-		"Z$=",
-		"Z$=,",
-		"Z$=+",
-		"Z$=Y$=",
-		"Z$,Y$=",
-		"Z$,Y$=,",
-		"LET A$=",
-		"MID$(A$+",
-		"MID$(A$+B$",
-		"MID$(A$+B$,",
-		"A(INT(B+C))=4",
-		"MID$(A$,LEFT$(B$,1)<C$)=D$",
-		NULL
-	};
-	static const char *testinput12[] = {  // more error tests (2010-06-29)
-		"Z = A$ + B$ + C$",
-		"Z = MID$(A*B+C,1)",
-		"Z$ = MID$(A*B+C,1)",
-		"Z$ = MID$(Y$,A$ + B$ + C$)",
-		"Z = A <> B$",
-		"Z = A <> B$ < C$",
-		"Z = A + B$ + C$",
-		"Z = A < B$ + C$",
-		"Z = A + B$ + C%",
-		"Z = A < B$ + C%",
-		"Z = A <> B$ + C$ < D$",
-		"Z = A + B$ + C$ < D$",
-		"Z = A + (B$ + C$ < D$)",
-		"Z$ = A$ + B$ + C%",
-		"Z$ = A$ + B * C",
-		"A$,RIGHT$(B,2) = C$",
-		"A$=RIGHT$(B,2) = C$",
-		"Z=MID$(A$,2) < \"B\"",
-		"Z=MID$(A$,2) = B$",
-		"Z(INT(A+B))=C",
-		"Z(A$)=C",
-		"Z(A)=Y(A$)",
-		// added more array assignments, non-errors (2011-02-01)
-		"Z(A),Y(A)=X(A)",
-		"Z(A,Y(B))=X(A)",
-		"Z%(A%),Y%(A%)=X%(A%)",
-		"Z$(A%),Y$(A%)=X$(A%)",
-		// added more command error tests (2011-03-10)
-		"TAB(10)=A",
-		"+",
-		"NOT",
-		"A PRINT B",
-		"A(I) PRINT B",
-		"MID$(A$ PRINT,4)=\"\"",
-		"LET (",
-		"A,PRINT",
-		"A = (0 LET 5)",
-		"A = 0 PRINT 5",
-		"A = (0 PRINT 5)",
-		"A$ = MID$(B$ PRINT, 4)",
-		"A = INT(0 LET 5)",
-		"A = INT(0 PRINT 5)",
-		"A$ = MID$(B$, 4 PRINT)",
-		"A$ = MID$(B$, 4, 5 PRINT)",
-		"MID$((A$),4)=B$",
-		"MID$(-A$,4)=B$",
-		"MID$(+A$,4)=B$",
-		"FNA=B",
-		"FNA(I)=B",
-		"LET FNA=B",
-		"LET FNA(I)=B",
-		"C,FNA=B",
-		"C,FNA(I)=B",
-		"LET C,FNA=B",
-		"LET C,FNA(I)=B",
-		"C,FNA,D=B",
-		"C,FNA(I),D=B",
-		"LET C,FNA,D=B",
-		"LET C,FNA(I),D=B",
-		NULL
-	};
-	static const char *testinput13[] = {  // semicolon error tests (2010-07-04)
-		"Z = C(A;B)",
-		"Z = A;B",
-		"Z = A+;",
-		"Z = A+B;C",
-		"Z = Y = A;B",
-		"Z , Y = A;B",
-		"Z , Y , A;B",
-		"Z = INT(A;B)",
-		"Z = ASC(A$;B)",
-		"Z$ = MID$(A$;B)",
-		"Z$ = MID$(A$,B;C)",
-		"Z$ = MID$(A$,B,C;D)",
-		"Z = INSTR(A$;B$)",
-		"Z = INSTR(A$,B$;C)",
-		"Z = INSTR(A$,B$,C;D)",
-		"Z = C(A,;B)",
-		"Z;",
-		";Z",
-		"Z,;",
-		"Z,B;",
-		"Z=B;",
-		"LET A;",
-		"Z=;",
-		"Z,Y=;",
-		"Z=Y=;",
-		"Z=Y=(;",
-		"Z=Y=(A;",
-		"Z(;",
-		"MID$(,",
-		"MID$(;",
-		"MID$(A$;",
-		"MID$(A$,;",
-		"MID$(A$,B;",
-		"MID$(A$,B);",
-		"Z$,MID$(,",
-		"Z$,MID$(;",
-		"Z$,MID$(A$;",
-		"Z$,MID$(A$,;",
-		"Z$,MID$(A$,B;",
-		"Z$,MID$(A$,B);",
-		"Z$=MID$(,",
-		"Z$=MID$(;",
-		"Z$=MID$(A$;",
-		"Z$=MID$(A$,;",
-		"Z$=MID$(A$,B;",
-		"Z$=MID$(A$,B);",
-		"Z(A;",
-		"LET ;",
-		"Z%,;",
-		"LET A%,;",
-		"Z$,;",
-		"LET A$,;",
-		"Z%=;",
-		"Z%,Y%=;",
-		"Z$=;",
-		"Z$,Y$=;",
-		NULL
-	};
-	static const char *testinput14[] = {  // expression error tests (2011-01-04)
-		//
-		"Z=(,",
-		"Z=-,",
-		"Z=A+,",
-		"Z=(-,",
-		"Z=(A+,",
-		"Z=INT(,",
-		"Z=INT(-,",
-		"Z=INT(A+,",
-		"Z=INT((,",
-		"Z=INT((-,",
-		"Z=INT((A+,",
-		"Z=A(,",
-		"Z=A(-,",
-		"Z=A(B+,",
-		"Z=A((,",
-		"Z=A((-,",
-		"Z=A((B+,",
-		"Z=A(INT(,",
-		"Z=A(INT(-,",
-		"Z=A(INT(A+,",
-		"Z=A(B(,",
-		"Z=A(B(-,",
-		"Z=A(B(C+,",
-		"Z = -",
-		"Z% = A%+",
-		"Z$ = A$+",
-		"Z = A(B+",
-		"Z$ = A$ + -B",			// additional tests (2011-01-22)
-		"Z$ = A$ + -(B+C)",
-		"Z$ = A$ + INT(B+C)",
-		"Z$ = A$ + Array(B+C)",
-		NULL
-	};
-	static const char *testinput15[] = {  // temporary string tests (2011-02-05)
-		"Z$ = A$ + B$",
-		"Z$ = REPEAT$(A$,4) + B$",
-		"Z$ = A$ + REPEAT$(B$+C$,3)",
-		"Z$ = STR$(A) + LEFT$(B$+C$,5)",
-		"Z% = A$ = B$",
-		"Z% = A$ + B$ = C$",
-		"Z% = A$ = B$ + C$",
-		"Z% = A$ + B$ = C$ + D$",
-		"Z% = A$ < B$",
-		"Z% = A$ + B$ < C$",
-		"Z% = A$ < B$ + C$",
-		"Z% = A$ + B$ < C$ + D$",
-		"Z% = A$ <= B$",
-		"Z% = A$ + B$ <= C$",
-		"Z% = A$ <= B$ + C$",
-		"Z% = A$ + B$ <= C$ + D$",
-		"Z% = A$ > B$",
-		"Z% = A$ + B$ > C$",
-		"Z% = A$ > B$ + C$",
-		"Z% = A$ + B$ > C$ + D$",
-		"Z% = A$ <= B$",
-		"Z% = A$ + B$ <= C$",
-		"Z% = A$ <= B$ + C$",
-		"Z% = A$ + B$ <= C$ + D$",
-		"Z% = A$ <> B$",
-		"Z% = A$ + B$ <> C$",
-		"Z% = A$ <> B$ + C$",
-		"Z% = A$ + B$ <> C$ + D$",
-		"Z$ = A$ + B$",
-		"Z$,Y$ = A$ + B$",
-		"LEFT$(Z$,1) = A$ + B$",
-		"LEFT$(Z$,1),Y$,RIGHT$(X$,1) = A$ + B$",
-		"Z% = ASC(A$) + ASC(B$+C$)",
-		"Z% = ASC(A$,4) + ASC(B$+C$,4)",
-		"Z% = INSTR(A$,B$)",
-		"Z% = INSTR(A$+B$,C$)",
-		"Z% = INSTR(A$,B$+C$)",
-		"Z% = INSTR(A$+B$,C$+D$)",
-		"Z% = INSTR(A$,B$,4)",
-		"Z% = INSTR(A$+B$,C$,4)",
-		"Z% = INSTR(A$,B$+C$,4)",
-		"Z% = INSTR(A$+B$,C$+D$,4)",
-		"Z% = LEN(A$) + LEN(B$+C$)",
-		"Z = VAL(A$) + VAL(B$+C$)",
-		"PRINT A$;B$+C$",
-		NULL
-	};
-	static const char *testinput16[] = {  // INPUT tests (2011-03-20)
-		"INPUT A",
-		"INPUT A,B",
-		"INPUT A,B%,C$",
-		"INPUT A$;",
-		"INPUT A(I%),B%(I%);",
-		"INPUT PROMPT \"Enter Number: \"; N%",
-		"INPUT PROMPT A$+\":\"; A",
-		"INPUT PROMPT \"Two Values\", A, B;",
-		"INPUT PROMPT P$(I%), S$(I%)",
-		// error tests
-		"INPUT",
-		"INPUT,",
-		"INPUT;",
-		"INPUT; -A",
-		"INPUT (A)",
-		"INPUT INT(A)",
-		"INPUT LEFT$(A$,1)",
-		"INPUT FNA",
-		"INPUT FNA(X)",
-		"INPUT A B",
-		"INPUT A+B",
-		"INPUT A,",
-		"INPUT PROMPT",
-		"INPUT PROMPT A+B*C",
-		"INPUT PROMPT A$",
-		"INPUT PROMPT A$+",
-		"INPUT PROMPT A$;",
-		NULL
-	};
-	static const char *testinput17[] = {  // negative const tests (2011-03-27)
-		"A=---B",
-		"A=-1.0",
-		"A%=--1",
-		"A=B-1.5",
-		"A=B+-1.5",
-		"A=B+--1.5",
-		"PRINT-1;--1;---1;- 1;",
-		"A=- 1.0 + -.001 + -0.12",
-		"A%=-1 + - 2",
-		"A=-1.2E-23 + -1.2e+23 + -1.2e23",
-		"A=- 1.2E-23 + - 1.2e+23 + - 1.2e23",
-		"A% = NOT -B%",
-		"A% = NOT -2147483648",  // negative integer limit
-		"A% = - NOT 123",
-		"A% = -2147483649 ",	// integer limit test
-		"A = B^-C + B*-C",
-		"A = -B^C + -B^-C",
-		"A = -B*C + -B*-C",
-		"A = (-B^NOT C) + -B*NOT C",  // TODO check with recreator
-		"A = -B^NOT C + -B*NOT C",
-		NULL
-	};
-
-	static const char **test[] = {
-		testinput1, testinput2, testinput3, testinput4, testinput5, testinput6,
-		testinput7, testinput8, testinput9, testinput10, testinput11,
-		testinput12, testinput13, testinput14, testinput15, testinput16,
-		testinput17
-	};
-	static const int ntests = sizeof(test) / sizeof(test[0]);
-
-	int testno;
-	int inputmode;
-	if (argc < 2 || strcmp(argv[1], "-t") != 0)
-	{
-		return false;  // not our options
-	}
-	if (argc == 3)
-	{
-		testno = atoi(argv[2]) - 1;
-		inputmode = strcmp(argv[2], "i") == 0;
-	}
-	if (argc != 3 || (testno < 0 || testno >= ntests) && inputmode == 0)
-	{
-		// 2010-03-13: changed to output actual program name
-		// 2010-04-02: added + 1 so that '\' is no output
-		printf("usage: %s -t <test number 1-%d>|i\n", strrchr(argv[0], '\\')
-			+ 1, ntests);
-		return true;  // our options are bad
-	}
-
-	if (inputmode)
-	{
-		char inputline[200];
-		printf("\nTranslator Testing...");  // 2010-05-29: added
-		do {
-			printf("\nInput: ");
-			// 2011-06-07: check return value of gets()
-			if (gets(inputline) == NULL)
-			{
-				printf("\nFailure: gets() returned NULL");
-				return true;
-			}
-			translate_input(translator, parser, table, inputline);
-		} while (inputline[0] != '\0');
-	}
-	else
-	{
-		const char **testinput = test[testno];
-		for (int i = 0; testinput[i] != NULL; i++)
-		{
-			printf("\nInput: %s\n", testinput[i]);
-			translate_input(translator, parser, table, testinput[i],
-				testno < 4);
-			print_token_leaks(table, testinput[i]);
-		}
-	}
-	printf("\n");
-	return true;
 }
 
 

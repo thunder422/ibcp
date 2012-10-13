@@ -1,0 +1,65 @@
+##################################################
+#  Translator Test #8: More Errors (2010-06-29)  #
+##################################################
+
+Z = A$ + B$ + C$
+Z = MID$(A*B+C,1)
+Z$ = MID$(A*B+C,1)
+Z$ = MID$(Y$,A$ + B$ + C$)
+Z = A <> B$
+Z = A <> B$ < C$
+Z = A + B$ + C$
+Z = A < B$ + C$
+Z = A + B$ + C%
+Z = A < B$ + C%
+Z = A <> B$ + C$ < D$
+Z = A + B$ + C$ < D$
+Z = A + (B$ + C$ < D$)
+Z$ = A$ + B$ + C%
+Z$ = A$ + B * C
+A$,RIGHT$(B,2) = C$
+A$=RIGHT$(B,2) = C$
+Z=MID$(A$,2) < "B"
+Z=MID$(A$,2) = B$
+Z(INT(A+B))=C
+Z(A$)=C
+Z(A)=Y(A$)
+
+# added more array assignments, non-errors (2011-02-01)
+Z(A),Y(A)=X(A)
+Z(A,Y(B))=X(A)
+Z%(A%),Y%(A%)=X%(A%)
+Z$(A%),Y$(A%)=X$(A%)
+
+# added more command error tests (2011-03-10)
+TAB(10)=A
++
+NOT
+A PRINT B
+A(I) PRINT B
+MID$(A$ PRINT,4)=""
+LET (
+A,PRINT
+A = (0 LET 5)
+A = 0 PRINT 5
+A = (0 PRINT 5)
+A$ = MID$(B$ PRINT, 4)
+A = INT(0 LET 5)
+A = INT(0 PRINT 5)
+A$ = MID$(B$, 4 PRINT)
+A$ = MID$(B$, 4, 5 PRINT)
+MID$((A$),4)=B$
+MID$(-A$,4)=B$
+MID$(+A$,4)=B$
+FNA=B
+FNA(I)=B
+LET FNA=B
+LET FNA(I)=B
+C,FNA=B
+C,FNA(I)=B
+LET C,FNA=B
+LET C,FNA(I)=B
+C,FNA,D=B
+C,FNA(I),D=B
+LET C,FNA,D=B
+LET C,FNA(I),D=B

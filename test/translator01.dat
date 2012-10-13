@@ -1,0 +1,33 @@
+##########################################
+#  Translator Test #1: Assignment Tests  #
+##########################################
+
+A=3
+A,B=3
+A=B=3
+A=(B)=3
+A=(B=3)
+A,B=(C=3)
+A,B=C=4
+A(B,C)=D
+A(B,C),E=D
+E,A(B,C)=D
+E,A(B,C),F=D
+A(B,(C))=D
+A(B+C)=D
+A(B=C)=D
+A(B+C,D=E)=F
+A(B,C)=D(E)
+A(B,C),D(E)=INT(F)+Function(G)+Array(H)
+
+# begin of error tests
+A=B,C=4
+A=B+C,4
+A(B+C,(D,E)=F
+A(B+C,(D=E)=(F,G)
+A,B+C
+3=A
+A,3,B=4
+(A=B)
+A,B,(C)=4
+A+B

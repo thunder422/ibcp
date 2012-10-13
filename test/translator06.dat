@@ -1,0 +1,50 @@
+#####################################################
+#  Translator Test #6: PRINT Commands (2010-06-01)  #
+#####################################################
+
+PRINT A;B%;C$
+PRINT A;B%;C$;
+PRINT A,B%,C$
+PRINT A,B%,C$,
+PRINT A+B; C%+D%; E$+F$; MID$(E$,1); LEFT$(E$+F$,5)
+PRINT "Test:"; TAB(10); A%; SPC(5); B
+PRINT "Test:"; TAB(10); A; LOG(5); B
+PRINT A; TAB(10)
+PRINT A; TAB(10);
+PRINT A; SPC(10)
+PRINT A; SPC(10);
+PRINT ,,A
+PRINT ,,A,
+PRINT A,,B
+PRINT A,,B,
+PRINT A;;B
+PRINT;A;;B;;
+PRINT;
+PRINT,
+
+# PRINT error tests
+PRINT C(A,,B)
+PRINT C(A;B)
+A=SPC(10)
+A=TAB(10)
+PRINT (A,,B)
+PRINT A+;
+PRINT A+,
+PRINT A+
+PRINT INT(A+;
+PRINT INT(A+,
+PRINT INT(A+
+PRINT INT(B,,C)
+PRINT (A+B
+PRINT (A+B,
+PRINT MID$(A$+B$
+
+# 2011-03-03: more PRINT error tests
+PRINT (TAB(10)
+PRINT INT(TAB(10))
+PRINT VAL(TAB(10))
+PRINT A(TAB(10))
+PRINT A+TAB(10)
+PRINT A%+TAB(10)
+PRINT A$+TAB(10)
+PRINT TAB(10)+A

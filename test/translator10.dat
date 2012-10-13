@@ -1,0 +1,37 @@
+#########################################################
+#  Translator Test #10: Expression Errors (2011-01-04)  #
+#########################################################
+
+Z=(,
+Z=-,
+Z=A+,
+Z=(-,
+Z=(A+,
+Z=INT(,
+Z=INT(-,
+Z=INT(A+,
+Z=INT((,
+Z=INT((-,
+Z=INT((A+,
+Z=A(,
+Z=A(-,
+Z=A(B+,
+Z=A((,
+Z=A((-,
+Z=A((B+,
+Z=A(INT(,
+Z=A(INT(-,
+Z=A(INT(A+,
+Z=A(B(,
+Z=A(B(-,
+Z=A(B(C+,
+Z = -
+Z% = A%+
+Z$ = A$+
+Z = A(B+
+
+# additional tests (2011-01-22)
+Z$ = A$ + -B
+Z$ = A$ + -(B+C)
+Z$ = A$ + INT(B+C)
+Z$ = A$ + Array(B+C)

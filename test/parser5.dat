@@ -1,0 +1,9 @@
+##################################
+#  Parser Test #5: Miscellenous  #
+##################################
+
+A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
+if index>5 and subindex<=10 then
+var = 5'initialize variable + 
+# error (bad token '&')
+if index<<5 && index><4 || n<4 then

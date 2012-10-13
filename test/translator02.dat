@@ -1,0 +1,35 @@
+#################################################
+#  Translator Test #2: Data Types (2010-04-28)  #
+#################################################
+
+Z = not A < 5.0 = B > 2.0
+Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2
+Z$=STR$(VAL("1.23"))
+Z$=MID$(A$+B$,(C%+5)*D%,4)+" Test"
+# 2010-05-09: corrected expression
+Z% = (a$ = "this" + "test")
+Z = A% + B
+Z = A + B%
+Z% = A% + B%
+Z = A% + B% + C
+Z = A% - B
+Z = A - B%
+Z% = A% - B%
+Z = A% - B% * C
+Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D)
+Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)
+Z$ = STR$(A) + STR$(A%)
+Z = A% + B * C ^ D
+
+# begin of error tests
+Z = A$ + B
+Z = A$ + B%
+Z = A + B$
+Z = A% + B$
+Z$ = A$ - B$
+Z$ = MID$(A$,B$,1)
+Z$ = MID$(A$,2,C$)
+Z$ = MID$(A,2,3)
+Z$ = MID$(A$,2,3) + B
+Z = B + MID$(A$,2,3)
+Z = A + (B$ + C$)

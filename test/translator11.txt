@@ -1,434 +1,143 @@
 
-ibcp.exe  Copyright (C) 2010-2011  Thunder422
+ibcp  Copyright (C) 2010-2011  Thunder422
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to
 redistribute it under certain conditions.
 
 Table initialization successful.
 
-Input: Z = C(A,,B)
-               ^-- expected expression
+Input: Z$ = A$ + B$
+Output: Z$<ref> A$ B$ +$[A$,B$] Assign$T 
 
+Input: Z$ = REPEAT$(A$,4) + B$
+Output: Z$<ref> A$ 4 REPEAT$([A$] B$ +$1[B$] Assign$T 
 
-Input: Z = INT(A,
-                ^-- expected operator or closing parentheses
+Input: Z$ = A$ + REPEAT$(B$+C$,3)
+Output: Z$<ref> A$ B$ C$ +$[B$,C$] 3 REPEAT$T( +$2[A$] Assign$T 
 
+Input: Z$ = STR$(A) + LEFT$(B$+C$,5)
+Output: Z$<ref> A STR$( B$ C$ +$[B$,C$] 5 LEFT$( +$T Assign$T 
 
-Input: Z = (A+
-              ^-- expected numeric expression
+Input: Z% = A$ = B$
+Output: Z%<ref> A$ B$ =$[A$,B$] Assign% 
 
+Input: Z% = A$ + B$ = C$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ =$1[C$] Assign% 
 
-Input: Z = A+
-             ^-- expected numeric expression
+Input: Z% = A$ = B$ + C$
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] =$2[A$] Assign% 
 
+Input: Z% = A$ + B$ = C$ + D$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] =$T Assign% 
 
-Input: Z = (A+B
-               ^-- expected operator or closing parentheses
+Input: Z% = A$ < B$
+Output: Z%<ref> A$ B$ <$[A$,B$] Assign% 
 
+Input: Z% = A$ + B$ < C$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ <$1[C$] Assign% 
 
-Input: Z = (,
-            ^-- expected numeric expression
+Input: Z% = A$ < B$ + C$
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] <$2[A$] Assign% 
 
+Input: Z% = A$ + B$ < C$ + D$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <$T Assign% 
 
-Input: Z = (A,
-             ^-- expected operator or closing parentheses
+Input: Z% = A$ <= B$
+Output: Z%<ref> A$ B$ <=$[A$,B$] Assign% 
 
+Input: Z% = A$ + B$ <= C$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ <=$1[C$] Assign% 
 
-Input: Z = (A+,
-              ^-- expected numeric expression
+Input: Z% = A$ <= B$ + C$
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] <=$2[A$] Assign% 
 
+Input: Z% = A$ + B$ <= C$ + D$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <=$T Assign% 
 
-Input: Z = (A+A+,
-                ^-- expected numeric expression
+Input: Z% = A$ > B$
+Output: Z%<ref> A$ B$ >$[A$,B$] Assign% 
 
+Input: Z% = A$ + B$ > C$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ >$1[C$] Assign% 
 
-Input: Z = (A+B,
-               ^-- expected operator or closing parentheses
+Input: Z% = A$ > B$ + C$
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] >$2[A$] Assign% 
 
+Input: Z% = A$ + B$ > C$ + D$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] >$T Assign% 
 
-Input: Z = MID$(A$+B$
-                     ^-- expected operator or comma
+Input: Z% = A$ <= B$
+Output: Z%<ref> A$ B$ <=$[A$,B$] Assign% 
 
+Input: Z% = A$ + B$ <= C$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ <=$1[C$] Assign% 
 
-Input: Z = A NOT B
-             ^^^-- expected binary operator or end-of-statement
+Input: Z% = A$ <= B$ + C$
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] <=$2[A$] Assign% 
 
+Input: Z% = A$ + B$ <= C$ + D$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <=$T Assign% 
 
-Input: Z = A + * B
-               ^-- expected numeric expression
+Input: Z% = A$ <> B$
+Output: Z%<ref> A$ B$ <>$[A$,B$] Assign% 
 
+Input: Z% = A$ + B$ <> C$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ <>$1[C$] Assign% 
 
-Input: Z = A + B,
-                ^-- expected operator or end-of-statement
+Input: Z% = A$ <> B$ + C$
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] <>$2[A$] Assign% 
 
+Input: Z% = A$ + B$ <> C$ + D$
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <>$T Assign% 
 
-Input: Z = A,B = 1
-            ^-- expected operator or end-of-statement
+Input: Z$ = A$ + B$
+Output: Z$<ref> A$ B$ +$[A$,B$] Assign$T 
 
+Input: Z$,Y$ = A$ + B$
+Output: Z$<ref> Y$<ref> A$ B$ +$[A$,B$] AssignList$T 
 
-Input: Z+A
-        ^-- expected equal or comma for assignment
+Input: LEFT$(Z$,1) = A$ + B$
+Output: Z$<ref> 1 LEFT$(<ref> A$ B$ +$[A$,B$] AssignSub$T 
 
+Input: LEFT$(Z$,1),Y$,RIGHT$(X$,1) = A$ + B$
+Output: Z$<ref> 1 LEFT$(<ref> Y$<ref> X$<ref> 1 RIGHT$(<ref> A$ B$ +$[A$,B$] AssignListMix$T 
 
-Input: +Z
-       ^-- expected command
+Input: Z% = ASC(A$) + ASC(B$+C$)
+Output: Z%<ref> A$ ASC([A$] B$ C$ +$[B$,C$] ASCT( +% Assign% 
 
+Input: Z% = ASC(A$,4) + ASC(B$+C$,4)
+Output: Z%<ref> A$ 4 ASC2([A$] B$ C$ +$[B$,C$] 4 ASC2T( +% Assign% 
 
-Input: -Z
-       ^-- expected command
+Input: Z% = INSTR(A$,B$)
+Output: Z%<ref> A$ B$ INSTR2([A$,B$] Assign% 
 
+Input: Z% = INSTR(A$+B$,C$)
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ INSTR2T1([C$] Assign% 
 
-Input: Z Y = 1
-         ^-- expected equal or comma for assignment
+Input: Z% = INSTR(A$,B$+C$)
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] INSTR2T2([A$] Assign% 
 
+Input: Z% = INSTR(A$+B$,C$+D$)
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] INSTR2TT( Assign% 
 
-Input: Z , A B
-             ^-- expected equal or comma for assignment
+Input: Z% = INSTR(A$,B$,4)
+Output: Z%<ref> A$ B$ 4 INSTR3([A$,B$] Assign% 
 
+Input: Z% = INSTR(A$+B$,C$,4)
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ 4 INSTR3T1([C$] Assign% 
 
-Input: Z
-        ^-- expected equal or comma for assignment
+Input: Z% = INSTR(A$,B$+C$,4)
+Output: Z%<ref> A$ B$ C$ +$[B$,C$] 4 INSTR3T2([A$] Assign% 
 
+Input: Z% = INSTR(A$+B$,C$+D$,4)
+Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] 4 INSTR3TT( Assign% 
 
-Input: ,Z
-       ^-- expected command
+Input: Z% = LEN(A$) + LEN(B$+C$)
+Output: Z%<ref> A$ LEN([A$] B$ C$ +$[B$,C$] LENT( +% Assign% 
 
+Input: Z = VAL(A$) + VAL(B$+C$)
+Output: Z<ref> A$ VAL([A$] B$ C$ +$[B$,C$] VAL([+$] + Assign 
 
-Input: Z,
-         ^-- expected double variable
-
-
-Input: Z,,
-         ^-- expected double variable
-
-
-Input: Z,Y
-          ^-- expected equal or comma for assignment
-
-
-Input: Z,Y,
-           ^-- expected double variable
-
-
-Input: Z,Y,X
-            ^-- expected equal or comma for assignment
-
-
-Input: Z,Y,X,
-             ^-- expected double variable
-
-
-Input: Z=A,
-          ^-- expected operator or end-of-statement
-
-
-Input: LET A
-            ^-- expected equal or comma for assignment
-
-
-Input: LET A,
-             ^-- expected double variable
-
-
-Input: Z=
-         ^-- expected numeric expression
-
-
-Input: Z=,
-         ^-- expected numeric expression
-
-
-Input: Z=+
-         ^-- expected numeric expression
-
-
-Input: Z=Y=
-           ^-- expected numeric expression
-
-
-Input: Z,Y=
-           ^-- expected numeric expression
-
-
-Input: Z,Y=,
-           ^-- expected numeric expression
-
-
-Input: LET A=
-             ^-- expected numeric expression
-
-
-Input: Z(
-         ^-- expected numeric expression
-
-
-Input: Z(,
-         ^-- expected numeric expression
-
-
-Input: Z,Y(
-           ^-- expected numeric expression
-
-
-Input: Z,Y(A
-            ^-- expected equal or comma for assignment
-
-
-Input: Z,Y(A,
-             ^-- expected numeric expression
-
-
-Input: Z,Y(A+
-             ^-- expected numeric expression
-
-
-Input: Z = A A
-             ^-- expected operator or end-of-statement
-
-
-Input: Z = (A A
-              ^-- expected operator or closing parentheses
-
-
-Input: Z = Arr(A A
-                 ^-- expected operator, comma or closing parentheses
-
-
-Input: Z = INT(A A
-                 ^-- expected operator or closing parentheses
-
-
-Input: Z = ASC(A$ A
-                  ^-- expected operator, comma or closing parentheses
-
-
-Input: Z = ASC(A$,A A
-                    ^-- expected operator or closing parentheses
-
-
-Input: Z$ = MID$(A$ A
-                    ^-- expected operator or comma
-
-
-Input: Z$ = MID$(A$,A A
-                      ^-- expected operator, comma or closing parentheses
-
-
-Input: Z$ = MID$(A$,A,A A
-                        ^-- expected operator or closing parentheses
-
-
-Input: MID$(
-            ^-- expected string variable
-
-
-Input: MID$(A$
-              ^-- expected comma
-
-
-Input: MID$(A$,
-               ^-- expected numeric expression
-
-
-Input: MID$(A$ B
-               ^-- expected comma
-
-
-Input: MID$(A$,B
-                ^-- expected operator, comma or closing parentheses
-
-
-Input: MID$(A$,B,
-                 ^-- expected numeric expression
-
-
-Input: MID$(A$,B C
-                 ^-- expected operator, comma or closing parentheses
-
-
-Input: MID$(A$,B,C
-                  ^-- expected operator or closing parentheses
-
-
-Input: MID$(A$,B,C,
-                  ^-- expected operator or closing parentheses
-
-
-Input: MID$(A$,B,C D
-                   ^-- expected operator or closing parentheses
-
-
-Input: MID$(A$,B,C)
-                   ^-- expected equal or comma for assignment
-
-
-Input: MID$(A$,B,C)=
-                    ^-- expected string expression
-
-
-Input: INT(
-       ^^^^-- expected command
-
-
-Input: INT(A,
-       ^^^^-- expected command
-
-
-Input: INT(A)
-       ^^^^-- expected command
-
-
-Input: INT(A)=
-       ^^^^-- expected command
-
-
-Input: LET INT(A)=
-           ^^^^-- expected item for assignment
-
-
-Input: A,INT(A)=
-         ^^^^-- expected double variable
-
-
-Input: A=INT(A)=
-                ^-- expected numeric expression
-
-
-Input: INT(A)=B
-       ^^^^-- expected command
-
-
-Input: LET ,
-           ^-- expected item for assignment
-
-
-Input: LET A,,
-             ^-- expected double variable
-
-
-Input: LET
-          ^-- expected item for assignment
-
-
-Input: Z%,
-          ^-- expected integer variable
-
-
-Input: Z%,,
-          ^-- expected integer variable
-
-
-Input: Z%,Y%,
-             ^-- expected integer variable
-
-
-Input: Z%,Y%,X%,
-                ^-- expected integer variable
-
-
-Input: LET A%,
-              ^-- expected integer variable
-
-
-Input: LET A%,,
-              ^-- expected integer variable
-
-
-Input: Z$,
-          ^-- expected string item for assignment
-
-
-Input: Z$,,
-          ^-- expected string item for assignment
-
-
-Input: Z$,Y$,
-             ^-- expected string item for assignment
-
-
-Input: Z$,Y$,X,
-             ^-- expected string item for assignment
-
-
-Input: LET A$,
-              ^-- expected string item for assignment
-
-
-Input: LET A$,,
-              ^-- expected string item for assignment
-
-
-Input: Z%=
-          ^-- expected numeric expression
-
-
-Input: Z%=,
-          ^-- expected numeric expression
-
-
-Input: Z%=+
-          ^-- expected numeric expression
-
-
-Input: Z%=Y%=
-             ^-- expected numeric expression
-
-
-Input: Z%,Y%=
-             ^-- expected numeric expression
-
-
-Input: Z%,Y%=,
-             ^-- expected numeric expression
-
-
-Input: LET A%=
-              ^-- expected numeric expression
-
-
-Input: Z$=
-          ^-- expected string expression
-
-
-Input: Z$=,
-          ^-- expected string expression
-
-
-Input: Z$=+
-          ^-- expected string expression
-
-
-Input: Z$=Y$=
-             ^-- expected string expression
-
-
-Input: Z$,Y$=
-             ^-- expected string expression
-
-
-Input: Z$,Y$=,
-             ^-- expected string expression
-
-
-Input: LET A$=
-              ^-- expected string expression
-
-
-Input: MID$(A$+
-              ^-- expected comma
-
-
-Input: MID$(A$+B$
-              ^-- expected comma
-
-
-Input: MID$(A$+B$,
-              ^-- expected comma
-
-
-Input: A(INT(B+C))=4
-Output: B C + INT( A(<ref>[INT(] 4 CvtDbl Assign 
-
-Input: MID$(A$,LEFT$(B$,1)<C$)=D$
-Output: A$<ref> B$ 1 LEFT$( C$ <$[B$,C$] MID2$(<ref> D$ AssignSub$[D$] 
+Input: PRINT A$;B$+C$
+Output: A$ PrintStr[A$] B$ C$ +$[B$,C$] PrintTmp PRINT 
 

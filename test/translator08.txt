@@ -1,0 +1,218 @@
+
+ibcp  Copyright (C) 2010-2011  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: Z = A$ + B$ + C$
+           ^^^^^^^^^^^^-- expected numeric expression
+
+
+Input: Z = MID$(A*B+C,1)
+                ^^^^^-- expected string expression
+
+
+Input: Z$ = MID$(A*B+C,1)
+                 ^^^^^-- expected string expression
+
+
+Input: Z$ = MID$(Y$,A$ + B$ + C$)
+                    ^^^^^^^^^^^^-- expected numeric expression
+
+
+Input: Z = A <> B$
+                ^^-- expected numeric expression
+
+
+Input: Z = A <> B$ < C$
+Output: Z<ref> A B$ C$ <$[B$,C$] <>%2 CvtDbl Assign 
+
+Input: Z = A + B$ + C$
+               ^^-- expected numeric expression
+
+
+Input: Z = A < B$ + C$
+               ^^^^^^^-- expected numeric expression
+
+
+Input: Z = A + B$ + C%
+               ^^-- expected numeric expression
+
+
+Input: Z = A < B$ + C%
+                    ^^-- expected string expression
+
+
+Input: Z = A <> B$ + C$ < D$
+Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$1[D$] <>%2 CvtDbl Assign 
+
+Input: Z = A + B$ + C$ < D$
+               ^^-- expected numeric expression
+
+
+Input: Z = A + (B$ + C$ < D$)
+Output: Z<ref> A B$ C$ +$[B$,C$] D$ <$1[D$] +%2 Assign 
+
+Input: Z$ = A$ + B$ + C%
+                      ^^-- expected string expression
+
+
+Input: Z$ = A$ + B * C
+                 ^^^^^-- expected string expression
+
+
+Input: A$,RIGHT$(B,2) = C$
+                 ^-- expected string variable
+
+
+Input: A$=RIGHT$(B,2) = C$
+                 ^-- expected string expression
+
+
+Input: Z=MID$(A$,2) < "B"
+Output: Z<ref> A$ 2 MID2$( "B" <$[A$,"B"] CvtDbl Assign 
+
+Input: Z=MID$(A$,2) = B$
+Output: Z<ref> A$ 2 MID2$( B$ =$[A$,B$] CvtDbl Assign 
+
+Input: Z(INT(A+B))=C
+Output: A B + INT( Z(<ref>[INT(] C Assign 
+
+Input: Z(A$)=C
+Output: A$<ref> Z(<ref>[A$<ref>] C Assign 
+
+Input: Z(A)=Y(A$)
+Output: A<ref> Z(<ref>[A<ref>] A$<ref> Y([A$<ref>] Assign 
+
+Input: Z(A),Y(A)=X(A)
+Output: A<ref> Z(<ref>[A<ref>] A<ref> Y(<ref>[A<ref>] A<ref> X([A<ref>] AssignList 
+
+Input: Z(A,Y(B))=X(A)
+Output: A<ref> B<ref> Y(<ref>[B<ref>] Z(<ref>[A<ref>,Y(<ref>] A<ref> X([A<ref>] Assign 
+
+Input: Z%(A%),Y%(A%)=X%(A%)
+Output: A%<ref> Z%(<ref>[A%<ref>] A%<ref> Y%(<ref>[A%<ref>] A%<ref> X%([A%<ref>] AssignList% 
+
+Input: Z$(A%),Y$(A%)=X$(A%)
+Output: A%<ref> Z$(<ref>[A%<ref>] A%<ref> Y$(<ref>[A%<ref>] A%<ref> X$([A%<ref>] AssignList$[X$(] 
+
+Input: TAB(10)=A
+       ^^^^-- expected command
+
+
+Input: +
+       ^-- expected command
+
+
+Input: NOT
+       ^^^-- expected command
+
+
+Input: A PRINT B
+         ^^^^^-- expected equal or comma for assignment
+
+
+Input: A(I) PRINT B
+            ^^^^^-- expected equal or comma for assignment
+
+
+Input: MID$(A$ PRINT,4)=""
+               ^^^^^-- expected comma
+
+
+Input: LET (
+           ^-- expected item for assignment
+
+
+Input: A,PRINT
+         ^^^^^-- expected double variable
+
+
+Input: A = (0 LET 5)
+              ^^^-- expected operator or closing parentheses
+
+
+Input: A = 0 PRINT 5
+             ^^^^^-- expected operator or end-of-statement
+
+
+Input: A = (0 PRINT 5)
+              ^^^^^-- expected operator or closing parentheses
+
+
+Input: A$ = MID$(B$ PRINT, 4)
+                    ^^^^^-- expected operator or comma
+
+
+Input: A = INT(0 LET 5)
+                 ^^^-- expected operator or closing parentheses
+
+
+Input: A = INT(0 PRINT 5)
+                 ^^^^^-- expected operator or closing parentheses
+
+
+Input: A$ = MID$(B$, 4 PRINT)
+                       ^^^^^-- expected operator, comma or closing parentheses
+
+
+Input: A$ = MID$(B$, 4, 5 PRINT)
+                          ^^^^^-- expected operator or closing parentheses
+
+
+Input: MID$((A$),4)=B$
+            ^-- expected string variable
+
+
+Input: MID$(-A$,4)=B$
+            ^-- expected string variable
+
+
+Input: MID$(+A$,4)=B$
+            ^-- expected string variable
+
+
+Input: FNA=B
+Output: FNA<ref> B Assign 
+
+Input: FNA(I)=B
+          ^-- expected equal or comma for assignment
+
+
+Input: LET FNA=B
+Output: FNA<ref> B Assign'LET' 
+
+Input: LET FNA(I)=B
+              ^-- expected equal or comma for assignment
+
+
+Input: C,FNA=B
+Output: C<ref> FNA<ref> B AssignList 
+
+Input: C,FNA(I)=B
+            ^-- expected equal or comma for assignment
+
+
+Input: LET C,FNA=B
+Output: C<ref> FNA<ref> B AssignList'LET' 
+
+Input: LET C,FNA(I)=B
+                ^-- expected equal or comma for assignment
+
+
+Input: C,FNA,D=B
+Output: C<ref> FNA<ref> D<ref> B AssignList 
+
+Input: C,FNA(I),D=B
+            ^-- expected equal or comma for assignment
+
+
+Input: LET C,FNA,D=B
+Output: C<ref> FNA<ref> D<ref> B AssignList'LET' 
+
+Input: LET C,FNA(I),D=B
+                ^-- expected equal or comma for assignment
+
+

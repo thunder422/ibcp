@@ -1,0 +1,60 @@
+########################################################
+#  Translator Test #9: Semicolon Errors (2010-07-04)  #
+########################################################
+
+Z = C(A;B)
+Z = A;B
+Z = A+;
+Z = A+B;C
+Z = Y = A;B
+Z , Y = A;B
+Z , Y , A;B
+Z = INT(A;B)
+Z = ASC(A$;B)
+Z$ = MID$(A$;B)
+Z$ = MID$(A$,B;C)
+Z$ = MID$(A$,B,C;D)
+Z = INSTR(A$;B$)
+Z = INSTR(A$,B$;C)
+Z = INSTR(A$,B$,C;D)
+Z = C(A,;B)
+Z;
+;Z
+Z,;
+Z,B;
+Z=B;
+LET A;
+Z=;
+Z,Y=;
+Z=Y=;
+Z=Y=(;
+Z=Y=(A;
+Z(;
+MID$(,
+MID$(;
+MID$(A$;
+MID$(A$,;
+MID$(A$,B;
+MID$(A$,B);
+Z$,MID$(,
+Z$,MID$(;
+Z$,MID$(A$;
+Z$,MID$(A$,;
+Z$,MID$(A$,B;
+Z$,MID$(A$,B);
+Z$=MID$(,
+Z$=MID$(;
+Z$=MID$(A$;
+Z$=MID$(A$,;
+Z$=MID$(A$,B;
+Z$=MID$(A$,B);
+Z(A;
+LET ;
+Z%,;
+LET A%,;
+Z$,;
+LET A$,;
+Z%=;
+Z%,Y%=;
+Z$=;
+Z$,Y$=;

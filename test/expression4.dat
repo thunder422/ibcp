@@ -1,0 +1,17 @@
+############################################
+#  Expression Test #4: Internal Functions  #
+############################################
+
+MID$(MID$(A$+B$,2),(C+5)*D,4)
+abs(A)+FIX(B)+INT(C)+RND(D)+SGN(E)+CINT(F)
+SQR(G)+ATN(H)+COS(I)+SIN(J)+TAN(K)+EXP(L)+LOG(M)
+ASC(A$)+ASC(B$,C)+INSTR(A$,B$)+INSTR(A$,B$,C)+LEN(D$)
+LEFT$(D$,E)+RIGHT$(F$,G)+REPEAT$(H$,5)+SPACE$(15)
+# 2010-01-27: corrected expression
+A=VAL(STR$(1.23))
+MID$(A$)
+MID$(A$,1,2,3)
+INSTR(A$)
+INSTR(A$,B$,C,D)
+ASC(A$,B,C)
+INT(1.23,A)

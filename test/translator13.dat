@@ -1,0 +1,30 @@
+##########################################################
+#  Translator Test #13: Negative Constants (2011-03-27)  #
+##########################################################
+
+A=---B
+A=-1.0
+A%=--1
+A=B-1.5
+A=B+-1.5
+A=B+--1.5
+PRINT-1;--1;---1;- 1;
+A=- 1.0 + -.001 + -0.12
+A%=-1 + - 2
+A=-1.2E-23 + -1.2e+23 + -1.2e23
+A=- 1.2E-23 + - 1.2e+23 + - 1.2e23
+A% = NOT -B%
+
+# negative integer limit
+A% = NOT -2147483648
+A% = - NOT 123
+
+# integer limit test
+A% = -2147483649 
+A = B^-C + B*-C
+A = -B^C + -B^-C
+A = -B*C + -B*-C
+
+# TODO check with recreator
+A = (-B^NOT C) + -B*NOT C
+A = -B^NOT C + -B*NOT C

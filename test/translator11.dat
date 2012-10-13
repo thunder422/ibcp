@@ -1,0 +1,49 @@
+#########################################################
+#  Translator Test #11: Temporary Strings (2011-02-05)  #
+#########################################################
+
+Z$ = A$ + B$
+Z$ = REPEAT$(A$,4) + B$
+Z$ = A$ + REPEAT$(B$+C$,3)
+Z$ = STR$(A) + LEFT$(B$+C$,5)
+Z% = A$ = B$
+Z% = A$ + B$ = C$
+Z% = A$ = B$ + C$
+Z% = A$ + B$ = C$ + D$
+Z% = A$ < B$
+Z% = A$ + B$ < C$
+Z% = A$ < B$ + C$
+Z% = A$ + B$ < C$ + D$
+Z% = A$ <= B$
+Z% = A$ + B$ <= C$
+Z% = A$ <= B$ + C$
+Z% = A$ + B$ <= C$ + D$
+Z% = A$ > B$
+Z% = A$ + B$ > C$
+Z% = A$ > B$ + C$
+Z% = A$ + B$ > C$ + D$
+Z% = A$ <= B$
+Z% = A$ + B$ <= C$
+Z% = A$ <= B$ + C$
+Z% = A$ + B$ <= C$ + D$
+Z% = A$ <> B$
+Z% = A$ + B$ <> C$
+Z% = A$ <> B$ + C$
+Z% = A$ + B$ <> C$ + D$
+Z$ = A$ + B$
+Z$,Y$ = A$ + B$
+LEFT$(Z$,1) = A$ + B$
+LEFT$(Z$,1),Y$,RIGHT$(X$,1) = A$ + B$
+Z% = ASC(A$) + ASC(B$+C$)
+Z% = ASC(A$,4) + ASC(B$+C$,4)
+Z% = INSTR(A$,B$)
+Z% = INSTR(A$+B$,C$)
+Z% = INSTR(A$,B$+C$)
+Z% = INSTR(A$+B$,C$+D$)
+Z% = INSTR(A$,B$,4)
+Z% = INSTR(A$+B$,C$,4)
+Z% = INSTR(A$,B$+C$,4)
+Z% = INSTR(A$+B$,C$+D$,4)
+Z% = LEN(A$) + LEN(B$+C$)
+Z = VAL(A$) + VAL(B$+C$)
+PRINT A$;B$+C$
