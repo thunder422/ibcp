@@ -183,6 +183,9 @@
 //				  and test_translator(), which reads the test input from a file
 //				  specified on the command line (all test inputs moved to test
 //				  input data files from the code here)
+//	2012-10-14	added code to parser constant double output to remove third
+//				  exponent digit if present and is zero - this is for Windows
+//				  that outputs 3 digits all the time (Linux does not)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -512,6 +515,8 @@ bool print_token(Token *token, Table *table, bool tab)
 	};
 
 	CmdArgs *args;
+	char bfr[20];
+	char *e;
 
 	if (token->type == Error_TokenType)
 	{
@@ -582,8 +587,18 @@ bool print_token(Token *token, Table *table, bool tab)
 				token->string->get_len(), token->string->get_ptr());
 			break;
 		case Double_DataType:
-			printf(" %g |%.*s|", token->dbl_value,
-				token->string->get_len(), token->string->get_ptr());
+			// only output 2 exponents digits unless 3 are needed (2012-10-14)
+			sprintf(bfr, "%g", token->dbl_value);
+			e = strchr(bfr, 'e');
+			if (e != NULL)  // contains an exponent?
+			{
+				if (e[4] != '\0' && e[2] == '0')  // 3 digits and first '0'?
+				{
+					strcpy(e + 2, e + 3);  // move last 2 digits over first '0'
+				}
+			}
+			printf(" %s |%.*s|", bfr, token->string->get_len(),
+				token->string->get_ptr());
 			break;
 		case String_DataType:
 			printf(" |%.*s|", token->string->get_len(),
