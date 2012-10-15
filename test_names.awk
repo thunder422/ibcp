@@ -36,6 +36,8 @@
 #  2012-10-14  renamed from test_codes.awk and now writes test_names.h
 #              changed to write complete code_name[] array along with generating
 #              the tokentype_name[] and datatype_name[] arrays from ibcp.h
+#  2012-10-14  continued lines cause problems on Windows, so these were removed
+#              by using an output variable to hold the "test_names.h" name
 #
 #
 #  Usage: awk -f test_names.awk
@@ -62,15 +64,14 @@ BEGIN {
 	}
 	table_source = path "table.cpp"
 	ibcp_header = path "ibcp.h"
+	output = "test_names.h"
 
-	printf "// File: test_names.h - text of enumeration values\n" \
-		> "test_names.h"
-	printf "//\n" > "test_names.h"
-	printf "// This file generated automatically by test_names.awk\n" \
-		> "test_names.h"
-	printf "//\n" > "test_names.h"
-	printf "// ***  DO NOT EDIT  ***\n" > "test_names.h"
-	printf "\n" > "test_names.h"
+	printf "// File: test_names.h - text of enumeration values\n" > output
+	printf "//\n" > output
+	printf "// This file generated automatically by test_names.awk\n" > output
+	printf "//\n" > output
+	printf "// ***  DO NOT EDIT  ***\n" > output
+	printf "\n" > output
 
 	while ((getline line < table_source) > 0)
 	{
@@ -80,7 +81,7 @@ BEGIN {
 			{
 				# found start of table entries
 				code_enum = 1
-				printf "const char *code_name[] = {\n" > "test_names.h"
+				printf "const char *code_name[] = {\n" > output
 			}
 		}
 		else if (line !~ /};/)
@@ -90,17 +91,17 @@ BEGIN {
 			{
 				if (c != "")
 				{
-					printf ",\n" > "test_names.h"
+					printf ",\n" > output
 				}
 				# 2012-10-06: changed n argument from length of field[3]
 				c = substr(field[3], 1, index(field[3], "_Code") - 1)
-				printf "\t\"%s\"", c > "test_names.h"
+				printf "\t\"%s\"", c > output
 			}
 		}
 		else
 		{
 			# found end of table entries
-			printf "\n};\n" > "test_names.h"
+			printf "\n};\n" > output
 			code_enum = 0
 		}
 	}
@@ -114,13 +115,13 @@ BEGIN {
 			if (line ~ /enum TokenType/)
 			{
 				# found start of token types
-				printf "\nconst char *tokentype_name[] = {\n" > "test_names.h"
+				printf "\nconst char *tokentype_name[] = {\n" > output
 				type_enum = "_TokenType"
 			}
 			else if (line ~ /enum DataType/)
 			{
 				# found start of data types
-				printf "\nconst char *datatype_name[] = {\n" > "test_names.h"
+				printf "\nconst char *datatype_name[] = {\n" > output
 				type_enum = "_DataType"
 			}
 		}
@@ -131,15 +132,15 @@ BEGIN {
 				nf = split(line, field)
 				if (c != "")
 				{
-					printf ",\n" > "test_names.h"
+					printf ",\n" > output
 				}
 				c = substr(field[1], 1, index(field[1], type_enum) - 1)
-				printf "\t\"%s\"", c > "test_names.h"
+				printf "\t\"%s\"", c > output
 			}
 			else if (line ~ /};/)
 			{
 				# found end of enum
-				printf "\n};\n" > "test_names.h"
+				printf "\n};\n" > output
 				type_enum = ""
 				c = ""
 			}
