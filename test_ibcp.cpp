@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_ibcp.cpp - contains code for testing
-//	Copyright (C) 2010-2011  Thunder422
+//	Copyright (C) 2010-2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -479,44 +479,12 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 // 2011-01-29: added argument flag for printing out leading tab character
 bool print_token(Token *token, Table *table, bool tab)
 {
-	const char *tokentype_name[] = {
-		"ImmCmd",
-		"Command",
-		"Operator",
-		"IntFuncN",  // 2010-03-13: replaced IncFunc entry
-		"IntFuncP",
-		"Remark",
-		"Constant",
-		"DefFuncN",
-		"DefFuncP",
-		"NoParen",
-		"Paren",
-		"Error"
-	};
-	const char *datatype_name[] = {
-		// 2010-05-29: updated for changes made to data type enumeration
-		"Double",
-		"Integer",
-		"String",
-		"TmpStr",
-		"SubStr",
-		"numberof",
-		"None",
-		"CmdArgs"
-	};
-	// 2010-04-04: updated list for new codes
-	// 2010-04-11: updated list for new codes
-	// 2010-05-29: updated list for new codes
-	// 2010-06-02: updated list for new codes
-	const char *code_name[] = {
-		// replaced strings with automatically generated include file
-		// (use "awk -f test_codes.awk <ibcp.h >test_codes.h" to create)
-		#include "test_codes.h"
-	};
+	// 2012-10-12: replaced all name text arrays with auto-generated file
+	#include "test_names.h"
 
 	CmdArgs *args;
 	char bfr[20];
-	char *e;
+	char *exp;
 
 	if (token->type == Error_TokenType)
 	{
@@ -589,12 +557,12 @@ bool print_token(Token *token, Table *table, bool tab)
 		case Double_DataType:
 			// only output 2 exponents digits unless 3 are needed (2012-10-14)
 			sprintf(bfr, "%g", token->dbl_value);
-			e = strchr(bfr, 'e');
-			if (e != NULL)  // contains an exponent?
+			exp = strchr(bfr, 'e');
+			if (exp != NULL)  // contains an exponent?
 			{
-				if (e[4] != '\0' && e[2] == '0')  // 3 digits and first '0'?
+				if (exp[4] != '\0' && exp[2] == '0')  // 3 digits and first '0'?
 				{
-					strcpy(e + 2, e + 3);  // move last 2 digits over first '0'
+					strcpy(exp + 2, exp + 3);  // move last 2 digits over first
 				}
 			}
 			printf(" %s |%.*s|", bfr, token->string->get_len(),

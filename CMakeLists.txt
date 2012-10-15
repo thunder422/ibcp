@@ -2,7 +2,7 @@
 #
 #  Interactive BASIC Compiler Project
 #  File: CMakeLists.txt - CMake lists file for generating make file
-#  Copyright (C) 2011-2011  Thunder422
+#  Copyright (C) 2011-2012  Thunder422
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,9 @@
 #  2012-09-23	changed GCC 4.5+ fatal error to just a warning
 #  2012-10-07	add if GCC < 4.5 then don't add static libraries
 #  2012-10-08	corrected in source directory builds
-#  2012-12-12	added a configure_file command for the regtest script
+#  2012-10-12	added a configure_file command for the regtest script
+#  2012-10-14	renamed test_codes.awk to test_names.awk, which now generates
+#               test_names.h that also includes text enums from ibcp.h
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -43,7 +45,7 @@ set(ibcp_VERSION_MAJOR 0)
 set(ibcp_VERSION_MINOR 1)
 set(ibcp_VERSION_PATCH 16)
 
-set(ibcp_COPYRIGHT_YEAR 2011)
+set(ibcp_COPYRIGHT_YEAR 2012)
 
 # find awk executable
 find_program (PROGRAM_AWK awk)
@@ -64,7 +66,7 @@ configure_file(
 )
 
 # add the binary tree to the search path for include files
-# so that ibcp_config.h, autoenums.h, test_codes.h can be found
+# so that ibcp_config.h, autoenums.h, test_names.h can be found
 # which is not necessary for in source build
 string(COMPARE NOTEQUAL ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR} OUT_SOURCE)
 if (OUT_SOURCE)
@@ -81,11 +83,11 @@ add_custom_command(OUTPUT autoenums.h
 )
 
 # custom target
-add_custom_command(OUTPUT test_codes.h
-	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/test_codes.awk
+add_custom_command(OUTPUT test_names.h
+	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/test_names.awk
 		${PROJECT_SOURCE_DIR}/
-	MAIN_DEPENDENCY test_codes.awk
-	DEPENDS table.cpp
+	MAIN_DEPENDENCY test_names.awk
+	DEPENDS table.cpp ibcp.h
 )
 
 # list the include files
@@ -114,7 +116,7 @@ endif (GCC_VERSION VERSION_LESS 4.5)
 # add the executable
 add_executable(ibcp
 		autoenums.h
-		test_codes.h
+		test_names.h
 		${ibcp_INCS}
 		${ibcp_SRCS}
 )
