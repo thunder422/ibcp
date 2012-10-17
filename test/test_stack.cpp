@@ -42,7 +42,7 @@
 
 void print_gpl_header(void)
 {
-	printf("test_stack.exe  Copyright (C) 2009  Thunder422\n");
+	printf("test_stack.exe  Copyright (C) 2009-2012  Thunder422\n");
 	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
 	printf("This is free software, and you are welcome to\n");
 	printf("redistribute it under certain conditions.\n\n");

@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_string.cpp - contains test code for testing string class
-//	Copyright (C) 2010-2011  Thunder422
+//	Copyright (C) 2010-2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 //
 //	2011-02-06	changed get_str() to get_ptr()
 //
+//	2012-10-16	removed output of string pointer so that results can be compared
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,11 +47,11 @@ void print_string(const char *name, String *s)
 	char *str = s->get_ptr();
 	if (len == 0)
 	{
-		printf("%s = NULL (0:%p)\n", name, str);
+		printf("%s = NULL (0)\n", name);
 	}
 	else
 	{
-		printf("%s = '%.*s' (%d:%p)\n", name, len, str, len, str);
+		printf("%s = '%.*s' (%d)\n", name, len, str, len);
 	}
 }
 

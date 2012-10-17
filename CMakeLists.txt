@@ -26,6 +26,7 @@
 #  2012-10-12	added a configure_file command for the regtest script
 #  2012-10-14	renamed test_codes.awk to test_names.awk, which now generates
 #               test_names.h that also includes text enums from ibcp.h
+#  2012-10-16	added build of test programs with separate tests target
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -115,8 +116,34 @@ endif (GCC_VERSION VERSION_LESS 4.5)
 
 # add the executable
 add_executable(ibcp
-		autoenums.h
-		test_names.h
-		${ibcp_INCS}
-		${ibcp_SRCS}
+	autoenums.h
+	test_names.h
+	${ibcp_INCS}
+	${ibcp_SRCS}
+)
+
+# add "make tests" target for making test programs
+add_custom_target(tests
+	DEPENDS test_stack test_nums test_string test_cons test_stack2
+)
+
+# test program executables for tests target (not built by default)
+add_executable(test_stack EXCLUDE_FROM_ALL
+	list.h
+	test/test_stack.cpp
+)
+add_executable(test_nums EXCLUDE_FROM_ALL
+	test/test_nums.cpp
+)
+add_executable(test_string EXCLUDE_FROM_ALL
+	string.h
+	string.cpp
+	test/test_string.cpp
+)
+add_executable(test_cons EXCLUDE_FROM_ALL
+	test/test_cons.cpp
+)
+add_executable(test_stack2 EXCLUDE_FROM_ALL
+	stack.h
+	test/test_stack2.cpp
 )
