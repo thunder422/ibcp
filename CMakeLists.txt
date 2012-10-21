@@ -27,6 +27,11 @@
 #  2012-10-14	renamed test_codes.awk to test_names.awk, which now generates
 #               test_names.h that also includes text enums from ibcp.h
 #  2012-10-16	added build of test programs with separate tests target
+#  2012-10-21	corrected check whether to add static linking, which should have
+#				  been greater than 4.4, not less than 4.5
+#				replaced add_definitions, which are for compiler options, with
+#				  set_target_properties where link flags are set for added the
+#				  static linking options
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -109,11 +114,6 @@ set(ibcp_SRCS
 	test_ibcp.cpp
 )
 
-# make linker link in static libgcc.a and libstrc++.a
-if (GCC_VERSION VERSION_LESS 4.5)
-	add_definitions(-static-libgcc -static-libstdc++)
-endif (GCC_VERSION VERSION_LESS 4.5)
-
 # add the executable
 add_executable(ibcp
 	autoenums.h
@@ -121,6 +121,13 @@ add_executable(ibcp
 	${ibcp_INCS}
 	${ibcp_SRCS}
 )
+
+# make linker link in static libgcc.a and libstrc++.a
+if (GCC_VERSION VERSION_GREATER 4.4)
+	set_target_properties(ibcp
+		PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++"
+	)
+endif (GCC_VERSION VERSION_GREATER 4.4)
 
 # add "make tests" target for making test programs
 add_custom_target(tests
