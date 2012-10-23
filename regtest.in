@@ -36,6 +36,8 @@
 #              confingured when cmake is run; replaced the parser and
 #              translator test loops with a single loop that tests all the
 #              available *.dat test input files
+#  2012-10-22  added "./" in front of "ibcp" so that program can be run without
+#              having to have "." in the current PATH
 #
 #
 #  Usage:
@@ -53,7 +55,7 @@ for input in ${dir}parser*.dat ${dir}expression*.dat ${dir}translator*.dat
 do
 	base=${input##*/}
 	output=${base%.dat}.txt
-	ibcp -t $input >$output
+	./ibcp -t $input >$output
 	cmp -s $dir$output $output
 	if [ $? -eq 0 ]
 	then
