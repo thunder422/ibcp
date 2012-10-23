@@ -96,6 +96,13 @@
 //				  does not include extension (.exe) if present to make
 //				  consistent between windows and linux; also fixed bug for
 //				  linux name (was incorrectly defining new variable within if)
+//
+//	2012-10-23	get full release string from cmake (ibcp_config.h) instead of
+//				  individual major, minor and patch numbers so that during
+//				  development and git release number is used (to produce a
+//				  unique release number at each commit)
+//				moved output of version number before gpl header eliminating
+//				  gpl header to match other programs
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
@@ -279,9 +286,8 @@ bool ibcp_version(char *name, int argc, char *argv[])
 		return false;  // not our options
 	}
 	// 2010-03-13: changed to output actual program name
-	// 2010-04-02: added + 1 so that '\' is no output
-	printf("%s version %d.%d.%d\n", name, ibcp_VERSION_MAJOR,
-		ibcp_VERSION_MINOR, ibcp_VERSION_PATCH);
+	// 2012-10-23: changed to get release string from cmake without 'release'
+	printf("%s version %s\n", name, ibcp_RELEASE_STRING + 7);
 	return true;
 }
 
@@ -316,6 +322,12 @@ int main(int argc, char *argv[])
 	program_name = program_name == NULL ? argv[0] : program_name + 1;
 	char *ext = strrchr(program_name, '.');
 	program_name_len = ext == NULL ? strlen(program_name) : ext - program_name;
+
+	// 2012-10-23: moved version output before gpl output
+	if (ibcp_version(program_name, argc, argv))
+	{
+		return 0;
+	}
 	print_gpl_header(program_name, program_name_len);
 
 	// 2010-06-25: added try block for token initialization
@@ -359,8 +371,8 @@ int main(int argc, char *argv[])
 	// 2010-04-25: added "-t" to usage string
 	// 2011-06-11: added check for version option
 	// 2012-10-10: replaced test_parser and test_translator with test_ibcp
-	if (!ibcp_version(program_name, argc, argv)
-		&& !test_ibcp(translator, parser, table, argc, argv))
+	// 2012-10-23: moved version output before gpl output
+	if (!test_ibcp(translator, parser, table, argc, argv))
 	{
 		// 2010-05-28: replaced strrchr(argv[1],...) call with 'program_name'
 		// 2011-06-11: added "-v" to usage string

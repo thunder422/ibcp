@@ -32,6 +32,12 @@
 #				replaced add_definitions, which are for compiler options, with
 #				  set_target_properties where link flags are set for added the
 #				  static linking options
+#
+#  2012-10-23	streamlined not found check for PROGRAM_AWK
+#				renamed variables from VERSION to RELEASE
+#				allow negative patch numbers indicating developmental releases
+#				added code to get a unique release string using git, and if git
+#				  is not available use the three RELEASE variables
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -47,17 +53,34 @@ if (GCC_VERSION VERSION_LESS 4.5)
 	)
 endif (GCC_VERSION VERSION_LESS 4.5)
 
-set(ibcp_VERSION_MAJOR 0)
-set(ibcp_VERSION_MINOR 1)
-set(ibcp_VERSION_PATCH 16)
+set(ibcp_RELEASE_MAJOR 0)
+set(ibcp_RELEASE_MINOR 2)
+set(ibcp_RELEASE_PATCH -1)
 
 set(ibcp_COPYRIGHT_YEAR 2012)
 
+find_program (PROGRAM_GIT git)
+if (PROGRAM_GIT)
+	execute_process(COMMAND ${PROGRAM_GIT} describe
+		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		OUTPUT_VARIABLE ibcp_RELEASE_STRING
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+else (PROGRAM_GIT)
+	set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
+	if (ibcp_RELEASE_PATCH LESS 0)
+		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}${ibcp_RELEASE_PATCH})
+	else (ibcp_RELEASE_PATCH LESS 0)
+		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}.${ibcp_RELEASE_PATCH})
+	endif (ibcp_RELEASE_PATCH LESS 0)
+endif (PROGRAM_GIT)
+message(STATUS "Building version: ${ibcp_RELEASE_STRING}")
+
 # find awk executable
 find_program (PROGRAM_AWK awk)
-if (PROGRAM_AWK STREQUAL "PROGRAM_AWK-NOTFOUND")
-	message(FATAL_ERROR "required awk program was not found")
-endif (PROGRAM_AWK STREQUAL "PROGRAM_AWK-NOTFOUND")
+if (NOT PROGRAM_AWK)
+	message(FATAL_ERROR "required 'awk' program was not found")
+endif (NOT PROGRAM_AWK)
 
 # configure a header file to pass some of the CMake settings to the source code
 configure_file(

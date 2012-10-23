@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: ibcp_config.h.in - cmake input file for generating ibcp_config.h
-//	Copyright (C) 2010-2011  Thunder422
+//	Copyright (C) 2010-2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -21,11 +21,16 @@
 //	Change History:
 //
 //	2011-06-11	initial version
+//
+//	2012-10-23	renamed variables from VERSION to RELEASE
+//				added new ibcp_RELEASE_STRING
 
 // the configured options and settings for ibcp
 // (for passing values from cmake to ibcp source files)
-#define ibcp_VERSION_MAJOR   @ibcp_VERSION_MAJOR@
-#define ibcp_VERSION_MINOR   @ibcp_VERSION_MINOR@
-#define ibcp_VERSION_PATCH   @ibcp_VERSION_PATCH@
+#define ibcp_RELEASE_MAJOR   @ibcp_RELEASE_MAJOR@
+#define ibcp_RELEASE_MINOR   @ibcp_RELEASE_MINOR@
+#define ibcp_RELEASE_PATCH   @ibcp_RELEASE_PATCH@
 
 #define ibcp_COPYRIGHT_YEAR  @ibcp_COPYRIGHT_YEAR@
+
+#define ibcp_RELEASE_STRING  "@ibcp_RELEASE_STRING@"
