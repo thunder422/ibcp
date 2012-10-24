@@ -103,6 +103,8 @@
 //				  unique release number at each commit)
 //				moved output of version number before gpl header eliminating
 //				  gpl header to match other programs
+//	2012-10-23	modified ibcp_version to output program name correctly by
+//				  using length (to work correctly on Windows)
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
@@ -279,7 +281,7 @@ void Token::initialize(void)
 
 
 // function to print version number (2011-06-11)
-bool ibcp_version(char *name, int argc, char *argv[])
+bool ibcp_version(char *name, int len, int argc, char *argv[])
 {
 	if (argc != 2 || strcmp(argv[1], "-v") != 0)
 	{
@@ -287,7 +289,8 @@ bool ibcp_version(char *name, int argc, char *argv[])
 	}
 	// 2010-03-13: changed to output actual program name
 	// 2012-10-23: changed to get release string from cmake without 'release'
-	printf("%s version %s\n", name, ibcp_RELEASE_STRING + 7);
+	// 2012-10-23: added program name length
+	printf("%.*s version %s\n", len, name, ibcp_RELEASE_STRING + 7);
 	return true;
 }
 
@@ -324,7 +327,7 @@ int main(int argc, char *argv[])
 	program_name_len = ext == NULL ? strlen(program_name) : ext - program_name;
 
 	// 2012-10-23: moved version output before gpl output
-	if (ibcp_version(program_name, argc, argv))
+	if (ibcp_version(program_name, program_name_len, argc, argv))
 	{
 		return 0;
 	}
