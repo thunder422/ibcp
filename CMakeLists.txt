@@ -38,6 +38,8 @@
 #				allow negative patch numbers indicating developmental releases
 #				added code to get a unique release string using git, and if git
 #				  is not available use the three RELEASE variables
+#  2012-10-24	detect the CMAKE_BUILD_TYPE environment variable and set the
+#				  cmake variable if not already set, then report the build type
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -52,6 +54,14 @@ if (GCC_VERSION VERSION_LESS 4.5)
 		"GCC 4.5+ Required for static building with libstdc++"
 	)
 endif (GCC_VERSION VERSION_LESS 4.5)
+
+# ckeck is a specific build type is set in the environment
+if (NOT $ENV{CMAKE_BUILD_TYPE} STREQUAL "")
+    if (NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE $ENV{CMAKE_BUILD_TYPE})
+    endif (NOT CMAKE_BUILD_TYPE)
+endif (NOT $ENV{CMAKE_BUILD_TYPE} STREQUAL "")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 2)
@@ -74,7 +84,7 @@ else (PROGRAM_GIT)
 		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}.${ibcp_RELEASE_PATCH})
 	endif (ibcp_RELEASE_PATCH LESS 0)
 endif (PROGRAM_GIT)
-message(STATUS "Building version: ${ibcp_RELEASE_STRING}")
+message(STATUS "Build version: ${ibcp_RELEASE_STRING}")
 
 # find awk executable
 find_program (PROGRAM_AWK awk)
