@@ -290,6 +290,8 @@
 //	2011-03-27	added operand_state flag to Parser with set access function
 //				added get operand state access function to Translator
 //
+//	2012-10-25	added new function Token::isNull() to properly check for the
+//				  null token (not all token types have a valid code)
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -697,6 +699,11 @@ struct Token {
 	{
 		length = token2->column - column + token2->length;
 		return this;
+	}
+	// 2012-10-25: new function to get code for token accounting for all types
+	bool isNull(void)
+	{
+		return table_entry() && code == Null_Code;
 	}
 
 	// static members (moved 2011-01-29)

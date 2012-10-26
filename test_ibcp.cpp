@@ -186,6 +186,9 @@
 //	2012-10-14	added code to parser constant double output to remove third
 //				  exponent digit if present and is zero - this is for Windows
 //				  that outputs 3 digits all the time (Linux does not)
+//
+//	2012-10-24	deleted the rpnlist object after deleting all the list members
+//				  (to fix a memory leak)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -450,6 +453,8 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		{
 			delete rpn_item;
 		}
+		// 2012-10-24: fix memory leak
+		delete rpn_list;
 	}
 	else  // error occurred, output it
 	{

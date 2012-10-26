@@ -273,6 +273,7 @@ void Token::initialize(void)
 	table[Operator_TokenType] = true;
 	table[IntFuncN_TokenType] = true;
 	table[IntFuncP_TokenType] = true;
+	// FIXME should Remark_TokenType have a table entry?
 
 	// 2010-06-25: build message index and check message array
 	// 2010-06-25: replaced with Error template

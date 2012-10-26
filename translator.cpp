@@ -363,6 +363,8 @@
 //	2011-03-27	modified process_operator() to not allow unary operators to
 //				  force other tokens from hold stack
 //
+//	2012-10-25	corrected if statements that were checking token code without
+//				  making sure code was valid (some token types don't used code)
 
 #include "ibcp.h"
 
@@ -621,9 +623,10 @@ TokenStatus Translator::process_operand(Token *&token)
 			// 2010-06-11: detect invalid print-only function early
 			// 2011-03-05: added check for non-empty hold stack
 			// 2011-03-07: modified check to not catch empty command stack here
+			// 2012-10-25: corrected null token check in case code is not valid
 			if ((table->flags(token->code) & Print_Flag) && (!cmd_stack.empty()
 				&& cmd_stack.top().token->code != Print_Code
-				|| hold_stack.top().token->code != Null_Code))
+				|| !hold_stack.top().token->isNull()))
 			{
 				// 2011-03-05: replaced error with expression type error
 				TokenStatus status;
@@ -922,8 +925,9 @@ TokenStatus Translator::process_binary_operator(Token *&token)
 
 	// 2010-10-10: check if after first operand of sub-string assignment
     // 2011-03-09: moved command check to beginning
+	// 2012-10-25: make sure token has table entry before checking code
 	if (hold_stack.top().token->reference && count_stack.top().noperands == 1
-		&& token->code != Comma_Code)
+		&& (!token->table_entry() || token->code != Comma_Code))
 	{
 		// only a comma is allowed here
 		return ExpComma_TokenStatus;
