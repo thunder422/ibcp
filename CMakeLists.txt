@@ -40,6 +40,7 @@
 #				  is not available use the three RELEASE variables
 #  2012-10-24	detect the CMAKE_BUILD_TYPE environment variable and set the
 #				  cmake variable if not already set, then report the build type
+#  2012-10-25	added configuration of new memtest script on non-Windows builds
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -103,6 +104,14 @@ configure_file(
 	"${PROJECT_SOURCE_DIR}/regtest.in"
 	"${PROJECT_BINARY_DIR}/regtest" @ONLY
 )
+
+# configure a memtest script to pass source directory to the script
+if (NOT WIN32)
+	configure_file(
+		"${PROJECT_SOURCE_DIR}/memtest.in"
+		"${PROJECT_BINARY_DIR}/memtest" @ONLY
+	)
+endif (NOT WIN32)
 
 # add the binary tree to the search path for include files
 # so that ibcp_config.h, autoenums.h, test_names.h can be found
