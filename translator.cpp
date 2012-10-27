@@ -365,6 +365,11 @@
 //
 //	2012-10-25	corrected if statements that were checking token code without
 //				  making sure code was valid (some token types don't used code)
+//	2012-10-27	converted output rpn list from List class to QList
+//				also required changes to done_stack (element list pointer to
+//				  rpn item pointer), cmd_stack (element list pointer to index
+//				  into output rpn list), and RpnItem.operands[] (element list
+//				  pointer array to RpnItem pointer array)
 
 #include "ibcp.h"
 
@@ -506,8 +511,7 @@ TokenStatus Translator::add_token(Token *&token)
 	if (token->type == ImmCmd_TokenType)
 	{
 		// append to output, and done
-		RpnItem *rpn_item = new RpnItem(token);
-		output->append(&rpn_item);
+		output->append(new RpnItem(token));
 		return Done_TokenStatus;
 	}
 
@@ -522,9 +526,8 @@ TokenStatus Translator::add_token(Token *&token)
 				cmd_stack.push().token = token;
 				// 2011-03-01: removed code member initialization
 				cmd_stack.top().flag = None_CmdFlag;  // 2010-06-01: reset flag
-				// 2011-03-01: initialize new pointer to null
-				// 2011-03-20: initialize pointer to current end of output
-				cmd_stack.top().element = output->last();
+				// initilize index to current last index of output (2012-10-26)
+				cmd_stack.top().index = output->size();
 				return Good_TokenStatus;  // nothing more to do
 			}
 			else
@@ -744,7 +747,8 @@ TokenStatus Translator::process_operand(Token *&token)
 		// and push element pointer on done stack
 		// 2010-05-15: create RPN item to add to output list
 		RpnItem *rpn_item = new RpnItem(token);
-		done_stack.push().element = output->append(&rpn_item);
+        output->append(rpn_item);
+		done_stack.push().rpnItem = rpn_item;
 		done_stack.top().first = done_stack.top().last = NULL;
 		// in reference mode, have variable, set end expr state (2011-03-07)
 		// otherwise next token must be a binary operator
@@ -1115,26 +1119,25 @@ void Translator::do_pending_paren(Token *token)
 			|| state == Operand_State && last_precedence == precedence)
 		{
 			// 2010-05-29: replaced dummy token with parentheses sub-code flag
-			if (output->last()->value->token->subcode & Paren_SubCode)
+			if (output->last()->token->subcode & Paren_SubCode)
 			{
 				// already has parentheses sub-code set, so
 				// add dummy token
 				// 2010-05-15: create RPN item to add to output list
-				RpnItem *rpn_item = new RpnItem(pending_paren);
-				output->append(&rpn_item);
+				output->append(new RpnItem(pending_paren));
 				// reset pending token and return (2011-01-22)
 				pending_paren = NULL;
 				return;
 			}
 			else
 			{
-				List<RpnItem *>::Element *last = output->last();
-				if (table->flags(last->value->token) & Hidden_Flag)
+				QList<RpnItem *>::iterator last = output->end() - 1;
+				if (table->flags((*last)->token) & Hidden_Flag)
 				{
 					// last token added is a hidden code
-					last = last->prev;  // get token before this
+					last--;  // get token before this
 				}
-				last->value->token->subcode |= Paren_SubCode;
+				(*last)->token->subcode |= Paren_SubCode;
 			}
 			// TODO something needed on done stack?
 			// TODO (reference flag already cleared by close parentheses)
@@ -1365,14 +1368,14 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 		}
 	}
 
-	List<RpnItem *>::Element **operand;
+	RpnItem **operand;
 	if (noperands == 0)  // no string operands to save?
 	{
 		operand = NULL;
 	}
 	else  // pop string operands off of stack into new array
 	{
-		operand = new List<RpnItem *>::Element *[noperands];
+		operand = new RpnItem *[noperands];
 		// 2010-05-15: save operands for storage in output list
 		for (int i = noperands; --i >= 0;)
 		{
@@ -1384,7 +1387,7 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 			delete_open_paren(done_stack.top().first);
 			// check if operand's last token was CloseParen (2011-01-15)
 			delete_close_paren(done_stack.top().last);
-			operand[i] = done_stack.pop().element;
+			operand[i] = done_stack.pop().rpnItem;
 		}
 	}
 
@@ -1392,12 +1395,11 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 	// 2010-05-15: create RPN item to add to output list
 	RpnItem *rpn_item = new RpnItem(token, noperands, operand);
 	// 2010-06-01: check if output item is to be pushed on done stack
-	List<RpnItem *>::Element *output_item = output->append(&rpn_item);
+	output->append(rpn_item);
 	if (done_push)
 	{
-		// add token to output list and push element pointer on done stack
-		// 2010-05-22: moved setting of noperands to above with operand_array
-		done_stack.push().element = output_item;
+		// push index of rpm item about to be added to output list
+		done_stack.push().rpnItem = rpn_item;
 		done_stack.top().first = first;
 		done_stack.top().last = last;
 	}
@@ -1432,7 +1434,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 		// oops, there should have been operands on done stack
 		return BUG_DoneStackEmptyFindCode;
 	}
-	Token *top_token = done_stack.top().element->value->token;
+	Token *top_token = done_stack.top().rpnItem->token;
 	// 2011-01-15: get first and last operands for top token
 	// 2011-01-22: used work pointers instead, set arguments if requested
 	Token *work_first = done_stack.top().first;
@@ -1569,8 +1571,7 @@ TokenStatus Translator::find_code(Token *&token, int operand_index,
 			// append token to end of output list (after operand)
 			// 2010-05-15: create RPN item to add to output list
 			// 2010-06-02: replaced code with call to new_token()
-			RpnItem *rpn_item = new RpnItem(table->new_token(cvt_code));
-			output->append(&rpn_item);
+			output->append(new RpnItem(table->new_token(cvt_code)));
 		}
 
 		return Good_TokenStatus;
@@ -1895,10 +1896,10 @@ void Translator::clean_up(void)
 		count_stack.null_pop();
 	}
 	// 2011-01-16: moved to after stack cleanups (so last tokens still exist)
-	while (!output->empty())
+	while (!output->isEmpty())
 	{
 		// 2010-04-04: added delete to free the token that was in the list
-		delete output->pop();  // using pop doesn't require pointer variable
+		delete output->takeLast();
 	}
 	delete output;
 	output = NULL;
@@ -1999,7 +2000,7 @@ TokenStatus Translator::check_assignlist_token(Token *&token)
 	{
 		// delete close paren (array or sub-string) on operand (2011-01-30 leak)
 		delete_close_paren(done_stack.top().last);
-		token = done_stack.pop().element->value->token;
+		token = done_stack.pop().rpnItem->token;
 		if (!token->reference
 			|| equivalent_datatype[cmd_stack.top().token->datatype]
 			!= equivalent_datatype[token->datatype])
@@ -2157,7 +2158,6 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 TokenStatus Comma_Handler(Translator &t, Token *&token)
 {
 	int noperands;
-	RpnItem *rpn_item;
 	TokenStatus status;
 
 	// 2010-04-02: implemented comma operator code handling
@@ -2287,7 +2287,6 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 {
 	TokenStatus status;
 	int noperands;
-	RpnItem *rpn_item;
 
 	// make sure the expression before semicolon is complete
 	status = t.expression_end();
@@ -2351,7 +2350,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		// 2011-01-23: removed delete open paren, now used as first operand
 
 		// 2010-04-16: clear reference for item on top of done stack
-		t.done_stack.top().element->value->token->reference = false;
+		t.done_stack.top().rpnItem->token->reference = false;
 		// 2011-01-23: replace first and last operands of item on done stack
 		t.delete_open_paren(t.done_stack.top().first);
 		t.done_stack.top().first = top_token;
@@ -2621,7 +2620,6 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 {
     TokenStatus status;
-	RpnItem *rpn_item;
 
 	// 2010-06-10: moved end of expression check to end of statement processing
 
@@ -2642,8 +2640,7 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		}
 
 		// append comma (advance to next column) token to output
-		rpn_item = new RpnItem(token);
-		t.output->append(&rpn_item);
+		t.output->append(new RpnItem(token));
 
 		// set PRINT command item flag in case last item in statement
 		// (resets PrintFunc_CmdFlag if set)
@@ -2667,14 +2664,13 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			if (t.cmd_stack.top().flag & PrintFunc_CmdFlag)
 			{
 				// set semicolon subcode flag on print function
-				t.output->last()->value->token->subcode |= SemiColon_SubCode;
+				t.output->last()->token->subcode |= SemiColon_SubCode;
 				// sub-code set, delete semicolon token (2011-02-01 leak)
 				delete token;
 			}
 			else  // no expression, add dummy semicolon token
 			{
-				rpn_item = new RpnItem(token);
-				t.output->append(&rpn_item);
+				t.output->append(new RpnItem(token));
 			}
 		}
 		else  // an error occurred
@@ -2699,8 +2695,7 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			&& !(cmd_item->flag & PrintStay_CmdFlag))
 		{
 			// append the print token to go to newline at runtime
-			RpnItem *rpn_item = new RpnItem(cmd_item->token);
-			t.output->append(&rpn_item);
+			t.output->append(new RpnItem(cmd_item->token));
 			// set good status; could be set to null (2011-02-11)
 			status = Good_TokenStatus;
 		}
@@ -2746,7 +2741,6 @@ TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 {
     TokenStatus status;
-	RpnItem *rpn_item;
 
 	Code code = token->code;
 	// TODO check for invalid token, report correct error
@@ -2764,15 +2758,15 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 				cmd_item->token = token;  // set error token (2011-03-24)
 				return ExpStrExpr_TokenStatus;
 			}
-			if (equivalent_datatype[t.done_stack.top().element->value->token
-				->datatype] != String_DataType)
+			if (equivalent_datatype[t.done_stack.top().rpnItem->token->datatype]
+				!= String_DataType)
 			{
 				// don't delete token, caller will delete it (2011-03-25)
 				// report error against first token of expression on done stack
 				token = t.done_stack.top().first
 					->through(t.done_stack.top().last);
 				// delete last token if close paren, remove from done stack
-				t.delete_close_paren(t.done_stack.pop().element->value->token);
+				t.delete_close_paren(t.done_stack.pop().rpnItem->token);
 				cmd_item->token = token;  // set error token (2011-03-24)
 				return ExpStrExpr_TokenStatus;
 			}
@@ -2799,7 +2793,7 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			if (status == Good_TokenStatus)
 			{
 				// set pointer to new end of output
-				t.cmd_stack.top().element = t.output->last();
+				t.cmd_stack.top().index = t.output->size();
 			}
 			else
 			{
@@ -2815,21 +2809,9 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		if (!t.done_stack.empty())
 		{
 			// create new token for InputBegin
-			rpn_item = new RpnItem(t.table->new_token(InputBegin_Code));
 			// insert at begin of command before first variable (2011-03-20)
-			List<RpnItem *>::Element *element = t.cmd_stack.top().element;
-			if (element == NULL)
-			{
-				// insert at beginning of line
-				t.cmd_stack.top().element = t.output->insert(&rpn_item);
-			}
-			else
-			{
-				// append at beginning of statement
-				t.cmd_stack.top().element = t.output->append(element,
-					&rpn_item);
-			}
-
+			t.output->insert(t.cmd_stack.top().index++,
+				new RpnItem(t.table->new_token(InputBegin_Code)));
 		}
 		// if no variable on done stack, error will be reported below
 		// now continue with input variable
@@ -2859,11 +2841,10 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 		// create new token for input parse code
 		// (which is first associated 2 code of input assign code)
-		rpn_item = new RpnItem(t.table->new_token(
-			t.table->assoc2_code(token->code)));
-		// insert input parse token into list (set element to item inserted)
-		t.cmd_stack.top().element
-			= t.output->append(t.cmd_stack.top().element, &rpn_item);
+		// insert input parse token into list at current index (update index)
+
+		t.output->insert(t.cmd_stack.top().index++,
+			new RpnItem(t.table->new_token(t.table->assoc2_code(token->code))));
 
 		// now process code
 		if (code == Comma_Code)
@@ -2889,14 +2870,13 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 	// PROCESS END OF INPUT
 	// mark last parse code with end subcode
-	t.cmd_stack.top().element->value->token->subcode = End_SubCode;
+	(*t.output)[t.cmd_stack.top().index - 1]->token->subcode = End_SubCode;
 	// append the input token to go to newline at runtime
 	if (t.cmd_stack.top().flag & InputStay_CmdFlag)
 	{
 		cmd_item->token->subcode = Keep_SubCode;
 	}
-	rpn_item = new RpnItem(cmd_item->token);
-	t.output->append(&rpn_item);
+	t.output->append(new RpnItem(cmd_item->token));
 	return Good_TokenStatus;
 }
 

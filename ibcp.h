@@ -292,10 +292,16 @@
 //
 //	2012-10-25	added new function Token::isNull() to properly check for the
 //				  null token (not all token types have a valid code)
+//	2012-10-27	converted translator output rpn list from List class to QList
+//				also required changes to done_stack (element list pointer to
+//				  rpn item pointer), cmd_stack (element list pointer to index
+//				  into output rpn list), and RpnItem.operands[] (element list
+//				  pointer array to RpnItem pointer array)
 
 #ifndef IBCP_H
 #define IBCP_H
 
+#include <QList>
 #include "string.h"
 #include "list.h"
 #include "stack.h"  // 2010-04-02: added for Stack
@@ -849,7 +855,7 @@ struct RpnItem;
 struct CmdItem {
 	Token *token;				// pointer to command token
 	int flag;					// 2010-06-01: generic flag for command use
-	List<RpnItem *>::Element *element;	// 2011-03-01: pointer for command user
+	int index;  				// index into output list for command use
 };
 
 // 2010-06-13: added token pointer argument to command handlers
@@ -1104,10 +1110,9 @@ public:
 struct RpnItem {
 	Token *token;							// pointer to token
 	int noperands;							// number of operands
-	List<RpnItem *>::Element **operand;		// array operand pointers
+	RpnItem **operand;						// array of operand pointers
 
-	RpnItem(Token *_token, int _noperands = 0,
-		List<RpnItem *>::Element **_operand = NULL)
+	RpnItem(Token *_token, int _noperands = 0, RpnItem **_operand = NULL)
 	{
 		token = _token;
 		noperands = _noperands;
@@ -1124,7 +1129,7 @@ struct RpnItem {
 	}
 
 	// 2010-05-22: function to set operands without allocating a new array
-	void set(int _noperands, List<RpnItem *>::Element **_operand)
+	void set(int _noperands, RpnItem **_operand)
 	{
 		noperands = _noperands;
 		operand = _operand;
@@ -1136,7 +1141,7 @@ struct RpnItem {
 // 2010-05-15: changed output list and done stack from Token* to RpnItem*
 class Translator {
 	Table *table;					// pointer to the table object
-	List<RpnItem *> *output;		// pointer to RPN list output
+	QList<RpnItem *> *output;		// pointer to RPN list output
 	// 2010-05-28: changed hold_stack and done_stack from List to Stack
 	// 2011-01-13: changed hold stack to include first token pointer
 	struct HoldStackItem {
@@ -1146,7 +1151,7 @@ class Translator {
 	Stack<HoldStackItem> hold_stack;// operator/function holding stack
 	// 2011-01-15: changed done stack to include first and last token pointers
 	struct DoneStackItem {
-		List<RpnItem *>::Element *element;	// RPN item element pointer
+		RpnItem *rpnItem;			// pointer to RPN item
 		Token *first;				// operator token's first operand pointer
 		Token *last;				// operator token's last operand pointer
 	};
@@ -1186,7 +1191,7 @@ public:
 	void start(bool _exprmode = false)
 	{
 		exprmode = _exprmode;  // 2010-06-06: save flag
-		output = new List<RpnItem *>;
+		output = new QList<RpnItem *>;
 		state = Initial_State;
 		// 2010-04-11: initialize mode to command
 		// 2010-04-16: start in expression mode for testing
@@ -1200,9 +1205,9 @@ public:
 	}
 	// 2010-04-04: made argument a reference so different value can be returned
 	TokenStatus add_token(Token *&token);
-	List<RpnItem *> *get_result(void)	// only call when add_token returns Done
+	QList<RpnItem *> *get_result(void)	// only call when add_token returns Done
 	{
-		List<RpnItem *> *list = output;
+		QList<RpnItem *> *list = output;
 		output = NULL;
 		return list;
 	}

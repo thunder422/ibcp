@@ -41,10 +41,15 @@
 #  2012-10-24	detect the CMAKE_BUILD_TYPE environment variable and set the
 #				  cmake variable if not already set, then report the build type
 #  2012-10-25	added configuration of new memtest script on non-Windows builds
+#  2012-10-26	added changed for Qt libraries
 
 cmake_minimum_required(VERSION 2.8)
 
 project(ibcp)
+
+# find Qt package
+find_package(Qt4 REQUIRED QtCore)
+include(${QT_USE_FILE})
 
 # check GCC versionn
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
@@ -163,6 +168,7 @@ add_executable(ibcp
 	${ibcp_INCS}
 	${ibcp_SRCS}
 )
+target_link_libraries(ibcp ${QT_LIBRARIES})
 
 # make linker link in static libgcc.a and libstrc++.a
 if (GCC_VERSION VERSION_GREATER 4.4)

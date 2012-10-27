@@ -189,6 +189,8 @@
 //
 //	2012-10-24	deleted the rpnlist object after deleting all the list members
 //				  (to fix a memory leak)
+//	2012-10-27	changed translator output from List class to QList
+//				created separate print_output() so can be used for debugging
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -198,6 +200,7 @@ void parse_input(Parser &parser, Table *table, const char *testinput);
 void translate_input(Translator &translator, Parser &parser, Table *table,
 	const char *testinput, bool exprmode = false);
 bool print_token(Token *token, Table *table, bool tab);
+void print_output(const char *header, QList<RpnItem *> output, Table *table);
 bool print_small_token(Token *token, Table *table);
 void print_error(Token *token, const char *error);
 void print_token_leaks(Table *table, const char *testinput);
@@ -422,39 +425,17 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 	if (status == Done_TokenStatus)
 	{
 		// 2010-05-15: change rpn_list from Token pointers
-		List<RpnItem *> *rpn_list = translator.get_result();
-		List<RpnItem *>::Element *element;
-		printf("Output: ");
+		QList<RpnItem *> *rpnList = translator.get_result();
 		// 2010-05-15: added separate print loop so operands can also be printed
-		// 2011-01-29: modified for updated List class functions
-		for (element = rpn_list->first(); element != NULL;
-			rpn_list->next(element))
-		{
-			print_small_token(element->value->token, table);
-			//print_token(token, table);
-			if (element->value->noperands > 0)
-			{
-				char separator = '[';
-				for (int i = 0; i < element->value->noperands; i++)
-				{
-					printf("%c", separator);
-					print_small_token(element->value->operand[i]->value->token,
-						table);
-					separator = ',';
-				}
-				printf("]");
-			}
-			printf(" ");
-		}
+		print_output("Output", *rpnList, table);
 		// 2010-03-21: corrected to handle an empty RPN list
 		// 2011-01-29: rewrote to remove last item instead of first item
-		RpnItem *rpn_item;
-		while (rpn_list->pop(&rpn_item))
+		while (!rpnList->isEmpty())
 		{
-			delete rpn_item;
+			delete rpnList->takeLast();
 		}
 		// 2012-10-24: fix memory leak
-		delete rpn_list;
+		delete rpnList;
 	}
 	else  // error occurred, output it
 	{
@@ -475,8 +456,8 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			translator.delete_open_paren(token);
 		}
 		translator.clean_up();
+		printf("\n");  // FIXME not needed, here to match current results
 	}
-	printf("\n");
 }
 
 
@@ -598,6 +579,30 @@ bool print_token(Token *token, Table *table, bool tab)
 	}
 	printf("\n");
 	return true;
+}
+
+
+// 2012-10-27: print entire output rpn list
+void print_output(const char *header, QList<RpnItem *> rpnList, Table *table)
+{
+	printf("%s: ", header);
+	foreach (RpnItem *rpnItem, rpnList)
+	{
+		print_small_token(rpnItem->token, table);
+		if (rpnItem->noperands > 0)
+		{
+			char separator = '[';
+			for (int i = 0; i < rpnItem->noperands; i++)
+			{
+				printf("%c", separator);
+				print_small_token(rpnItem->operand[i]->token, table);
+				separator = ',';
+			}
+			printf("]");
+		}
+		printf(" ");
+	}
+	printf("\n");
 }
 
 
