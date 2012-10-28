@@ -302,6 +302,8 @@
 #define IBCP_H
 
 #include <QList>
+#include <QLinkedList>
+#include <QVector>
 #include "string.h"
 #include "list.h"
 #include "stack.h"  // 2010-04-02: added for Stack
@@ -616,7 +618,6 @@ template <class T> struct Error {  // 2010-06-25: created from TableError
 
 // 2010-03-07: added error length and two new set_error()
 struct Token {
-	List<Token *>::Element *element;	// pointer to list element (2011-01-29)
 	int column;				// start column of token
 	int length;				// length of token (2011-01-11: moved from union)
 	TokenType type;			// type of the token
@@ -651,8 +652,6 @@ struct Token {
 		}
 	}
 	// overload new and delete operators for leak detection (2011-01-29)
-	void *operator new(size_t size);
-	void operator delete(void *ptr);
 	void set_error(const char *msg)
 	{
 		length = 1;
@@ -719,8 +718,6 @@ struct Token {
 	static bool table[sizeof_TokenType];  // 2010-05-29
 	// 2011-03-26: changes message_array to const char *, removed index_status
 	static const char *message_array[sizeof_TokenStatus];  // 2010-06-25
-    static List<Token *> list;  // 2011-01-29
-    static List<Token> del_list;  // 2011-01-29
 
 	static void initialize(void);
 	// 2010-06-25: new function to get message for status

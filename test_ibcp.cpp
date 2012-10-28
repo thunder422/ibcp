@@ -203,7 +203,6 @@ bool print_token(Token *token, Table *table, bool tab);
 void print_output(const char *header, QList<RpnItem *> output, Table *table);
 bool print_small_token(Token *token, Table *table);
 void print_error(Token *token, const char *error);
-void print_token_leaks(Table *table, const char *testinput);
 
 
 // 2012-10-11: new function to replace test_parser() and test_translator()
@@ -353,11 +352,9 @@ bool test_ibcp(Translator &translator, Parser &parser, Table *table, int argc,
 			break;
 		case test_expression:
 			translate_input(translator, parser, table, inputline, true);
-			print_token_leaks(table, inputline);
 			break;
 		case test_translator:
 			translate_input(translator, parser, table, inputline, false);
-			print_token_leaks(table, inputline);
 			break;
 		}
 	}
@@ -753,75 +750,4 @@ void print_error(Token *token, const char *error)
 		putchar('^');
 	}
 	printf("-- %s\n", error);
-}
-
-
-void print_token_leaks(Table *table, const char *testinput)
-{
-	// 2011-01-29: check for undeleted tokens
-	if (!Token::list.empty())
-	{
-		printf("Leaks: %s\n", testinput);
-		int len = strlen(testinput) + 1;  // one for EOL that may be at end
-		char *leaks = new char[len + 1];  // one for '\0' terminator
-		memset(leaks, ' ', len);
-		leaks[len] = '\0';
-		char id = '1';
-		List<Token *>::Element *element;
-		for (element = Token::list.first(); element != NULL;
-			Token::list.next(element))
-		{
-			for (int i = element->value->length; --i >= 0; )
-			{
-				leaks[element->value->column + i] = id;
-			}
-			switch (id)
-			{
-			case '9':
-				id = 'A';
-				break;
-			case 'Z':
-				id = 'a';
-				break;
-			case 'z':
-				id = '*';
-				break;
-			default:
-				id++;
-			}
-		}
-		printf("Leaks: %s\n", leaks);
-		delete[] leaks;
-		id = '1';
-		while ((element = Token::list.first()) != NULL)
-		{
-			printf("Token Leak '%c' ", id);
-			print_token(element->value, table, false);
-			delete element->value;  // this will also delete it from list
-			switch (id)
-			{
-			case '9':
-				id = 'A';
-				break;
-			case 'Z':
-				id = 'a';
-				break;
-			case 'z':
-				id = '*';
-				break;
-			default:
-				id++;
-			}
-		}
-	}
-	if (!Token::del_list.empty())
-	{
-		printf("\nExtra Token Deletes\n");
-		Token token;
-		for (int i = 1; Token::del_list.remove(NULL, &token); i++)
-		{
-			printf("Token #%d ", i);
-			print_token(&token, table, false);
-		}
-	}
 }
