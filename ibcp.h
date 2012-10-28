@@ -297,15 +297,19 @@
 //				  rpn item pointer), cmd_stack (element list pointer to index
 //				  into output rpn list), and RpnItem.operands[] (element list
 //				  pointer array to RpnItem pointer array)
+//	2012-10-28	removed token lists and new/delete overload functions
+//	2012-10-28	removed Error Template (no longer needed)
+//				changed Table class (constructor and new initialize() function)
 
 #ifndef IBCP_H
 #define IBCP_H
 
 #include <QList>
 #include <QLinkedList>
-#include <QVector>
+#include <QString>
+#include <QStringList>
+
 #include "string.h"
-#include "list.h"
 #include "stack.h"  // 2010-04-02: added for Stack
 
 // 2011-02-26: replaced code enumeration with include
@@ -400,207 +404,6 @@ const int Question_SubCode   = 0x00000010;	// add "? " to input prompt
 const int Used_SubCode       = 0x00000020;	// parentheses used in output
 const int Last_SubCode       = 0x00000040;	// parentheses used as last token
 const int End_SubCode        = 0x00000080;	// end of INPUT parsing codes
-
-
-// 2010-06-25: moved max constants
-const int Max_Operands = 3;
-	// 2010-04-24: this value contains the maximum number of operands
-	// (arguments) for any operator or internal function (there are currently
-	// no internal function with more than 3 arguments)
-
-const int Max_Assoc_Codes = 4;
-	// 2010-04-24: this value contains the maximum number of associated codes,
-	// codes in additional to the main code for different possible data types
-	// for the code (no code currently has more the 3 total codes)
-	// 2010-05-20: increased from 2 to 3 because of AssignSubStr_Code
-	// 2010-07-18: increased from 3 to 4 for second operand associated codes
-
-
-//*****************************************************************************
-//**                             ERROR TEMPLATE                              **
-//*****************************************************************************
-
-enum ErrorType {  // 2010-06-25: renamed from TableErrType
-	Unset_ErrorType,
-	// 2011-03-26: removed Duplicate_ErrorType and Missing_ErrorType
-	Range_ErrorType,
-	Overlap_ErrorType,
-	MaxOperands_ErrorType,		// 2010-05-20
-	MaxAssocCodes_ErrorType,	// 2010-05-20
-	Assoc2Code_ErrorType,		// 2010-07-18
-	MultName_ErrorType,			// 2010-08-10
-	MultExprInfo_ErrorType,		// 2010-08-10
-	MultNOperands_ErrorType,	// 2010-08-10
-	sizeof_ErrorType
-};
-
-// 2010-06-25: moved and renamed from TableSearch
-enum SearchType {  // table search types
-	ImmCmd_SearchType,			// 2011-02-26
-	PlainWord_SearchType,
-	ParenWord_SearchType,
-	DataTypeWord_SearchType,
-	Symbol_SearchType,
-	sizeof_SearchType
-};
-
-// print call function for Error<T>::report()
-typedef void (*PrintFunction)(const char *fmt, ...);
-
-// generic error structure template
-// 2010-08-10: changed ints to shorts, added multiple error types
-// 2011-03-26: changed shorts (indexes) to type T
-template <class T> struct Error {  // 2010-06-25: created from TableError
-	ErrorType type;			// type of the error
-	union {
-		// 2011-03-26: removed duplicate and missing structures
-		struct {
-			SearchType type;	// search type that is incomplete
-			T ibeg;				// index of beginning bracket item
-			T iend;				// index of ending bracket item
-		} range;
-		struct {
-			SearchType type1;	// first search type of overlap
-			SearchType type2;	// second search type of overlap
-			T ibeg;				// index of beginning bracket item
-			T iend;				// index of ending bracket item
-		} overlap;
-		struct {
-			int found;			// actual maximum found
-		} maximum;
-		struct {
-			T entry;			// index of entry with error
-			short index;		// assoc 2 index
-			short n;			// number of assoc codes
-		} assoc2;
-		struct {
-			const char *name;		// name of entry
-			union {
-				const char *name2;	// mis-match name of next entry
-				struct {
-					short entry;	// number of operands of entry
-					short next;		// number of operands of next entry
-				} noperands;
-			};
-		} multiple;
-	};
-
-	// 2011-03-26: removed Duplicate_ErrorType and Missing_ErrorType
-	Error(SearchType searchtype, T ibeg, T iend)
-	{
-		type = Range_ErrorType;
-		range.type = searchtype;
-		range.ibeg = ibeg;
-		range.iend = iend;
-	}
-	Error(SearchType type1, SearchType type2, T ibeg, T iend)
-	{
-		type = Overlap_ErrorType;
-		overlap.type1 = type1;
-		overlap.type2 = type2;
-		overlap.ibeg = ibeg;
-		overlap.iend = iend;
-	}
-	// 2010-05-20: added new error
-	Error(ErrorType _type, int max)
-	{
-		type = _type;
-		maximum.found = max;
-	}
-	// 2010-07-18: added new error
-	Error(T code, short index, short nassoc)
-	{
-		type = Assoc2Code_ErrorType;
-		assoc2.entry = code;
-		assoc2.index = index;
-		assoc2.n = nassoc;
-	}
-	// 2010-08-10: added new error
-	Error(const char *name, const char *name2)
-	{
-		type = MultName_ErrorType;
-		multiple.name = name;
-		multiple.name2 = name2;
-	}
-	Error(const char *name)
-	{
-		type = MultExprInfo_ErrorType;
-		multiple.name = name;
-	}
-	Error(const char *name, short noperands, short noperands2)
-	{
-		type = MultNOperands_ErrorType;
-		multiple.name = name;
-		multiple.noperands.entry = noperands;
-		multiple.noperands.next = noperands2;
-	}
-	Error(void)			// default constructor
-	{
-		type = Unset_ErrorType;
-	}
-
-	// 2010-06-25: function from parts of ibcp.cpp:main()
-	static void report(List<Error<T> > *error_list, PrintFunction print,
-		const char *title, const char *item)
-	{
-		Error<T> error;
-
-		(*print)("Error(s) found in %s:\n", title);
-		int n = 0;
-		bool more;
-		do
-		{
-			more = error_list->remove(NULL, &error);
-			(*print)("Error #%d: ", ++n);
-			switch (error.type)
-			{
-			// 2011-03-26: removed Duplicate_ErrorType and Missing_ErrorType
-			case Range_ErrorType:
-				(*print)("Search type %d indexes (%d, %d) not correct\n",
-					error.range.type, error.range.ibeg, error.range.iend);
-				break;
-			case Overlap_ErrorType:
-				(*print)("Search type %d indexes (%d, %d) overlap with search "
-					"type %d\n", error.overlap.type1, error.overlap.ibeg,
-					error.overlap.iend, error.overlap.type2);
-				break;
-			// 2010-05-20: added new maximum errors
-			case MaxOperands_ErrorType:
-				(*print)("Max_Operands=%d too small, actual is %d\n",
-					Max_Operands, error.maximum.found);
-				break;
-			case MaxAssocCodes_ErrorType:
-				(*print)("Max_Assoc_Codes=%d too small, actual is %d\n",
-					Max_Assoc_Codes, error.maximum.found);
-				break;
-			// 2010-07-18: added new assoc 2 code bad error
-			case Assoc2Code_ErrorType:
-				(*print)("Entry:%d Assoc2Index=%d too large, maximum is %d\n",
-					error.assoc2.entry, error.assoc2.index, error.assoc2.n);
-				break;
-			// 2010-08-10: added new multiple flag errors
-			case MultName_ErrorType:
-				(*print)("Multiple entry '%s' name mis-match '%s'\n",
-					error.multiple.name, error.multiple.name2);
-				break;
-			case MultExprInfo_ErrorType:
-				(*print)("Multiple entry '%s' next entry no expression info\n",
-					error.multiple.name);
-				break;
-			case MultNOperands_ErrorType:
-				(*print)("Multiple entry '%s' incorrect number of operands "
-					"(%d, %d)\n", error.multiple.name,
-					error.multiple.noperands.entry,
-					error.multiple.noperands.next);
-				break;
-			default:
-				(*print)("Unknown error %d\n", error.type);
-				break;
-			}
-		}
-		while (more);
-	}
-};
 
 
 //*****************************************************************************
@@ -860,6 +663,32 @@ typedef TokenStatus (*CmdHandler)(Translator &t, CmdItem *cmd_item,
 	Token *token);
 
 
+//*****************************************************************************
+//**                                  TABLE                                  **
+//*****************************************************************************
+
+const int Max_Operands = 3;
+	// 2010-04-24: this value contains the maximum number of operands
+	// (arguments) for any operator or internal function (there are currently
+	// no internal function with more than 3 arguments)
+
+const int Max_Assoc_Codes = 4;
+	// 2010-04-24: this value contains the maximum number of associated codes,
+	// codes in additional to the main code for different possible data types
+	// for the code (no code currently has more the 4 total codes)
+	// 2010-05-20: increased from 2 to 3 because of AssignSubStr_Code
+	// 2010-07-18: increased from 3 to 4 for second operand associated codes
+
+// 2010-06-25: moved and renamed from TableSearch
+enum SearchType {  // table search types
+	ImmCmd_SearchType,			// 2011-02-26
+	PlainWord_SearchType,
+	ParenWord_SearchType,
+	DataTypeWord_SearchType,
+	Symbol_SearchType,
+	sizeof_SearchType
+};
+
 struct TableEntry {
 	TokenType type;				// type of token for entry
 	Multiple multiple;			// multiple word command/character operator
@@ -880,23 +709,18 @@ struct TableEntry {
 };
 
 
-// 2010-06-25: TableErrType/TableError replaced with Error template
-
-
-//*****************************************************************************
-//**                                  TABLE                                  **
-//*****************************************************************************
-
 // 2011-02-26: removed index_code[], index(), and code(); changed index to code
 class Table {
 	TableEntry *entry;				// pointer to table entries
 	struct Range {
 		Code beg;					// begin index of range
 		Code end;					// end index of range
-	} range[sizeof_SearchType];	// range for each search type
+	} range[sizeof_SearchType];		// range for each search type
 public:
-	Table(void);
+	Table(void) {}
 	~Table() {}
+	// function to initialize and check the table entries (2012-10-28)
+	QStringList initialize(void);
 
 	// ACCESS FUNCTIONS
 	TokenType type(Code code)

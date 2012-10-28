@@ -164,10 +164,14 @@
 //
 //	2011-03-26	corrected Assoc2Code_ErrorType error
 //
+//	2012-10-28	Table::Table() now Table::initialize() and instead of throwing
+//				  an exception for any errors found, returns a list of error
+//				  strings as a QStringList (no longer uses Error Template)
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "ibcp.h"
 
 
@@ -1440,9 +1444,9 @@ static TableEntry table_entries[] =
 
 // constructor function that initializes the table variables
 
-Table::Table(void)
+QStringList Table::initialize(void)
 {
-	List<Error<Code> > *error_list = new List<Error<Code> >;
+	QStringList errorList;
 	int i;
 	int type;
 
@@ -1478,11 +1482,9 @@ Table::Table(void)
 			if (exprinfo->assoc2_index > 0
 				&& exprinfo->assoc2_index > exprinfo->nassoc_codes)
 			{
-				// Assoc2Code_ErrorType
-				// 2011-03-26: added code type cast
-				Error<Code> error((Code)i, exprinfo->assoc2_index,
-					exprinfo->nassoc_codes);
-				error_list->append(&error);
+				errorList.append(QString("Entry:%1 Assoc2Index=%2 too large, "
+					"maximum is %3").arg(i).arg(exprinfo->assoc2_index)
+					.arg(exprinfo->nassoc_codes));
 			}
 
 			// 2010-12-23: generate number of string arguments value
@@ -1509,22 +1511,20 @@ Table::Table(void)
 				ExprInfo *exprinfo2 = entry[i + 1].exprinfo;
 				if (strcmp(entry[i].name, entry[i + 1].name) != 0)
 				{
-					// MultName_ErrorType
-					Error<Code> error(entry[i].name, entry[i + 1].name);
-					error_list->append(&error);
+					errorList.append(QString("Multiple entry '%1' name "
+						"mis-match '%2'").arg(entry[i].name)
+						.arg(entry[i + 1].name));
 				}
 				else if (exprinfo2 == NULL)
 				{
-					// MultExprInfo_ErrorType
-					Error<Code> error(entry[i + 1].name);
-					error_list->append(&error);
+					errorList.append(QString("Multiple entry '%1' next entry "
+						"no expression info").arg(entry[i + 1].name));
 				}
 				else if (exprinfo2->noperands != exprinfo->noperands + 1)
 				{
-					// MultNOperands_ErrorType
-					Error<Code> error(entry[i].name, exprinfo->noperands,
-						exprinfo2->noperands);
-					error_list->append(&error);
+					errorList.append(QString("Multiple entry '%1' incorrect "
+						"number of operands (%2, %3)").arg(entry[i].name)
+						.arg(exprinfo->noperands).arg(exprinfo2->noperands));
 				}
 			}
 		}
@@ -1533,13 +1533,13 @@ Table::Table(void)
 	// 2010-05-20: check maximums found against constants
 	if (max_operands > Max_Operands)
 	{
-		Error<Code> error(MaxOperands_ErrorType, max_operands);
-		error_list->append(&error);
+		errorList.append(QString("Max_Operands=%1 too small, actual is %2")
+			.arg(Max_Operands).arg(max_operands));
 	}
 	if (max_assoc_codes > Max_Assoc_Codes)
 	{
-		Error<Code> error(MaxAssocCodes_ErrorType, max_assoc_codes);
-		error_list->append(&error);
+		errorList.append(QString("Max_Assoc_Codes=%1 too small, actual is %2")
+			.arg(Max_Assoc_Codes).arg(max_assoc_codes));
 	}
 
 	// 2011-02-26: removed missing checking
@@ -1564,10 +1564,9 @@ Table::Table(void)
 	{
 		if (range[type].beg > range[type].end)
 		{
-			// record bracket range error Range_ErrorType
-			Error<Code> error((SearchType)type, range[type].beg,
-				range[type].end);
-			error_list->append(&error);
+			// record bracket range error
+			errorList.append(QString("Search type %1 indexes (%2, %3) not "
+				"correct").arg(type).arg(range[type].beg).arg(range[type].end));
 		}
 		else
 		{
@@ -1580,22 +1579,17 @@ Table::Table(void)
 					|| range[type].end > range[type2].beg
 					&& range[type].end < range[type2].end))
 				{
-					// record bracket overlap error Overlap_ErrorType
-					Error<Code> error((SearchType)type, (SearchType)type2,
-						range[type].beg, range[type].end);
-					error_list->append(&error);
+					// record bracket overlap error
+					errorList.append(QString("Search type %1 indexes (%2, %3) "
+						"overlap with search type %4").arg(type)
+						.arg(range[type].beg).arg(range[type].end).arg(type2));
 				}
 			}
 		}
 	}
 
-	// throw exception if error_list is not empty
-	if (!error_list->empty())
-	{
-		throw error_list;
-	}
-
-	delete error_list;
+	// return list of error messages if any
+	return errorList;
 }
 
 

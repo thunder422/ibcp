@@ -191,6 +191,7 @@
 //				  (to fix a memory leak)
 //	2012-10-27	changed translator output from List class to QList
 //				created separate print_output() so can be used for debugging
+//	2012-10-28	removed token leak output routine
 
 #include <stdio.h>
 #include <stdlib.h>

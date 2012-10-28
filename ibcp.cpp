@@ -105,6 +105,9 @@
 //				  gpl header to match other programs
 //	2012-10-23	modified ibcp_version to output program name correctly by
 //				  using length (to work correctly on Windows)
+//	2012-10-28	removed token lists and new/delete overload functions
+//	2012-10-28	removed exception handling
+//				changed how table is initialized
 
 #include <stdio.h>
 #include <stdarg.h>  // 2010-06-25: for generic print function
@@ -223,10 +226,6 @@ void Token::initialize(void)
 	table[IntFuncN_TokenType] = true;
 	table[IntFuncP_TokenType] = true;
 	// FIXME should Remark_TokenType have a table entry?
-
-	// 2010-06-25: build message index and check message array
-	// 2010-06-25: replaced with Error template
-    // 2011-03-26: removed error checking (done by enums.awk) and index_status[]
 }
 
 
@@ -261,8 +260,6 @@ void print_stderr(const char *fmt, ...)
 
 int main(int argc, char *argv[])
 {
-	bool error_occurred = false;  // 2010-06-25
-
 	// 2010-04-25: added check if program name does not have path
 	// 2012-10-11: store pointer to name as a global
 	program_name = strrchr(argv[0], '\\');
@@ -283,55 +280,36 @@ int main(int argc, char *argv[])
 	}
 	print_gpl_header(program_name, program_name_len);
 
-	// 2010-06-25: added try block for token initialization
-	try
+	Token::initialize();
+
+	Table table;
+	QStringList errors = table.initialize();
+	if (!errors.isEmpty())
 	{
-		Token::initialize();
-	}
-	// 2010-06-25: replaced with Error template
-	catch (List<Error<TokenStatus> > *error_list)
-	{
-		// 2010-06-25: code replaced with function call
-		Error<TokenStatus>::report(error_list, &print_stderr, "TokenStsMsg",
-			"Status");
-		delete error_list;  // 2011-01-27: eliminate memory leak
-		error_occurred = true;
-	}
-	Table *table;
-	try
-	{
-		table = new Table();
-	}
-	// 2010-06-25: replaced with Error template
-	catch (List<Error<Code> > *error_list)
-	{
-		// 2010-06-25: code replaced with function call (code now in Error)
-		Error<Code>::report(error_list, print_stderr, "Table", "Code");
-		delete error_list;  // 2011-01-27: eliminate memory leak
-		error_occurred = true;
-	}
-	if (error_occurred)  // 2010-06-25
-	{
+		int n = 0;
+		foreach (QString error, errors)
+		{
+			fprintf(stderr, "Error #%d: %s\n", ++n, qPrintable(error));
+		}
 		fprintf(stderr, "Program aborting!\n");
 		return 1;
 	}
 	printf("Table initialization successful.\n");
 
-	Translator translator(table);
-	Parser parser(table);
+	Translator translator(&table);
+	Parser parser(&table);
 
 	// 2010-03-18: added call to test_translator
 	// 2010-04-25: added "-t" to usage string
 	// 2011-06-11: added check for version option
 	// 2012-10-10: replaced test_parser and test_translator with test_ibcp
 	// 2012-10-23: moved version output before gpl output
-	if (!test_ibcp(translator, parser, table, argc, argv))
+	if (!test_ibcp(translator, parser, &table, argc, argv))
 	{
 		// 2010-05-28: replaced strrchr(argv[1],...) call with 'program_name'
 		// 2011-06-11: added "-v" to usage string
 		printf("usage: %s -v -t <test_file>|-tp|-te|-tt\n", program_name);
 	}
-	delete table;  // 2011-01-27: eliminate memory leak
 	return 0;
 }
 
