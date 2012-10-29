@@ -300,17 +300,18 @@
 //	2012-10-28	removed token lists and new/delete overload functions
 //	2012-10-28	removed Error Template (no longer needed)
 //				changed Table class (constructor and new initialize() function)
+//	2012-10-29	converted translator stacks from Stack class to QStack
 
 #ifndef IBCP_H
 #define IBCP_H
 
 #include <QList>
 #include <QLinkedList>
+#include <QStack>
 #include <QString>
 #include <QStringList>
 
 #include "string.h"
-#include "stack.h"  // 2010-04-02: added for Stack
 
 // 2011-02-26: replaced code enumeration with include
 // 2011-03-26: changed from codes.h, now includes all automatic enumerations
@@ -969,14 +970,14 @@ class Translator {
 		Token *token;				// token pointer on hold stack
 		Token *first;				// operator token's first operand pointer
 	};
-	Stack<HoldStackItem> hold_stack;// operator/function holding stack
+	QStack<HoldStackItem> hold_stack;  // operator/function holding stack
 	// 2011-01-15: changed done stack to include first and last token pointers
 	struct DoneStackItem {
 		RpnItem *rpnItem;			// pointer to RPN item
 		Token *first;				// operator token's first operand pointer
 		Token *last;				// operator token's last operand pointer
 	};
-	Stack<DoneStackItem> done_stack;// items processed stack
+	QStack<DoneStackItem> done_stack;  // items processed stack
 	enum State {
 		Initial_State,				// initial state
 		BinOp_State,				// expecting binary operator
@@ -997,12 +998,12 @@ class Translator {
 		char nexpected;				// number of arguments expected
 		Code code;					// table index of internal function
 	};
-	Stack<CountItem> count_stack;	// number of operands counter stack
+	QStack<CountItem> count_stack;	// number of operands counter stack
 	// 2010-04-11: added mode for handling assignment statements
 	// 2010-05-29: moved enum definition outside Translator and renamed it
 	TokenMode mode;					// current assignment mode
 	// 2010-06-05: moved CmdItem outside Translator for TableEntry
-	Stack<CmdItem> cmd_stack;		// stack of commands waiting processing
+	QStack<CmdItem> cmd_stack;		// stack of commands waiting processing
 	// 2010-06-06: variable to save expression only mode in
 	bool exprmode;					// expression only mode active flag
 

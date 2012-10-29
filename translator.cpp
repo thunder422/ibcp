@@ -370,6 +370,7 @@
 //				  rpn item pointer), cmd_stack (element list pointer to index
 //				  into output rpn list), and RpnItem.operands[] (element list
 //				  pointer array to RpnItem pointer array)
+//	2012-10-29	converted translator stacks from Stack class to QStack
 
 #include "ibcp.h"
 
@@ -500,7 +501,8 @@ TokenStatus Translator::add_token(Token *&token)
 		// push null token to be last operator on stack
 		// to prevent from popping past bottom of stack
 		// 2010-06-02: replaced new and set_token() with new_token()
-		hold_stack.push().token = table->new_token(Null_Code);
+		hold_stack.resize(hold_stack.size() + 1);
+		hold_stack.top().token = table->new_token(Null_Code);
 		hold_stack.top().first = NULL;
 
 		// 2010-06-10: initialize to FirstOperand instead of Operand
@@ -523,7 +525,8 @@ TokenStatus Translator::add_token(Token *&token)
 			if (table->token_mode(token->code) != Null_TokenMode)
 			{
 				mode = table->token_mode(token->code);
-				cmd_stack.push().token = token;
+				cmd_stack.resize(cmd_stack.size() + 1);
+				cmd_stack.top().token = token;
 				// 2011-03-01: removed code member initialization
 				cmd_stack.top().flag = None_CmdFlag;  // 2010-06-01: reset flag
 				// initilize index to current last index of output (2012-10-26)
@@ -708,7 +711,8 @@ TokenStatus Translator::process_operand(Token *&token)
 		}
 
 		// 2010-06-08: changed count stack to hold count items
-		count_stack.push().noperands = 1;  // assume at least one
+		count_stack.resize(count_stack.size() + 1);
+		count_stack.top().noperands = 1;  // assume at least one
 		if (token->type == IntFuncP_TokenType)
 		{
 			count_stack.top().nexpected = table->noperands(token->code);
@@ -721,7 +725,8 @@ TokenStatus Translator::process_operand(Token *&token)
 			count_stack.top().nexpected = 0;
 		}
 
-		hold_stack.push().token = token;
+		hold_stack.resize(hold_stack.size() + 1);
+		hold_stack.top().token = token;
 		hold_stack.top().first = NULL;
 		// leave state == Operand
 		state = Operand_State;  // make sure not FirstOperand (2010-06-10)
@@ -748,7 +753,8 @@ TokenStatus Translator::process_operand(Token *&token)
 		// 2010-05-15: create RPN item to add to output list
 		RpnItem *rpn_item = new RpnItem(token);
         output->append(rpn_item);
-		done_stack.push().rpnItem = rpn_item;
+		done_stack.resize(done_stack.size() + 1);
+		done_stack.top().rpnItem = rpn_item;
 		done_stack.top().first = done_stack.top().last = NULL;
 		// in reference mode, have variable, set end expr state (2011-03-07)
 		// otherwise next token must be a binary operator
@@ -896,13 +902,15 @@ bool Translator::process_unary_operator(Token *&token, TokenStatus &status)
 			return false;
 		}
 		// push open parentheses right on stack and return
-		hold_stack.push().token = token;
+		hold_stack.resize(hold_stack.size() + 1);
+		hold_stack.top().token = token;
 		hold_stack.top().first = NULL;
 		state = Operand_State;
 
 		// 2010-04-02: add a null counter to prevent commas
 		// 2010-06-09: changed count stack to hold count items
-		count_stack.push().noperands = 0;
+		count_stack.resize(count_stack.size() + 1);
+		count_stack.top().noperands = 0;
 		count_stack.top().nexpected = 0;
 		status = Good_TokenStatus;
 		return false;
@@ -1040,7 +1048,7 @@ TokenStatus Translator::process_operator(Token *&token)
 		// it will be reset upon next open parentheses)
 		last_precedence = table->precedence(top_token->code);
 
-		hold_stack.null_pop();  // now pop the token (2011-01-30 leak)
+		hold_stack.resize(hold_stack.size() - 1);
 	}
 
 	// check for special token processing
@@ -1234,7 +1242,8 @@ TokenStatus Translator::process_first_operand(Token *&token)
 	}
 
 	// push it onto the holding stack
-	hold_stack.push().token = token;
+	hold_stack.resize(hold_stack.size() + 1);
+	hold_stack.top().token = token;
 	hold_stack.top().first = first;  // attach first operand (2011-01-14)
 
 	// expecting another operand next (2010-06-10)
@@ -1399,7 +1408,8 @@ TokenStatus Translator::process_final_operand(Token *&token, Token *token2,
 	if (done_push)
 	{
 		// push index of rpm item about to be added to output list
-		done_stack.push().rpnItem = rpn_item;
+		done_stack.resize(done_stack.size() + 1);
+		done_stack.top().rpnItem = rpn_item;
 		done_stack.top().first = first;
 		done_stack.top().last = last;
 	}
@@ -1893,7 +1903,7 @@ void Translator::clean_up(void)
 	// 2010-04-02: comma support - need to empty count_stack
 	while (!count_stack.empty())
 	{
-		count_stack.null_pop();
+		count_stack.resize(count_stack.size() - 1);
 	}
 	// 2011-01-16: moved to after stack cleanups (so last tokens still exist)
 	while (!output->isEmpty())
@@ -1971,7 +1981,7 @@ TokenStatus Translator::set_assign_command(Token *&token, Code assign_code)
 
 	if (cmd_stack.empty())  // still command mode?
 	{
-		cmd_stack.push();  // push new command on stack
+		cmd_stack.resize(cmd_stack.size() + 1);  // push new command on stack
 	}
 	else  // was preceded by let keyword
 	{
@@ -2411,7 +2421,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			// 2011-01-30: if top_token was not changed, pop it now (leak)
 			if (top_token == t.hold_stack.top().token)
 			{
-				t.hold_stack.null_pop();
+				t.hold_stack.resize(t.hold_stack.size() - 1);
 			}
 			delete token;  // delete close paren token (2011-01-30 leak)
 			token = top_token;  // set token with error (2011-01-15)
@@ -2425,7 +2435,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	// 2010-04-02: moved set pending paren, not needed for array/function
 
 	// 2011-01-30: now pop the top token (leak)
-	t.hold_stack.null_pop();
+	t.hold_stack.resize(t.hold_stack.size() - 1);
 
 	return Good_TokenStatus;
 }
@@ -2482,7 +2492,7 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 		}
 		// now pop the command off of stack (2010-12-29)
 		// moved pop to after error check (2011-01-30 leak)
-		t.cmd_stack.null_pop();
+		t.cmd_stack.resize(t.cmd_stack.size() - 1);
 		// upon return from the command handler,
 		// the hold stack should have the null token on top
 		// and done stack should be empty

@@ -43,6 +43,7 @@
 #  2012-10-25	added configuration of new memtest script on non-Windows builds
 #  2012-10-26	added changed for Qt libraries
 #  2012-10-28	removed list.h (Qt lists used) and test_stack program
+#  2012-10-29	removed stack.h (Qt stacks used) and test_stack2 program
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -147,7 +148,6 @@ add_custom_command(OUTPUT test_names.h
 # list the include files
 set(ibcp_HDRS
 	ibcp.h
-	stack.h
 	string.h
 )
 
@@ -179,7 +179,7 @@ endif (GCC_VERSION VERSION_GREATER 4.4)
 
 # add "make tests" target for making test programs
 add_custom_target(tests
-	DEPENDS test_nums test_string test_cons test_stack2
+	DEPENDS test_nums test_string test_cons
 )
 
 # test program executables for tests target (not built by default)
@@ -193,8 +193,4 @@ add_executable(test_string EXCLUDE_FROM_ALL
 )
 add_executable(test_cons EXCLUDE_FROM_ALL
 	test/test_cons.cpp
-)
-add_executable(test_stack2 EXCLUDE_FROM_ALL
-	stack.h
-	test/test_stack2.cpp
 )
