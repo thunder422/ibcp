@@ -108,24 +108,29 @@
 //	2012-10-28	removed token lists and new/delete overload functions
 //	2012-10-28	removed exception handling
 //				changed how table is initialized
+//	2012-10-29	replaced c stdio with Qt output (main output via text stream)
+//				replaced char arrays with QString (program name)
+//				renamed variables and functions to Qt naming convention
 
-#include <stdio.h>
-#include <stdarg.h>  // 2010-06-25: for generic print function
+#include <QFile>
+#include <QFileInfo>
+#include <QTextStream>
+
 #include "ibcp.h"
 #include "ibcp_config.h"  // 2011-06-11: for cmake
 
-void print_gpl_header(char *name, int len)
+void printGplHeader(QTextStream &cout, const QString &name)
 {
-	printf("\n%.*s  Copyright (C) 2010-%d  Thunder422\n", len, name,
-		ibcp_COPYRIGHT_YEAR);
-	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
-	printf("This is free software, and you are welcome to\n");
-	printf("redistribute it under certain conditions.\n\n");
+	cout << endl << name << "  Copyright (C) 2010-" << ibcp_COPYRIGHT_YEAR
+		<< "  Thunder422" << endl
+		<< "This program comes with ABSOLUTELY NO WARRANTY." << endl
+		<< "This is free software, and you are welcome to" << endl
+		<< "redistribute it under certain conditions.\n" << endl;
 }
 
 // Program Name and Length less extension (2012-10-11)
-char *program_name;
-int program_name_len;
+// TODO this needs to be put into a class somewhere)
+QString programName;
 
 // Token
 bool Token::paren[sizeof_TokenType];
@@ -230,55 +235,40 @@ void Token::initialize(void)
 
 
 // function to print version number (2011-06-11)
-bool ibcp_version(char *name, int len, int argc, char *argv[])
+bool ibcpVersion(QTextStream &cout, const QString &name, int argc, char *argv[])
 {
-	if (argc != 2 || strcmp(argv[1], "-v") != 0)
+	if (argc != 2 || QString::compare(argv[1], "-v") != 0)
 	{
 		return false;  // not our options
 	}
 	// 2010-03-13: changed to output actual program name
 	// 2012-10-23: changed to get release string from cmake without 'release'
 	// 2012-10-23: added program name length
-	printf("%.*s version %s\n", len, name, ibcp_RELEASE_STRING + 7);
+	cout << name << " version " << ibcp_RELEASE_STRING + 7 << endl;
 	return true;
 }
 
 
-bool test_ibcp(Translator &translator, Parser &parser, Table *table, int argc,
-	char *argv[]);
-
-
-// 2010-06-25: generic print function for printing to stderr for Error
-void print_stderr(const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	vfprintf(stderr, fmt, args);
-	va_end(args);
-}
+bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
+	Table *table, int argc, char *argv[]);
 
 
 int main(int argc, char *argv[])
 {
-	// 2010-04-25: added check if program name does not have path
-	// 2012-10-11: store pointer to name as a global
-	program_name = strrchr(argv[0], '\\');
-	// 2011-06-11: if not found then try '/' for linux
-	if (program_name == NULL)
-	{
-		program_name = strrchr(argv[0], '/');
-	}
-	// 2012-10-11: find length of name not including extension
-	program_name = program_name == NULL ? argv[0] : program_name + 1;
-	char *ext = strrchr(program_name, '.');
-	program_name_len = ext == NULL ? strlen(program_name) : ext - program_name;
+	// get base file name of program from first argument (2012-10-29)
+	programName = QFileInfo(argv[0]).baseName();
+
+	// setup standard output stream (2012-10-29)
+	QFile output;
+	output.open(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
+	QTextStream cout(&output);
 
 	// 2012-10-23: moved version output before gpl output
-	if (ibcp_version(program_name, program_name_len, argc, argv))
+	if (ibcpVersion(cout, programName, argc, argv))
 	{
 		return 0;
 	}
-	print_gpl_header(program_name, program_name_len);
+	printGplHeader(cout, programName);
 
 	Token::initialize();
 
@@ -289,12 +279,12 @@ int main(int argc, char *argv[])
 		int n = 0;
 		foreach (QString error, errors)
 		{
-			fprintf(stderr, "Error #%d: %s\n", ++n, qPrintable(error));
+			qWarning("Error #%d: %s", ++n, qPrintable(error));
 		}
-		fprintf(stderr, "Program aborting!\n");
+		qWarning("Program aborting!");
 		return 1;
 	}
-	printf("Table initialization successful.\n");
+	cout << "Table initialization successful." << endl;
 
 	Translator translator(&table);
 	Parser parser(&table);
@@ -304,11 +294,12 @@ int main(int argc, char *argv[])
 	// 2011-06-11: added check for version option
 	// 2012-10-10: replaced test_parser and test_translator with test_ibcp
 	// 2012-10-23: moved version output before gpl output
-	if (!test_ibcp(translator, parser, &table, argc, argv))
+	if (!ibcpTest(cout, translator, parser, &table, argc, argv))
 	{
 		// 2010-05-28: replaced strrchr(argv[1],...) call with 'program_name'
 		// 2011-06-11: added "-v" to usage string
-		printf("usage: %s -v -t <test_file>|-tp|-te|-tt\n", program_name);
+		qWarning("usage: %s -v -t <test_file>|-tp|-te|-tt",
+			qPrintable(programName));
 	}
 	return 0;
 }

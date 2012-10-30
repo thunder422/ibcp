@@ -39,6 +39,8 @@
 #  2012-10-22  added "./" in front of "ibcp" so that program can be run without
 #              having to have "." in the current PATH
 #
+#  2012-10-29  added version output
+#
 #
 #  Usage:
 #    regtest
@@ -51,6 +53,7 @@
 
 rm -f parser*.txt expression*.txt translator*.txt
 dir=@ibcp_SOURCE_DIR@/test/
+./ibcp -v
 for input in ${dir}parser*.dat ${dir}expression*.dat ${dir}translator*.dat
 do
 	base=${input##*/}

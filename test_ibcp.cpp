@@ -192,179 +192,161 @@
 //	2012-10-27	changed translator output from List class to QList
 //				created separate print_output() so can be used for debugging
 //	2012-10-28	removed token leak output routine
+//	2012-10-29	converted strings to QString (and QByteArray)
+//				converted file I/O to QFile (and QFileInfo)
+//				converted output to QTextStream
+//				renamed variables and functions to Qt naming convention
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <QFile>
+#include <QFileInfo>
+#include <QString>
+#include <QTextStream>
+
 #include "ibcp.h"
 
-void parse_input(Parser &parser, Table *table, const char *testinput);
-void translate_input(Translator &translator, Parser &parser, Table *table,
-	const char *testinput, bool exprmode = false);
-bool print_token(Token *token, Table *table, bool tab);
-void print_output(const char *header, QList<RpnItem *> output, Table *table);
-bool print_small_token(Token *token, Table *table);
-void print_error(Token *token, const char *error);
+void parseInput(QTextStream &cout, Parser &parser, Table *table,
+	const QByteArray &testInput);
+void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
+	Table *table, const QByteArray &testInput, bool exprmode);
+bool printToken(QTextStream &cout, Token *token, bool tab);
+void printOutput(QTextStream &cout, const QString &header,
+	QList<RpnItem *> &output, Table *table);
+bool printSmallToken(QTextStream &cout, Token *token, Table *table);
+void printError(QTextStream &cout, Token *token, const QString &error);
 
+enum testModeEnum {
+	testParser, testExpression, testTranslator
+} testMode;
 
 // 2012-10-11: new function to replace test_parser() and test_translator()
-bool test_ibcp(Translator &translator, Parser &parser, Table *table, int argc,
-	char *argv[])
+bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
+	Table *table, int argc, char *argv[])
 {
-	extern char *program_name;
-	extern int program_name_len;
+	extern char *programName;
 
-	const int max_inputline = 200;
-	char parser_name[] = "parser";
-	const size_t parser_len = sizeof(parser_name) - 1;
-	char expression_name[] = "expression";
-	const size_t expression_len = sizeof(expression_name) - 1;
-	char translator_name[] = "translator";
-	const size_t translator_len = sizeof(translator_name) - 1;
+	QMap<testModeEnum, QString> name;
+	name[testParser] = "parser";
+	name[testExpression] = "expression";
+	name[testTranslator] = "translator";
+	bool inputMode;
 
-	enum {
-		test_parser, test_expression, test_translator
-	} testmode;
-	char *name[] = {  // must match enumeration above
-		parser_name, expression_name, translator_name
-	};
-	bool inputmode;
-
-	if (argc == 2 && strcmp(argv[1], "-tp") == 0)
+	if (argc == 2 && QString::compare(argv[1], "-tp") == 0)
 	{
-		testmode = test_parser;
-		inputmode = true;
+		testMode = testParser;
+		inputMode = true;
 	}
-	else if (argc == 2 && strcmp(argv[1], "-te") == 0)
+	else if (argc == 2 && QString::compare(argv[1], "-te") == 0)
 	{
-		testmode = test_expression;
-		inputmode = true;
+		testMode = testExpression;
+		inputMode = true;
 	}
-	else if (argc == 2 && strcmp(argv[1], "-tt") == 0)
+	else if (argc == 2 && QString::compare(argv[1], "-tt") == 0)
 	{
-		testmode = test_translator;
-		inputmode = true;
+		testMode = testTranslator;
+		inputMode = true;
 	}
-	else if (argc == 3 && strcmp(argv[1], "-t") == 0)
+	else if (argc == 3 && QString::compare(argv[1], "-t") == 0)
 	{
 		// find start of file name less path
-		char *filnam = strrchr(argv[2], '\\');  // dos path character
-		if (filnam == NULL)
-		{
-			filnam = strrchr(argv[2], '/');  // linux path character
-		}
-		filnam = filnam == NULL ? argv[2] : filnam + 1;
+		QString fileName = QFileInfo(argv[2]).baseName();
 
 		// get and check beginning of file name
-		if (strncmp(filnam, parser_name, parser_len) == 0)
+		if (fileName.startsWith(name[testParser], Qt::CaseInsensitive))
 		{
-			testmode = test_parser;
+			testMode = testParser;
 		}
-		else if (strncmp(filnam, expression_name, expression_len) == 0)
+		else if (fileName.startsWith(name[testExpression], Qt::CaseInsensitive))
 		{
-			testmode = test_expression;
+			testMode = testExpression;
 		}
-		else if (strncmp(filnam, translator_name, translator_len) == 0)
+		else if (fileName.startsWith(name[testTranslator], Qt::CaseInsensitive))
 		{
-			testmode = test_translator;
+			testMode = testTranslator;
 		}
 		else
 		{
-			printf("usage: %.*s -t (%s|%s|%s)[XX]\n", program_name_len,
-				program_name, parser_name, expression_name, translator_name);
+			qCritical("usage: %s -t (%s|%s|%s)[XX]\n", qPrintable(programName),
+				qPrintable(name[testParser]), qPrintable(name[testExpression]),
+				qPrintable(name[testTranslator]));
 			return true;  // our options were bad
 		}
-		inputmode = false;
+		inputMode = false;
 	}
 	else
 	{
 		return false;  // not our options
 	}
 
-	char inputline[max_inputline];
-	FILE *fd;
-	if (inputmode)
+	QFile file;
+	QByteArray inputLine;
+
+	if (inputMode)
 	{
-		printf("\nTesting %s...", name[testmode]);
+		cout << endl << "Testing " << name[testMode] << "...";
+		file.open(stdin, QIODevice::ReadOnly | QIODevice::Text);
 	}
 	else
 	{
-		fd = fopen(argv[2], "r");
-		if (fd == NULL)
+		file.setFileName(argv[2]);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 		{
-			printf("%.*s: error opening '%s'\n", program_name_len, program_name,
+			qCritical("%s: error opening '%s'\n", qPrintable(programName),
 				argv[2]);
 			return true;
 		}
 	}
 	for (int lineno = 1;; lineno++)
 	{
-		if (inputmode)
+		if (inputMode)
 		{
-			printf("\nInput: ");
-			if (gets(inputline) == NULL)
-			{
-				printf("\n%.*s: gets() failure - returned null\n",
-					program_name_len, program_name);
-				return true;
-			}
-			if (inputline[0] == '\0')
+			cout << endl << "Input: " << flush;
+			inputLine = file.readLine();
+			if (inputLine.isEmpty() || inputLine[0] == '\n')
 			{
 				break;
 			}
+			int nl = inputLine.length() - 1;
+			inputLine[nl] = '\0';  // remove newline
 		}
 		else
 		{
-			if (feof(fd))
+			if (file.atEnd())
 			{
 				break;
 			}
-			if (fgets(inputline, max_inputline, fd) == NULL)
+			inputLine = file.readLine();
+			if (inputLine.isEmpty())
 			{
-				if (feof(fd))
-				{
-					break;
-				}
-				printf("%.*s: error reading line %d from file '%s'\n",
-					program_name_len, program_name, lineno, argv[2]);
-				fclose(fd);
-				return true;
+				break;
 			}
-			int nl = strlen(inputline) - 1;
-			if (inputline[nl] != '\n')
-			{
-				printf("%.*s: expected newline on line %d from file '%s'\n"
-					"    (line too long?  maximum = %d\n", program_name_len,
-					program_name, lineno, argv[2], max_inputline);
-				fclose(fd);
-				return true;
-			}
-			inputline[nl] = '\0';  // remove newline
-			if (inputline[0] == '\0' || inputline[0] == '#')
+			int nl = inputLine.length() - 1;
+			inputLine[nl] = '\0';  // remove newline
+			if (inputLine[0] == '\0' || inputLine[0] == '#')
 			{
 				continue;  // skip blank and comment lines
 			}
-			printf("\nInput: %s\n", inputline);
+			cout << endl << "Input: " << inputLine.left(nl) << endl;
 		}
 
-		switch (testmode)
+		switch (testMode)
 		{
-		case test_parser:
-			parse_input(parser, table, inputline);
+		case testParser:
+			parseInput(cout, parser, table, inputLine);
 			break;
-		case test_expression:
-			translate_input(translator, parser, table, inputline, true);
+		case testExpression:
+			translateInput(cout, translator, parser, table, inputLine, true);
 			break;
-		case test_translator:
-			translate_input(translator, parser, table, inputline, false);
+		case testTranslator:
+			translateInput(cout, translator, parser, table, inputLine, false);
 			break;
 		}
 	}
-	if (!inputmode)
+	if (!inputMode)
 	{
-		fclose(fd);
-		if (testmode != test_parser)
+		file.close();
+		if (testMode != testParser)
 		{
-			printf("\n");  // not for parser testing
+			cout << endl;  // not for parser testing
 		}
 	}
 	return true;
@@ -372,16 +354,18 @@ bool test_ibcp(Translator &translator, Parser &parser, Table *table, int argc,
 
 
 // 2010-03-11: created from parts of main
-void parse_input(Parser &parser, Table *table, const char *testinput)
+void parseInput(QTextStream &cout, Parser &parser, Table *table,
+	const QByteArray &testInput)
 {
 	Token *token;
 	bool more;
 
-	parser.start((char *)testinput);
+
+	parser.start((char *)testInput.data());
 	// 2010-03-18: fix loop since get_token() no longer returns null
 	do {
 		token = parser.get_token();
-		more = print_token(token, table, true);
+		more = printToken(cout, token, true);
 		if (more && token->type == Operator_TokenType
 			&& token->code == EOL_Code)
 		{
@@ -395,15 +379,15 @@ void parse_input(Parser &parser, Table *table, const char *testinput)
 
 // 2010-03-18: new function for testing translator
 // 2010-04-16: added new expression mode flag argument
-void translate_input(Translator &translator, Parser &parser, Table *table,
-	const char *testinput, bool exprmode)
+void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
+	Table *table, const QByteArray &testInput, bool exprmode)
 {
 	Token *token;
 	Token *org_token;
 	TokenStatus status;
 
 	translator.start(exprmode);
-	parser.start((char *)testinput);
+	parser.start((char *)testInput.data());
 	do {
         // set parser operand state from translator (2011-03-27)
         parser.set_operand_state(translator.get_operand_state());
@@ -411,12 +395,12 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		// 2010-03-18: need to check for a parser error
 		if (token->type == Error_TokenType)
 		{
-			print_error(token, token->string->get_ptr());
+			printError(cout, token, QString(token->string->get_ptr()));
 			delete token;
 			translator.clean_up();
 			return;
 		}
-		//print_token(token, table);
+		//printToken(cout, token, tab);
 		status = translator.add_token(token);
 	}
 	while (status == Good_TokenStatus);
@@ -425,7 +409,7 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 		// 2010-05-15: change rpn_list from Token pointers
 		QList<RpnItem *> *rpnList = translator.get_result();
 		// 2010-05-15: added separate print loop so operands can also be printed
-		print_output("Output", *rpnList, table);
+		printOutput(cout, "Output", *rpnList, table);
 		// 2010-03-21: corrected to handle an empty RPN list
 		// 2011-01-29: rewrote to remove last item instead of first item
 		while (!rpnList->isEmpty())
@@ -439,7 +423,7 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 	{
 		// 2010-06-25: replaced status switch with token->message(status)
 		// token pointer is set to cause of error
-		print_error(token, token->message(status));
+		printError(cout, token, QString(token->message(status)));
 		if (token == org_token)
 		{
 			// 2010-04-14: only deleted error token if it's the original token
@@ -454,30 +438,28 @@ void translate_input(Translator &translator, Parser &parser, Table *table,
 			translator.delete_open_paren(token);
 		}
 		translator.clean_up();
-		printf("\n");  // FIXME not needed, here to match current results
+		cout << endl;  // FIXME not needed, here to match current results
 	}
 }
 
 
 // 2010-03-11: created from parts parse_input()
 // 2011-01-29: added argument flag for printing out leading tab character
-bool print_token(Token *token, Table *table, bool tab)
+bool printToken(QTextStream &cout, Token *token, bool tab)
 {
 	// 2012-10-12: replaced all name text arrays with auto-generated file
 	#include "test_names.h"
 
 	CmdArgs *args;
-	char bfr[20];
-	char *exp;
 
 	if (token->type == Error_TokenType)
 	{
 		// 2010-03-20: moved code to print_error()
-		print_error(token, token->string->get_ptr());
+		printError(cout, token, QString(token->string->get_ptr()));
 		return false;
 	}
 	// 2010-03-13: test new Token static functions
-	const char *info = "  ";
+	QString info("  ");
 	if (token->has_paren())
 	{
 		info = token->is_operator() ? "??" : "()";
@@ -488,124 +470,122 @@ bool print_token(Token *token, Table *table, bool tab)
 	}
 	if (tab)
 	{
-		printf("\t");
+		cout << '\t';
 	}
-	printf("%2d: %-9s %s", token->column, tokentype_name[token->type], info);
+	cout << qSetFieldWidth(2) << right << token->column << qSetFieldWidth(0)
+		<< left << ": " << qSetFieldWidth(10) << tokentype_name[token->type]
+		<< qSetFieldWidth(0) << info;
 	switch (token->type)
 	{
 	case ImmCmd_TokenType:
 		// 2011-03-08: removed output of token code
 
-		printf(" %s", code_name[token->code]);
+		cout << " " << code_name[token->code];
 		if (token->datatype == CmdArgs_DataType)
 		{
 			args = (CmdArgs *)token->string->get_data();
-			printf(" Args: begin=%d end=%d start=%d incr=%d", args->begin,
-				args->end, args->start, args->incr);
+			cout << " Args: begin=" << args->begin << " end=" << args->end
+				<< " start=" << args->start << " incr=" << args->incr;
 		}
 		else if (token->datatype == String_DataType)
 		{
-			printf(" String Arg: |%.*s|", token->string->get_len(),
-				token->string->get_ptr());
+			cout << " String Arg: |" << QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '|';
 		}
 		else
 		{
-			printf(" !Invalid Data Type!");
+			cout << " !Invalid Data Type!";
 		}
 		break;
 	case Remark_TokenType:
 		// 2011-03-08: removed output of token code
-		printf(" %s", code_name[token->code]);
+		cout << ' ' << code_name[token->code];
 		// fall thru
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
-		printf(" %-7s", datatype_name[token->datatype]);
-		printf(" |%.*s|", token->string->get_len(),
-			token->string->get_ptr());
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
+			<< qSetFieldWidth(0) << " |" << QByteArray(token->string->get_ptr(),
+			token->string->get_len()) << '|';
 		break;
 	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
-		printf(" %-7s", datatype_name[token->datatype]);
-		printf(" |%.*s(|", token->string->get_len(),
-			token->string->get_ptr());
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
+			<< qSetFieldWidth(0) << " |" << QByteArray(token->string->get_ptr(),
+			token->string->get_len()) << "(|";
 		break;
 	case Constant_TokenType:
-		printf(" %-7s", datatype_name[token->datatype]);
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
+			<< qSetFieldWidth(0);
 		switch (token->datatype)
 		{
 		case Integer_DataType:
-			printf(" %d |%.*s|", token->int_value,
-				token->string->get_len(), token->string->get_ptr());
+			cout << ' ' << token->int_value << " |"
+			    << QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '|';
 			break;
 		case Double_DataType:
-			// only output 2 exponents digits unless 3 are needed (2012-10-14)
-			sprintf(bfr, "%g", token->dbl_value);
-			exp = strchr(bfr, 'e');
-			if (exp != NULL)  // contains an exponent?
-			{
-				if (exp[4] != '\0' && exp[2] == '0')  // 3 digits and first '0'?
-				{
-					strcpy(exp + 2, exp + 3);  // move last 2 digits over first
-				}
-			}
-			printf(" %s |%.*s|", bfr, token->string->get_len(),
-				token->string->get_ptr());
+			cout << ' ' << token->dbl_value << " |"
+				<< QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '|';
 			break;
 		case String_DataType:
-			printf(" |%.*s|", token->string->get_len(),
-				token->string->get_ptr());
+			cout << " |" << QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '|';
 			break;
 		}
 		break;
 	case Operator_TokenType:
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
-		printf(" %-7s", datatype_name[token->datatype]);
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
+			<< qSetFieldWidth(0);
+		// fall thru
 	case Command_TokenType:
 		// 2011-03-08: removed output of token code
-		printf(" %s", code_name[token->code]);
+		cout << " " << code_name[token->code];
 		if (token->code == Rem_Code || token->code == RemOp_Code)
 		{
-			printf(" |%.*s|", token->string->get_len(),
-				token->string->get_ptr());
+			cout << " |" << QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '|';
 		}
 		break;
 	default:
 		// nothing more to output
 		break;
 	}
-	printf("\n");
+	cout << endl;
 	return true;
 }
 
 
 // 2012-10-27: print entire output rpn list
-void print_output(const char *header, QList<RpnItem *> rpnList, Table *table)
+void printOutput(QTextStream &cout, const QString &header,
+	QList<RpnItem *> &rpnList, Table *table)
 {
-	printf("%s: ", header);
+	cout << header << ": ";
 	foreach (RpnItem *rpnItem, rpnList)
 	{
-		print_small_token(rpnItem->token, table);
+		printSmallToken(cout, rpnItem->token, table);
 		if (rpnItem->noperands > 0)
 		{
-			char separator = '[';
+			QChar separator('[');
 			for (int i = 0; i < rpnItem->noperands; i++)
 			{
-				printf("%c", separator);
-				print_small_token(rpnItem->operand[i]->token, table);
+				cout << separator;
+				printSmallToken(cout, rpnItem->operand[i]->token, table);
 				separator = ',';
 			}
-			printf("]");
+			cout << ']';
 		}
-		printf(" ");
+		cout << ' ';
 	}
-	printf("\n");
+	cout << endl;
 }
 
 
 // 2010-03-20: reimplemented print_token for small output
-bool print_small_token(Token *token, Table *table)
+bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 {
 	CmdArgs *args;
 
@@ -613,80 +593,83 @@ bool print_small_token(Token *token, Table *table)
 	switch (token->type)
 	{
 	case ImmCmd_TokenType:
-		printf("%s:", table->name(token->code));
+		cout << table->name(token->code) << ':';
 		if (token->datatype == CmdArgs_DataType)
 		{
 			args = (CmdArgs *)token->string->get_data();
-			printf("%d,%d,%d,%d", args->begin, args->end, args->start,
-				args->incr);
+			cout << args->begin << ',' << args->end << ',' << args->start << ','
+			    << args->incr;
 		}
 		else if (token->datatype == String_DataType)
 		{
-			printf("\"%.*s\"", token->string->get_len(),
-				token->string->get_ptr());
+			cout << '"' << QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '"';  // TODO
 		}
 		else
 		{
-			printf("?");
+			cout << '?';
 		}
 		break;
 	case Remark_TokenType:
 		// fall thru
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
-		printf("%.*s", token->string->get_len(), token->string->get_ptr());
+		// TODO
+		cout << QByteArray(token->string->get_ptr(), token->string->get_len());
 		break;
 	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
-		printf("%.*s(", token->string->get_len(), token->string->get_ptr());
+		cout << QByteArray(token->string->get_ptr(), token->string->get_len())
+			<< '(';  // TODO
 		break;
 	case Constant_TokenType:
 		switch (token->datatype)
 		{
 		case Integer_DataType:
-			printf("%.*s", token->string->get_len(), token->string->get_ptr());
-			break;
 		case Double_DataType:
-			printf("%.*s", token->string->get_len(), token->string->get_ptr());
+			cout << QByteArray(token->string->get_ptr(),
+				token->string->get_len());  // TODO
 			break;
 		case String_DataType:
-			printf("\"%.*s\"", token->string->get_len(),
-				token->string->get_ptr());
+			cout << '"' << QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '"';  // TODO
 			break;
 		}
 		break;
 	case Operator_TokenType:
 		if (token->code == RemOp_Code)
 		{
-			printf("%s|%.*s|", table->name(token->code),
-				token->string->get_len(), token->string->get_ptr());
+			cout << table->name(token->code) << '|'
+				<< QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '|';
 		}
 		else
 		{
 			// 2010-04-02: output name2 (if set) for debug output string
 			// 2010-04-04: replaced with debug_name call
-			printf("%s", table->debug_name(token->code));
+			cout << table->debug_name(token->code);
 		}
 		break;
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
 		// 2010-04-04: replaced with debug_name call
-		printf("%s", table->debug_name(token->code));
+		cout << table->debug_name(token->code);
 		break;
 	case Command_TokenType:
 		if (token->code == Rem_Code)
 		{
-			printf("%s|%.*s|", table->name(token->code),
-				token->string->get_len(), token->string->get_ptr());
+			cout << table->name(token->code) << '|'
+				<< QByteArray(token->string->get_ptr(),
+				token->string->get_len()) << '|';
 		}
 		else
 		{
-			printf("%s", table->name(token->code));
+			cout << table->name(token->code);
 			// 2010-06-06: call name2() instead of name()
 			if (table->name2(token->code) != NULL)
 			{
-				printf("-%s", table->name2(token->code));
+				cout << '-' << table->name2(token->code);
 			}
 		}
 		break;
@@ -697,58 +680,59 @@ bool print_small_token(Token *token, Table *table)
 	// 2010-04-12: output reference identifier
 	if (token->reference)
 	{
-		printf("<ref>");
+		cout << "<ref>";
 	}
 	// 2010-05-29: output sub-code flags
 	// 2011-01-22: ignore used sub-code
 	if (token->subcode & ~Used_SubCode)
 	{
-		printf("'");
+		cout << '\'';
 		if (token->subcode & Paren_SubCode)
 		{
-			printf(")");
+			cout << ')';
 		}
 		if (token->subcode & Let_SubCode)
 		{
-			printf("LET");
+			cout << "LET";
 		}
 		// 2010-08-01: removed Comma_SubCode
 		// 2010-06-08: added semicolon subcode flag
 		if (token->subcode & SemiColon_SubCode)
 		{
-			printf(";");
+			cout << ';';
 		}
 		// 2011-03-20: added keep and end subcodes
 		if (token->subcode & Keep_SubCode)
 		{
-			printf("Keep");
+			cout << "Keep";
 		}
 		if (token->subcode & End_SubCode)
 		{
-			printf("End");
+			cout << "End";
 		}
 		// 2011-03-22: added question subcodes
 		if (token->subcode & Question_SubCode)
 		{
-			printf("Question");
+			cout << "Question";
 		}
-		printf("'");
+		cout << '\'';
 	}
 	return true;
 }
 
 
 // 2010-03-20: created from parts print_token()
-void print_error(Token *token, const char *error)
+void printError(QTextStream &cout, Token *token, const QString &error)
 {
-	int len;
-
 	// 2010-03-07: modified to use new error length
-	printf("       %*s", token->column, "");
-	// 2011-01-11: removed extra code, token now contains correct length
-	for (int j = 0; j < token->length; j++)
+	for (int i = -7; i < token->column; i++)
 	{
-		putchar('^');
+		cout << ' ';
 	}
-	printf("-- %s\n", error);
+	// 2011-01-11: removed extra code, token now contains correct length
+	for (int i = 0; i < token->length; i++)
+	{
+		cout << '^';
+	}
+	cout << "-- " << error << endl;
 }

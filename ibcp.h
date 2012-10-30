@@ -455,7 +455,6 @@ struct Token {
 			string = NULL;  // in case of double delete (2011-01-30)
 		}
 	}
-	// overload new and delete operators for leak detection (2011-01-29)
 	void set_error(const char *msg)
 	{
 		length = 1;
