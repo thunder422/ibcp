@@ -43,6 +43,8 @@
 #  2012-10-06  modified to remove the CR at the end of the lines in DOS format
 #              files, but do nothing with Unix format files
 #
+#  2012-11-01  changed 'const char *' to 'QString' for message_array[]
+#
 #
 #  Usage: awk -f enums.awk [source path]
 #
@@ -124,7 +126,7 @@ BEGIN {
 	{
 		if (msg_array == 0)
 		{
-			if (line ~ /const char \*Token::message_array/)
+			if (line ~ /const QString Token::message_array/)
 			{
 				# found start of token message array
 				msg_array = 1

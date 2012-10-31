@@ -302,6 +302,9 @@
 //				changed Table class (constructor and new initialize() function)
 //	2012-10-29	converted translator stacks from Stack class to QStack
 //	2012-10-31	added 'const' to 'char *' variables in Parser
+//	2012-11-01	removed support for immediate commands
+//				changed all String to QString
+//				renamed Parser functions and variables to Qt Style naming
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -311,8 +314,6 @@
 #include <QStack>
 #include <QString>
 #include <QStringList>
-
-#include "string.h"
 
 // 2011-02-26: replaced code enumeration with include
 // 2011-03-26: changed from codes.h, now includes all automatic enumerations
@@ -337,7 +338,6 @@ inline Code operator ++(Code &code, int postfix)
 
 // changes to TokenType may require changes to ibcp.cpp: Token::initialize()
 enum TokenType {
-	ImmCmd_TokenType,
 	Command_TokenType,
 	Operator_TokenType,
 	IntFuncN_TokenType,  // 2010-03-11: replaces IntFunc_TokenType
@@ -365,7 +365,6 @@ enum DataType {
 	numberof_DataType,	// 2010-04-24: new entry for number of actual data types
 	// the following data types are used internally for other uses
 	None_DataType,		// 2010-04-24: moved name after new numberof_DataType
-	CmdArgs_DataType,	// 2010-02-27: for immediate commands
 	sizeof_DataType
 };
 
@@ -427,7 +426,7 @@ struct Token {
 	int length;				// length of token (2011-01-11: moved from union)
 	TokenType type;			// type of the token
 	DataType datatype;		// data type of token
-	String *string;			// pointer to string of token
+	QString string;			// pointer to string of token
 	// 2010-03-17: changed variable from code to index
 	// 2011-02-26: changed variable back from index to code
 	Code code;	 			// internal code of token (index of TableEntry)
@@ -443,48 +442,42 @@ struct Token {
 	Token(int col = -1)
 	{
 		column = col;
-		string = NULL;
 		length = 1;  // 2010-03-21: initialize length
 		reference = false;  // 2010-04-12: initialize reference flag
 		subcode = None_SubCode;  // 2010-05-29: initial sub-code flags
 	}
 	~Token(void)
 	{
-		if (string != NULL)
-		{
-			delete string;
-			string = NULL;  // in case of double delete (2011-01-30)
-		}
 	}
-	void set_error(const char *msg)
+	void set_error(const QString &msg)
 	{
 		length = 1;
 		type = Error_TokenType;
 		datatype = None_DataType;
-		string = new String(msg);
+		string = msg;
 	}
-	void set_error(int col, const char *msg)
+	void set_error(int col, const QString  &msg)
 	{
 		column = col;
 		length = 1;
 		type = Error_TokenType;
 		datatype = None_DataType;
-		string = new String(msg);
+		string = msg;
 	}
-	void set_error(const char *msg, int len)
+	void set_error(const QString &msg, int len)
 	{
 		length = len;
 		type = Error_TokenType;
 		datatype = None_DataType;
-		string = new String(msg);
+		string = msg;
 	}
-	void set_error(int col, const char *msg, int len)
+	void set_error(int col, const QString &msg, int len)
 	{
 		column = col;
 		length = len;
 		type = Error_TokenType;
 		datatype = None_DataType;
-		string = new String(msg);
+		string = msg;
 	}
 	bool is_operator(void)
 	{
@@ -521,12 +514,12 @@ struct Token {
 	static int prec[sizeof_TokenType];  // 2010-04-02
 	static bool table[sizeof_TokenType];  // 2010-05-29
 	// 2011-03-26: changes message_array to const char *, removed index_status
-	static const char *message_array[sizeof_TokenStatus];  // 2010-06-25
+	static const QString message_array[sizeof_TokenStatus];  // 2010-06-25
 
 	static void initialize(void);
 	// 2010-06-25: new function to get message for status
 	// 2011-03-26: changed message_array to simply array of string pointers
-	static const char *message(TokenStatus status)
+	static const QString message(TokenStatus status)
 	{
 		return message_array[status];
 	}
@@ -551,31 +544,33 @@ enum TokenMode {
 //*****************************************************************************
 
 // bit definitions for flags field
-const int Null_Flag           = 0x00000000;  // entry has no flags
-const int Error_Flag          = -1;          // error return code
-// immediate command flags (each must have unique bit set)
-const int Blank_Flag          = 0x00000001;
-const int Line_Flag           = 0x00000002;  // xxx
-const int LineIncr_Flag       = 0x00000004;  // xxx,zz
-const int Range_Flag          = 0x00000008;  // xxx-yyy
-const int RangeIncr_Flag      = 0x00000010;  // xxx-yyy,zz  xxx-yyy,nnn,zz
-const int String_Flag         = 0x00000020;
-// table entry flags (each must have unique bit set, but not unique from above)
-// 2010-04-04: added new flag for table entries with multiple codes
-// 2010-05-05: added Reference and AssignList flag for assignment operators
-// 2010-05-29: added hidden operator/function flag
-// 2010-06-01: added Print flag for print-only functions
-// 2010-06-06: added EndExpr flag for comma, semicolon and EOL functions
-// 2010-06-14: removed AssignList flag (not needed)
-// 2010-06-26: added EndStatement flag
-const int Multiple_Flag       = 0x00000001;  // function has multiple forms
-const int Reference_Flag      = 0x00000002;  // code requires a reference
-// note: value 0x00000004 is available
-const int Hidden_Flag         = 0x00000008;  // code is hidden operator/function
-const int Print_Flag          = 0x00000010;  // print-only function
-// note: don't use 0x00000020 - String_Flag is being used for codes
-const int EndExpr_Flag        = 0x00000040;	 // end expression
-const int EndStmt_Flag        = 0x00000080;  // end statement
+enum {
+	Null_Flag           = 0x00000000,  // entry has no flags
+	Error_Flag          = -1,          // error return code
+	// immediate command flags (each must have unique bit set)
+	Blank_Flag          = 0x00000001,
+	Line_Flag           = 0x00000002,  // xxx
+	LineIncr_Flag       = 0x00000004,  // xxx,zz
+	Range_Flag          = 0x00000008,  // xxx-yyy
+	RangeIncr_Flag      = 0x00000010,  // xxx-yyy,zz  xxx-yyy,nnn,zz
+	String_Flag         = 0x00000020,
+	// table entry flags (each must have unique bit set, but not unique from above)
+	// 2010-04-04: added new flag for table entries with multiple codes
+	// 2010-05-05: added Reference and AssignList flag for assignment operators
+	// 2010-05-29: added hidden operator/function flag
+	// 2010-06-01: added Print flag for print-only functions
+	// 2010-06-06: added EndExpr flag for comma, semicolon and EOL functions
+	// 2010-06-14: removed AssignList flag (not needed)
+	// 2010-06-26: added EndStatement flag
+	Multiple_Flag       = 0x00000001,  // function has multiple forms
+	Reference_Flag      = 0x00000002,  // code requires a reference
+	// note: value 0x00000004 is available
+	Hidden_Flag         = 0x00000008,  // code is hidden operator/function
+	Print_Flag          = 0x00000010,  // print-only function
+	// note: don't use 0x00000020 - String_Flag is being used for codes
+	EndExpr_Flag        = 0x00000040,  // end expression
+	EndStmt_Flag        = 0x00000080   // end statement
+};
 
 // 2010-03-25: added highest precedence value
 const int Highest_Precedence = 127;
@@ -682,7 +677,6 @@ const int Max_Assoc_Codes = 4;
 
 // 2010-06-25: moved and renamed from TableSearch
 enum SearchType {  // table search types
-	ImmCmd_SearchType,			// 2011-02-26
 	PlainWord_SearchType,
 	ParenWord_SearchType,
 	DataTypeWord_SearchType,
@@ -847,9 +841,8 @@ public:
 	}
 
 	// TABLE FUNCTIONS
-	Code search(char letter, int flag);
-	Code search(SearchType type, const char *string, int len);
-	Code search(const char *word1, int len1, const char *word2, int len2);
+	Code search(SearchType type, const QStringRef &string);
+	Code search(const QStringRef &word1, const QStringRef &word2);
 	// 2010-04-04: added new search function
 	Code search(Code code, int nargs);
 	// 2010-07-02: added new search and match functions
@@ -876,50 +869,36 @@ public:
 //**                                 PARSER                                  **
 //*****************************************************************************
 
-struct CmdArgs {
-	int begin;				// begin line number (Line, Range)
-	int end;				// end line number (Range)
-	int start;				// start line number (RangeIncr)
-	int incr;				// increment (LineIncr, RangeIncr)
-
-	CmdArgs(void)
-	{
-		begin = end = start = incr = -1;
-	}
-};
-
-
 class Parser {
-	Table *table;			// pointer to the table object
-	const char *input;		// pointer to input line being parsed
-	const char *pos;		// pointer to current position in input string
-	Token *token;			// pointer to working token (to be returned)
-	bool operand_state;		// currently operand state flag (2011-03-27)
+	Table *m_table;			// pointer to the table object
+	QString m_input;		// input line being parsed
+	int m_pos;				// index to current position in input string
+	Token *m_token;			// pointer to working token (to be returned)
+	bool m_operandState;	// currently operand state flag (2011-03-27)
 
 	// main functions
-	bool get_command(void);
-	bool get_identifier(void);
-	bool get_number(void);
-	bool get_string(void);
-	bool get_operator(void);
+	bool getCommand(void);
+	bool getIdentifier(void);
+	bool getNumber(void);
+	bool getString(void);
+	bool getOperator(void);
 
 	// support functions
-	void skip_whitespace();
-	int scan_command(CmdArgs &args);
-	const char *scan_word(const char *p, DataType &datatype, bool &paren);
-	int scan_string(const char *&p, String *s);
+	void skipWhitespace();
+	int scanWord(int pos, DataType &datatype, bool &paren);
 public:
-	Parser(Table *t): table(t) {}
-	void start(const char *i)
+	Parser(Table *table): m_table(table) {}
+	void setInput(const QString &input)
 	{
-		pos = input = i;
-		operand_state = false;
+		m_input = input;
+		m_pos = 0;
+		m_operandState = false;
 	}
-	Token *get_token();
+	Token *getToken(void);
 	// 2011-03-27: added function to access operand state
-	void set_operand_state(bool state)
+	void setOperandState(bool operandState)
 	{
-		operand_state = state;
+		m_operandState = operandState;
 	}
 };
 

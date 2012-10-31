@@ -111,6 +111,7 @@
 //	2012-10-29	replaced c stdio with Qt output (main output via text stream)
 //				replaced char arrays with QString (program name)
 //				renamed variables and functions to Qt naming convention
+//	2012-11-01	changed char* to QString, removed immediate command support
 
 #include <QFile>
 #include <QFileInfo>
@@ -138,7 +139,7 @@ bool Token::op[sizeof_TokenType];
 int Token::prec[sizeof_TokenType];  // 2010-04-02
 bool Token::table[sizeof_TokenType];  // 2010-05-29
 // 2011-03-26: changed to a simply array of strings
-const char *Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
+const QString Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
 	"Null_TokenStatus (BUG)",							// Null
 	"Good_TokenStatus (BUG)",							// Good
 	"Done_TokenStatus (BUG)",							// Done
@@ -225,7 +226,6 @@ void Token::initialize(void)
 	prec[Paren_TokenType] = 2;
 
 	// 2010-05-29: set token type has a table entry flags
-	table[ImmCmd_TokenType] = true;
 	table[Command_TokenType] = true;
 	table[Operator_TokenType] = true;
 	table[IntFuncN_TokenType] = true;

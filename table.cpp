@@ -167,6 +167,11 @@
 //	2012-10-28	Table::Table() now Table::initialize() and instead of throwing
 //				  an exception for any errors found, returns a list of error
 //				  strings as a QStringList (no longer uses Error Template)
+//	2012-11-01	replaced some char* with QStringRef
+//				removed immediate commands from table
+
+#include <QChar>
+#include <QString>
 
 #include <ctype.h>
 #include <stdio.h>
@@ -396,61 +401,6 @@ static TableEntry table_entries[] =
 	{	// Null_Code
 		Operator_TokenType
 	},
-	//******************************
-	//   IMMEDIATE COMMANDS FIRST
-	//******************************
-	{	// BegImmCmd_Code
-		Error_TokenType
-	},
-	// (these will go away once gui interface is implemented)
-	{	// List_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"L", NULL, Blank_Flag | Line_Flag | Range_Flag
-	},
-	{	// Edit_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"E", NULL, Blank_Flag | Line_Flag
-	},
-	{	// Delete_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"D", NULL, Line_Flag | Range_Flag
-	},
-	{	// Run_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"R", NULL, Blank_Flag
-	},
-	{	// Renum_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"R", NULL, Range_Flag | RangeIncr_Flag
-	},
-	{	// Save_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"S", NULL, Blank_Flag | String_Flag
-	},
-	{	// Load_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"L", NULL, String_Flag
-	},
-	{	// New_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"N", NULL, Blank_Flag
-	},
-	{	// Auto_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"A", NULL, Blank_Flag | Line_Flag | LineIncr_Flag
-	},
-	{	// Cont_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"C", NULL, Blank_Flag
-	},
-	{	// Quit_Code
-		ImmCmd_TokenType, OneWord_Multiple,
-		"Q", NULL, Blank_Flag
-	},
-	{	// EndImmCmd_Code
-		Error_TokenType
-	},
-	// end of immediate commands marked by NULL name (next entry)
 	//***********************
 	//   BEGIN PLAIN WORDS
 	//***********************
@@ -1546,8 +1496,6 @@ QStringList Table::initialize(void)
 
 	// setup indexes for bracketing codes
 	// (will be set to -1 if missing - missing errors were recorded above)
-	range[ImmCmd_SearchType].beg = BegImmCmd_Code;
-	range[ImmCmd_SearchType].end = EndImmCmd_Code;
 	range[PlainWord_SearchType].beg = BegPlainWord_Code;
 	range[PlainWord_SearchType].end = EndPlainWord_Code;
 	range[ParenWord_SearchType].beg = BegParenWord_Code;
@@ -1593,43 +1541,19 @@ QStringList Table::initialize(void)
 }
 
 
-// this search function will look for an immediate command (located at
-// the beginning of the table), which are only one letter
-//
-// the flags argument is for searching for an immediate command with a
-// particular form (the letter and the appropriate flag in the table
-// needs to match)
-//
-//     - returns -1 if the letter (and flags) is not found
-
-Code Table::search(char letter, int flag)
-{
-	for (Code i = BegImmCmd_Code + 1; i < EndImmCmd_Code; i++)
-	{
-		if (toupper(letter) == entry[i].name[0]
-			&& (flag == Null_Flag || flag & entry[i].flags))
-		{
-			return i;
-		}
-	}
-	return Invalid_Code;  // not found
-}
-
-
 // this search function will look for a string of a particular type in
 // the Table, the search is case insensitive
 //
 //     - returns the index of the entry that is found
 //     - returns -1 if the string was not found in the table
 
-Code Table::search(SearchType type, const char *string, int len)
+Code Table::search(SearchType type, const QStringRef &string)
 {
 	Code i = range[type].beg;
 	Code end = range[type].end;
 	while (++i < end)
 	{
-		if (strncasecmp(string, entry[i].name, len) == 0
-			&& entry[i].name[len] == '\0')
+		if (string.compare(entry[i].name, Qt::CaseInsensitive) == 0)
 		{
 			return i;
 		}
@@ -1644,17 +1568,14 @@ Code Table::search(SearchType type, const char *string, int len)
 //
 //     - returns the index of the entry that is found
 //     - returns -1 if the string was not found in the table
-
-Code Table::search(const char *word1, int len1, const char *word2, int len2)
+Code Table::search(const QStringRef &word1, const QStringRef &word2)
 {
 	for (Code i = range[PlainWord_SearchType].beg;
 		i < range[PlainWord_SearchType].end; i++)
 	{
 		if (entry[i].name2 != NULL
-			&& strncasecmp(word1, entry[i].name, len1) == 0
-			&& entry[i].name[len1] == '\0'
-			&& strncasecmp(word2, entry[i].name2, len2) == 0
-			&& entry[i].name2[len2] == '\0')
+			&& word1.compare(entry[i].name, Qt::CaseInsensitive) == 0
+			&& word2.compare(entry[i].name2, Qt::CaseInsensitive) == 0)
 		{
 			return i;
 		}

@@ -77,326 +77,37 @@
 //	2011-06-07	added checks for maximum integer in scan_command() and
 //				get_number(), necessary when compiling on with 64-bit
 //	2012-10-31	added 'const' to 'char *' variables (input not modified)
+//	2012-11-01	removed immediate command parsing
+//				replaced String, char processing with QString and QChar
+//				renamed variables and functions to Qt style naming
 
-#include <stdio.h>
-
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <string.h>
 #include "ibcp.h"
 
 
 // function to get a token at the current position
 //
-//     - a pointer to the token if returned
+//     - a pointer to the token is returned
 //     - the token must be deallocated when it is no longer needed
 //     - the token may contain an error message if an error was found
 
-Token *Parser::get_token(void)
+Token *Parser::getToken(void)
 {
-	bool first = pos == input;
-	skip_whitespace();
-	token = new Token(pos - input);  // allocate new token to return
-	if (*pos == '\0')
+	skipWhitespace();
+	m_token = new Token(m_pos);  // allocate new token to return
+	if (m_input[m_pos].isNull())
 	{
 		// 2010-03-17: changed to return special end-of-line (last) token
 		// 2010-03-18: replaced code with function call
-		table->set_token(token, EOL_Code);
-		return token;
+		m_table->set_token(m_token, EOL_Code);
+		return m_token;
 	}
 
-	if (first)
-	{
-		// upon first call, see if line contains an immediate command
-		if (get_command())
-		{
-			return token;  // return immediate command or error
-		}
-		pos = input;  // reset position and parse line normally
-		skip_whitespace();
-	}
-
-	if (!get_identifier() && !get_number() && !get_string() && !get_operator())
+	if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		token->set_error("unrecognizable character");
+		m_token->set_error("unrecognizable character");
 	}
-	return token;  // token may contain an error
-}
-
-
-// function to get an immediate command one the entire line, which
-// consists of a single letter for the command followed by possible
-// arguments
-//
-//     - returns false if no valid command is found
-//     - returns true if command is found with token set to command
-
-bool Parser::get_command(void)
-{
-	char letter;
-	int flag;
-	int num;
-	CmdArgs args;
-
-	letter = *pos;
-	if (table->search(letter, Null_Flag) == Invalid_Code)
-	{
-		return false;  // first character not a valid immediate command
-	}
-	pos++;  // advance past command letter
-	skip_whitespace();
-	int col = pos - input;  // save column in case arguments are invalid
-	flag = scan_command(args);
-	if (flag == Null_Flag)
-	{
-		// not a command
-		return false;
-	}
-	if (flag == Error_Flag)
-	{
-		// an error with the command
-		return true;
-	}
-	// search table again for the proper form
-	if ((token->code = table->search(letter, flag)) == Invalid_Code)
-	{
-		token->set_error(col, "invalid arguments for command");
-	}
-	else
-	{
-		token->type = ImmCmd_TokenType;
-		// if string argument, then leave datatype = String (string already set)
-		if (flag != String_Flag)
-		{
-			// store command arguments in string of token
-			token->datatype = CmdArgs_DataType;
-			token->string = new String(&args, sizeof(args));
-		}
-	}
-	return true;
-}
-
-
-// function to scan for the arguments of a command, which can take one
-// of the following forms:
-//
-//                              nothing (Blank_Flag)
-//     "sss"                    string constant (String_Flag)
-//     xxx                      single line number (Line_Flag)
-//     -  xxx-  -yyy  xxx-yyy   line number range (Range_Flag)
-//     ,  xxx,  ,zz  xxx,zz     line number/increment (LineIncr_Flag)
-//     xxx-yyy,                 line number range/start/increment
-//     xxx-yyy,zz               plus all forms a range listed above
-//     xxx-yyy,nnn,             for each
-//     xxx-zzz,nnn,zz           (RangeIncr_Flag)
-//
-// white space is allowed between any of the parts; an error is returned
-// when the line could not be a valid BASIC immediate command
-//
-//     - returns Null_Flag if no valid command is found
-//     - returns Error_Flag with token set to error if error found
-//     - returns xxx_Flag when a valid command is found
-
-int Parser::scan_command(CmdArgs &args)
-{
-	const char *UnexpChr  = "unexpected character";
-	const char *BadLineNo = "invalid line number";
-	const char *BadIncr   = "invalid increment";
-	const char *ZeroIncr  = "zero increment invalid";
-	int flag;
-	long num;  // 2011-06-07: changed to long for strtol()
-	int col;
-	char *end;
-
-	if (*pos == '\0')  // end of line?
-	{
-		return Blank_Flag;
-	}
-
-	if (get_string())  // is there a string constant next?
-	{
-		// token is filled with string constant
-		skip_whitespace();
-		if (*pos != '\0')  // oops, something else on line
-		{
-			delete token->string;  // release the string constant
-			token->set_error(pos - input, UnexpChr);
-			return Error_Flag;
-		}
-		return String_Flag;
-	}
-
-	// look for line number or begin line number of range
-	flag = Null_Flag;
-	if (isdigit(*pos))
-	{
-		num = strtol(pos, &end, 10);  // (base 10)
-		// also check for maximum 32-bit integer (2011-06-07)
-		if (errno == ERANGE || num > INT_MAX)
-		{
-			errno = 0;
-			token->set_error(pos - input, BadLineNo, end - pos);
-			return Error_Flag;  // let rest of parser process it
-		}
-		flag = Line_Flag;
-		args.begin = num;
-		pos = end;  // advance past number
-		skip_whitespace();
-		if (*pos == '\0')
-		{
-			return flag;
-		}
-	}
-
-	// look for range
-	if (*pos == '-')
-	{
-		flag = Range_Flag;
-		pos++;  // advance past dash
-		args.end = INT_MAX;  // default end if no end line number
-		skip_whitespace();
-		if (*pos == '\0')
-		{
-			return flag;
-		}
-		if (isdigit(*pos))
-		{
-			num = strtol(pos, &end, 10);  // (base 10)
-			// also check for maximum 32-bit integer (2011-06-07)
-			if (errno == ERANGE || num > INT_MAX)
-			{
-				errno = 0;
-				token->set_error(pos - input, BadLineNo, end - pos);
-				return Error_Flag;
-			}
-			args.end = num;
-			pos = end;  // advance past number
-			skip_whitespace();
-			if (*pos == '\0')
-			{
-				return flag;
-			}
-		}
-	}
-
-	// flag is Null (nothing found so far), Line (number) or Range ('-')
-	if (*pos != ',')
-	{
-		if (flag != Range_Flag)
-		{
-			// not a range (just line number could be valid, e.g. L100=5)
-			// - it's probably not a command
-			return Null_Flag;  // let rest of parser process it
-		}
-		// otherwise, it's probably a malformed command, so return an error
-		// (no valid BASIC immediate command starts this way)
-		return Null_Flag;  // 2010-03-21: TODO temporarily ignore this
-		//TODO token->set_error(pos - input, UnexpChr);
-		//TODO return Error_Flag;
-	}
-	pos++;  // advance past comma
-	flag = flag != Range_Flag ? LineIncr_Flag : RangeIncr_Flag;
-	skip_whitespace();
-	if (*pos == '\0')
-	{
-		args.incr = 0;  // no increment specified, command will use a default
-		return flag;
-	}
-
-	// number (increment or start line) must be next
-	if (!isdigit(*pos))  // make sure it's a digit
-	{
-		// 2010-04-16: this could be a valid multiple assignment, error removed
-		return Null_Flag;
-		//token->set_error(pos - input, UnexpChr);
-		//return Error_Flag;
-	}
-	num = strtol(pos, &end, 10);  // (base 10)
-	col = pos - input;  // save column in case number is invalid
-	// also check for maximum 32-bit integer (2011-06-07)
-	if (errno == ERANGE || num > INT_MAX)  // bad number?
-	{
-		errno = 0;
-		token->set_error(col, *end == '\0' ? BadIncr : BadLineNo, end - pos);
-		return Error_Flag;
-	}
-	if (end == pos)  // no number?
-	{
-		if (flag == Range_Flag || flag == RangeIncr_Flag)
-		{
-			// already have range, so this would probably be an invalid command
-			token->set_error(col, UnexpChr);
-			return Error_Flag;
-		}
-		// could be a multiple assignment, let rest of parser process it
-		return Null_Flag;
-	}
-	pos = end;  // advance past number
-
-	// number could be increment or start line number
-	skip_whitespace();
-	if (*pos == '\0')
-	{
-		// value is increment
-		if (num == 0)
-		{
-			token->set_error(col, ZeroIncr);
-			return Error_Flag;
-		}
-		args.incr = num;
-		return flag;
-	}
-
-	// for LineIncr, there should be no more characters
-	if (flag == LineIncr_Flag || *pos != ',')
-	{
-		// 2010-04-16: let translator report error, so no error here
-		return Null_Flag;
-		//token->set_error(pos - input, UnexpChr);
-		//return Error_Flag;
-	}
-	pos++;  // advance past second comma
-	// current number is start line, look for increment
-	args.start = num;
-	skip_whitespace();
-	if (*pos == '\0')
-	{
-		args.incr = 0;  // no increment specified, command will use a default
-		return flag;
-	}
-	// number (increment) must be next
-	if (!isdigit(*pos))  // make sure it's a digit
-	{
-		token->set_error(pos - input, UnexpChr);
-		return Error_Flag;
-	}
-	num = strtol(pos, &end, 10);  // (base 10)
-	col = pos - input;  // save column in case number is invalid
-	// also check for maximum 32-bit integer (2011-06-07)
-	if (errno == ERANGE || num > INT_MAX || end == pos)  // bad or no number?
-	{
-		errno = 0;
-		token->set_error(col, BadIncr, end - pos);
-		return Error_Flag;
-	}
-	if (num == 0)
-	{
-		token->set_error(col, ZeroIncr);
-		return Error_Flag;
-	}
-	args.incr = num;
-	pos = end;  // advance past number
-	skip_whitespace();
-	// make sure there's nothing else on line
-	if (*pos != '\0')
-	{
-		token->set_error(pos - input, UnexpChr);
-		return Error_Flag;
-	}
-	return flag;
+	return m_token;  // token may contain an error
 }
 
 
@@ -410,44 +121,45 @@ int Parser::scan_command(CmdArgs &args)
 //     - returns true if there is and token is filled
 //     - returns true for errors setting special error token
 
-bool Parser::get_identifier(void)
+bool Parser::getIdentifier(void)
 {
-	DataType datatype;		// data type of word
+	DataType dataType;		// data type of word
 	bool paren;				// word has opening parenthesis flag
 	SearchType search;		// table search type
 
-	const char *p = scan_word(pos, datatype, paren);
-	if (p == NULL)
+	int pos = scanWord(m_pos, dataType, paren);
+	if (pos == -1)
 	{
 		return false;  // not an identifier
 	}
 
-	int len = p - pos;
-	if (strncasecmp(pos, "FN", 2) == 0)  // defined function?
+	int len = pos - m_pos;
+	// defined function?
+	if (m_input.midRef(m_pos).startsWith("FN", Qt::CaseInsensitive))
 	{
 		// 2010-03-06: split DefFunc_TokenType
 		if (paren)
 		{
 			// don't include parentheses in string or length (2011-03-26)
-			token->type = DefFuncP_TokenType;
-			token->string = new String(pos, p - 1);
-			token->length = len - 1;  // 2011-03-14: set length of token
+			m_token->type = DefFuncP_TokenType;
+			m_token->string = m_input.mid(m_pos, len - 1);
+			m_token->length = len - 1;  // 2011-03-14: set length of token
 		}
 		else  // no parentheses
 		{
-			token->type = DefFuncN_TokenType;
-			token->string = new String(pos, p);
-			token->length = len;  // 2011-03-14: set length of token
+			m_token->type = DefFuncN_TokenType;
+			m_token->string = m_input.mid(m_pos, len);
+			m_token->length = len;  // 2011-03-14: set length of token
 		}
-		token->datatype = datatype;
-		pos = p;  // move position past defined function identifier
+		m_token->datatype = dataType;
+		m_pos = pos;  // move position past defined function identifier
 		return true;
 	}
 	if (paren)
 	{
 		search = ParenWord_SearchType;
 	}
-	else if (datatype != None_DataType)
+	else if (dataType != None_DataType)
 	{
 		search = DataTypeWord_SearchType;
 	}
@@ -455,7 +167,7 @@ bool Parser::get_identifier(void)
 	{
 		search = PlainWord_SearchType;
 	}
-	Code code = table->search(search, pos, len);
+	Code code = m_table->search(search, m_input.midRef(m_pos, len));
 	if (code == Invalid_Code)
 	{
 		// word not found in table, therefore
@@ -465,116 +177,116 @@ bool Parser::get_identifier(void)
 		if (paren)
 		{
 			// don't include parentheses in string or length (2011-03-26)
-			token->type = Paren_TokenType;
-			token->string = new String(pos, len - 1);
-			token->length = len - 1;  // 2011-01-11: set length of token
+			m_token->type = Paren_TokenType;
+			m_token->string = m_input.mid(m_pos, len - 1);
+			m_token->length = len - 1;  // 2011-01-11: set length of token
 		}
 		else
 		{
-			token->type = NoParen_TokenType;
-			token->string = new String(pos, len);
-			token->length = len;  // 2011-01-11: set length of token
+			m_token->type = NoParen_TokenType;
+			m_token->string = m_input.mid(m_pos, len);
+			m_token->length = len;  // 2011-01-11: set length of token
 		}
-		token->datatype = datatype;
-		pos = p;  // move position past word
+		m_token->datatype = dataType;
+		m_pos = pos;  // move position past word
 		return true;
 	}
 	// found word in table (command, internal function, or operator)
-	const char *word1 = pos;  // save position of first word
-	pos = p;  // move position past first word
+	int word1 = m_pos;  // save position of first word
+	m_pos = pos;  // move position past first word
 
 	// setup token in case this is only one word
-	token->type = table->type(code);
-	token->datatype = table->datatype(code);
-	token->string = NULL;  // string not needed
-	token->code = code;
-	token->length = len;  // 2010-03-20: set length of token
+	m_token->type = m_table->type(code);
+	m_token->datatype = m_table->datatype(code);
+	m_token->code = code;
+	m_token->length = len;  // 2010-03-20: set length of token
 
-	if (table->multiple(code) == OneWord_Multiple)
+	if (m_table->multiple(code) == OneWord_Multiple)
 	{
 		// identifier can only be a single word
 		if (code == Rem_Code)
 		{
 			// remark requires special handling
 			// remark string is to end of line
-			len = strlen(pos);
-			token->string = new String(pos, len);
-			pos += len;  // move position to end of line
+			m_token->string = m_input.mid(m_pos);
+			m_pos += m_token->string.length();
 		}
 		return true;
 	}
 
 	// command could be a two word command
-	skip_whitespace();
-	p = scan_word(pos, datatype, paren);
-	if (datatype != None_DataType || paren
-		|| (code = table->search(word1, len, pos, p - pos)) == Invalid_Code)
+	skipWhitespace();
+	pos = scanWord(m_pos, dataType, paren);
+	int len2 = pos - m_pos;
+	if (dataType != None_DataType || paren
+		|| (code = m_table->search(m_input.midRef(word1, len),
+		m_input.midRef(m_pos, len2))) == Invalid_Code)
 	{
-		if (token->type == Error_TokenType)
+		if (m_token->type == Error_TokenType)
 		{
 			// first word by itself is not valid
-			token->string = new String("Invalid Two Word Command");
+			m_token->string = "Invalid Two Word Command";
 		}
 		// otherwise single word is valid command,
 		// token already setup, position already set past word
 		return true;
 	}
 	// get information from two word command
-	token->type = table->type(code);
-	token->datatype = table->datatype(code);
-	token->code = code;
-	token->length += p - pos + 1;  // 2010-03-20: set length of token
+	m_token->type = m_table->type(code);
+	m_token->datatype = m_table->datatype(code);
+	m_token->code = code;
+	m_token->length += len2 + 1;  // 2010-03-20: set length of token
 
 	// 2010-03-20: moved to here so pos can be used to set length
-	pos = p;  // move position past second word
+	m_pos = pos;  // move position past second word
 	return true;
 }
 
 
 // function to get a word at the position specified
 //
-//     - returns NULL if there is not an identifier at point
-//     - returns pointer to character after identifier
+//     - returns -1 if there is not an identifier at point
+//     - returns index to character after identifier
 //     - returns data type found or None if none was found
 //     - returns flag if opening parenthesis at end of identifier
 
-const char *Parser::scan_word(const char *p, DataType &datatype, bool &paren)
+int Parser::scanWord(int pos, DataType &dataType, bool &paren)
 {
-	if (!isalpha(*p))
+	if (!m_input[pos].isLetter())
 	{
-		return NULL;  // not an identifier
+		return -1;  // not an identifier
 	}
 	do
 	{
-		p++;
+		pos++;
 	}
-	while (isalnum(*p) || *p == '_');
-	// p now points to non-alnum or '_'
+	while (m_input[pos].isLetterOrNumber() || m_input[pos] == '_');
+	// pos now points to non-alnum or '_'
 
 	// see if there is a data type symbol next
-	switch (*p)
+	switch (m_input[pos].unicode())
 	{
 	case '%':
-		datatype = Integer_DataType;
-		p++;
+		dataType = Integer_DataType;
+		pos++;
 		break;
 	case '$':
-		datatype = String_DataType;
-		p++;
+		dataType = String_DataType;
+		pos++;
 		break;
 	case '#':
-		datatype = Double_DataType;
-		p++;
+		dataType = Double_DataType;
+		pos++;
 		break;
 	default:
-		datatype = None_DataType;
+		dataType = None_DataType;
 	}
 
 	// see if there is an opening parenthesis
-	if (*p == '(')
+	if (m_input[pos] == '(')
 	{
 		paren = true;
-		p++;
+		pos++;
 	}
 	else
 	{
@@ -582,7 +294,7 @@ const char *Parser::scan_word(const char *p, DataType &datatype, bool &paren)
 	}
 
 	// p now points to next character after identifier
-	return p;
+	return pos;
 }
 
 
@@ -592,12 +304,12 @@ const char *Parser::scan_word(const char *p, DataType &datatype, bool &paren)
 //     - returns pointer to next non-white space character
 //     - if no white space found then argument is returned
 
-void Parser::skip_whitespace(void)
+void Parser::skipWhitespace(void)
 {
 	// 2010-03-11: replaced space check with isblank() to allow tabs
-	while (isblank(*pos))
+	while (m_input[m_pos].isSpace())
 	{
-		pos++;
+		m_pos++;
 	}
 }
 
@@ -615,25 +327,26 @@ void Parser::skip_whitespace(void)
 //     - string of the number is converted to a value
 //     - string of the number is saved so it can be later reproduced
 
-bool Parser::get_number(void)
+bool Parser::getNumber(void)
 {
 	bool digits = false;		// digits were found flag
 	bool decimal = false;		// decimal point was found flag
 	bool sign = false;			// have negative sign flag (2011-03-27)
 
-	const char *p = pos;
+	int pos = m_pos;
 	for (;;)
 	{
-		if (isdigit(*p))
+		if (m_input[pos].isDigit())
 		{
-			p++;  // move past digit
+			pos++;  // move past digit
 			if (!digits)  // first digit?
 			{
 				digits = true;
-				if (!decimal && *(p - 1) == '0' && *p != '.')
+				if (!decimal && m_input[pos - 1] == '0' && m_input[pos] != '.')
 				{
 					// 2010-05-29: added check for single zero digit
-					if (!isdigit(*p))  // next char not a digit (or '.')?
+					// next character not a digit (or '.')?
+					if (!m_input[pos].isDigit())
 					{
 						break;  // single zero, exit loop to process string
 					}
@@ -645,53 +358,53 @@ bool Parser::get_number(void)
 						// and second character is a digit (2010-05-29)
 						// this is in invalid number
 						// 2010-03-07: changed to error
-						token->set_error("invalid leading zero in numeric "
+						m_token->set_error("invalid leading zero in numeric "
 							"constant");
 						return true;
 					}
 				}
 			}
 		}
-		else if (*p == '.')
+		else if (m_input[pos] == '.')
 		{
 			if (decimal)  // was a decimal point already found?
 			{
 				if (!digits)  // no digits found?
 				{
-					token->set_error("constant only contains a decimal point "
+					m_token->set_error("constant only contains a decimal point "
 						"or has two decimal points", 2);
 					return true;
 				}
 				break;  // exit loop to process string
 			}
 			decimal = true;
-			p++;  // move past '.'
+			pos++;  // move past '.'
 		}
-		else if (*p == 'e' || *p == 'E')
+		else if (m_input[pos].toUpper() == 'E')
 		{
 			if (!digits)
 			{
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				token->set_error("mantissa of constant only contains a "
+				m_token->set_error("mantissa of constant only contains a "
 					"decimal point");
 				return true;
 			}
-			p++;  // move past 'e' or 'E'
-			if (*p == '+' || *p == '-')
+			pos++;  // move past 'e' or 'E'
+			if (m_input[pos] == '+' || m_input[pos] == '-')
 			{
-				p++;  // move past exponent sign
+				pos++;  // move past exponent sign
 			}
 			// now look for exponent digits
 			digits = false;
-			while (isdigit(*p))
+			while (m_input[pos].isDigit())
 			{
-				p++;  // move past exponent digit
+				pos++;  // move past exponent digit
 				digits = true;
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				token->set_error(p - input, "exponent contains no digits");
+				m_token->set_error(pos, "exponent contains no digits");
 				return true;
 			}
 			decimal = true;  // process as double
@@ -702,9 +415,9 @@ bool Parser::get_number(void)
 			if (!digits && !decimal)  // nothing found?
 			{
 				// look for negative sign (2011-03-27)
-				if (operand_state && !sign && *p == '-')
+				if (m_operandState && !sign && m_input[pos] == '-')
 				{
-					p++;  // move past negative sign
+					pos++;  // move past negative sign
 					sign = true;
 				}
 				else
@@ -714,60 +427,54 @@ bool Parser::get_number(void)
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				token->set_error("constant only contains a decimal point");
+				m_token->set_error("constant only contains a decimal point");
 				return true;
 			}
 			else
 			{
-				break;  // no more valid number characters, go process what we got
+				// no more valid number characters, go process what we got
+				break;
 			}
 		}
 	}
-	// p pointing to first character that is not part of constant
-	char *end;
-	errno = 0;
+	// pos pointing to first character that is not part of constant
+	bool ok;
+    int len = pos - m_pos;
+	QString numStr = m_input.mid(m_pos, len);
+	// FIXME hack for memory issue reported against QString::toInt()/toDouble()
+	QByteArray numBytes;
+	numBytes.append(numStr);
 	if (!decimal)  // no decimal or exponent?
 	{
 		// try to convert to integer first
-		long num = strtol(pos, &end, 10);  // (base 10)
-		// also check for maximum 32-bit signed integer (2011-06-07)
-		if (errno == ERANGE || num > INT_MAX || num < INT_MIN)
+		m_token->int_value = numBytes.toInt(&ok);
+		if (!ok)
 		{
 			// overflow or underflow, won't fit into an integer
-			errno = 0;  // reset error number
 			decimal = true;  // try as double
 		}
 		else
 		{
-			token->type = Constant_TokenType;
-			token->datatype = Integer_DataType;
+			m_token->type = Constant_TokenType;
+			m_token->datatype = Integer_DataType;
 		}
-		token->int_value = num;
 	}
 	if (decimal)
 	{
-		token->dbl_value = strtod(pos, &end);
-		if (errno == ERANGE)
+		m_token->dbl_value = numBytes.toDouble(&ok);
+		if (!ok)
 		{
 			// overflow or underflow, constant is not valid
-			errno = 0;  // reset error number
-			token->set_error("constant is out of range", end - pos);
+			m_token->set_error("constant is out of range", len);
 			return true;
 		}
-		token->type = Constant_TokenType;
-		token->datatype = Double_DataType;
+		m_token->type = Constant_TokenType;
+		m_token->datatype = Double_DataType;
 	}
-	// check if end of constant is where it should be
-	if (end != p)
-	{
-		// point to where error actual is
-		token->set_error(end - input, "BUG: error in constant");
-		return true;
-	}
-	// create string of number so it later can be reproduced
-	token->string = new String(pos, p);
-	token->length = token->string->get_len();  // 2011-01-11: set len of token
-	pos = p;  // move to next character after constant
+	// save string of number so it later can be reproduced
+	m_token->string = numStr;
+	m_token->length = len;  // 2011-01-11: set len of token
+	m_pos = pos;  // move to next character after constant
 	return true;
 }
 
@@ -781,60 +488,36 @@ bool Parser::get_number(void)
 //     - copy string into token without surrounding quotes
 //     - returns true for errors and special error token is set
 
-bool Parser::get_string(void)
+bool Parser::getString(void)
 {
-	if (*pos != '"')
+	if (m_input[m_pos] != '"')
 	{
 		return false;  // not a sting constant
 	}
 
-	const char *p = pos + 1;
-	int len = scan_string(p, NULL);  // get length of string
-	// 2010-03-08: removed no closing quote error check - now valid
-	token->type = Constant_TokenType;
-	token->datatype = String_DataType;
-	token->string = new String(len);  // allocate space only
-	token->length = p - pos;  // 2010-03-19: set length of token
-	// advance pos past quote, pos will point after string upon return
-	scan_string(++pos, token->string);  // copy string to token
-	return true;
-}
-
-
-// support function to scan for a string constant, without a string
-// argument, the string characters are counted only, otherwise the
-// characters of the string constant are copied into the string
-//
-//     - if string pointer argument is NULL then characters counted only
-//     - two double quotes together places a double quote within string
-//     - the character pointer argument is left pointing after string
-//     - returns the number of characters in string constant
-//     - the end of the line also terminates the string
-
-int Parser::scan_string(const char *&p, String *s)
-{
-	int count = 0;
-	while (*p != '\0')
+	int pos = m_pos + 1;
+	int len = 0;
+	while (!m_input[pos].isNull())
 	{
-		if (*p == '"')
+		if (m_input[pos] == '"')
 		{
-			if (*++p != '"')  // not two in a row?
+			if (m_input[++pos] != '"')  // not two in a row?
 			{
 				// found end of string
-				// p at character following closing quote
+				// pos at character following closing quote
 				break;
 			}
 			// otherwise quote counts as one character
 		}
-		if (s != NULL)  // copy to string?
-		{
-			s->set(count, *p);  // copy character into string
-		}
-		count++;
-		p++;
+		m_token->string[len++] = m_input[pos++];  // copy character into string
 	}
-	// if here then reached end of line with no closing quote
-	return count;
+	// 2010-03-08: removed no closing quote error check - now valid
+	m_token->type = Constant_TokenType;
+	m_token->datatype = String_DataType;
+	m_token->length = pos - m_pos;  // 2010-03-19: set length of token
+	// advance position past end of string
+	m_pos = pos;
+	return true;
 }
 
 
@@ -850,43 +533,43 @@ int Parser::scan_string(const char *&p, String *s)
 //
 // 2010-03-10: rewrote to properly handle two character operators
 
-bool Parser::get_operator(void)
+bool Parser::getOperator(void)
 {
 	// search table for current character to see if it is a valid operator
-	Code code = table->search(Symbol_SearchType, pos, 1);
+	Code code = m_table->search(Symbol_SearchType, m_input.midRef(m_pos, 1));
 	if (code != Invalid_Code)
 	{
 		// current character is a valid single character operator
 
 		// setup token in case this is only one character
-		token->type = table->type(code);
-		token->datatype = table->datatype(code);
-		token->code = code;
-		token->length = 1;  // 2010-03-20: set length of token
+		m_token->type = m_table->type(code);
+		m_token->datatype = m_table->datatype(code);
+		m_token->code = code;
+		m_token->length = 1;  // 2010-03-20: set length of token
 
-		if (table->multiple(code) == OneChar_Multiple)
+		if (m_table->multiple(code) == OneChar_Multiple)
 		{
 			// operator can only be a single character
-			pos++;  // move past operator
+			m_pos++;  // move past operator
 			if (code == RemOp_Code)
 			{
 				// remark requires special handling
 				// remark string is to end of line
-				int len = strlen(pos);
-				token->string = new String(pos, len);
-				pos += len;  // move position to end of line
+				m_token->string = m_input.mid(m_pos);
+				// move position to end of line
+				m_pos += m_token->string.length();
 			}
 			return true;
 		}
 	}
 	// operator could be a two character operator
 	// search table again for two characters at current position
-	Code code2 = table->search(Symbol_SearchType, pos, 2);
+	Code code2 = m_table->search(Symbol_SearchType, m_input.midRef(m_pos, 2));
 	if (code2 == Invalid_Code)
 	{
 		if (code != Invalid_Code)  // was first character a valid operator?
 		{
-			pos++;  // move past first character
+			m_pos++;  // move past first character
 			// token already setup
 			return true;
 		}
@@ -894,12 +577,12 @@ bool Parser::get_operator(void)
 	}
 
 	// valid two character operator
-	pos += 2;  // move past two characters
+	m_pos += 2;  // move past two characters
 	// get information from two character operator
-	token->type = table->type(code2);
-	token->datatype = table->datatype(code2);
-	token->code = code2;
-	token->length = 2;  // 2010-03-20: set length of token
+	m_token->type = m_table->type(code2);
+	m_token->datatype = m_table->datatype(code2);
+	m_token->code = code2;
+	m_token->length = 2;  // 2010-03-20: set length of token
 	return true;
 }
 

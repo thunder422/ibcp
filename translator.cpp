@@ -371,6 +371,7 @@
 //				  into output rpn list), and RpnItem.operands[] (element list
 //				  pointer array to RpnItem pointer array)
 //	2012-10-29	converted translator stacks from Stack class to QStack
+//	2012-11-01	removed immediate command support
 
 #include "ibcp.h"
 
@@ -465,11 +466,6 @@ static struct {
 		ExpExpr_TokenStatus,   // changed from Invalid (2011-01-01)
 		BUG_InvalidDataType,
 		ExpAssignItem_TokenStatus
-	},
-	{	// CmdArgs
-		BUG_InvalidDataType,
-		BUG_InvalidDataType,
-		BUG_InvalidDataType
 	}
 };
 
@@ -507,14 +503,6 @@ TokenStatus Translator::add_token(Token *&token)
 
 		// 2010-06-10: initialize to FirstOperand instead of Operand
 		state = OperandOrEnd_State;
-	}
-
-	// 2010-06-14: check for immediate command
-	if (token->type == ImmCmd_TokenType)
-	{
-		// append to output, and done
-		output->append(new RpnItem(token));
-		return Done_TokenStatus;
 	}
 
 	// 2010-05-29: added check for command token

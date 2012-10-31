@@ -198,6 +198,10 @@
 //				renamed variables and functions to Qt naming convention
 //	2012-10-31	changed from reading file directory with QByteArray to using a
 //				  QTextStream so that QString can be read
+//	2012-11-01	renamed Parser functions to Qt Style naming
+//				pass QString to Parser instead of char*
+//				changed QByteArray to QString
+//				removed immediate command support
 
 #include <QFile>
 #include <QFileInfo>
@@ -355,12 +359,10 @@ void parseInput(QTextStream &cout, Parser &parser, Table *table,
 	Token *token;
 	bool more;
 
-	QByteArray input = testInput.toLocal8Bit();
-	input.append(QChar::Null);
-	parser.start(input.data());
+	parser.setInput(QString(testInput));
 	// 2010-03-18: fix loop since get_token() no longer returns null
 	do {
-		token = parser.get_token();
+		token = parser.getToken();
 		more = printToken(cout, token, true);
 		if (more && token->type == Operator_TokenType
 			&& token->code == EOL_Code)
@@ -383,17 +385,15 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 	TokenStatus status;
 
 	translator.start(exprmode);
-	QByteArray input = testInput.toLocal8Bit();
-	input.append(QChar::Null);
-	parser.start(input.data());
+	parser.setInput(QString(testInput));
 	do {
 		// set parser operand state from translator (2011-03-27)
-		parser.set_operand_state(translator.get_operand_state());
-		orgToken = token = parser.get_token();
+		parser.setOperandState(translator.get_operand_state());
+		orgToken = token = parser.getToken();
 		// 2010-03-18: need to check for a parser error
 		if (token->type == Error_TokenType)
 		{
-			printError(cout, token, QString(token->string->get_ptr()));
+			printError(cout, token, token->string);
 			delete token;
 			translator.clean_up();
 			return;
@@ -448,12 +448,10 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 	// 2012-10-12: replaced all name text arrays with auto-generated file
 	#include "test_names.h"
 
-	CmdArgs *args;
-
 	if (token->type == Error_TokenType)
 	{
 		// 2010-03-20: moved code to print_error()
-		printError(cout, token, QString(token->string->get_ptr()));
+		printError(cout, token, token->string);
 		return false;
 	}
 	// 2010-03-13: test new Token static functions
@@ -475,26 +473,6 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 		<< qSetFieldWidth(0) << info;
 	switch (token->type)
 	{
-	case ImmCmd_TokenType:
-		// 2011-03-08: removed output of token code
-
-		cout << " " << code_name[token->code];
-		if (token->datatype == CmdArgs_DataType)
-		{
-			args = (CmdArgs *)token->string->get_data();
-			cout << " Args: begin=" << args->begin << " end=" << args->end
-				<< " start=" << args->start << " incr=" << args->incr;
-		}
-		else if (token->datatype == String_DataType)
-		{
-			cout << " String Arg: |" << QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '|';
-		}
-		else
-		{
-			cout << " !Invalid Data Type!";
-		}
-		break;
 	case Remark_TokenType:
 		// 2011-03-08: removed output of token code
 		cout << ' ' << code_name[token->code];
@@ -502,15 +480,13 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
 		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
-			<< qSetFieldWidth(0) << " |" << QByteArray(token->string->get_ptr(),
-			token->string->get_len()) << '|';
+			<< qSetFieldWidth(0) << " |" << token->string << '|';
 		break;
 	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
 		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
-			<< qSetFieldWidth(0) << " |" << QByteArray(token->string->get_ptr(),
-			token->string->get_len()) << "(|";
+			<< qSetFieldWidth(0) << " |" << token->string << "(|";
 		break;
 	case Constant_TokenType:
 		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
@@ -518,18 +494,13 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 		switch (token->datatype)
 		{
 		case Integer_DataType:
-			cout << ' ' << token->int_value << " |"
-			    << QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '|';
+			cout << ' ' << token->int_value << " |" << token->string << '|';
 			break;
 		case Double_DataType:
-			cout << ' ' << token->dbl_value << " |"
-				<< QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '|';
+			cout << ' ' << token->dbl_value << " |" << token->string << '|';
 			break;
 		case String_DataType:
-			cout << " |" << QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '|';
+			cout << " |" << token->string << '|';
 			break;
 		}
 		break;
@@ -544,8 +515,7 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 		cout << " " << code_name[token->code];
 		if (token->code == Rem_Code || token->code == RemOp_Code)
 		{
-			cout << " |" << QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '|';
+			cout << " |" << token->string << '|';
 		}
 		break;
 	default:
@@ -585,62 +555,37 @@ void printOutput(QTextStream &cout, const QString &header,
 // 2010-03-20: reimplemented print_token for small output
 bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 {
-	CmdArgs *args;
-
 	// 2010-03-13: test new Token static functions
 	switch (token->type)
 	{
-	case ImmCmd_TokenType:
-		cout << table->name(token->code) << ':';
-		if (token->datatype == CmdArgs_DataType)
-		{
-			args = (CmdArgs *)token->string->get_data();
-			cout << args->begin << ',' << args->end << ',' << args->start << ','
-			    << args->incr;
-		}
-		else if (token->datatype == String_DataType)
-		{
-			cout << '"' << QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '"';  // TODO
-		}
-		else
-		{
-			cout << '?';
-		}
-		break;
 	case Remark_TokenType:
 		// fall thru
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
 		// TODO
-		cout << QByteArray(token->string->get_ptr(), token->string->get_len());
+		cout << token->string;
 		break;
 	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
-		cout << QByteArray(token->string->get_ptr(), token->string->get_len())
-			<< '(';  // TODO
+		cout << token->string << '(';  // TODO
 		break;
 	case Constant_TokenType:
 		switch (token->datatype)
 		{
 		case Integer_DataType:
 		case Double_DataType:
-			cout << QByteArray(token->string->get_ptr(),
-				token->string->get_len());  // TODO
+			cout << token->string;  // TODO
 			break;
 		case String_DataType:
-			cout << '"' << QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '"';  // TODO
+			cout << '"' << token->string << '"';  // TODO
 			break;
 		}
 		break;
 	case Operator_TokenType:
 		if (token->code == RemOp_Code)
 		{
-			cout << table->name(token->code) << '|'
-				<< QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '|';
+			cout << table->name(token->code) << '|' << token->string << '|';
 		}
 		else
 		{
@@ -657,9 +602,7 @@ bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 	case Command_TokenType:
 		if (token->code == Rem_Code)
 		{
-			cout << table->name(token->code) << '|'
-				<< QByteArray(token->string->get_ptr(),
-				token->string->get_len()) << '|';
+			cout << table->name(token->code) << '|' << token->string << '|';
 		}
 		else
 		{
