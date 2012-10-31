@@ -301,6 +301,7 @@
 //	2012-10-28	removed Error Template (no longer needed)
 //				changed Table class (constructor and new initialize() function)
 //	2012-10-29	converted translator stacks from Stack class to QStack
+//	2012-10-31	added 'const' to 'char *' variables in Parser
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -890,8 +891,8 @@ struct CmdArgs {
 
 class Parser {
 	Table *table;			// pointer to the table object
-	char *input;			// pointer to input line being parsed
-	char *pos;				// pointer to current position in input string
+	const char *input;		// pointer to input line being parsed
+	const char *pos;		// pointer to current position in input string
 	Token *token;			// pointer to working token (to be returned)
 	bool operand_state;		// currently operand state flag (2011-03-27)
 
@@ -905,11 +906,11 @@ class Parser {
 	// support functions
 	void skip_whitespace();
 	int scan_command(CmdArgs &args);
-	char *scan_word(char *p, DataType &datatype, bool &paren);
-	int scan_string(char *&p, String *s);
+	const char *scan_word(const char *p, DataType &datatype, bool &paren);
+	int scan_string(const char *&p, String *s);
 public:
 	Parser(Table *t): table(t) {}
-	void start(char *i)
+	void start(const char *i)
 	{
 		pos = input = i;
 		operand_state = false;

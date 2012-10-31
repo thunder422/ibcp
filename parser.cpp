@@ -76,6 +76,7 @@
 //				  constants if the new operand_state flag is set
 //	2011-06-07	added checks for maximum integer in scan_command() and
 //				get_number(), necessary when compiling on with 64-bit
+//	2012-10-31	added 'const' to 'char *' variables (input not modified)
 
 #include <stdio.h>
 
@@ -415,7 +416,7 @@ bool Parser::get_identifier(void)
 	bool paren;				// word has opening parenthesis flag
 	SearchType search;		// table search type
 
-	char *p = scan_word(pos, datatype, paren);
+	const char *p = scan_word(pos, datatype, paren);
 	if (p == NULL)
 	{
 		return false;  // not an identifier
@@ -479,7 +480,7 @@ bool Parser::get_identifier(void)
 		return true;
 	}
 	// found word in table (command, internal function, or operator)
-	char *word1 = pos;  // save position of first word
+	const char *word1 = pos;  // save position of first word
 	pos = p;  // move position past first word
 
 	// setup token in case this is only one word
@@ -537,7 +538,7 @@ bool Parser::get_identifier(void)
 //     - returns data type found or None if none was found
 //     - returns flag if opening parenthesis at end of identifier
 
-char *Parser::scan_word(char *p, DataType &datatype, bool &paren)
+const char *Parser::scan_word(const char *p, DataType &datatype, bool &paren)
 {
 	if (!isalpha(*p))
 	{
@@ -620,7 +621,7 @@ bool Parser::get_number(void)
 	bool decimal = false;		// decimal point was found flag
 	bool sign = false;			// have negative sign flag (2011-03-27)
 
-	char *p = pos;
+	const char *p = pos;
 	for (;;)
 	{
 		if (isdigit(*p))
@@ -787,7 +788,7 @@ bool Parser::get_string(void)
 		return false;  // not a sting constant
 	}
 
-	char *p = pos + 1;
+	const char *p = pos + 1;
 	int len = scan_string(p, NULL);  // get length of string
 	// 2010-03-08: removed no closing quote error check - now valid
 	token->type = Constant_TokenType;
@@ -810,7 +811,7 @@ bool Parser::get_string(void)
 //     - returns the number of characters in string constant
 //     - the end of the line also terminates the string
 
-int Parser::scan_string(char *&p, String *s)
+int Parser::scan_string(const char *&p, String *s)
 {
 	int count = 0;
 	while (*p != '\0')

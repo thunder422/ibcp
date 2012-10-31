@@ -196,6 +196,8 @@
 //				converted file I/O to QFile (and QFileInfo)
 //				converted output to QTextStream
 //				renamed variables and functions to Qt naming convention
+//	2012-10-31	changed from reading file directory with QByteArray to using a
+//				  QTextStream so that QString can be read
 
 #include <QFile>
 #include <QFileInfo>
@@ -205,9 +207,9 @@
 #include "ibcp.h"
 
 void parseInput(QTextStream &cout, Parser &parser, Table *table,
-	const QByteArray &testInput);
+	const QString &testInput);
 void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
-	Table *table, const QByteArray &testInput, bool exprmode);
+	Table *table, const QString &testInput, bool exprmode);
 bool printToken(QTextStream &cout, Token *token, bool tab);
 void printOutput(QTextStream &cout, const QString &header,
 	QList<RpnItem *> &output, Table *table);
@@ -278,17 +280,18 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 	}
 
 	QFile file;
-	QByteArray inputLine;
+	QTextStream input(&file);
+	QString inputLine;
 
 	if (inputMode)
 	{
 		cout << endl << "Testing " << name[testMode] << "...";
-		file.open(stdin, QIODevice::ReadOnly | QIODevice::Text);
+		file.open(stdin, QIODevice::ReadOnly);
 	}
 	else
 	{
 		file.setFileName(argv[2]);
-		if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		if (!file.open(QIODevice::ReadOnly))
 		{
 			qCritical("%s: error opening '%s'\n", qPrintable(programName),
 				argv[2]);
@@ -300,32 +303,24 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 		if (inputMode)
 		{
 			cout << endl << "Input: " << flush;
-			inputLine = file.readLine();
+			inputLine = input.readLine();
 			if (inputLine.isEmpty() || inputLine[0] == '\n')
 			{
 				break;
 			}
-			int nl = inputLine.length() - 1;
-			inputLine[nl] = '\0';  // remove newline
 		}
 		else
 		{
-			if (file.atEnd())
+			if (input.atEnd())
 			{
 				break;
 			}
-			inputLine = file.readLine();
-			if (inputLine.isEmpty())
-			{
-				break;
-			}
-			int nl = inputLine.length() - 1;
-			inputLine[nl] = '\0';  // remove newline
-			if (inputLine[0] == '\0' || inputLine[0] == '#')
+			inputLine = input.readLine();
+			if (inputLine.isEmpty() || inputLine[0] == '#')
 			{
 				continue;  // skip blank and comment lines
 			}
-			cout << endl << "Input: " << inputLine.left(nl) << endl;
+			cout << endl << "Input: " << inputLine << endl;
 		}
 
 		switch (testMode)
@@ -355,13 +350,14 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 
 // 2010-03-11: created from parts of main
 void parseInput(QTextStream &cout, Parser &parser, Table *table,
-	const QByteArray &testInput)
+	const QString &testInput)
 {
 	Token *token;
 	bool more;
 
-
-	parser.start((char *)testInput.data());
+	QByteArray input = testInput.toLocal8Bit();
+	input.append(QChar::Null);
+	parser.start(input.data());
 	// 2010-03-18: fix loop since get_token() no longer returns null
 	do {
 		token = parser.get_token();
@@ -380,17 +376,19 @@ void parseInput(QTextStream &cout, Parser &parser, Table *table,
 // 2010-03-18: new function for testing translator
 // 2010-04-16: added new expression mode flag argument
 void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
-	Table *table, const QByteArray &testInput, bool exprmode)
+	Table *table, const QString &testInput, bool exprmode)
 {
 	Token *token;
 	Token *org_token;
 	TokenStatus status;
 
 	translator.start(exprmode);
-	parser.start((char *)testInput.data());
+	QByteArray input = testInput.toLocal8Bit();
+	input.append(QChar::Null);
+	parser.start(input.data());
 	do {
-        // set parser operand state from translator (2011-03-27)
-        parser.set_operand_state(translator.get_operand_state());
+		// set parser operand state from translator (2011-03-27)
+		parser.set_operand_state(translator.get_operand_state());
 		org_token = token = parser.get_token();
 		// 2010-03-18: need to check for a parser error
 		if (token->type == Error_TokenType)
