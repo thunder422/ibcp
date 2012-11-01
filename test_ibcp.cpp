@@ -216,9 +216,6 @@ void printOutput(QTextStream &cout, const QString &header,
 bool printSmallToken(QTextStream &cout, Token *token, Table *table);
 void printError(QTextStream &cout, Token *token, const QString &error);
 
-enum testModeEnum {
-	testParser, testExpression, testTranslator
-} testMode;
 
 // 2012-10-11: new function to replace test_parser() and test_translator()
 bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
@@ -226,7 +223,10 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 {
 	extern char *programName;
 
-	QMap<testModeEnum, QString> name;
+	enum testModeEnum {
+		testParser, testExpression, testTranslator, sizeofTestMode
+	} testMode;
+	QVector<QString> name(sizeofTestMode);
 	name[testParser] = "parser";
 	name[testExpression] = "expression";
 	name[testTranslator] = "translator";
@@ -379,7 +379,7 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 	Table *table, const QString &testInput, bool exprmode)
 {
 	Token *token;
-	Token *org_token;
+	Token *orgToken;
 	TokenStatus status;
 
 	translator.start(exprmode);
@@ -389,7 +389,7 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 	do {
 		// set parser operand state from translator (2011-03-27)
 		parser.set_operand_state(translator.get_operand_state());
-		org_token = token = parser.get_token();
+		orgToken = token = parser.get_token();
 		// 2010-03-18: need to check for a parser error
 		if (token->type == Error_TokenType)
 		{
@@ -422,7 +422,7 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 		// 2010-06-25: replaced status switch with token->message(status)
 		// token pointer is set to cause of error
 		printError(cout, token, QString(token->message(status)));
-		if (token == org_token)
+		if (token == orgToken)
 		{
 			// 2010-04-14: only deleted error token if it's the original token
 			//             returned from the parser, if not then this token is
