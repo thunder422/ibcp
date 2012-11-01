@@ -44,6 +44,7 @@
 #  2012-10-26	added changed for Qt libraries
 #  2012-10-28	removed list.h (Qt lists used) and test_stack program
 #  2012-10-29	removed stack.h (Qt stacks used) and test_stack2 program
+#  2012-10-31	corrected problem when git is present but not the git repository
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -83,15 +84,21 @@ if (PROGRAM_GIT)
 		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 		OUTPUT_VARIABLE ibcp_RELEASE_STRING
 		OUTPUT_STRIP_TRAILING_WHITESPACE
+		RESULT_VARIABLE GIT_RESULT
+		ERROR_VARIABLE PREVENT_STDERR_OUTPUT
 	)
-else (PROGRAM_GIT)
+	if (NOT ${GIT_RESULT} EQUAL 0)
+		unset(PROGRAM_GIT CACHE)
+	endif (NOT ${GIT_RESULT} EQUAL 0)
+endif (PROGRAM_GIT)
+if (NOT PROGRAM_GIT)
 	set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
 	if (ibcp_RELEASE_PATCH LESS 0)
 		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}${ibcp_RELEASE_PATCH})
 	else (ibcp_RELEASE_PATCH LESS 0)
 		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}.${ibcp_RELEASE_PATCH})
 	endif (ibcp_RELEASE_PATCH LESS 0)
-endif (PROGRAM_GIT)
+endif (NOT PROGRAM_GIT)
 message(STATUS "Build version: ${ibcp_RELEASE_STRING}")
 
 # find awk executable
