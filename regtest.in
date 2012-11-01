@@ -59,7 +59,7 @@ do
 	base=${input##*/}
 	output=${base%.dat}.txt
 	./ibcp -t $input >$output
-	cmp -s $dir$output $output
+	diff -wq $dir$output $output >/dev/null
 	if [ $? -eq 0 ]
 	then
 		echo Test File $base... OK
