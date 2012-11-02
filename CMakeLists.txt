@@ -46,6 +46,7 @@
 #  2012-10-29	removed stack.h (Qt stacks used) and test_stack2 program
 #  2012-10-31	corrected problem when git is present but not the git repository
 #  2012-11-01	removed string.h, string.cpp and test_string
+#  2012-11-02	removed the rest of the test programs
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -182,16 +183,3 @@ if (GCC_VERSION VERSION_GREATER 4.4)
 		PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++"
 	)
 endif (GCC_VERSION VERSION_GREATER 4.4)
-
-# add "make tests" target for making test programs
-add_custom_target(tests
-	DEPENDS test_nums test_cons
-)
-
-# test program executables for tests target (not built by default)
-add_executable(test_nums EXCLUDE_FROM_ALL
-	test/test_nums.cpp
-)
-add_executable(test_cons EXCLUDE_FROM_ALL
-	test/test_cons.cpp
-)
