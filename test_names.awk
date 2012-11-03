@@ -39,6 +39,8 @@
 #  2012-10-14  continued lines cause problems on Windows, so these were removed
 #              by using an output variable to hold the "test_names.h" name
 #
+#  2012-11-03  modified for header file location changes of enumerations
+#
 #
 #  Usage: awk -f test_names.awk
 #
@@ -63,7 +65,6 @@ BEGIN {
 		path = ""
 	}
 	table_source = path "table.cpp"
-	ibcp_header = path "ibcp.h"
 	output = "test_names.h"
 
 	printf "// File: test_names.h - text of enumeration values\n" > output
@@ -106,42 +107,42 @@ BEGIN {
 		}
 	}
 
-	type_enum = ""
+	find_enum(path "token.h", "enum TokenType", "_TokenType", "tokentype");
+	find_enum(path "ibcp.h", "enum DataType", "_DataType", "datatype");
+}
+
+function find_enum(header_file, start, enum, name)
+{
+	type_enum = 0
 	c = ""
-	while ((getline line < ibcp_header) > 0)
+	while ((getline line < header_file) > 0)
 	{
-		if (type_enum == "")
+		if (type_enum == 0)
 		{
-			if (line ~ /enum TokenType/)
+			if (line ~ start)
 			{
 				# found start of token types
-				printf "\nconst char *tokentype_name[] = {\n" > output
-				type_enum = "_TokenType"
-			}
-			else if (line ~ /enum DataType/)
-			{
-				# found start of data types
-				printf "\nconst char *datatype_name[] = {\n" > output
-				type_enum = "_DataType"
+				printf "\nconst char *%s_name[] = {\n", name > output
+				type_enum = 1
 			}
 		}
-		else if (type_enum != "")
+		else if (type_enum)
 		{
-			if (line ~ type_enum && line !~ /sizeof/)
+			if (line ~ enum && line !~ /sizeof/)
 			{
 				nf = split(line, field)
 				if (c != "")
 				{
 					printf ",\n" > output
 				}
-				c = substr(field[1], 1, index(field[1], type_enum) - 1)
+				c = substr(field[1], 1, index(field[1], enum) - 1)
 				printf "\t\"%s\"", c > output
 			}
 			else if (line ~ /};/)
 			{
 				# found end of enum
 				printf "\n};\n" > output
-				type_enum = ""
+				type_enum = 0
 				c = ""
 			}
 		}

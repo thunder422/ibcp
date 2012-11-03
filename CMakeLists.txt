@@ -47,6 +47,7 @@
 #  2012-10-31	corrected problem when git is present but not the git repository
 #  2012-11-01	removed string.h, string.cpp and test_string
 #  2012-11-02	removed the rest of the test programs
+#  2012-11-03	added new source and headers for separated classes
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -143,7 +144,7 @@ add_custom_command(OUTPUT autoenums.h
 	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/enums.awk
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY enums.awk
-	DEPENDS table.cpp
+	DEPENDS table.cpp token.h
 )
 
 # custom target
@@ -151,19 +152,26 @@ add_custom_command(OUTPUT test_names.h
 	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/test_names.awk
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY test_names.awk
-	DEPENDS table.cpp ibcp.h
+	DEPENDS table.cpp token.h ibcp.h
 )
 
 # list the include files
-set(ibcp_HDRS
+set(ibcp_HEADERS
 	ibcp.h
+	parser.h
+	table.h
+	token.h
+	translator.h
 )
 
 # list the main program sources
-set(ibcp_SRCS
+set(ibcp_SOURCES
+	commandhandlers.cpp
 	ibcp.cpp
 	parser.cpp
 	table.cpp
+	token.cpp
+	tokenhandlers.cpp
 	translator.cpp
 	test_ibcp.cpp
 )
@@ -172,8 +180,8 @@ set(ibcp_SRCS
 add_executable(ibcp
 	autoenums.h
 	test_names.h
-	${ibcp_INCS}
-	${ibcp_SRCS}
+	${ibcp_HEADERS}
+	${ibcp_SOURCES}
 )
 target_link_libraries(ibcp ${QT_LIBRARIES})
 

@@ -118,7 +118,12 @@
 #include <QTextStream>
 
 #include "ibcp.h"
-#include "ibcp_config.h"  // 2011-06-11: for cmake
+#include "ibcp_config.h"  // for cmake
+#include "token.h"
+#include "table.h"
+#include "parser.h"
+#include "translator.h"
+
 
 void printGplHeader(QTextStream &cout, const QString &name)
 {
@@ -132,107 +137,6 @@ void printGplHeader(QTextStream &cout, const QString &name)
 // Program Name and Length less extension (2012-10-11)
 // TODO this needs to be put into a class somewhere)
 QString programName;
-
-// Token
-bool Token::paren[sizeof_TokenType];
-bool Token::op[sizeof_TokenType];
-int Token::prec[sizeof_TokenType];  // 2010-04-02
-bool Token::table[sizeof_TokenType];  // 2010-05-29
-// 2011-03-26: changed to a simply array of strings
-const QString Token::message_array[sizeof_TokenStatus] = { // 2010-06-25
-	"Null_TokenStatus (BUG)",							// Null
-	"Good_TokenStatus (BUG)",							// Good
-	"Done_TokenStatus (BUG)",							// Done
-	"expected command",									// ExpCmd
-	"expected expression",								// ExpExpr
-	"expected expression or end-of-statement",			// ExpExprOrEnd
-	"expected operator or end-of-statement",			// ExpOpOrEnd
-	"expected binary operator or end-of-statement",		// ExpBinOpOrEnd
-	"expected equal or comma for assignment",			// ExpEqualOrComma
-	"expected comma",									// ExpComma
-	"expected item for assignment",						// ExpAssignItem
-	"expected operator or comma",						// ExpOpOrComma
-	"expected operator, comma or closing parentheses",	// ExpOpCommaOrParen
-	"expected operator or end-of-expression",			// NoOpenParen
-	"expected operator or closing parentheses",			// ExpOpOrParen
-	"expected double expression",						// ExpDouble
-	"expected integer expression",						// ExpInteger
-	"expected string expression (old)",					// ExpString
-	"expected numeric expression",						// ExpNumExpr
-	"expected string expression",						// ExpStrExpr
-	"expected semicolon, comma or end-of-statement",	// ExpSemiCommaOrEnd
-	"expected semicolon or comma",						// ExpSemiOrComma
-	"expected operator, semicolon or comma",			// ExpOpSemiOrComma
-	"expected double variable",							// ExpDblVar
-	"expected integer variable",						// ExpIntVar
-	"expected string variable",							// ExpStrVar
-	"expected variable",								// ExpVar
-	"expected string item for assignment",				// ExpStrItem
-	"expected end-of-statement",						// ExpEndStmt
-	// the following statuses used during development
-	"BUG: not yet implemented",						// NotYetImplemented
-	"BUG: invalid mode",							// InvalidMode
-	"BUG: hold stack empty",						// HoldStackEmpty
-	"BUG: hold stack not empty",					// HoldStackNotEmpty
-	"BUG: done stack not empty",					// DoneStackNotEmpty
-	"BUG: done stack empty - parentheses",			// DoneStackEmptyParen
-	"BUG: done stack empty - operands",				// DoneStackEmptyOperands
-	"BUG: done stack empty - operands 2",			// DoneStackEmptyOperands2
-	"BUG: done stack empty - find code",			// DoneStackEmptyFindCode
-	"BUG: unexpected closing parentheses",			// UnexpectedCloseParen
-	"BUG: unexpected token on hold stack",			// UnexpectedToken
-	"BUG: expected operand on done stack",			// DoneStackEmpty
-	"BUG: command stack not empty",					// CmdStackNotEmpty
-	"BUG: command stack empty",						// CmdStackEmpty
-	"BUG: command stack empty for expression",		// CmdStackEmptyExpr
-	"BUG: command stack empty for command",			// CmdStackEmptyCmd
-	"BUG: no assign list code found",				// NoAssignListCode
-	"BUG: invalid data type",						// InvalidDataType
-	"BUG: count stack empty",						// CountStackEmpty
-	"BUG: unexpected parentheses in expression",	// UnexpParenExpr
-	"BUG: unexpected token",						// UnexpToken
-	"BUG: debug #1",								// Debug1
-	"BUG: debug #2",								// Debug2
-	"BUG: debug #3",								// Debug3
-	"BUG: debug #4",								// Debug4
-	"BUG: debug #5",								// Debug5
-	"BUG: debug #6",								// Debug6
-	"BUG: debug #7",								// Debug7
-	"BUG: debug #8",								// Debug8
-	"BUG: debug #9",								// Debug9
-	"BUG: debug"									// Debug
-};
-
-
-// This function initializes the static token data.
-// This includes checking multiple defined and missing statuses
-
-void Token::initialize(void)
-{
-	// set true for types that contain an opening parentheses
-	paren[IntFuncP_TokenType] = true;
-	paren[DefFuncP_TokenType] = true;
-	paren[Paren_TokenType] = true;
-
-	// set true for types that are considered an operator
-	op[Command_TokenType] = true;
-	op[Operator_TokenType] = true;
-
-	// 2010-04-02: set precedence for non-table token types
-	prec[Command_TokenType] = -1;  // use table precedence
-	prec[Operator_TokenType] = -1;
-	prec[IntFuncP_TokenType] = -1;
-	prec[DefFuncP_TokenType] = 2;  // same as open parentheses
-	prec[Paren_TokenType] = 2;
-
-	// 2010-05-29: set token type has a table entry flags
-	table[Command_TokenType] = true;
-	table[Operator_TokenType] = true;
-	table[IntFuncN_TokenType] = true;
-	table[IntFuncP_TokenType] = true;
-	// FIXME should Remark_TokenType have a table entry?
-}
-
 
 // function to print version number (2011-06-11)
 bool ibcpVersion(QTextStream &cout, const QString &name, int argc, char *argv[])
@@ -249,6 +153,7 @@ bool ibcpVersion(QTextStream &cout, const QString &name, int argc, char *argv[])
 }
 
 
+// prototype for test function
 bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 	Table *table, int argc, char *argv[]);
 

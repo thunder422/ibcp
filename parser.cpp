@@ -81,7 +81,8 @@
 //				replaced String, char processing with QString and QChar
 //				renamed variables and functions to Qt style naming
 
-#include "ibcp.h"
+#include "parser.h"
+#include "table.h"
 
 
 // function to get a token at the current position

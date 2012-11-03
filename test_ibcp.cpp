@@ -208,7 +208,8 @@
 #include <QString>
 #include <QTextStream>
 
-#include "ibcp.h"
+#include "parser.h"
+#include "translator.h"
 
 void parseInput(QTextStream &cout, Parser &parser, Table *table,
 	const QString &testInput);

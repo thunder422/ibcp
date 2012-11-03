@@ -44,6 +44,7 @@
 #              files, but do nothing with Unix format files
 #
 #  2012-11-01  changed 'const char *' to 'QString' for message_array[]
+#  2012-11-03  changed ibcp.cpp to token.cpp
 #
 #
 #  Usage: awk -f enums.awk [source path]
@@ -77,7 +78,7 @@ BEGIN {
 		path = ""
 	}
 	table_source = path "table.cpp"
-	ibcp_source = path "ibcp.cpp"
+	token_source = path "token.cpp"
 
 	while ((getline line < table_source) > 0)
 	{
@@ -122,7 +123,7 @@ BEGIN {
 
 	msg_array = 0
 	nts = 0
-	while ((getline line < ibcp_source) > 0)
+	while ((getline line < token_source) > 0)
 	{
 		if (msg_array == 0)
 		{
@@ -222,7 +223,7 @@ BEGIN {
 		print "" > "autoenums.h"
 		print "" > "codes.txt"
 		print ""
-		print "Duplicate found in table.cpp or ibcp.cpp - please correct"
+		print "Duplicate found in table.cpp or token.cpp - please correct"
 		# return failure code (2011-03-26)
 		exit 1
 	}

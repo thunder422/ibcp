@@ -177,7 +177,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ibcp.h"
+#include "table.h"
+#include "commandhandlers.h"
+#include "tokenhandlers.h"
 
 
 #define ArraySize(array)  (sizeof(array) / sizeof(array[0]))
@@ -423,7 +425,7 @@ static TableEntry table_entries[] =
 		// 2010-06-29: added value for expr_type
 		Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Expression_TokenMode, Print_CmdHandler  //Any_ExprType
+		Expression_TokenMode, Print_CmdHandler
 	},
 	{	// Input_Code
 		Command_TokenType, TwoWord_Multiple,
