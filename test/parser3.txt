@@ -74,7 +74,7 @@ Input: 1.23456e308 1.234e309
 	 0: Constant     Double  1.23456e+308 |1.23456e308|
                    ^^^^^^^^^-- constant is out of range
 
-Input: 1.2345e-307 1.234e-324
+Input: 1.2345e-307 1.234e-509
 	 0: Constant     Double  1.2345e-307 |1.2345e-307|
                    ^^^^^^^^^^-- constant is out of range
 
