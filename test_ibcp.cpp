@@ -211,20 +211,19 @@
 #include "parser.h"
 #include "translator.h"
 
-void parseInput(QTextStream &cout, Parser &parser, Table *table,
-	const QString &testInput);
+void parseInput(QTextStream &cout, Parser &parser, const QString &testInput);
 void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
-	Table *table, const QString &testInput, bool exprmode);
+	const QString &testInput, bool exprmode);
 bool printToken(QTextStream &cout, Token *token, bool tab);
 void printOutput(QTextStream &cout, const QString &header,
-	QList<RpnItem *> &output, Table *table);
-bool printSmallToken(QTextStream &cout, Token *token, Table *table);
+	QList<RpnItem *> &output);
+bool printSmallToken(QTextStream &cout, Token *token);
 void printError(QTextStream &cout, Token *token, const QString &error);
 
 
 // 2012-10-11: new function to replace test_parser() and test_translator()
 bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
-	Table *table, int argc, char *argv[])
+	int argc, char *argv[])
 {
 	extern char *programName;
 
@@ -331,13 +330,13 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 		switch (testMode)
 		{
 		case testParser:
-			parseInput(cout, parser, table, inputLine);
+			parseInput(cout, parser, inputLine);
 			break;
 		case testExpression:
-			translateInput(cout, translator, parser, table, inputLine, true);
+			translateInput(cout, translator, parser, inputLine, true);
 			break;
 		case testTranslator:
-			translateInput(cout, translator, parser, table, inputLine, false);
+			translateInput(cout, translator, parser, inputLine, false);
 			break;
 		}
 	}
@@ -354,8 +353,7 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 
 
 // 2010-03-11: created from parts of main
-void parseInput(QTextStream &cout, Parser &parser, Table *table,
-	const QString &testInput)
+void parseInput(QTextStream &cout, Parser &parser, const QString &testInput)
 {
 	Token *token;
 	bool more;
@@ -379,7 +377,7 @@ void parseInput(QTextStream &cout, Parser &parser, Table *table,
 // 2010-03-18: new function for testing translator
 // 2010-04-16: added new expression mode flag argument
 void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
-	Table *table, const QString &testInput, bool exprmode)
+	const QString &testInput, bool exprmode)
 {
 	Token *token;
 	Token *orgToken;
@@ -408,7 +406,7 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 		// 2010-05-15: change rpn_list from Token pointers
 		QList<RpnItem *> *rpnList = translator.get_result();
 		// 2010-05-15: added separate print loop so operands can also be printed
-		printOutput(cout, "Output", *rpnList, table);
+		printOutput(cout, "Output", *rpnList);
 		// 2010-03-21: corrected to handle an empty RPN list
 		// 2011-01-29: rewrote to remove last item instead of first item
 		while (!rpnList->isEmpty())
@@ -530,19 +528,19 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 
 // 2012-10-27: print entire output rpn list
 void printOutput(QTextStream &cout, const QString &header,
-	QList<RpnItem *> &rpnList, Table *table)
+	QList<RpnItem *> &rpnList)
 {
 	cout << header << ": ";
 	foreach (RpnItem *rpnItem, rpnList)
 	{
-		printSmallToken(cout, rpnItem->token, table);
+		printSmallToken(cout, rpnItem->token);
 		if (rpnItem->noperands > 0)
 		{
 			QChar separator('[');
 			for (int i = 0; i < rpnItem->noperands; i++)
 			{
 				cout << separator;
-				printSmallToken(cout, rpnItem->operand[i]->token, table);
+				printSmallToken(cout, rpnItem->operand[i]->token);
 				separator = ',';
 			}
 			cout << ']';
@@ -554,8 +552,10 @@ void printOutput(QTextStream &cout, const QString &header,
 
 
 // 2010-03-20: reimplemented print_token for small output
-bool printSmallToken(QTextStream &cout, Token *token, Table *table)
+bool printSmallToken(QTextStream &cout, Token *token)
 {
+	Table &table = Table::instance();
+
 	// 2010-03-13: test new Token static functions
 	switch (token->type())
 	{
@@ -586,32 +586,32 @@ bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 	case Operator_TokenType:
 		if (token->isCode(RemOp_Code))
 		{
-			cout << table->name(token->code()) << '|' << token->string() << '|';
+			cout << table.name(token->code()) << '|' << token->string() << '|';
 		}
 		else
 		{
 			// 2010-04-02: output name2 (if set) for debug output string
 			// 2010-04-04: replaced with debug_name call
-			cout << table->debugName(token->code());
+			cout << table.debugName(token->code());
 		}
 		break;
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
 		// 2010-04-04: replaced with debug_name call
-		cout << table->debugName(token->code());
+		cout << table.debugName(token->code());
 		break;
 	case Command_TokenType:
 		if (token->isCode(Rem_Code))
 		{
-			cout << table->name(token->code()) << '|' << token->string() << '|';
+			cout << table.name(token->code()) << '|' << token->string() << '|';
 		}
 		else
 		{
-			cout << table->name(token->code());
+			cout << table.name(token->code());
 			// 2010-06-06: call name2() instead of name()
-			if (table->name2(token->code()) != NULL)
+			if (table.name2(token->code()) != NULL)
 			{
-				cout << '-' << table->name2(token->code());
+				cout << '-' << table.name2(token->code());
 			}
 		}
 		break;

@@ -99,7 +99,7 @@ Token *Parser::getToken(void)
 	{
 		// 2010-03-17: changed to return special end-of-line (last) token
 		// 2010-03-18: replaced code with function call
-		m_table->setToken(m_token, EOL_Code);
+		m_table.setToken(m_token, EOL_Code);
 		return m_token;
 	}
 
@@ -168,7 +168,7 @@ bool Parser::getIdentifier(void)
 	{
 		search = PlainWord_SearchType;
 	}
-	Code code = m_table->search(search, m_input.midRef(m_pos, len));
+	Code code = m_table.search(search, m_input.midRef(m_pos, len));
 	if (code == Invalid_Code)
 	{
 		// word not found in table, therefore
@@ -197,12 +197,12 @@ bool Parser::getIdentifier(void)
 	m_pos = pos;  // move position past first word
 
 	// setup token in case this is only one word
-	m_token->setType(m_table->type(code));
-	m_token->setDataType(m_table->dataType(code));
+	m_token->setType(m_table.type(code));
+	m_token->setDataType(m_table.dataType(code));
 	m_token->setCode(code);
 	m_token->setLength(len);
 
-	if (m_table->multiple(code) == OneWord_Multiple)
+	if (m_table.multiple(code) == OneWord_Multiple)
 	{
 		// identifier can only be a single word
 		if (code == Rem_Code)
@@ -220,7 +220,7 @@ bool Parser::getIdentifier(void)
 	pos = scanWord(m_pos, dataType, paren);
 	int len2 = pos - m_pos;
 	if (dataType != None_DataType || paren
-		|| (code = m_table->search(m_input.midRef(word1, len),
+		|| (code = m_table.search(m_input.midRef(word1, len),
 		m_input.midRef(m_pos, len2))) == Invalid_Code)
 	{
 		if (m_token->type() == Error_TokenType)
@@ -233,8 +233,8 @@ bool Parser::getIdentifier(void)
 		return true;
 	}
 	// get information from two word command
-	m_token->setType(m_table->type(code));
-	m_token->setDataType(m_table->dataType(code));
+	m_token->setType(m_table.type(code));
+	m_token->setDataType(m_table.dataType(code));
 	m_token->setCode(code);
 	m_token->setLength(len2 + 1);
 
@@ -537,18 +537,18 @@ bool Parser::getString(void)
 bool Parser::getOperator(void)
 {
 	// search table for current character to see if it is a valid operator
-	Code code = m_table->search(Symbol_SearchType, m_input.midRef(m_pos, 1));
+	Code code = m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1));
 	if (code != Invalid_Code)
 	{
 		// current character is a valid single character operator
 
 		// setup token in case this is only one character
-		m_token->setType(m_table->type(code));
-		m_token->setDataType(m_table->dataType(code));
+		m_token->setType(m_table.type(code));
+		m_token->setDataType(m_table.dataType(code));
 		m_token->setCode(code);
 		m_token->setLength(1);
 
-		if (m_table->multiple(code) == OneChar_Multiple)
+		if (m_table.multiple(code) == OneChar_Multiple)
 		{
 			// operator can only be a single character
 			m_pos++;  // move past operator
@@ -565,7 +565,7 @@ bool Parser::getOperator(void)
 	}
 	// operator could be a two character operator
 	// search table again for two characters at current position
-	Code code2 = m_table->search(Symbol_SearchType, m_input.midRef(m_pos, 2));
+	Code code2 = m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 2));
 	if (code2 == Invalid_Code)
 	{
 		if (code != Invalid_Code)  // was first character a valid operator?
@@ -580,8 +580,8 @@ bool Parser::getOperator(void)
 	// valid two character operator
 	m_pos += 2;  // move past two characters
 	// get information from two character operator
-	m_token->setType(m_table->type(code2));
-	m_token->setDataType(m_table->dataType(code2));
+	m_token->setType(m_table.type(code2));
+	m_token->setDataType(m_table.dataType(code2));
 	m_token->setCode(code2);
 	m_token->setLength(2);
 	return true;

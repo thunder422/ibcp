@@ -155,7 +155,7 @@ bool ibcpVersion(QTextStream &cout, const QString &name, int argc, char *argv[])
 
 // prototype for test function
 bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
-	Table *table, int argc, char *argv[]);
+	int argc, char *argv[]);
 
 
 int main(int argc, char *argv[])
@@ -177,8 +177,7 @@ int main(int argc, char *argv[])
 
 	Token::initialize();
 
-	Table table;
-	QStringList errors = table.initialize();
+	QStringList errors = Table::create();
 	if (!errors.isEmpty())
 	{
 		int n = 0;
@@ -191,15 +190,15 @@ int main(int argc, char *argv[])
 	}
 	cout << "Table initialization successful." << endl;
 
-	Translator translator(&table);
-	Parser parser(&table);
+	Translator translator(Table::instance());
+	Parser parser(Table::instance());
 
 	// 2010-03-18: added call to test_translator
 	// 2010-04-25: added "-t" to usage string
 	// 2011-06-11: added check for version option
 	// 2012-10-10: replaced test_parser and test_translator with test_ibcp
 	// 2012-10-23: moved version output before gpl output
-	if (!ibcpTest(cout, translator, parser, &table, argc, argv))
+	if (!ibcpTest(cout, translator, parser, argc, argv))
 	{
 		// 2010-05-28: replaced strrchr(argv[1],...) call with 'program_name'
 		// 2011-06-11: added "-v" to usage string

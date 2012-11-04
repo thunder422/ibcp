@@ -117,7 +117,7 @@ class Translator {
 		sizeof_State
 	} state;						// current state of translator
 
-	Table *table;					// pointer to the table object
+	Table &table;					// pointer to the table object
 	QList<RpnItem *> *output;		// pointer to RPN list output
 	QStack<HoldStackItem> hold_stack;  // operator/function holding stack
 	QStack<DoneStackItem> done_stack;  // items processed stack
@@ -129,7 +129,7 @@ class Translator {
 	bool exprmode;					// expression only mode active flag
 
 public:
-	Translator(Table *t): table(t), output(NULL), pending_paren(NULL) {}
+	Translator(Table &t): table(t), output(NULL), pending_paren(NULL) {}
 	void start(bool _exprmode = false)
 	{
 		exprmode = _exprmode;  // save flag

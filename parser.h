@@ -33,7 +33,7 @@ class Table;
 
 
 class Parser {
-	Table *m_table;			// pointer to the table object
+	Table &m_table;			// pointer to the table object
 	QString m_input;		// input line being parsed
 	int m_pos;				// index to current position in input string
 	Token *m_token;			// pointer to working token (to be returned)
@@ -50,7 +50,7 @@ class Parser {
 	void skipWhitespace();
 	int scanWord(int pos, DataType &datatype, bool &paren);
 public:
-	Parser(Table *table): m_table(table) {}
+	Parser(Table &table): m_table(table) {}
 	void setInput(const QString &input)
 	{
 		m_input = input;

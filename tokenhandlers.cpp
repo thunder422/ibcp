@@ -221,7 +221,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			{
 				// number of arguments doesn't match current function's entry
 				// see if function has multiple entries
-				if ((t.table->flags(top_token->code()) & Multiple_Flag) != 0)
+				if ((t.table.flags(top_token->code()) & Multiple_Flag) != 0)
 				{
 					// change token to next code (index)
 					// (table entries have been validated during initialization)
@@ -229,7 +229,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 					t.count_stack.top().code = top_token->nextCode();
 					// update number of expected operands
 					t.count_stack.top().nexpected
-						= t.table->nOperands(top_token->code());
+						= t.table.nOperands(top_token->code());
 				}
 				else
 				{
@@ -361,12 +361,12 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		else  // INTERNAL FUNCTION
 		{
 			// check for number of arguments for internal functions
-			if (noperands != t.table->nOperands(top_token->code()))
+			if (noperands != t.table.nOperands(top_token->code()))
 			{
 				return ExpOpOrComma_TokenStatus;
 			}
 
-			operand_index = t.table->nOperands(top_token->code()) - 1;
+			operand_index = t.table.nOperands(top_token->code()) - 1;
 			// tell process_final_operand() to use operand_index
 			noperands = 0;
 		}

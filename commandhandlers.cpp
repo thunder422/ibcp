@@ -254,13 +254,13 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 				cmd_item->token = token;  // set error token
 				return ExpStrExpr_TokenStatus;
 			}
-			if (t.table->flags(code) & EndStmt_Flag)
+			if (t.table.flags(code) & EndStmt_Flag)
 			{
 				cmd_item->token = token;  // set error token
 				return ExpOpSemiOrComma_TokenStatus;
 			}
 			// change token to InputBeginStr and set sub-code
-			t.table->setToken(token, InputBeginStr_Code);
+			t.table.setToken(token, InputBeginStr_Code);
 			switch (code)
 			{
 			case Comma_Code:
@@ -295,7 +295,7 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			// create new token for InputBegin
 			// insert at begin of command before first variable
 			t.output->insert(t.cmd_stack.top().index++,
-				new RpnItem(t.table->newToken(InputBegin_Code)));
+				new RpnItem(t.table.newToken(InputBegin_Code)));
 		}
 		// if no variable on done stack, error will be reported below
 		// now continue with input variable
@@ -311,7 +311,7 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		}
 
 		// set token for data type specific input assign token
-		t.table->setToken(token, InputAssign_Code);
+		t.table.setToken(token, InputAssign_Code);
 		// set reference flag to be handled correctly in find_code
 		token->setReference();
 		// find appropriate input assign code and append to output
@@ -328,8 +328,8 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		// insert input parse token into list at current index (update index)
 
 		t.output->insert(t.cmd_stack.top().index++,
-			new RpnItem(t.table->newToken(
-			t.table->assoc2Code(token->code()))));
+			new RpnItem(t.table.newToken(
+			t.table.assoc2Code(token->code()))));
 
 		// now process code
 		if (code == Comma_Code)
@@ -343,7 +343,7 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			t.state = Translator::EndStmt_State;  // expecting end-of-statment
 			return Good_TokenStatus;   // done now, wait for end-of-statment
 		}
-		if (!(t.table->flags(code) & EndStmt_Flag))
+		if (!(t.table.flags(code) & EndStmt_Flag))
 		{
 			// unexpected token
 			cmd_item->token = token;  // set error token

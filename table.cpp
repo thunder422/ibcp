@@ -174,6 +174,7 @@
 //				renamed variables and functions to Qt style naming
 //				made all array initalizers static
 //				changed the rest of char* to QString, removed use of strcmp()
+//	2012-11-04	modified table class so that only one instance can be created
 
 #include <QChar>
 #include <QString>
@@ -229,6 +230,9 @@ struct TableEntry {
 	TokenMode tokenMode;			// next token mode for command
 	CommandHandler commandHandler;	// translator command handler pointer
 };
+
+
+Table *Table::m_instance;			// pointer to single table instance
 
 
 // 2010-05-03: expression information for codes
@@ -1381,17 +1385,54 @@ static TableEntry tableEntries[] =
 };
 
 
+// function to create the single instance of the table
+//
+//   - fatally aborts if called more than once
+//   - returns list of errors if any detected during initialization
+//   - returns empty list upon successful initialization
+
+QStringList Table::create(void)
+{
+	if (m_instance != NULL)
+	{
+		qFatal("Only one Table instance may be created!");
+	}
+	m_instance = new Table(tableEntries);
+
+	QStringList errors = m_instance->initialize();
+	if (!errors.isEmpty())
+	{
+		delete m_instance;
+		m_instance = NULL;
+	}
+	return errors;
+}
+
+
+// function to return a refernce to the single table instance
+//
+//   - fatally aborts if called before the instance is created
+
+Table &Table::instance(void)
+{
+	if (m_instance == NULL)
+	{
+		qFatal("Table instance was not created!");
+	}
+	return *m_instance;
+}
+
+
 // function that initializes the table variables
 //
 //   - if any error found then list of error messages returned
+//   - an empty list is returned if no errors were detected
 
 QStringList Table::initialize(void)
 {
 	QStringList errorList;
 	int i;
 	int type;
-
-	m_entry = tableEntries;
 
 	// scan table and record indexes
 	int nEntries = sizeof(tableEntries) / sizeof(TableEntry);

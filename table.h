@@ -25,6 +25,7 @@
 //				moved code for access functions to table.cpp
 //				renamed variables and functions to Qt style naming
 //				changed the rest of char* to QString
+//	2012-11-04	modified table class so that only one instance can be created
 
 #ifndef TABLE_H
 #define TABLE_H
@@ -84,17 +85,26 @@ typedef TokenStatus (*CommandHandler)(Translator &t, CmdItem *cmd_item,
 
 // 2011-02-26: removed index_code[], index(), and code(); changed index to code
 class Table {
+	static Table *m_instance;		// single instance of table
+
 	TableEntry *m_entry;			// pointer to table entries
 	struct Range {
 		Code beg;					// begin index of range
 		Code end;					// end index of range
 	} m_range[sizeof_SearchType];	// range for each search type
 
-	// function to initialize and check the table entries
-public:
+	// these functions private to prevent multiple instances
 	Table(void) {}
-	~Table() {}
+	Table(TableEntry *entry) : m_entry(entry) {}
+	Table(Table const &) {}
+	Table &operator=(Table const &) {return *this;}
+	// function to initialize and check the table entries
 	QStringList initialize(void);
+public:
+	// function to create the single table instance
+	static QStringList create(void);
+	// function to return a reference to the single table instance
+	static Table &instance(void);
 
 	// CODE RELATED TABLE FUNCTIONS
 	TokenType type(Code code);
