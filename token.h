@@ -21,6 +21,7 @@
 //	Change History:
 //
 //	2012-11-02	initial version (parts removed from ibcp.h)
+//	2012-11-03	changed to class, renamed variables and functions to Qt style
 
 #ifndef TOKEN_H
 #define TOKEN_H
@@ -47,96 +48,239 @@ enum TokenType {
 };
 
 
-struct Token {
-	int column;				// start column of token
-	int length;				// length of token (2011-01-11: moved from union)
-	TokenType type;			// type of the token
-	DataType datatype;		// data type of token
-	QString string;			// pointer to string of token
-	Code code;	 			// internal code of token (index of TableEntry)
-	bool reference;			// token is a reference flag
-	int subcode;			// sub-code flags of token
+class Token {
+	int m_column;			// start column of token
+	int m_length;			// length of token
+	TokenType m_type;		// type of the token
+	DataType m_dataType;	// data type of token
+	QString m_string;		// pointer to string of token
+	Code m_code;			// internal code of token (index of TableEntry)
+	bool m_reference;		// token is a reference flag
+	int m_subCode;			// sub-code flags of token
 	union {
-		double dbl_value;	// value for double constant token
-		int int_value;		// value for integer constant token
+		double m_valueDbl;	// value for double constant token
+		int m_valueInt;		// value for integer constant token
 	};
-	Token(int col = -1)
+
+public:
+	Token(int column = -1)
 	{
-		column = col;
-		length = 1;
-		reference = false;
-		subcode = None_SubCode;
+		m_column = column;
+		m_length = 1;
+		m_reference = false;
+		m_subCode = None_SubCode;
 	}
 	~Token(void)
 	{
 	}
-	void set_error(const QString &msg)
+
+	// column and length access functions
+	int column(void)
 	{
-		length = 1;
-		type = Error_TokenType;
-		datatype = None_DataType;
-		string = msg;
+		return m_column;
 	}
-	void set_error(int col, const QString  &msg)
+	int length(void)
 	{
-		column = col;
-		length = 1;
-		type = Error_TokenType;
-		datatype = None_DataType;
-		string = msg;
+		return m_length;
 	}
-	void set_error(const QString &msg, int len)
+	void setLength(int length)
 	{
-		length = len;
-		type = Error_TokenType;
-		datatype = None_DataType;
-		string = msg;
+		m_length = length;
 	}
-	void set_error(int col, const QString &msg, int len)
+	void addLengthToColumn(void)
 	{
-		column = col;
-		length = len;
-		type = Error_TokenType;
-		datatype = None_DataType;
-		string = msg;
+		m_column += m_length;
 	}
-	bool is_operator(void)
+
+	// type access functions
+	TokenType type(void)
 	{
-		return op[type];
+		return m_type;
 	}
-	bool has_paren(void)
+	void setType(TokenType type)
 	{
-		return paren[type];
+		m_type = type;
+	}
+	bool isType(TokenType type)
+	{
+		return type == m_type;
+	}
+
+	// data type access functions
+	DataType dataType(void)
+	{
+		return m_dataType;
+	}
+	void setDataType(DataType dataType)
+	{
+		m_dataType = dataType;
+	}
+	bool isDataType(DataType dataType)
+	{
+		return dataType == m_dataType;
+	}
+
+	// string access function
+	QString string(void)
+	{
+		return m_string;
+	}
+	void setString(const QString &string)
+	{
+		m_string = string;
+	}
+	void setString(int pos, QChar character)
+	{
+		m_string[pos] = character;
+	}
+	int stringLength(void)
+	{
+		return m_string.length();
+	}
+
+	// code access functions
+	Code code(void)
+	{
+		return m_code;
+	}
+	void setCode(Code code)
+	{
+		m_code = code;
+	}
+	Code nextCode(void)
+	{
+		return ++m_code;
+	}
+	bool isCode(Code code)
+	{
+		return code == m_code;
+	}
+
+	// reference access functions
+	bool reference(void)
+	{
+		return m_reference;
+	}
+	void setReference(bool reference = true)
+	{
+		m_reference = reference;
+	}
+
+	// sub-code access functions
+	int subCode(void)
+	{
+		return m_subCode;
+	}
+	int isSubCode(int subCode)
+	{
+		return m_subCode & subCode;
+	}
+	void setSubCode(int subCode)
+	{
+		m_subCode = subCode;
+	}
+	void setSubCodeMask(int subCode)
+	{
+		m_subCode |= subCode;
+	}
+	void clearSubCodeMask(int subCode)
+	{
+		m_subCode &= ~subCode;
+	}
+
+	// value access functions
+	double valueDbl(void)
+	{
+		return m_valueDbl;
+	}
+	int valueInt(void)
+	{
+		return m_valueInt;
+	}
+	void setValue(double value)
+	{
+		m_valueDbl = value;
+	}
+	void setValue(int value)
+	{
+		m_valueInt = value;
+	}
+
+	// set error functions
+	void setError(const QString &msg)
+	{
+		m_length = 1;
+		m_type = Error_TokenType;
+		m_dataType = None_DataType;
+		m_string = msg;
+	}
+	void setError(int column, const QString  &msg)
+	{
+		m_column = column;
+		m_length = 1;
+		m_type = Error_TokenType;
+		m_dataType = None_DataType;
+		m_string = msg;
+	}
+	void setError(const QString &msg, int len)
+	{
+		m_length = len;
+		m_type = Error_TokenType;
+		m_dataType = None_DataType;
+		m_string = msg;
+	}
+	void setError(int column, const QString &msg, int len)
+	{
+		m_column = column;
+		m_length = len;
+		m_type = Error_TokenType;
+		m_dataType = None_DataType;
+		m_string = msg;
+	}
+
+	// token information functions
+	bool isOperator(void)
+	{
+		return op[m_type];
+	}
+	bool hasParen(void)
+	{
+		return paren[m_type];
 	}
 	int precedence(void)
 	{
-		return prec[type];
+		return prec[m_type];
 	}
-	int table_entry(void)
+	int hasTableEntry(void)
 	{
-		return table[type];
-	}
-	Token *through(Token *token2)
-	{
-		length = token2->column - column + token2->length;
-		return this;
+		return table[m_type];
 	}
 	bool isNull(void)
 	{
-		return table_entry() && code == Null_Code;
+		return hasTableEntry() && m_code == Null_Code;
 	}
 
+	// set length to include second token
+	Token *setThrough(Token *token2)
+	{
+		m_length = token2->m_column - m_column + token2->m_length;
+		return this;
+	}
+
+private:
 	// static members
 	static bool paren[sizeof_TokenType];
 	static bool op[sizeof_TokenType];
 	static int prec[sizeof_TokenType];
 	static bool table[sizeof_TokenType];
-	static const QString message_array[sizeof_TokenStatus];
+	static const QString messageArray[sizeof_TokenStatus];
 
+public:
+	// static member functions
 	static void initialize(void);
 	static const QString message(TokenStatus status)
 	{
-		return message_array[status];
+		return messageArray[status];
 	}
 };
 

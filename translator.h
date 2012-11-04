@@ -170,18 +170,18 @@ private:
 	void set_default_datatype(Token *token)
 	{
 		// only set to double if not an internal function
-		if (token->datatype == None_DataType
-			&& token->type != IntFuncP_TokenType)
+		if (token->isDataType(None_DataType)
+			&& !token->isType(IntFuncP_TokenType))
 		{
 			// TODO for now just set default to double
-			token->datatype = Double_DataType;
+			token->setDataType(Double_DataType);
 		}
 		// change string DefFuncN/P to TmpStr
-		else if ((token->type == DefFuncN_TokenType
-			|| token->type == DefFuncP_TokenType)
-			&& token->datatype == String_DataType)
+		else if ((token->isType(DefFuncN_TokenType)
+			|| token->isType(DefFuncP_TokenType))
+			&& token->isDataType(String_DataType))
 		{
-			token->datatype = TmpStr_DataType;
+			token->setDataType(TmpStr_DataType);
 		}
 	}
 	TokenStatus process_first_operand(Token *&token);

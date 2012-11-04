@@ -221,15 +221,15 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			{
 				// number of arguments doesn't match current function's entry
 				// see if function has multiple entries
-				if ((t.table->flags(top_token->code) & Multiple_Flag) != 0)
+				if ((t.table->flags(top_token->code()) & Multiple_Flag) != 0)
 				{
 					// change token to next code (index)
 					// (table entries have been validated during initialization)
 					// (need to increment index before assignment)
-					t.count_stack.top().code = ++top_token->code;
+					t.count_stack.top().code = top_token->nextCode();
 					// update number of expected operands
 					t.count_stack.top().nexpected
-						= t.table->noperands(top_token->code);
+						= t.table->noperands(top_token->code());
 				}
 				else
 				{
@@ -316,14 +316,14 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	if (noperands == 0)
 	{
 		// just a parentheses expression
-		if (top_token->code != OpenParen_Code)
+		if (!top_token->isCode(OpenParen_Code))
 		{
 			// oops, no open parentheses
 			return BUG_UnexpectedCloseParen;  // this should not happen
 		}
 
 		// clear reference for item on top of done stack
-		t.done_stack.top().rpnItem->token->reference = false;
+		t.done_stack.top().rpnItem->token->setReference(false);
 		// replace first and last operands of item on done stack
 		t.delete_open_paren(t.done_stack.top().first);
 		t.done_stack.top().first = top_token;
@@ -331,7 +331,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		t.done_stack.top().last = token;
 		// mark close paren token as used for last operand and pending paren
 		// (so that it doesn't get deleted until its not used anymore)
-		token->subcode |= Last_SubCode + Used_SubCode;
+		token->setSubCodeMask(Last_SubCode + Used_SubCode);
 
 		// set pending parentheses token pointer
 		t.pending_paren = token;
@@ -341,7 +341,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		int operand_index;
 
 		// make sure token is an array or a function
-		if (!top_token->has_paren())
+		if (!top_token->hasParen())
 		{
 			// unexpected token on stack
 			return BUG_UnexpectedToken;
@@ -349,24 +349,24 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 
 		// set reference flag for array or function
 		// (DefFuncP should not have reference set)
-		if (top_token->type == Paren_TokenType)
+		if (top_token->isType(Paren_TokenType))
 		{
-			top_token->reference = true;
+			top_token->setReference();
 			operand_index = 0;  // not applicable
 		}
-		else if (top_token->type == DefFuncP_TokenType)
+		else if (top_token->isType(DefFuncP_TokenType))
 		{
 			operand_index = 0;  // not applicable
 		}
 		else  // INTERNAL FUNCTION
 		{
 			// check for number of arguments for internal functions
-			if (noperands != t.table->noperands(top_token->code))
+			if (noperands != t.table->noperands(top_token->code()))
 			{
 				return ExpOpOrComma_TokenStatus;
 			}
 
-			operand_index = t.table->noperands(top_token->code) - 1;
+			operand_index = t.table->noperands(top_token->code()) - 1;
 			// tell process_final_operand() to use operand_index
 			noperands = 0;
 		}
@@ -472,7 +472,7 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 		return BUG_CmdStackNotEmpty;
 	}
 	// check if token has been used by command handler
-	if (token->code == EOL_Code)
+	if (token->isCode(EOL_Code))
 	{
 		delete token;  // delete EOL token
 	}

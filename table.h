@@ -236,12 +236,12 @@ public:
 	int precedence(Token *token)
 	{
 		int prec = token->precedence();
-		return prec != -1 ? prec : precedence(token->code);
+		return prec != -1 ? prec : precedence(token->code());
 	}
 	int flags(Token *token)
 	{
 		// (non-table entry token types have no flags)
-		return token->table_entry() ? flags(token->code) : Null_Flag;
+		return token->hasTableEntry() ? flags(token->code()) : Null_Flag;
 	}
 
 	// TABLE FUNCTIONS
@@ -254,9 +254,9 @@ public:
 	// function to set a token for a code
 	void set_token(Token *token, Code code)
 	{
-		token->code = code;
-		token->type = type(token->code);
-		token->datatype = datatype(token->code);
+		token->setCode(code);
+		token->setType(type(code));
+		token->setDataType(datatype(code));
 	}
 	// function to create new token and initialize it from a code
 	Token *new_token(Code code)

@@ -127,7 +127,7 @@ BEGIN {
 	{
 		if (msg_array == 0)
 		{
-			if (line ~ /const QString Token::message_array/)
+			if (line ~ /const QString Token::messageArray/)
 			{
 				# found start of token message array
 				msg_array = 1

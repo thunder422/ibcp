@@ -106,7 +106,7 @@ Token *Parser::getToken(void)
 	if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		m_token->set_error("unrecognizable character");
+		m_token->setError("unrecognizable character");
 	}
 	return m_token;  // token may contain an error
 }
@@ -142,17 +142,17 @@ bool Parser::getIdentifier(void)
 		if (paren)
 		{
 			// don't include parentheses in string or length (2011-03-26)
-			m_token->type = DefFuncP_TokenType;
-			m_token->string = m_input.mid(m_pos, len - 1);
-			m_token->length = len - 1;  // 2011-03-14: set length of token
+			m_token->setType(DefFuncP_TokenType);
+			m_token->setString(m_input.mid(m_pos, len - 1));
+			m_token->setLength(len - 1);
 		}
 		else  // no parentheses
 		{
-			m_token->type = DefFuncN_TokenType;
-			m_token->string = m_input.mid(m_pos, len);
-			m_token->length = len;  // 2011-03-14: set length of token
+			m_token->setType(DefFuncN_TokenType);
+			m_token->setString(m_input.mid(m_pos, len));
+			m_token->setLength(len);
 		}
-		m_token->datatype = dataType;
+		m_token->setDataType(dataType);
 		m_pos = pos;  // move position past defined function identifier
 		return true;
 	}
@@ -178,17 +178,17 @@ bool Parser::getIdentifier(void)
 		if (paren)
 		{
 			// don't include parentheses in string or length (2011-03-26)
-			m_token->type = Paren_TokenType;
-			m_token->string = m_input.mid(m_pos, len - 1);
-			m_token->length = len - 1;  // 2011-01-11: set length of token
+			m_token->setType(Paren_TokenType);
+			m_token->setString(m_input.mid(m_pos, len - 1));
+			m_token->setLength(len - 1);
 		}
 		else
 		{
-			m_token->type = NoParen_TokenType;
-			m_token->string = m_input.mid(m_pos, len);
-			m_token->length = len;  // 2011-01-11: set length of token
+			m_token->setType(NoParen_TokenType);
+			m_token->setString(m_input.mid(m_pos, len));
+			m_token->setLength(len);
 		}
-		m_token->datatype = dataType;
+		m_token->setDataType(dataType);
 		m_pos = pos;  // move position past word
 		return true;
 	}
@@ -197,10 +197,10 @@ bool Parser::getIdentifier(void)
 	m_pos = pos;  // move position past first word
 
 	// setup token in case this is only one word
-	m_token->type = m_table->type(code);
-	m_token->datatype = m_table->datatype(code);
-	m_token->code = code;
-	m_token->length = len;  // 2010-03-20: set length of token
+	m_token->setType(m_table->type(code));
+	m_token->setDataType(m_table->datatype(code));
+	m_token->setCode(code);
+	m_token->setLength(len);
 
 	if (m_table->multiple(code) == OneWord_Multiple)
 	{
@@ -209,8 +209,8 @@ bool Parser::getIdentifier(void)
 		{
 			// remark requires special handling
 			// remark string is to end of line
-			m_token->string = m_input.mid(m_pos);
-			m_pos += m_token->string.length();
+			m_token->setString(m_input.mid(m_pos));
+			m_pos += m_token->stringLength();
 		}
 		return true;
 	}
@@ -223,20 +223,20 @@ bool Parser::getIdentifier(void)
 		|| (code = m_table->search(m_input.midRef(word1, len),
 		m_input.midRef(m_pos, len2))) == Invalid_Code)
 	{
-		if (m_token->type == Error_TokenType)
+		if (m_token->type() == Error_TokenType)
 		{
 			// first word by itself is not valid
-			m_token->string = "Invalid Two Word Command";
+			m_token->setString("Invalid Two Word Command");
 		}
 		// otherwise single word is valid command,
 		// token already setup, position already set past word
 		return true;
 	}
 	// get information from two word command
-	m_token->type = m_table->type(code);
-	m_token->datatype = m_table->datatype(code);
-	m_token->code = code;
-	m_token->length += len2 + 1;  // 2010-03-20: set length of token
+	m_token->setType(m_table->type(code));
+	m_token->setDataType(m_table->datatype(code));
+	m_token->setCode(code);
+	m_token->setLength(len2 + 1);
 
 	// 2010-03-20: moved to here so pos can be used to set length
 	m_pos = pos;  // move position past second word
@@ -359,7 +359,7 @@ bool Parser::getNumber(void)
 						// and second character is a digit (2010-05-29)
 						// this is in invalid number
 						// 2010-03-07: changed to error
-						m_token->set_error("invalid leading zero in numeric "
+						m_token->setError("invalid leading zero in numeric "
 							"constant");
 						return true;
 					}
@@ -372,7 +372,7 @@ bool Parser::getNumber(void)
 			{
 				if (!digits)  // no digits found?
 				{
-					m_token->set_error("constant only contains a decimal point "
+					m_token->setError("constant only contains a decimal point "
 						"or has two decimal points", 2);
 					return true;
 				}
@@ -387,7 +387,7 @@ bool Parser::getNumber(void)
 			{
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				m_token->set_error("mantissa of constant only contains a "
+				m_token->setError("mantissa of constant only contains a "
 					"decimal point");
 				return true;
 			}
@@ -405,7 +405,7 @@ bool Parser::getNumber(void)
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				m_token->set_error(pos, "exponent contains no digits");
+				m_token->setError(pos, "exponent contains no digits");
 				return true;
 			}
 			decimal = true;  // process as double
@@ -428,7 +428,7 @@ bool Parser::getNumber(void)
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				m_token->set_error("constant only contains a decimal point");
+				m_token->setError("constant only contains a decimal point");
 				return true;
 			}
 			else
@@ -448,7 +448,7 @@ bool Parser::getNumber(void)
 	if (!decimal)  // no decimal or exponent?
 	{
 		// try to convert to integer first
-		m_token->int_value = numBytes.toInt(&ok);
+		m_token->setValue(numBytes.toInt(&ok));
 		if (!ok)
 		{
 			// overflow or underflow, won't fit into an integer
@@ -456,25 +456,25 @@ bool Parser::getNumber(void)
 		}
 		else
 		{
-			m_token->type = Constant_TokenType;
-			m_token->datatype = Integer_DataType;
+			m_token->setType(Constant_TokenType);
+			m_token->setDataType(Integer_DataType);
 		}
 	}
 	if (decimal)
 	{
-		m_token->dbl_value = numBytes.toDouble(&ok);
+		m_token->setValue(numBytes.toDouble(&ok));
 		if (!ok)
 		{
 			// overflow or underflow, constant is not valid
-			m_token->set_error("constant is out of range", len);
+			m_token->setError("constant is out of range", len);
 			return true;
 		}
-		m_token->type = Constant_TokenType;
-		m_token->datatype = Double_DataType;
+		m_token->setType(Constant_TokenType);
+		m_token->setDataType(Double_DataType);
 	}
 	// save string of number so it later can be reproduced
-	m_token->string = numStr;
-	m_token->length = len;  // 2011-01-11: set len of token
+	m_token->setString(numStr);
+	m_token->setLength(len);
 	m_pos = pos;  // move to next character after constant
 	return true;
 }
@@ -510,12 +510,12 @@ bool Parser::getString(void)
 			}
 			// otherwise quote counts as one character
 		}
-		m_token->string[len++] = m_input[pos++];  // copy character into string
+		m_token->setString(len++, m_input[pos++]);  // copy char into string
 	}
 	// 2010-03-08: removed no closing quote error check - now valid
-	m_token->type = Constant_TokenType;
-	m_token->datatype = String_DataType;
-	m_token->length = pos - m_pos;  // 2010-03-19: set length of token
+	m_token->setType(Constant_TokenType);
+	m_token->setDataType(String_DataType);
+	m_token->setLength(pos - m_pos);
 	// advance position past end of string
 	m_pos = pos;
 	return true;
@@ -543,10 +543,10 @@ bool Parser::getOperator(void)
 		// current character is a valid single character operator
 
 		// setup token in case this is only one character
-		m_token->type = m_table->type(code);
-		m_token->datatype = m_table->datatype(code);
-		m_token->code = code;
-		m_token->length = 1;  // 2010-03-20: set length of token
+		m_token->setType(m_table->type(code));
+		m_token->setDataType(m_table->datatype(code));
+		m_token->setCode(code);
+		m_token->setLength(1);
 
 		if (m_table->multiple(code) == OneChar_Multiple)
 		{
@@ -556,9 +556,9 @@ bool Parser::getOperator(void)
 			{
 				// remark requires special handling
 				// remark string is to end of line
-				m_token->string = m_input.mid(m_pos);
+				m_token->setString(m_input.mid(m_pos));
 				// move position to end of line
-				m_pos += m_token->string.length();
+				m_pos += m_token->stringLength();
 			}
 			return true;
 		}
@@ -580,10 +580,10 @@ bool Parser::getOperator(void)
 	// valid two character operator
 	m_pos += 2;  // move past two characters
 	// get information from two character operator
-	m_token->type = m_table->type(code2);
-	m_token->datatype = m_table->datatype(code2);
-	m_token->code = code2;
-	m_token->length = 2;  // 2010-03-20: set length of token
+	m_token->setType(m_table->type(code2));
+	m_token->setDataType(m_table->datatype(code2));
+	m_token->setCode(code2);
+	m_token->setLength(2);
 	return true;
 }
 

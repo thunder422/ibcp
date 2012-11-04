@@ -35,7 +35,7 @@ bool Token::table[sizeof_TokenType];
 //   (TokenStatus enumeration generated from names
 //   in comments at the end each line by enums.awk,
 //   lines starting with comments are ignored)
-const QString Token::message_array[sizeof_TokenStatus] = {
+const QString Token::messageArray[sizeof_TokenStatus] = {
 	"Null_TokenStatus (BUG)",							// Null
 	"Good_TokenStatus (BUG)",							// Good
 	"Done_TokenStatus (BUG)",							// Done

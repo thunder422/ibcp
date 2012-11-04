@@ -365,8 +365,8 @@ void parseInput(QTextStream &cout, Parser &parser, Table *table,
 	do {
 		token = parser.getToken();
 		more = printToken(cout, token, true);
-		if (more && token->type == Operator_TokenType
-			&& token->code == EOL_Code)
+		if (more && token->isType(Operator_TokenType)
+			&& token->isCode(EOL_Code))
 		{
 			more = false;
 		}
@@ -392,9 +392,9 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 		parser.setOperandState(translator.get_operand_state());
 		orgToken = token = parser.getToken();
 		// 2010-03-18: need to check for a parser error
-		if (token->type == Error_TokenType)
+		if (token->isType(Error_TokenType))
 		{
-			printError(cout, token, token->string);
+			printError(cout, token, token->string());
 			delete token;
 			translator.clean_up();
 			return;
@@ -449,19 +449,19 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 	// 2012-10-12: replaced all name text arrays with auto-generated file
 	#include "test_names.h"
 
-	if (token->type == Error_TokenType)
+	if (token->isType(Error_TokenType))
 	{
 		// 2010-03-20: moved code to print_error()
-		printError(cout, token, token->string);
+		printError(cout, token, token->string());
 		return false;
 	}
 	// 2010-03-13: test new Token static functions
 	QString info("  ");
-	if (token->has_paren())
+	if (token->hasParen())
 	{
-		info = token->is_operator() ? "??" : "()";
+		info = token->isOperator() ? "??" : "()";
 	}
-	else if (token->is_operator())
+	else if (token->isOperator())
 	{
 		info = "Op";
 	}
@@ -469,54 +469,54 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 	{
 		cout << '\t';
 	}
-	cout << qSetFieldWidth(2) << right << token->column << qSetFieldWidth(0)
-		<< left << ": " << qSetFieldWidth(10) << tokentype_name[token->type]
+	cout << qSetFieldWidth(2) << right << token->column() << qSetFieldWidth(0)
+		<< left << ": " << qSetFieldWidth(10) << tokentype_name[token->type()]
 		<< qSetFieldWidth(0) << info;
-	switch (token->type)
+	switch (token->type())
 	{
 	case Remark_TokenType:
 		// 2011-03-08: removed output of token code
-		cout << ' ' << code_name[token->code];
+		cout << ' ' << code_name[token->code()];
 		// fall thru
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
-			<< qSetFieldWidth(0) << " |" << token->string << '|';
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+			<< qSetFieldWidth(0) << " |" << token->string() << '|';
 		break;
 	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
-			<< qSetFieldWidth(0) << " |" << token->string << "(|";
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+			<< qSetFieldWidth(0) << " |" << token->string() << "(|";
 		break;
 	case Constant_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0);
-		switch (token->datatype)
+		switch (token->dataType())
 		{
 		case Integer_DataType:
-			cout << ' ' << token->int_value << " |" << token->string << '|';
+			cout << ' ' << token->valueInt() << " |" << token->string() << '|';
 			break;
 		case Double_DataType:
-			cout << ' ' << token->dbl_value << " |" << token->string << '|';
+			cout << ' ' << token->valueDbl() << " |" << token->string() << '|';
 			break;
 		case String_DataType:
-			cout << " |" << token->string << '|';
+			cout << " |" << token->string() << '|';
 			break;
 		}
 		break;
 	case Operator_TokenType:
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->datatype]
+		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0);
 		// fall thru
 	case Command_TokenType:
 		// 2011-03-08: removed output of token code
-		cout << " " << code_name[token->code];
-		if (token->code == Rem_Code || token->code == RemOp_Code)
+		cout << " " << code_name[token->code()];
+		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
-			cout << " |" << token->string << '|';
+			cout << " |" << token->string() << '|';
 		}
 		break;
 	default:
@@ -557,61 +557,61 @@ void printOutput(QTextStream &cout, const QString &header,
 bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 {
 	// 2010-03-13: test new Token static functions
-	switch (token->type)
+	switch (token->type())
 	{
 	case Remark_TokenType:
 		// fall thru
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
 		// TODO
-		cout << token->string;
+		cout << token->string();
 		break;
 	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
-		cout << token->string << '(';  // TODO
+		cout << token->string() << '(';  // TODO
 		break;
 	case Constant_TokenType:
-		switch (token->datatype)
+		switch (token->dataType())
 		{
 		case Integer_DataType:
 		case Double_DataType:
-			cout << token->string;  // TODO
+			cout << token->string();  // TODO
 			break;
 		case String_DataType:
-			cout << '"' << token->string << '"';  // TODO
+			cout << '"' << token->string() << '"';  // TODO
 			break;
 		}
 		break;
 	case Operator_TokenType:
-		if (token->code == RemOp_Code)
+		if (token->isCode(RemOp_Code))
 		{
-			cout << table->name(token->code) << '|' << token->string << '|';
+			cout << table->name(token->code()) << '|' << token->string() << '|';
 		}
 		else
 		{
 			// 2010-04-02: output name2 (if set) for debug output string
 			// 2010-04-04: replaced with debug_name call
-			cout << table->debug_name(token->code);
+			cout << table->debug_name(token->code());
 		}
 		break;
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
 		// 2010-04-04: replaced with debug_name call
-		cout << table->debug_name(token->code);
+		cout << table->debug_name(token->code());
 		break;
 	case Command_TokenType:
-		if (token->code == Rem_Code)
+		if (token->isCode(Rem_Code))
 		{
-			cout << table->name(token->code) << '|' << token->string << '|';
+			cout << table->name(token->code()) << '|' << token->string() << '|';
 		}
 		else
 		{
-			cout << table->name(token->code);
+			cout << table->name(token->code());
 			// 2010-06-06: call name2() instead of name()
-			if (table->name2(token->code) != NULL)
+			if (table->name2(token->code()) != NULL)
 			{
-				cout << '-' << table->name2(token->code);
+				cout << '-' << table->name2(token->code());
 			}
 		}
 		break;
@@ -620,40 +620,40 @@ bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 		break;
 	}
 	// 2010-04-12: output reference identifier
-	if (token->reference)
+	if (token->reference())
 	{
 		cout << "<ref>";
 	}
 	// 2010-05-29: output sub-code flags
 	// 2011-01-22: ignore used sub-code
-	if (token->subcode & ~Used_SubCode)
+	if (token->isSubCode(~Used_SubCode))
 	{
 		cout << '\'';
-		if (token->subcode & Paren_SubCode)
+		if (token->isSubCode(Paren_SubCode))
 		{
 			cout << ')';
 		}
-		if (token->subcode & Let_SubCode)
+		if (token->isSubCode(Let_SubCode))
 		{
 			cout << "LET";
 		}
 		// 2010-08-01: removed Comma_SubCode
 		// 2010-06-08: added semicolon subcode flag
-		if (token->subcode & SemiColon_SubCode)
+		if (token->isSubCode(SemiColon_SubCode))
 		{
 			cout << ';';
 		}
 		// 2011-03-20: added keep and end subcodes
-		if (token->subcode & Keep_SubCode)
+		if (token->isSubCode(Keep_SubCode))
 		{
 			cout << "Keep";
 		}
-		if (token->subcode & End_SubCode)
+		if (token->isSubCode(End_SubCode))
 		{
 			cout << "End";
 		}
 		// 2011-03-22: added question subcodes
-		if (token->subcode & Question_SubCode)
+		if (token->isSubCode(Question_SubCode))
 		{
 			cout << "Question";
 		}
@@ -667,12 +667,12 @@ bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 void printError(QTextStream &cout, Token *token, const QString &error)
 {
 	// 2010-03-07: modified to use new error length
-	for (int i = -7; i < token->column; i++)
+	for (int i = -7; i < token->column(); i++)
 	{
 		cout << ' ';
 	}
 	// 2011-01-11: removed extra code, token now contains correct length
-	for (int i = 0; i < token->length; i++)
+	for (int i = 0; i < token->length(); i++)
 	{
 		cout << '^';
 	}
