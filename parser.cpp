@@ -99,7 +99,7 @@ Token *Parser::getToken(void)
 	{
 		// 2010-03-17: changed to return special end-of-line (last) token
 		// 2010-03-18: replaced code with function call
-		m_table->set_token(m_token, EOL_Code);
+		m_table->setToken(m_token, EOL_Code);
 		return m_token;
 	}
 
@@ -198,7 +198,7 @@ bool Parser::getIdentifier(void)
 
 	// setup token in case this is only one word
 	m_token->setType(m_table->type(code));
-	m_token->setDataType(m_table->datatype(code));
+	m_token->setDataType(m_table->dataType(code));
 	m_token->setCode(code);
 	m_token->setLength(len);
 
@@ -234,7 +234,7 @@ bool Parser::getIdentifier(void)
 	}
 	// get information from two word command
 	m_token->setType(m_table->type(code));
-	m_token->setDataType(m_table->datatype(code));
+	m_token->setDataType(m_table->dataType(code));
 	m_token->setCode(code);
 	m_token->setLength(len2 + 1);
 
@@ -544,7 +544,7 @@ bool Parser::getOperator(void)
 
 		// setup token in case this is only one character
 		m_token->setType(m_table->type(code));
-		m_token->setDataType(m_table->datatype(code));
+		m_token->setDataType(m_table->dataType(code));
 		m_token->setCode(code);
 		m_token->setLength(1);
 
@@ -581,7 +581,7 @@ bool Parser::getOperator(void)
 	m_pos += 2;  // move past two characters
 	// get information from two character operator
 	m_token->setType(m_table->type(code2));
-	m_token->setDataType(m_table->datatype(code2));
+	m_token->setDataType(m_table->dataType(code2));
 	m_token->setCode(code2);
 	m_token->setLength(2);
 	return true;

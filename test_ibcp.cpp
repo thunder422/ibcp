@@ -592,13 +592,13 @@ bool printSmallToken(QTextStream &cout, Token *token, Table *table)
 		{
 			// 2010-04-02: output name2 (if set) for debug output string
 			// 2010-04-04: replaced with debug_name call
-			cout << table->debug_name(token->code());
+			cout << table->debugName(token->code());
 		}
 		break;
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
 		// 2010-04-04: replaced with debug_name call
-		cout << table->debug_name(token->code());
+		cout << table->debugName(token->code());
 		break;
 	case Command_TokenType:
 		if (token->isCode(Rem_Code))

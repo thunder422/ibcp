@@ -78,7 +78,7 @@ BEGIN {
 	{
 		if (code_enum == 0)
 		{
-			if (line ~ /static TableEntry table_entries/)
+			if (line ~ /static TableEntry tableEntries/)
 			{
 				# found start of table entries
 				code_enum = 1

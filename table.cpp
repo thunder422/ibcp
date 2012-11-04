@@ -169,20 +169,66 @@
 //				  strings as a QStringList (no longer uses Error Template)
 //	2012-11-01	replaced some char* with QStringRef
 //				removed immediate commands from table
+//	2012-11-04	moved all table specific (private) definitions from table.h
+//				moved code for access functions from table.h
+//				renamed variables and functions to Qt style naming
+//				made all array initalizers static
+//				changed the rest of char* to QString, removed use of strcmp()
 
 #include <QChar>
 #include <QString>
-
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "table.h"
 #include "commandhandlers.h"
 #include "tokenhandlers.h"
 
 
-#define ArraySize(array)  (sizeof(array) / sizeof(array[0]))
+const int MaxOperands = 3;
+	// this value contains the maximum number of operands
+	// (arguments) for any operator or internal function (there are currently
+	// no internal function with more than 3 arguments)
+
+const int MaxAssocCodes = 4;
+	// this value contains the maximum number of associated codes,
+	// codes in additional to the main code for different possible data types
+	// for the code (no code currently has more the 4 total codes)
+
+
+// expression information for operators and internal functions
+struct ExprInfo {
+	Code m_unaryCode;				// operator unary code (Null_Code if none)
+	short m_nOperands;				// number of operands (operators/functions)
+	short m_nAssocCodes;			// number of associated codes
+	short m_assoc2Index;			// second operand assoc codes start index
+	short m_nStrings;				// number of string arguments
+	DataType *m_operandDataType;	// data type of each operand
+	Code *m_assocCode;				// associated codes
+
+	ExprInfo(Code unaryCode = Null_Code, short nOperands = 0,
+		DataType *operandDataType = NULL, short nAssocCodes = 0,
+		short assoc2Index = 0, Code *assocCode = NULL) :
+	    m_unaryCode(unaryCode), m_nOperands(nOperands),
+	    m_operandDataType(operandDataType), m_nAssocCodes(nAssocCodes),
+		m_assoc2Index(assoc2Index), m_assocCode(assocCode), m_nStrings(0)
+		// default for m_nStrings; will be filled in later
+	{
+	}
+};
+
+
+struct TableEntry {
+	TokenType type;					// type of token for entry
+	Multiple multiple;				// multiple word command/character operator
+	const QString name;				// name for table entry
+	const QString name2;			// name of second word of command
+	int flags;						// flags for entry
+	int precedence;					// precedence of code
+	DataType dataType;				// next expression data type for command
+	ExprInfo *exprInfo;				// expression info pointer (NULL for none)
+	TokenHandler tokenHandler;		// translator token handler pointer
+	TokenMode tokenMode;			// next token mode for command
+	CommandHandler commandHandler;	// translator command handler pointer
+};
 
 
 // 2010-05-03: expression information for codes
@@ -204,202 +250,204 @@
 
 
 // 2010-05-05: operand data type arrays
-DataType Dbl_OperandArray[] = {
+static DataType Dbl_OperandArray[] = {
 	Double_DataType
 };
-DataType DblDbl_OperandArray[] = {
+static DataType DblDbl_OperandArray[] = {
 	Double_DataType, Double_DataType
 };
-DataType DblInt_OperandArray[] = {
+static DataType DblInt_OperandArray[] = {
 	Double_DataType, Integer_DataType
 };
 
-DataType Int_OperandArray[] = {
+static DataType Int_OperandArray[] = {
 	Integer_DataType
 };
-DataType IntDbl_OperandArray[] = {
+static DataType IntDbl_OperandArray[] = {
 	Integer_DataType, Double_DataType
 };
-DataType IntInt_OperandArray[] = {
+static DataType IntInt_OperandArray[] = {
 	Integer_DataType, Integer_DataType
 };
 
-DataType Str_OperandArray[] = {
+static DataType Str_OperandArray[] = {
 	String_DataType
 };
-DataType StrInt_OperandArray[] = {
+static DataType StrInt_OperandArray[] = {
 	String_DataType, Integer_DataType
 };
-DataType StrIntInt_OperandArray[] = {
+static DataType StrIntInt_OperandArray[] = {
 	String_DataType, Integer_DataType, Integer_DataType
 };
-DataType StrStr_OperandArray[] = {
+static DataType StrStr_OperandArray[] = {
 	String_DataType, String_DataType
 };
-DataType StrTmp_OperandArray[] = {
+static DataType StrTmp_OperandArray[] = {
 	String_DataType, TmpStr_DataType
 };
-DataType StrStrInt_OperandArray[] = {
+static DataType StrStrInt_OperandArray[] = {
 	String_DataType, String_DataType, Integer_DataType
 };
-DataType StrTmpInt_OperandArray[] = {
+static DataType StrTmpInt_OperandArray[] = {
 	String_DataType, TmpStr_DataType, Integer_DataType
 };
-DataType Sub_OperandArray[] = {  // 2010-07-01
+static DataType Sub_OperandArray[] = {  // 2010-07-01
 	SubStr_DataType
 };
 // 2010-05-19: added new operand data type array
-DataType SubStr_OperandArray[] = {
+static DataType SubStr_OperandArray[] = {
 	SubStr_DataType, String_DataType
 };
-DataType SubTmp_OperandArray[] = {
+static DataType SubTmp_OperandArray[] = {
 	SubStr_DataType, TmpStr_DataType
 };
 
-DataType Tmp_OperandArray[] = {
+static DataType Tmp_OperandArray[] = {
 	TmpStr_DataType
 };
-DataType TmpInt_OperandArray[] = {
+static DataType TmpInt_OperandArray[] = {
 	TmpStr_DataType, Integer_DataType
 };
-DataType TmpStr_OperandArray[] = {
+static DataType TmpStr_OperandArray[] = {
 	TmpStr_DataType, String_DataType
 };
-DataType TmpStrInt_OperandArray[] = {
+static DataType TmpStrInt_OperandArray[] = {
 	TmpStr_DataType, String_DataType, Integer_DataType
 };
-DataType TmpTmp_OperandArray[] = {
+static DataType TmpTmp_OperandArray[] = {
 	TmpStr_DataType, TmpStr_DataType
 };
-DataType TmpTmpInt_OperandArray[] = {
+static DataType TmpTmpInt_OperandArray[] = {
 	TmpStr_DataType, TmpStr_DataType, Integer_DataType
 };
 
 
 // 2010-05-06: associated code data type arrays
-Code Abs_AssocCode[]			= {AbsInt_Code};
-Code Add_AssocCode[]			= {
+static Code Abs_AssocCode[]				= {AbsInt_Code};
+static Code Add_AssocCode[]				= {
 	AddI1_Code, CatStr_Code, CatStrT1_Code, AddI2_Code
 };
-Code AddI1_AssocCode[]			= {AddInt_Code};
-Code Asc_AssocCode[]			= {AscTmp_Code};
-Code Asc2_AssocCode[]			= {Asc2Tmp_Code};
+static Code AddI1_AssocCode[]			= {AddInt_Code};
+static Code Asc_AssocCode[]				= {AscTmp_Code};
+static Code Asc2_AssocCode[]			= {Asc2Tmp_Code};
 // 2010-05-19: added AssignSubStr_Code to list
-Code Assign_AssocCode[]			= {
+static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignSubStr_Code
 };
-Code AssignStr_AssocCode[]		= {AssignTmp_Code};
-Code AssignSubStr_AssocCode[]	= {AssignSubTmp_Code};
+static Code AssignStr_AssocCode[]		= {AssignTmp_Code};
+static Code AssignSubStr_AssocCode[]	= {AssignSubTmp_Code};
 // 2010-05-19: added AssignListMaxStr_Code to list
-Code AssignList_AssocCode[] = {
+static Code AssignList_AssocCode[]		= {
 	AssignListInt_Code, AssignListStr_Code, AssignListMix_Code
 };
-Code AssignListStr_AssocCode[]	= {AssignListTmp_Code};
-Code AssignListMix_AssocCode[]	= {AssignListMixTmp_Code};
-Code CatStr_AssocCode[]			= {CatStrT2_Code};
-Code CatStrT1_AssocCode[]		= {CatStrTT_Code};
-Code Div_AssocCode[]			= {DivI1_Code, DivI2_Code};
-Code DivI1_AssocCode[]			= {DivInt_Code};
-Code Eq_AssocCode[]				= {
+static Code AssignListStr_AssocCode[]	= {AssignListTmp_Code};
+static Code AssignListMix_AssocCode[]	= {AssignListMixTmp_Code};
+static Code CatStr_AssocCode[]			= {CatStrT2_Code};
+static Code CatStrT1_AssocCode[]		= {CatStrTT_Code};
+static Code Div_AssocCode[]				= {DivI1_Code, DivI2_Code};
+static Code DivI1_AssocCode[]			= {DivInt_Code};
+static Code Eq_AssocCode[]				= {
 	EqI1_Code, EqStr_Code, EqStrT1_Code, EqI2_Code
 };
-Code EqI1_AssocCode[]			= {EqInt_Code};
-Code EqStr_AssocCode[]			= {EqStrT2_Code};
-Code EqStrT1_AssocCode[]		= {EqStrTT_Code};
-Code Gt_AssocCode[]				= {
+static Code EqI1_AssocCode[]			= {EqInt_Code};
+static Code EqStr_AssocCode[]			= {EqStrT2_Code};
+static Code EqStrT1_AssocCode[]			= {EqStrTT_Code};
+static Code Gt_AssocCode[]				= {
 	GtI1_Code, GtStr_Code, GtStrT1_Code, GtI2_Code
 };
-Code GtI1_AssocCode[]			= {GtInt_Code};
-Code GtStr_AssocCode[]			= {GtStrT2_Code};
-Code GtStrT1_AssocCode[]		= {GtStrTT_Code};
-Code GtEq_AssocCode[]			= {
+static Code GtI1_AssocCode[]			= {GtInt_Code};
+static Code GtStr_AssocCode[]			= {GtStrT2_Code};
+static Code GtStrT1_AssocCode[]			= {GtStrTT_Code};
+static Code GtEq_AssocCode[]			= {
 	GtEqI1_Code, GtEqStr_Code, GtEqStrT1_Code, GtEqI2_Code
 };
-Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
-Code GtEqStr_AssocCode[]		= {GtEqStrT2_Code};
-Code GtEqStrT1_AssocCode[]		= {GtEqStrTT_Code};
-Code InputBeginStr_AssocCode[]	= {InputBeginTmp_Code};
+static Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
+static Code GtEqStr_AssocCode[]			= {GtEqStrT2_Code};
+static Code GtEqStrT1_AssocCode[]		= {GtEqStrTT_Code};
+static Code InputBeginStr_AssocCode[]	= {InputBeginTmp_Code};
 // 2011-03-19: added input related associated code lists
-Code InputAssign_AssocCode[]	= {
+static Code InputAssign_AssocCode[]		= {
 	InputAssignInt_Code, InputAssignStr_Code, InputParse_Code
 };
-Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
-Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
-Code Instr2_AssocCode[]			= {Instr2T1_Code, Instr2T2_Code};
-Code Instr2T1_AssocCode[]		= {Instr2TT_Code};
-Code Instr3_AssocCode[]			= {Instr3T1_Code, Instr3T2_Code};
-Code Instr3T1_AssocCode[]		= {Instr3TT_Code};
-Code Len_AssocCode[]			= {LenTmp_Code};
-Code Lt_AssocCode[]				= {
+static Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
+static Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
+static Code Instr2_AssocCode[]			= {Instr2T1_Code, Instr2T2_Code};
+static Code Instr2T1_AssocCode[]		= {Instr2TT_Code};
+static Code Instr3_AssocCode[]			= {Instr3T1_Code, Instr3T2_Code};
+static Code Instr3T1_AssocCode[]		= {Instr3TT_Code};
+static Code Len_AssocCode[]				= {LenTmp_Code};
+static Code Lt_AssocCode[]				= {
 	LtI1_Code, LtStr_Code, LtStrT1_Code, LtI2_Code
 };
-Code LtI1_AssocCode[]			= {LtInt_Code};
-Code LtStr_AssocCode[]			= {LtStrT2_Code};
-Code LtStrT1_AssocCode[]		= {LtStrTT_Code};
-Code LtEq_AssocCode[]			= {
+static Code LtI1_AssocCode[]			= {LtInt_Code};
+static Code LtStr_AssocCode[]			= {LtStrT2_Code};
+static Code LtStrT1_AssocCode[]			= {LtStrTT_Code};
+static Code LtEq_AssocCode[]			= {
 	LtEqI1_Code, LtEqStr_Code, LtEqStrT1_Code, LtEqI2_Code
 };
-Code LtEqI1_AssocCode[]			= {LtEqInt_Code};
-Code LtEqStr_AssocCode[]		= {LtEqStrT2_Code};
-Code LtEqStrT1_AssocCode[]		= {LtEqStrTT_Code};
-Code Mod_AssocCode[]			= {ModI1_Code, ModI2_Code};
-Code ModI1_AssocCode[]			= {ModInt_Code};
-Code Mul_AssocCode[]			= {MulI1_Code, MulI2_Code};
-Code MulI1_AssocCode[]			= {MulInt_Code};
-Code Neg_AssocCode[]			= {NegInt_Code};
-Code NotEq_AssocCode[]			= {
+static Code LtEqI1_AssocCode[]			= {LtEqInt_Code};
+static Code LtEqStr_AssocCode[]			= {LtEqStrT2_Code};
+static Code LtEqStrT1_AssocCode[]		= {LtEqStrTT_Code};
+static Code Mod_AssocCode[]				= {ModI1_Code, ModI2_Code};
+static Code ModI1_AssocCode[]			= {ModInt_Code};
+static Code Mul_AssocCode[]				= {MulI1_Code, MulI2_Code};
+static Code MulI1_AssocCode[]			= {MulInt_Code};
+static Code Neg_AssocCode[]				= {NegInt_Code};
+static Code NotEq_AssocCode[]			= {
 	NotEqI1_Code, NotEqStr_Code, NotEqStrT1_Code, NotEqI2_Code
 };
-Code NotEqI1_AssocCode[]    	= {NotEqInt_Code};
-Code NotEqStr_AssocCode[]		= {NotEqStrT2_Code};
-Code NotEqStrT1_AssocCode[]		= {NotEqStrTT_Code};
-Code Power_AssocCode[]			= {PowerI1_Code, PowerMul_Code};
-Code PowerI1_AssocCode[]		= {PowerInt_Code};
+static Code NotEqI1_AssocCode[] 	   	= {NotEqInt_Code};
+static Code NotEqStr_AssocCode[]		= {NotEqStrT2_Code};
+static Code NotEqStrT1_AssocCode[]		= {NotEqStrTT_Code};
+static Code Power_AssocCode[]			= {PowerI1_Code, PowerMul_Code};
+static Code PowerI1_AssocCode[]			= {PowerInt_Code};
 // 2010-06-02: added associated codes for data type specific print
-Code Print_AssocCode[]			= {PrintInt_Code, PrintStr_Code, PrintTmp_Code};
-Code Repeat_AssocCode[]			= {RepeatTmp_Code};
-Code RndArgs_AssocCode[]		= {RndArgInt_Code};
-Code Sgn_AssocCode[]			= {SgnInt_Code};
-Code Str_AssocCode[]			= {StrInt_Code};
-Code Sub_AssocCode[]			= {SubI1_Code, SubI2_Code};
-Code SubI1_AssocCode[]			= {SubInt_Code};
-Code Val_AssocCode[]			= {ValTmp_Code};
+static Code Print_AssocCode[]			= {
+    PrintInt_Code, PrintStr_Code, PrintTmp_Code
+};
+static Code Repeat_AssocCode[]			= {RepeatTmp_Code};
+static Code RndArgs_AssocCode[]			= {RndArgInt_Code};
+static Code Sgn_AssocCode[]				= {SgnInt_Code};
+static Code Str_AssocCode[]				= {StrInt_Code};
+static Code Sub_AssocCode[]				= {SubI1_Code, SubI2_Code};
+static Code SubI1_AssocCode[]			= {SubInt_Code};
+static Code Val_AssocCode[]				= {ValTmp_Code};
 
 
 // 2010-05-06: standard expression information structures
 // 2011-01-07: removed return datatype, removed resulting duplicates
-ExprInfo Dbl_ExprInfo(Null_Code, Operands(Dbl));
-ExprInfo DblDbl_ExprInfo(Null_Code, Operands(DblDbl));
-ExprInfo DblInt_ExprInfo(Null_Code, Operands(DblInt));
+static ExprInfo Dbl_ExprInfo(Null_Code, Operands(Dbl));
+static ExprInfo DblDbl_ExprInfo(Null_Code, Operands(DblDbl));
+static ExprInfo DblInt_ExprInfo(Null_Code, Operands(DblInt));
 
-ExprInfo Int_ExprInfo(Null_Code, Operands(Int));
-ExprInfo IntInt_ExprInfo(Null_Code, Operands(IntInt));
+static ExprInfo Int_ExprInfo(Null_Code, Operands(Int));
+static ExprInfo IntInt_ExprInfo(Null_Code, Operands(IntInt));
 
-ExprInfo Str_ExprInfo(Null_Code, Operands(Str));
-ExprInfo StrInt_ExprInfo(Null_Code, Operands(StrInt));
-ExprInfo StrStr_ExprInfo(Null_Code, Operands(StrStr));  //?
-ExprInfo StrStrInt_ExprInfo(Null_Code, Operands(StrStrInt));
-ExprInfo StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
+static ExprInfo Str_ExprInfo(Null_Code, Operands(Str));
+static ExprInfo StrInt_ExprInfo(Null_Code, Operands(StrInt));
+static ExprInfo StrStr_ExprInfo(Null_Code, Operands(StrStr));  //?
+static ExprInfo StrStrInt_ExprInfo(Null_Code, Operands(StrStrInt));
+static ExprInfo StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
 // special copy for assign temporary string operators (2011-02-05)
-ExprInfo Assign_StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
-ExprInfo StrTmpInt_ExprInfo(Null_Code, Operands(StrTmpInt));
-ExprInfo Assign_SubTmp_ExprInfo(Null_Code, Operands(SubTmp));
+static ExprInfo Assign_StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
+static ExprInfo StrTmpInt_ExprInfo(Null_Code, Operands(StrTmpInt));
+static ExprInfo Assign_SubTmp_ExprInfo(Null_Code, Operands(SubTmp));
 
-ExprInfo Tmp_ExprInfo(Null_Code, Operands(Tmp));
-ExprInfo TmpInt_ExprInfo(Null_Code, Operands(TmpInt));
-ExprInfo TmpStr_ExprInfo(Null_Code, Operands(TmpStr));
-ExprInfo TmpStrInt_ExprInfo(Null_Code, Operands(TmpStrInt));
-ExprInfo TmpTmp_ExprInfo(Null_Code, Operands(TmpTmp));
-ExprInfo TmpTmpInt_ExprInfo(Null_Code, Operands(TmpTmpInt));
+static ExprInfo Tmp_ExprInfo(Null_Code, Operands(Tmp));
+static ExprInfo TmpInt_ExprInfo(Null_Code, Operands(TmpInt));
+static ExprInfo TmpStr_ExprInfo(Null_Code, Operands(TmpStr));
+static ExprInfo TmpStrInt_ExprInfo(Null_Code, Operands(TmpStrInt));
+static ExprInfo TmpTmp_ExprInfo(Null_Code, Operands(TmpTmp));
+static ExprInfo TmpTmpInt_ExprInfo(Null_Code, Operands(TmpTmpInt));
 
 // 2010-05-19: changed to return SubStr
-ExprInfo StrIntInt_ExprInfo(Null_Code, Operands(StrIntInt));
-ExprInfo Sub_ExprInfo(Null_Code, Operands(Sub));
+static ExprInfo StrIntInt_ExprInfo(Null_Code, Operands(StrIntInt));
+static ExprInfo Sub_ExprInfo(Null_Code, Operands(Sub));
 
 // 2011-02-26: moved code from first member to comment
-static TableEntry table_entries[] =
+static TableEntry tableEntries[] =
 {
-	// 2011-02-26: moved Null_Code entry to beginning (so Null_Code == 0)
+	// moved Null_Code entry at beginning so Null_Code == 0
 	{	// Null_Code
 		Operator_TokenType
 	},
@@ -413,16 +461,11 @@ static TableEntry table_entries[] =
 	//   Commands
 	//--------------
 	{	// Let_Code
-		// 2010-05-28: added value for token_mode
-		// 2010-06-13: added value for command handler
 		Command_TokenType, OneWord_Multiple,
 		"LET", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
 		Assignment_TokenMode, Let_CmdHandler
 	},
 	{	// Print_Code
-		// 2010-06-01: added value for token_mode
-		// 2010-06-05: added value for command handler
-		// 2010-06-29: added value for expr_type
 		Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
 		Expression_TokenMode, Print_CmdHandler
@@ -434,7 +477,6 @@ static TableEntry table_entries[] =
 
 	},
 	{	// InputPrompt_Code
-		// 2011-03-01: added two-word form of command
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", "PROMPT", Null_Flag, 4, None_DataType, NULL, NULL,
 		Expression_TokenMode, Input_CmdHandler
@@ -544,7 +586,6 @@ static TableEntry table_entries[] =
 		Operator_TokenType, OneWord_Multiple,
 		"OR", NULL, Null_Flag, 14, Integer_DataType, &IntInt_ExprInfo
 	},
-	// 2010-05-08: Not needs its own exprinfo struct
 	{	// Not_Code
 		Operator_TokenType, OneWord_Multiple,
 		"NOT", NULL, Null_Flag, 20, Integer_DataType,
@@ -642,18 +683,13 @@ static TableEntry table_entries[] =
 		"LOG(", NULL, Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
 	},
 	{	// Tab_Code
-		// 2010-06-01: added print-only flag
 		IntFuncP_TokenType, OneWord_Multiple,
 		"TAB(", NULL, Print_Flag, 2, None_DataType, &Int_ExprInfo
 	},
 	{	// Spc_Code
-		// 2010-06-01: added print-only flag
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SPC(", NULL, Print_Flag, 2, None_DataType, &Int_ExprInfo
 	},
-	// 2010-04-04: added entry for 2 argument ASC
-	// 2010-06-09: swapped ASC and ASC2 entries
-	// 2010-08-10: swapped ASC and ASC2 entries back
 	{	// Asc_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ASC(", NULL, Multiple_Flag, 2, Integer_DataType,
@@ -668,9 +704,6 @@ static TableEntry table_entries[] =
 		IntFuncP_TokenType, OneWord_Multiple,
 		"CHR$(", NULL, Null_Flag, 2, TmpStr_DataType, &Int_ExprInfo
 	},
-	// 2010-04-04: replaced INSTR entry with INSTR2 and INSTR3 entries
-	// 2010-06-09: swapped INSTR2 and INSTR3 entries
-	// 2010-08-10: swapped INSTR2 and INSTR3 entries back
 	{	// Instr2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"INSTR(", "INSTR2(", Multiple_Flag, 2, Integer_DataType,
@@ -690,9 +723,6 @@ static TableEntry table_entries[] =
 		"LEN(", NULL, Null_Flag, 2, Integer_DataType,
 		new ExprInfo(Null_Code, Operands(Str), AssocCode(Len))
 	},
-	// 2010-04-04: replaced MID entry with MID2 and MID3 entries
-	// 2010-06-09: swapped MID2 and MID3 entries
-	// 2010-08-10: swapped MID2 and MID3 entries back
 	{	// Mid2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"MID$(", "MID2$(", Multiple_Flag, 2, SubStr_DataType, &StrInt_ExprInfo
@@ -715,13 +745,11 @@ static TableEntry table_entries[] =
 		"SPACE$(", NULL, Null_Flag, 2, TmpStr_DataType, &Int_ExprInfo
 	},
 	{	// Str_Code
-		// 2010-05-15: changed to return TmpStr
 		IntFuncP_TokenType, OneWord_Multiple,
 		"STR$(", NULL, Null_Flag, 2, TmpStr_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Str))
 	},
 	{	// Val_Code
-		// 2010-04-02: changed name to all upper case
 		IntFuncP_TokenType, OneWord_Multiple,
 		"VAL(", NULL, Null_Flag, 2, Double_DataType, &Str_ExprInfo
 	},
@@ -784,7 +812,6 @@ static TableEntry table_entries[] =
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Power, 1))
 	},
 	{	// Eq_Code
-		// 2010-05-28: added value for token_handler
 		Operator_TokenType, OneChar_Multiple,
 		"=", NULL, Null_Flag, 30, Integer_DataType,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 3)),
@@ -816,32 +843,22 @@ static TableEntry table_entries[] =
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(NotEq, 3))
 	},
 	{	// OpenParen_Code
-		// 2010-03-25: set unary code, changed precedence value
 		Operator_TokenType, OneChar_Multiple,
 		"(", NULL, Null_Flag, 2, None_DataType,
 		new ExprInfo(OpenParen_Code)
 	},
 	{	// CloseParen_Code
-		// 2010-03-25: changed precedence value from 0 to 4
-		// 2010-05-27: changed precedence value from 4 to 6
-		// 2010-05-28: added value for token_handler
 		Operator_TokenType, OneChar_Multiple,
 		")", NULL, Null_Flag, 4, None_DataType, NULL,
 		CloseParen_Handler
 	},
 	{	// Comma_Code
-		// 2010-04-02: changed precedence value from 0 to 4
-		// 2010-05-27: changed precedence value from 4 to 6
-		// 2010-05-28: added value for token_handler
-		// 2010-06-06: added end expression flag
 		Operator_TokenType, OneChar_Multiple,
 		",", NULL, EndExpr_Flag, 6, None_DataType,
 		NULL,//new ExprInfo(Comma_Code),
 		Comma_Handler
 	},
 	{	// SemiColon_Code
-		// 2010-06-02: changed precedence from 0, added token_handler value
-		// 2010-06-06: added end expression flag
 		Operator_TokenType, OneChar_Multiple,
 		";", NULL, EndExpr_Flag, 6, None_DataType,
 		NULL,//new ExprInfo(SemiColon_Code),
@@ -864,27 +881,18 @@ static TableEntry table_entries[] =
 	//***************************
 	//   MISCELLANEOUS ENTRIES
 	//***************************
-	// 2010-03-16: added entries for new codes
-	// 2010-04-24: moved null code entry to end
 	{	// Neg_Code
 		Operator_TokenType, OneWord_Multiple,
-		// 2010-03-21: temporarily replaced "-" with "Neq" for testing
-		// 2010-03-21: changed unary_code from Null_Code to Neg_Code
-		// 2010-04-02: set name to correct output, name2 to debug output name
+		// FIXME temporarily replaced "-" with "Neq" for testing
 		"-", "Neg", Null_Flag, 48, Double_DataType,
 		new ExprInfo(Neg_Code, Operands(Dbl), AssocCode(Neg))
 	},
-	// 2010-04-11: added entries for assignment operators
-	// 2010-05-05: added reference flag to assignment operators
-	// 2010-06-05: added command handler function pointers to all assign entries
-	// 2010-07-02: changed all assign operators from 2 to 1 operands
 	{	// Assign_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign", Reference_Flag, 4, Double_DataType,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 3)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
-	// 2010-05-05: added entries for assignment associated codes
 	{	// AssignInt_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign%", Reference_Flag, 4, Integer_DataType, &IntInt_ExprInfo,
@@ -901,7 +909,6 @@ static TableEntry table_entries[] =
 		"=", "Assign$T", Reference_Flag, 4, TmpStr_DataType,
 		&Assign_StrTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
-	// 2010-05-19: added entries for assign sub-string associated code
 	{	// AssignSubStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignSub$", Reference_Flag, 4, String_DataType,
@@ -913,16 +920,12 @@ static TableEntry table_entries[] =
 		"=", "AssignSub$T", Reference_Flag, 4, TmpStr_DataType,
 		&Assign_SubTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
-	// 2010-05-05: added reference and assign list flags
-	// 2010-06-14: removed assign list flags
-	// 2010-07-02: changed all assign list operators from 2 to 1 operands
 	{	// AssignList_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList", Reference_Flag, 4, Double_DataType,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(AssignList, 3)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
-	// 2010-05-05: added entries for assignment associated codes
 	{	// AssignListInt_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList%", Reference_Flag, 4, Integer_DataType,
@@ -939,7 +942,6 @@ static TableEntry table_entries[] =
 		"=", "AssignList$T", Reference_Flag, 4, TmpStr_DataType,
 		&Assign_StrTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
-	// 2010-05-22: added entry for assign mix string list associated code
 	{	// AssignListMix_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignListMix$", Reference_Flag, 4, String_DataType,
@@ -953,14 +955,10 @@ static TableEntry table_entries[] =
 		Assign_CmdHandler
 	},
 	{	// EOL_Code
-		// 2010-05-28: added value for token_handler
-		// 2010-06-06: added end expression flag
-		// 2010-06-26: added end statment flag
 		Operator_TokenType, OneWord_Multiple,
 		NULL, NULL, EndExpr_Flag | EndStmt_Flag, 4, None_DataType, NULL,
 		EndOfLine_Handler
 	},
-	// 2011-02-04: added entries for associated string functions
 	{	// AscTmp_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ASC(", "ASCT(", Multiple_Flag, 2, Integer_DataType, &Tmp_ExprInfo
@@ -1008,12 +1006,9 @@ static TableEntry table_entries[] =
 		"REPEAT$(", "REPEAT$T(", Null_Flag, 2, TmpStr_DataType, &TmpInt_ExprInfo
 	},
 	{	// ValTmp_Code
-		// 2010-04-02: changed name to all upper case
 		IntFuncP_TokenType, OneWord_Multiple,
 		"VAL(", "VALT(", Null_Flag, 2, Double_DataType, &Str_ExprInfo
 	},
-	// 2010-04-24: added entries for associated codes
-	// 2010-07-17: added secondary operand entries for associated codes
 	{	// AddI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"+", "+%1", Null_Flag, 40, Double_DataType,
@@ -1058,7 +1053,6 @@ static TableEntry table_entries[] =
 		Operator_TokenType, OneChar_Multiple,
 		"-", "-%", Null_Flag, 40, Integer_DataType, &IntInt_ExprInfo
 	},
-	// 2010-05-08: NegInt needs its own exprinfo struct
 	{	// NegInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"-", "Neg%", Null_Flag, 40, Integer_DataType,
@@ -1315,12 +1309,10 @@ static TableEntry table_entries[] =
 		"SGN(", "SGN%(", Null_Flag, 2, Integer_DataType, &Int_ExprInfo
 	},
 	{	// CvtInt_Code
-		// 2010-05-29: added Hidden_Flag
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "CvtInt", Hidden_Flag, 2, None_DataType
 	},
 	{	// CvtDbl_Code
-		// 2010-05-29: added Hidden_Flag
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "CvtDbl", Hidden_Flag, 2, None_DataType
 	},
@@ -1328,8 +1320,6 @@ static TableEntry table_entries[] =
 		IntFuncP_TokenType, OneWord_Multiple,
 		"STR$(", "STR%$(", Null_Flag, 2, TmpStr_DataType, &Int_ExprInfo
 	},
-	// 2010-06-02: added hidden print codes (main plus associated codes)
-	// 2010-12-29: added Print_Flag to these codes
 	{	// PrintDbl_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "PrintDbl", Print_Flag, 2, None_DataType,
@@ -1347,7 +1337,6 @@ static TableEntry table_entries[] =
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "PrintTmp", Print_Flag, 2, None_DataType, &Tmp_ExprInfo
 	},
-	// 2011-03-01: added InputBegin entries
     {	// InputBegin_Code
         IntFuncN_TokenType, OneWord_Multiple,
         "", "InputBegin", Null_Flag, 2, None_DataType
@@ -1362,7 +1351,6 @@ static TableEntry table_entries[] =
 		"", "InputBeginTmp", Null_Flag, 2, None_DataType,
 		&Tmp_ExprInfo
 	},
-	// 2011-03-19: added hidden input assign codes (main plus associated codes)
 	{	// InputAssign_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "InputAssign", Reference_Flag, 2, None_DataType,
@@ -1378,7 +1366,6 @@ static TableEntry table_entries[] =
 		"", "InputAssignStr", Reference_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputAssignStr))
 	},
-	// 2011-03-06: added hidden input parse codes
 	{	// InputParse_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "InputParse", Null_Flag, 2, None_DataType
@@ -1394,7 +1381,9 @@ static TableEntry table_entries[] =
 };
 
 
-// constructor function that initializes the table variables
+// function that initializes the table variables
+//
+//   - if any error found then list of error messages returned
 
 QStringList Table::initialize(void)
 {
@@ -1402,121 +1391,115 @@ QStringList Table::initialize(void)
 	int i;
 	int type;
 
-	entry = table_entries;
-
-	// 2011-02-26: removed index_code[] initialization
+	m_entry = tableEntries;
 
 	// scan table and record indexes
-	bool error = false;
-	int nentries = sizeof(table_entries) / sizeof(TableEntry);
-	// 2010-05-20: find maximum number of operands and associated codes
-	int max_operands = 0;
-	int max_assoc_codes = 0;
-	for (i = 0; i < nentries; i++)
+	int nEntries = sizeof(tableEntries) / sizeof(TableEntry);
+	// find maximum number of operands and associated codes
+	int maxOperands = 0;
+	int maxAssocCodes = 0;
+	for (i = 0; i < nEntries; i++)
 	{
-		// 2011-02-26: removed duplicate checking
-
-		// 2010-05-20: check if found new maximums
-		ExprInfo *exprinfo = entry[i].exprinfo;
-		if (exprinfo != NULL)
+		// check if found new maximums
+		ExprInfo *exprInfo = m_entry[i].exprInfo;
+		if (exprInfo != NULL)
 		{
-			if (max_operands < exprinfo->noperands)
+			if (maxOperands < exprInfo->m_nOperands)
 			{
-				max_operands = exprinfo->noperands;
+				maxOperands = exprInfo->m_nOperands;
 			}
-			if (max_assoc_codes < exprinfo->nassoc_codes)
+			if (maxAssocCodes < exprInfo->m_nAssocCodes)
 			{
-				max_assoc_codes = exprinfo->nassoc_codes;
+				maxAssocCodes = exprInfo->m_nAssocCodes;
 			}
 
-			// 2010-07-18: check in assoc2_index is valid
-			// 2011-02-05: allow assoc2_index to equal nassoc_codes
-			if (exprinfo->assoc2_index > 0
-				&& exprinfo->assoc2_index > exprinfo->nassoc_codes)
+			// check if assoc2_index is valid
+			if (exprInfo->m_assoc2Index > 0
+				&& exprInfo->m_assoc2Index > exprInfo->m_nAssocCodes)
 			{
 				errorList.append(QString("Entry:%1 Assoc2Index=%2 too large, "
-					"maximum is %3").arg(i).arg(exprinfo->assoc2_index)
-					.arg(exprinfo->nassoc_codes));
+					"maximum is %3").arg(i).arg(exprInfo->m_assoc2Index)
+					.arg(exprInfo->m_nAssocCodes));
 			}
 
-			// 2010-12-23: generate number of string arguments value
-			exprinfo->nstrings = 0;
-			for (int j = 0; j < exprinfo->noperands; j++)
+			// generate number of string arguments value
+			exprInfo->m_nStrings = 0;
+			for (int j = 0; j < exprInfo->m_nOperands; j++)
 			{
-				// 2011-02-05: don't count temporary strings
-				// 2011-02-05: don't count first string of assignment operators
-				if (exprinfo->operand_datatype[j] == String_DataType
-					&& (j > 0 || !(entry[i].flags & Reference_Flag)))
+				// don't count temporary strings
+				// don't count first string of assignment operators
+				if (exprInfo->m_operandDataType[j] == String_DataType
+					&& (j > 0 || !(m_entry[i].flags & Reference_Flag)))
 				{
-					exprinfo->nstrings++;
+					exprInfo->m_nStrings++;
 				}
 			}
-			// 2010-05-22: set String_Flag in entries automatically
-			if (exprinfo->nstrings > 0)
+			// set String_Flag in entries automatically
+			if (exprInfo->m_nStrings > 0)
 			{
-				entry[i].flags |= String_Flag;
+				m_entry[i].flags |= String_Flag;
 			}
 
-			// 2010-08-10: validate multiple entries
-			if (entry[i].flags & Multiple_Flag != 0)
+			// validate multiple entries
+			if (m_entry[i].flags & Multiple_Flag != 0)
 			{
-				ExprInfo *exprinfo2 = entry[i + 1].exprinfo;
-				if (strcmp(entry[i].name, entry[i + 1].name) != 0)
+				ExprInfo *exprInfo2 = m_entry[i + 1].exprInfo;
+				if (m_entry[i].name.compare(m_entry[i + 1].name) != 0)
 				{
 					errorList.append(QString("Multiple entry '%1' name "
-						"mis-match '%2'").arg(entry[i].name)
-						.arg(entry[i + 1].name));
+						"mis-match '%2'").arg(m_entry[i].name)
+						.arg(m_entry[i + 1].name));
 				}
-				else if (exprinfo2 == NULL)
+				else if (exprInfo2 == NULL)
 				{
 					errorList.append(QString("Multiple entry '%1' next entry "
-						"no expression info").arg(entry[i + 1].name));
+						"no expression info").arg(m_entry[i + 1].name));
 				}
-				else if (exprinfo2->noperands != exprinfo->noperands + 1)
+				else if (exprInfo2->m_nOperands != exprInfo->m_nOperands + 1)
 				{
 					errorList.append(QString("Multiple entry '%1' incorrect "
-						"number of operands (%2, %3)").arg(entry[i].name)
-						.arg(exprinfo->noperands).arg(exprinfo2->noperands));
+						"number of operands (%2, %3)").arg(m_entry[i].name)
+						.arg(exprInfo->m_nOperands)
+						.arg(exprInfo2->m_nOperands));
 				}
 			}
 		}
 	}
 
-	// 2010-05-20: check maximums found against constants
-	if (max_operands > Max_Operands)
+	// check maximums found against constants
+	if (maxOperands > MaxOperands)
 	{
 		errorList.append(QString("Max_Operands=%1 too small, actual is %2")
-			.arg(Max_Operands).arg(max_operands));
+			.arg(MaxOperands).arg(maxOperands));
 	}
-	if (max_assoc_codes > Max_Assoc_Codes)
+	if (maxAssocCodes > MaxAssocCodes)
 	{
 		errorList.append(QString("Max_Assoc_Codes=%1 too small, actual is %2")
-			.arg(Max_Assoc_Codes).arg(max_assoc_codes));
+			.arg(MaxAssocCodes).arg(maxAssocCodes));
 	}
-
-	// 2011-02-26: removed missing checking
 
 	// setup indexes for bracketing codes
 	// (will be set to -1 if missing - missing errors were recorded above)
-	range[PlainWord_SearchType].beg = BegPlainWord_Code;
-	range[PlainWord_SearchType].end = EndPlainWord_Code;
-	range[ParenWord_SearchType].beg = BegParenWord_Code;
-	range[ParenWord_SearchType].end = EndParenWord_Code;
-	range[DataTypeWord_SearchType].beg = BegDataTypeWord_Code;
-	range[DataTypeWord_SearchType].end = EndDataTypeWord_Code;
-	range[Symbol_SearchType].beg = BegSymbol_Code;
-	range[Symbol_SearchType].end = EndSymbol_Code;
+	m_range[PlainWord_SearchType].beg = BegPlainWord_Code;
+	m_range[PlainWord_SearchType].end = EndPlainWord_Code;
+	m_range[ParenWord_SearchType].beg = BegParenWord_Code;
+	m_range[ParenWord_SearchType].end = EndParenWord_Code;
+	m_range[DataTypeWord_SearchType].beg = BegDataTypeWord_Code;
+	m_range[DataTypeWord_SearchType].end = EndDataTypeWord_Code;
+	m_range[Symbol_SearchType].beg = BegSymbol_Code;
+	m_range[Symbol_SearchType].end = EndSymbol_Code;
 
 	// check for missing bracketing codes and if properly positioned in table
 	// (missing codes recorded above, however,
 	// need to make sure all types were set, i.e. no missing assignments above)
 	for (type = 0; type < sizeof_SearchType; type++)
 	{
-		if (range[type].beg > range[type].end)
+		if (m_range[type].beg > m_range[type].end)
 		{
 			// record bracket range error
 			errorList.append(QString("Search type %1 indexes (%2, %3) not "
-				"correct").arg(type).arg(range[type].beg).arg(range[type].end));
+				"correct").arg(type).arg(m_range[type].beg)
+				.arg(m_range[type].end));
 		}
 		else
 		{
@@ -1524,15 +1507,16 @@ QStringList Table::initialize(void)
 			for (int type2 = 0; type2 < sizeof_SearchType; type2++)
 			{
 				if (type != type2
-					&& (range[type].beg > range[type2].beg
-					&& range[type].beg < range[type2].end
-					|| range[type].end > range[type2].beg
-					&& range[type].end < range[type2].end))
+					&& (m_range[type].beg > m_range[type2].beg
+					&& m_range[type].beg < m_range[type2].end
+					|| m_range[type].end > m_range[type2].beg
+					&& m_range[type].end < m_range[type2].end))
 				{
 					// record bracket overlap error
 					errorList.append(QString("Search type %1 indexes (%2, %3) "
 						"overlap with search type %4").arg(type)
-						.arg(range[type].beg).arg(range[type].end).arg(type2));
+						.arg(m_range[type].beg).arg(m_range[type].end)
+						.arg(type2));
 				}
 			}
 		}
@@ -1543,7 +1527,184 @@ QStringList Table::initialize(void)
 }
 
 
-// this search function will look for a string of a particular type in
+//================================
+//  CODE RELATED TABLE FUNCTIONS
+//================================
+
+// returns token type for code
+TokenType Table::type(Code code)
+{
+	return m_entry[code].type;
+}
+
+// returns data type for code
+DataType Table::dataType(Code code)
+{
+	return m_entry[code].dataType;
+}
+
+// returns multiple word or character type for code
+Multiple Table::multiple(Code code)
+{
+	return m_entry[code].multiple;
+}
+
+// returns primary name for code
+const QString Table::name(Code code)
+{
+	return m_entry[code].name;
+}
+
+// returns second name of a two word command for code
+const QString Table::name2(Code code)
+{
+	return m_entry[code].name2;
+}
+
+// returns the debug name for code, which is the primary name
+// except for internal functions with multiple argument footprints
+const QString Table::debugName(Code code)
+{
+	QString name = m_entry[code].name2;
+	if (name.isEmpty())
+	{
+		name = m_entry[code].name;
+	}
+	return name;
+}
+
+// returns the flags for code
+int Table::flags(Code code)
+{
+	return m_entry[code].flags;
+}
+
+// returns the token mode to set after command for code
+TokenMode Table::tokenMode(Code code)
+{
+	return m_entry[code].tokenMode;
+}
+
+// returns the unary operator code (or Null_Code if none) for code
+Code Table::unaryCode(Code code)
+{
+	ExprInfo *ei = m_entry[code].exprInfo;
+	return ei == NULL ? Null_Code : ei->m_unaryCode;
+}
+
+// returns the precedence for code
+int Table::precedence(Code code)
+{
+	return m_entry[code].precedence;
+}
+
+// returns the number of operators (arguments) for code
+int Table::nOperands(Code code)
+{
+	return m_entry[code].exprInfo->m_nOperands;
+}
+
+// returns the data type for a specific operator for code
+DataType Table::operandDataType(Code code, int operand)
+{
+	return m_entry[code].exprInfo->m_operandDataType[operand];
+}
+
+// returns the number of associate codes for code
+int Table::nAssocCodes(Code code)
+{
+	return m_entry[code].exprInfo->m_nAssocCodes;
+}
+
+// returns the associate code for a specific index for code
+Code Table::assocCode(Code code, int index)
+{
+	return m_entry[code].exprInfo->m_assocCode[index];
+}
+
+// returns the start index of the secondary associated codes for code
+int Table::assoc2Index(Code code)
+{
+	return m_entry[code].exprInfo->m_assoc2Index;
+}
+
+// returns the secondary associated code for a specific index for code
+Code Table::assoc2Code(Code code, int index)
+{
+	return m_entry[code].exprInfo->m_assocCode[assoc2Index(code) + index];
+}
+
+// returns the number of string operands for code
+int Table::nStrings(Code code)
+{
+	return m_entry[code].exprInfo->m_nStrings;
+}
+
+// returns whether the code is a unary operator code
+// (convenience function to avoid confusion)
+bool Table::isUnaryOperator(Code code)
+{
+	return code == unaryCode(code);
+}
+
+// returns the pointer to the token handler (if any) for code
+TokenHandler Table::tokenHandler(Code code)
+{
+	return m_entry[code].tokenHandler;
+}
+
+// returns the pointer to the command handler (if anyy) for code
+CommandHandler Table::commandHandler(Code code)
+{
+	return m_entry[code].commandHandler;
+}
+
+
+//=================================
+//  TOKEN RELATED TABLE FUNCTIONS
+//=================================
+
+// returns the precedence of the code contained in a token
+//
+//   - the precedence is obtained from the token
+//   - if this is -1 then the precedences if obtained for the token's code
+int Table::precedence(Token *token)
+{
+	int prec = token->precedence();
+	return prec != -1 ? prec : precedence(token->code());
+}
+
+// returns the flags of the code contained in a token
+//
+//   - returns Null_Flag is the token does not contain a code
+int Table::flags(Token *token)
+{
+	// (non-table entry token types have no flags)
+	return token->hasTableEntry() ? flags(token->code()) : Null_Flag;
+}
+
+// function to set a token for a code (code, token type and data type)
+void Table::setToken(Token *token, Code code)
+{
+	token->setCode(code);
+	token->setType(type(code));
+	token->setDataType(dataType(code));
+}
+
+// function to create a new token and initialize it for a code
+Token *Table::newToken(Code code)
+{
+	Token *token = new Token;	// allocates and initializes base members
+	setToken(token, code);		// initializes code related members
+	return token;
+}
+
+
+//============================
+//  TABLE SPECIFIC FUNCTIONS
+//============================
+
+// search function to look for a string of a particular type in
 // the Table, the search is case insensitive
 //
 //     - returns the index of the entry that is found
@@ -1551,11 +1712,11 @@ QStringList Table::initialize(void)
 
 Code Table::search(SearchType type, const QStringRef &string)
 {
-	Code i = range[type].beg;
-	Code end = range[type].end;
+	Code i = m_range[type].beg;
+	Code end = m_range[type].end;
 	while (++i < end)
 	{
-		if (string.compare(entry[i].name, Qt::CaseInsensitive) == 0)
+		if (string.compare(m_entry[i].name, Qt::CaseInsensitive) == 0)
 		{
 			return i;
 		}
@@ -1564,20 +1725,21 @@ Code Table::search(SearchType type, const QStringRef &string)
 }
 
 
-// this search function will look for a two word command in the Table,
+// search function to look for a two word command in the Table,
 // the search is case insensitive an only entries containing a second
-// word is checked
+// word are checked
 //
 //     - returns the index of the entry that is found
 //     - returns -1 if the string was not found in the table
+
 Code Table::search(const QStringRef &word1, const QStringRef &word2)
 {
-	for (Code i = range[PlainWord_SearchType].beg;
-		i < range[PlainWord_SearchType].end; i++)
+	for (Code i = m_range[PlainWord_SearchType].beg;
+		i < m_range[PlainWord_SearchType].end; i++)
 	{
-		if (entry[i].name2 != NULL
-			&& word1.compare(entry[i].name, Qt::CaseInsensitive) == 0
-			&& word2.compare(entry[i].name2, Qt::CaseInsensitive) == 0)
+		if (m_entry[i].name2 != NULL
+			&& word1.compare(m_entry[i].name, Qt::CaseInsensitive) == 0
+			&& word2.compare(m_entry[i].name2, Qt::CaseInsensitive) == 0)
 		{
 			return i;
 		}
@@ -1586,8 +1748,8 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2)
 }
 
 
-// this search function will look for a function matching the same
-// function name as the index specified and matching the same number of
+// search function to look for a function matching the same function
+// name as the index specified and matching the same number of
 // arguments specified
 //
 //     - returns the index of the entry that is found
@@ -1597,13 +1759,12 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2)
 //     - search begins at entry after index
 //     - search ends at end of section
 
-// 2010-04-04: new function implemented
 Code Table::search(Code index, int _noperands)
 {
-	for (Code i = index + 1; entry[i].name != NULL; i++)
+	for (Code i = index + 1; m_entry[i].name != NULL; i++)
 	{
-		if (strcmp(entry[index].name, entry[i].name) == 0
-			&& _noperands == noperands(i))
+		if (m_entry[index].name.compare(m_entry[i].name) == 0
+			&& _noperands == nOperands(i))
 		{
 			return i;
 		}
@@ -1612,8 +1773,8 @@ Code Table::search(Code index, int _noperands)
 }
 
 
-// this search function will look for a code matching the same
-// operand data types as specified in the argument, the main code is
+// search function to look for a code matching the same operand
+// data types as specified in the argument, the main code is
 // checked first and then each of the associated codes
 //
 //     - returns the index of the code that is found
@@ -1621,7 +1782,6 @@ Code Table::search(Code index, int _noperands)
 //     - the code specified must have associated codes
 //     - the number of data types must match that of the code
 
-// 2010-07-02: new function implemented
 Code Table::search(Code code, DataType *datatype)
 {
 	if (match(code, datatype))
@@ -1629,9 +1789,9 @@ Code Table::search(Code code, DataType *datatype)
 		return code;  // main code matches
 	}
 
-	for (int n = nassoc_codes(code); --n >= 0;)
+	for (int n = nAssocCodes(code); --n >= 0;)
 	{
-		Code assoc_code = this->assoc_code(code, n);
+		Code assoc_code = this->assocCode(code, n);
 		if (match(assoc_code, datatype))
 		{
 			return assoc_code;  // associated code matches
@@ -1640,18 +1800,16 @@ Code Table::search(Code code, DataType *datatype)
 	return Invalid_Code;  // no matches
 }
 
-// this function checks to see if data types specified match the data
+// function to check to see if data types specified match the data
 // types of the code at the index specified
 //
 //    - returns true if there is match, otherwise returns false
-//
 
-// 2010-07-02: new function implemented
 bool Table::match(Code code, DataType *datatype)
 {
-	for (int n = noperands(code); --n >= 0;)
+	for (int n = nOperands(code); --n >= 0;)
 	{
-		if (datatype[n] != operand_datatype(code, n))
+		if (datatype[n] != operandDataType(code, n))
 		{
 			return false;
 		}
