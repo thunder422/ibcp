@@ -1800,12 +1800,12 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2)
 //     - search begins at entry after index
 //     - search ends at end of section
 
-Code Table::search(Code index, int _noperands)
+Code Table::search(Code index, int nArguments)
 {
 	for (Code i = index + 1; m_entry[i].name != NULL; i++)
 	{
 		if (m_entry[index].name.compare(m_entry[i].name) == 0
-			&& _noperands == nOperands(i))
+			&& nArguments == nOperands(i))
 		{
 			return i;
 		}

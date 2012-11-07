@@ -61,22 +61,22 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	case EOL_Code:
 		// check done stack is empty before calling process_final_operand()
 		// to avoid bug error check for empty done stack in find_code()
-		if (t.done_stack.empty())
+		if (t.m_doneStack.empty())
 		{
 			// save expected type
 			DataType datatype = cmd_item->token->dataType();
 
 			cmd_item->token = token;  // point error to end-of-statement token
-			return Translator::errStatusExpected(datatype);
+			return Translator::expectedErrStatus(datatype);
 		}
 
 		// turnoff reference flag of assign token, no longer needed
 		cmd_item->token->setReference(false);
 
-		return t.process_final_operand(cmd_item->token, NULL, 1);
+		return t.processFinalOperand(cmd_item->token, NULL, 1);
 
 	default:  // token was not expected command
-		switch (t.mode)
+		switch (t.m_mode)
 		{
 		case AssignmentList_TokenMode:
 			// point error to unexpected token
@@ -84,13 +84,13 @@ TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 			return ExpEqualOrComma_TokenStatus;
 
 		case Expression_TokenMode:
-			if (t.state == Translator::BinOp_State)
+			if (t.m_state == Translator::BinOp_State)
 			{
 				// point error to unexpected token
 				cmd_item->token = token;
 				return ExpOpOrEnd_TokenStatus;
 			}
-			status = Translator::errStatusExpected(t.cmd_stack.top().token
+			status = Translator::expectedErrStatus(t.m_cmdStack.top().token
 				->dataType());
 			// point error to unexpected token after setting error
 			cmd_item->token = token;
@@ -115,31 +115,31 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	{
 	case Comma_Code:
 		// make sure the expression before comma is complete
-		status = t.expression_end();
+		status = t.expressionEnd();
 		if (status != Good_TokenStatus)
 		{
 			return status;
 		}
 
-		status = t.add_print_code();
+		status = t.addPrintCode();
 		if (status > Good_TokenStatus)
 		{
 			return status;
 		}
 
 		// append comma (advance to next column) token to output
-		t.output->append(new RpnItem(token));
+		t.m_output->append(new RpnItem(token));
 
 		// set PRINT command item flag in case last item in statement
 		// (resets PrintFunc_CmdFlag if set)
-		t.cmd_stack.top().flag = PrintStay_CmdFlag;
+		t.m_cmdStack.top().flag = PrintStay_CmdFlag;
 
 		// switch back to operand state (expecting operand next)
-		t.state = Translator::OperandOrEnd_State;
+		t.m_state = Translator::OperandOrEnd_State;
 		return Good_TokenStatus;
 
 	case SemiColon_Code:
-		status = t.add_print_code();
+		status = t.addPrintCode();
 		if (status == Good_TokenStatus)
 		{
 			// print code added, delete semicolon token
@@ -148,16 +148,16 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		else if (status == Null_TokenStatus)
 		{
 			// check if last token added was a print function
-			if (t.cmd_stack.top().flag & PrintFunc_CmdFlag)
+			if (t.m_cmdStack.top().flag & PrintFunc_CmdFlag)
 			{
 				// set semicolon subcode flag on print function
-				t.output->last()->token->setSubCodeMask(SemiColon_SubCode);
+				t.m_output->last()->token()->setSubCodeMask(SemiColon_SubCode);
 				// sub-code set, delete semicolon token
 				delete token;
 			}
 			else  // no expression, add dummy semicolon token
 			{
-				t.output->append(new RpnItem(token));
+				t.m_output->append(new RpnItem(token));
 			}
 		}
 		else  // an error occurred
@@ -167,21 +167,21 @@ TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 		// set PRINT command item flag in case last item in statement
 		// (resets PrintFunc_CmdFlag if set)
-		t.cmd_stack.top().flag = PrintStay_CmdFlag;
+		t.m_cmdStack.top().flag = PrintStay_CmdFlag;
 
 		// switch back to operand state (expecting operand next)
-		t.state = Translator::OperandOrEnd_State;
+		t.m_state = Translator::OperandOrEnd_State;
 
 		return Good_TokenStatus;
 
 	case EOL_Code:
-		status = t.add_print_code();
+		status = t.addPrintCode();
 		if (status == Good_TokenStatus  // data type specific code added?
 			|| status == Null_TokenStatus  // or not stay on line?
 			&& !(cmd_item->flag & PrintStay_CmdFlag))
 		{
 			// append the print token to go to newline at runtime
-			t.output->append(new RpnItem(cmd_item->token));
+			t.m_output->append(new RpnItem(cmd_item->token));
 			// set good status; could be set to null
 			status = Good_TokenStatus;
 		}
@@ -210,7 +210,7 @@ TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 	// if it is then it means that the LET command was not completed
 	cmd_item->token = token;  // point to end-of-statement token
 	// make sure done stack is not empty
-	if (t.done_stack.empty())
+	if (t.m_doneStack.empty())
 	{
 		return ExpAssignItem_TokenStatus;
 	}
@@ -231,36 +231,36 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 	// PROCESS BEGIN/PROMPT
 	// used input begin command flag instead of element pointer
-	if (!(t.cmd_stack.top().flag & InputBegin_CmdFlag))  // no begin code yet?
+	if (!(t.m_cmdStack.top().flag & InputBegin_CmdFlag))  // no begin code yet?
 	{
-		t.cmd_stack.top().flag |= InputBegin_CmdFlag;  // begin processed
+		t.m_cmdStack.top().flag |= InputBegin_CmdFlag;  // begin processed
 		if (cmd_item->token->isCode(InputPrompt_Code))
 		{
-			if (t.done_stack.empty())
+			if (t.m_doneStack.empty())
 			{
 				// report error against token
 				cmd_item->token = token;  // set error token
 				return ExpStrExpr_TokenStatus;
 			}
-			if (Translator::equivalentDataType(t.done_stack.top().rpnItem
-				->token->dataType()) != String_DataType)
+			if (Translator::equivalentDataType(t.m_doneStack.top().rpnItem
+				->token()->dataType()) != String_DataType)
 			{
 				// don't delete token, caller will delete it
 				// report error against first token of expression on done stack
-				token = t.done_stack.top().first
-					->setThrough(t.done_stack.top().last);
+				token = t.m_doneStack.top().first
+					->setThrough(t.m_doneStack.top().last);
 				// delete last token if close paren, remove from done stack
-				t.delete_close_paren(t.done_stack.pop().rpnItem->token);
+				t.deleteCloseParen(t.m_doneStack.pop().rpnItem->token());
 				cmd_item->token = token;  // set error token
 				return ExpStrExpr_TokenStatus;
 			}
-			if (t.table.flags(code) & EndStmt_Flag)
+			if (t.m_table.flags(code) & EndStmt_Flag)
 			{
 				cmd_item->token = token;  // set error token
 				return ExpOpSemiOrComma_TokenStatus;
 			}
 			// change token to InputBeginStr and set sub-code
-			t.table.setToken(token, InputBeginStr_Code);
+			t.m_table.setToken(token, InputBeginStr_Code);
 			switch (code)
 			{
 			case Comma_Code:
@@ -273,49 +273,49 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 				cmd_item->token = token;  // set error token
 				return ExpSemiCommaOrEnd_TokenStatus;
 			}
-			status = t.process_final_operand(token, NULL, 0);
+			status = t.processFinalOperand(token, NULL, 0);
 			if (status == Good_TokenStatus)
 			{
 				// set pointer to new end of output
-				t.cmd_stack.top().index = t.output->size();
+				t.m_cmdStack.top().index = t.m_output->size();
 			}
 			else
 			{
 				;//cmd_item->token = token;  // set error token (2011-03-24)
 			}
-			t.mode = Reference_TokenMode;  // change mode
+			t.m_mode = Reference_TokenMode;  // change mode
 			// set state for first variable
-			t.state = Translator::Operand_State;
+			t.m_state = Translator::Operand_State;
 			return status;
 		}
 
 		// Input_Code
-		if (!t.done_stack.empty())
+		if (!t.m_doneStack.empty())
 		{
 			// create new token for InputBegin
 			// insert at begin of command before first variable
-			t.output->insert(t.cmd_stack.top().index++,
-				new RpnItem(t.table.newToken(InputBegin_Code)));
+			t.m_output->insert(t.m_cmdStack.top().index++,
+				new RpnItem(t.m_table.newToken(InputBegin_Code)));
 		}
 		// if no variable on done stack, error will be reported below
 		// now continue with input variable
 	}
 
 	// PROCESS INPUT VARIABLE
-	if (t.state != Translator::EndStmt_State)
+	if (t.m_state != Translator::EndStmt_State)
 	{
-		if (t.done_stack.empty())
+		if (t.m_doneStack.empty())
 		{
 			cmd_item->token = token;  // set error token
 			return ExpVar_TokenStatus;
 		}
 
 		// set token for data type specific input assign token
-		t.table.setToken(token, InputAssign_Code);
+		t.m_table.setToken(token, InputAssign_Code);
 		// set reference flag to be handled correctly in find_code
 		token->setReference();
 		// find appropriate input assign code and append to output
-		status = t.process_final_operand(token, NULL, 0);
+		status = t.processFinalOperand(token, NULL, 0);
 		if (status != Good_TokenStatus)
 		{
 			cmd_item->token = token;  // set error token
@@ -327,23 +327,23 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 		// (which is first associated 2 code of input assign code)
 		// insert input parse token into list at current index (update index)
 
-		t.output->insert(t.cmd_stack.top().index++,
-			new RpnItem(t.table.newToken(
-			t.table.assoc2Code(token->code()))));
+		t.m_output->insert(t.m_cmdStack.top().index++,
+			new RpnItem(t.m_table.newToken(
+			t.m_table.assoc2Code(token->code()))));
 
 		// now process code
 		if (code == Comma_Code)
 		{
-			t.state = Translator::Operand_State;  // for next variable
+			t.m_state = Translator::Operand_State;  // for next variable
 			return Good_TokenStatus;  // done now, but expecting more variables
 		}
 		if (code == SemiColon_Code)
 		{
-			t.cmd_stack.top().flag |= InputStay_CmdFlag;  // stay on line
-			t.state = Translator::EndStmt_State;  // expecting end-of-statment
+			t.m_cmdStack.top().flag |= InputStay_CmdFlag;  // stay on line
+			t.m_state = Translator::EndStmt_State;  // expecting end-of-statment
 			return Good_TokenStatus;   // done now, wait for end-of-statment
 		}
-		if (!(t.table.flags(code) & EndStmt_Flag))
+		if (!(t.m_table.flags(code) & EndStmt_Flag))
 		{
 			// unexpected token
 			cmd_item->token = token;  // set error token
@@ -355,13 +355,14 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item, Token *token)
 
 	// PROCESS END OF INPUT
 	// mark last parse code with end subcode
-	(*t.output)[t.cmd_stack.top().index - 1]->token->setSubCode(End_SubCode);
+	(*t.m_output)[t.m_cmdStack.top().index - 1]->token()
+		->setSubCode(End_SubCode);
 	// append the input token to go to newline at runtime
-	if (t.cmd_stack.top().flag & InputStay_CmdFlag)
+	if (t.m_cmdStack.top().flag & InputStay_CmdFlag)
 	{
 		cmd_item->token->setSubCode(Keep_SubCode);
 	}
-	t.output->append(new RpnItem(cmd_item->token));
+	t.m_output->append(new RpnItem(cmd_item->token));
 	return Good_TokenStatus;
 }
 

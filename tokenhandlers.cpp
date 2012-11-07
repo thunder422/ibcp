@@ -50,9 +50,9 @@
 TokenStatus Operator_Handler(Translator &t, Token *&token)
 {
 	// only check mode if not in parentheses (expression)
-	if (t.count_stack.empty())
+	if (t.m_countStack.empty())
 	{
-		switch (t.mode)
+		switch (t.m_mode)
 		{
 		case Command_TokenMode:
 		case Assignment_TokenMode:
@@ -72,7 +72,7 @@ TokenStatus Operator_Handler(Translator &t, Token *&token)
 		}
 	}
 
-	return t.process_first_operand(token);
+	return t.processFirstOperand(token);
 }
 
 
@@ -86,40 +86,40 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 	Token *org_token;
 
 	// only check mode if not in parentheses (expression)
-	if (t.count_stack.empty())
+	if (t.m_countStack.empty())
 	{
-		switch (t.mode)
+		switch (t.m_mode)
 		{
 		case Command_TokenMode:
 		case Assignment_TokenMode:
 			// start of assign statement
-			status = t.set_assign_command(token, Assign_Code);
+			status = t.setAssignCommand(token, Assign_Code);
 			if (status != Good_TokenStatus)
 			{
 				return status;
 			}
 
 			// switch straight to expression mode
-			t.mode = Expression_TokenMode;
+			t.m_mode = Expression_TokenMode;
 
 			// expecting operand next
-			t.state = Translator::Operand_State;
+			t.m_state = Translator::Operand_State;
 			return Good_TokenStatus;
 
 		case AssignmentList_TokenMode:
 			// comma puts AssignList on hold stack
 			delete token;  // assign list operator already on hold stack
 
-			status = t.check_assignlist_token(token);
+			status = t.checkAssignListToken(token);
 			if (status != Good_TokenStatus)
 			{
 				return status;
 			}
 
-			t.mode = Expression_TokenMode;  // end of list, expression follows
+			t.m_mode = Expression_TokenMode;  // end of list, expression follows
 
 			// expecting operand next
-			t.state = Translator::Operand_State;
+			t.m_state = Translator::Operand_State;
 			return Good_TokenStatus;
 
 		case Expression_TokenMode:
@@ -131,7 +131,7 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 	}
 
 	// inside an expression, keep Eq_Code
-	return t.process_first_operand(token);
+	return t.processFirstOperand(token);
 }
 
 
@@ -141,42 +141,42 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 
 TokenStatus Comma_Handler(Translator &t, Token *&token)
 {
-	int noperands;
+	int nOperands;
 	TokenStatus status;
 
 	// only check mode if not in parentheses (expression)
-	if (t.count_stack.empty())
+	if (t.m_countStack.empty())
 	{
-		switch (t.mode)
+		switch (t.m_mode)
 		{
 		case Command_TokenMode:
 		case Assignment_TokenMode:
 			// this is an assignment list
 			// (comma puts AssignList on hold stack)
 			// assignment for a comma separated list, change token
-			if (t.done_stack.empty())  // make sure stack not empty
+			if (t.m_doneStack.empty())  // make sure stack not empty
 			{
 				// if nothing before comma, comma unexpected
 				// return appropriate error for mode
-				return t.mode == Command_TokenMode
+				return t.m_mode == Command_TokenMode
 					? ExpCmd_TokenStatus : ExpAssignItem_TokenStatus;
 			}
 
-			status = t.set_assign_command(token, AssignList_Code);
+			status = t.setAssignCommand(token, AssignList_Code);
 			if (status != Good_TokenStatus)
 			{
 				return status;
 			}
 
 			// comma separated assignment list
-			t.mode = AssignmentList_TokenMode;
+			t.m_mode = AssignmentList_TokenMode;
 			break;
 
 		case AssignmentList_TokenMode:
 			// continuation a comma separated list
 			delete token;  // don't need comma token on stack
 
-			status = t.check_assignlist_token(token);
+			status = t.checkAssignListToken(token);
 			if (status != Good_TokenStatus)
 			{
 				return status;
@@ -188,7 +188,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			// inside an expression, but not in array or function
 
 			// check if command allows comma
-			status = t.call_command_handler(token);
+			status = t.callCommandHandler(token);
 			if (status == Null_TokenStatus)  // command didn't expect comma
 			{
 				// this can only occur in expression only test mode
@@ -196,8 +196,8 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			}
 			return status;
 
-		case Reference_TokenMode:  // 2011-03-20: added
-			return t.call_command_handler(token);
+		case Reference_TokenMode:
+			return t.callCommandHandler(token);
 			// it is up to command handler to set state appropriately
 			// XXX assume command used comma token (otherwise need to check)
 			// XXX assume command set state according to its needs
@@ -209,27 +209,28 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 	else
 	{
 		// inside an expression, check if in array or function
-		if (t.count_stack.top().noperands == 0)
+		if (t.m_countStack.top().nOperands == 0)
 		{
 			// inside parentheses
 			return ExpOpOrParen_TokenStatus;
 		}
-		else if (t.count_stack.top().nexpected > 0)  // internal function?
+		else if (t.m_countStack.top().nExpected > 0)  // internal function?
 		{
-			Token *top_token = t.hold_stack.top().token;
-			if (t.count_stack.top().noperands == t.count_stack.top().nexpected)
+			Token *topToken = t.m_holdStack.top().token;
+			if (t.m_countStack.top().nOperands
+				== t.m_countStack.top().nExpected)
 			{
 				// number of arguments doesn't match current function's entry
 				// see if function has multiple entries
-				if ((t.table.flags(top_token->code()) & Multiple_Flag) != 0)
+				if ((t.m_table.flags(topToken->code()) & Multiple_Flag) != 0)
 				{
 					// change token to next code (index)
 					// (table entries have been validated during initialization)
 					// (need to increment index before assignment)
-					t.count_stack.top().code = top_token->nextCode();
+					t.m_countStack.top().code = topToken->nextCode();
 					// update number of expected operands
-					t.count_stack.top().nexpected
-						= t.table.nOperands(top_token->code());
+					t.m_countStack.top().nExpected
+						= t.m_table.nOperands(topToken->code());
 				}
 				else
 				{
@@ -238,21 +239,21 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			}
 
 			// check argument, change code and insert conversion
-			status = t.find_code(top_token, t.count_stack.top().noperands - 1);
+			status = t.findCode(topToken, t.m_countStack.top().nOperands - 1);
 			if (status != Good_TokenStatus)
 			{
 				delete token;       // delete comma token
-				token = top_token;  // return token with error
+				token = topToken;  // return token with error
 				return status;
 			}
 		}
 		// increment the number of operands
-		t.count_stack.top().noperands++;
+		t.m_countStack.top().nOperands++;
 		// delete comma token, it's not needed
 		delete token;
 	}
 
-	t.state = Translator::Operand_State;
+	t.m_state = Translator::Operand_State;
 	return Good_TokenStatus;
 }
 
@@ -264,20 +265,20 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 {
 	TokenStatus status;
-	int noperands;
+	int nOperands;
 
 	// make sure the expression before semicolon is complete
-	status = t.expression_end();
+	status = t.expressionEnd();
 	if (status != Good_TokenStatus)
 	{
 		return status;
 	}
 
-	status = t.call_command_handler(token);
+	status = t.callCommandHandler(token);
 	// it is up to command handler to set state appropriately
 	if (status == Null_TokenStatus)  // command stack was empty
 	{
-		if (t.done_stack.empty())
+		if (t.m_doneStack.empty())
 		{
 			// no tokens received yet
 			return ExpCmd_TokenStatus;
@@ -295,53 +296,53 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 
 TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 {
-	Token *top_token;
-	int noperands;			// for array/function support
+	Token *topToken;
+	int nOperands;			// for array/function support
 	int done_push = true;	// for print-only functions
 
 	// do closing parentheses processing
-	if (t.hold_stack.empty())
+	if (t.m_holdStack.empty())
 	{
 		// oops, stack is empty
 		return BUG_DoneStackEmptyParen;
 	}
 	// don't pop top token yet in case error occurs
-	top_token = t.hold_stack.top().token;
+	topToken = t.m_holdStack.top().token;
 
-	if (t.count_stack.empty())
+	if (t.m_countStack.empty())
 	{
 		return NoOpenParen_TokenStatus;
 	}
-	noperands = t.count_stack.pop().noperands;
-	if (noperands == 0)
+	nOperands = t.m_countStack.pop().nOperands;
+	if (nOperands == 0)
 	{
 		// just a parentheses expression
-		if (!top_token->isCode(OpenParen_Code))
+		if (!topToken->isCode(OpenParen_Code))
 		{
 			// oops, no open parentheses
 			return BUG_UnexpectedCloseParen;  // this should not happen
 		}
 
 		// clear reference for item on top of done stack
-		t.done_stack.top().rpnItem->token->setReference(false);
+		t.m_doneStack.top().rpnItem->token()->setReference(false);
 		// replace first and last operands of item on done stack
-		t.delete_open_paren(t.done_stack.top().first);
-		t.done_stack.top().first = top_token;
-		t.delete_close_paren(t.done_stack.top().last);
-		t.done_stack.top().last = token;
+		t.deleteOpenParen(t.m_doneStack.top().first);
+		t.m_doneStack.top().first = topToken;
+		t.deleteCloseParen(t.m_doneStack.top().last);
+		t.m_doneStack.top().last = token;
 		// mark close paren token as used for last operand and pending paren
 		// (so that it doesn't get deleted until its not used anymore)
 		token->setSubCodeMask(Last_SubCode + Used_SubCode);
 
 		// set pending parentheses token pointer
-		t.pending_paren = token;
+		t.m_pendingParen = token;
 	}
 	else  // array or function
 	{
 		int operand_index;
 
 		// make sure token is an array or a function
-		if (!top_token->hasParen())
+		if (!topToken->hasParen())
 		{
 			// unexpected token on stack
 			return BUG_UnexpectedToken;
@@ -349,46 +350,46 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 
 		// set reference flag for array or function
 		// (DefFuncP should not have reference set)
-		if (top_token->isType(Paren_TokenType))
+		if (topToken->isType(Paren_TokenType))
 		{
-			top_token->setReference();
+			topToken->setReference();
 			operand_index = 0;  // not applicable
 		}
-		else if (top_token->isType(DefFuncP_TokenType))
+		else if (topToken->isType(DefFuncP_TokenType))
 		{
 			operand_index = 0;  // not applicable
 		}
 		else  // INTERNAL FUNCTION
 		{
 			// check for number of arguments for internal functions
-			if (noperands != t.table.nOperands(top_token->code()))
+			if (nOperands != t.m_table.nOperands(topToken->code()))
 			{
 				return ExpOpOrComma_TokenStatus;
 			}
 
-			operand_index = t.table.nOperands(top_token->code()) - 1;
+			operand_index = t.m_table.nOperands(topToken->code()) - 1;
 			// tell process_final_operand() to use operand_index
-			noperands = 0;
+			nOperands = 0;
 		}
 
 		// change token operator code or insert conversion codes as needed
-		TokenStatus status = t.process_final_operand(top_token, token,
-			operand_index, noperands);
+		TokenStatus status = t.processFinalOperand(topToken, token,
+			operand_index, nOperands);
 		if (status != Good_TokenStatus)
 		{
-			// if top_token was not changed, pop it now
-			if (top_token == t.hold_stack.top().token)
+			// if topToken was not changed, pop it now
+			if (topToken == t.m_holdStack.top().token)
 			{
-				t.hold_stack.resize(t.hold_stack.size() - 1);
+				t.m_holdStack.resize(t.m_holdStack.size() - 1);
 			}
 			delete token;		// delete close paren token
-			token = top_token;  // set token with error
+			token = topToken;  // set token with error
 			return status;
 		}
 	}
 
 	// now pop the top token
-	t.hold_stack.resize(t.hold_stack.size() - 1);
+	t.m_holdStack.resize(t.m_holdStack.size() - 1);
 
 	return Good_TokenStatus;
 }
@@ -403,22 +404,22 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 	// TODO this is end of statement processing
 
 	// check for proper end of expression
-	TokenStatus status = t.expression_end();
+	TokenStatus status = t.expressionEnd();
 	if (status != Good_TokenStatus)
 	{
 		return status;
 	}
 
 	// check for expression only mode
-	if (!t.exprmode)
+	if (!t.m_exprMode)
 	{
 		// process command on top of command stack
-		if (t.cmd_stack.empty())
+		if (t.m_cmdStack.empty())
 		{
-			switch (t.mode)
+			switch (t.m_mode)
 			{
 			case Assignment_TokenMode:
-				if (t.state != Translator::BinOp_State)
+				if (t.m_state != Translator::BinOp_State)
 				{
 					return ExpAssignItem_TokenStatus;
 				}
@@ -434,12 +435,12 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 				return BUG_InvalidMode;
 			}
 		}
-		status = t.call_command_handler(token);
+		status = t.callCommandHandler(token);
 		if (status != Good_TokenStatus)
 		{
 			return status;
 		}
-		t.cmd_stack.resize(t.cmd_stack.size() - 1);
+		t.m_cmdStack.resize(t.m_cmdStack.size() - 1);
 		// upon return from the command handler,
 		// the hold stack should have the null token on top
 		// and done stack should be empty
@@ -449,25 +450,25 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 	else  // handle expression only test mode
 	{
 		// check if find result is only thing on done stack
-		if (t.done_stack.empty())
+		if (t.m_doneStack.empty())
 		{
 			return BUG_DoneStackEmpty;
 		}
 		// pop result and delete any paren tokens in first/last operands
-		t.delete_open_paren(t.done_stack.top().first);
-		t.delete_close_paren(t.done_stack.pop().last);
+		t.deleteOpenParen(t.m_doneStack.top().first);
+		t.deleteCloseParen(t.m_doneStack.pop().last);
 	}
 
 	// pop and delete null token from top of stack
-	delete t.hold_stack.pop().token;
+	delete t.m_holdStack.pop().token;
 
-	if (!t.done_stack.empty())
+	if (!t.m_doneStack.empty())
 	{
 		return BUG_DoneStackNotEmpty;
 	}
 
 	// make sure command stack is empty (temporary TODO)
-	if (!t.cmd_stack.empty())
+	if (!t.m_cmdStack.empty())
 	{
 		return BUG_CmdStackNotEmpty;
 	}

@@ -137,7 +137,7 @@ public:
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const QStringRef &string);
 	Code search(const QStringRef &word1, const QStringRef &word2);
-	Code search(Code code, int nargs);
+	Code search(Code code, int nArguments);
 	Code search(Code code, DataType *dataType);
 	bool match(Code code, DataType *dataType);
 };

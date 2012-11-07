@@ -43,7 +43,7 @@ enum {
 
 	// FLAGS FOR PRINT COMMAND
 	PrintStay_CmdFlag		= 0x00010000,	// PRINT stay on line flag
-	PrintFunc_CmdFlag		= 0x00020000,	// print func flag (2010-06-08)
+	PrintFunc_CmdFlag		= 0x00020000,	// print function flag
 
 	// FLAGS FOR ASSIGNMENT COMMANDS
 	AssignList_CmdFlag		= 0x00010000,	// currently an assign list
@@ -57,54 +57,91 @@ enum {
 // command item
 struct CmdItem {
 	Token *token;				// pointer to command token
-	int flag;					// 2010-06-01: generic flag for command use
+	int flag;					// generic flag for command use
 	int index;  				// index into output list for command use
 };
 
 
 // structure for holding RPN output list information
-struct RpnItem {
-	Token *token;							// pointer to token
-	int noperands;							// number of operands
-	RpnItem **operand;						// array of operand pointers
+class RpnItem {
+	Token *m_token;				// pointer to token
+	int m_nOperands;			// number of operands
+	RpnItem **m_operand;		// array of operand pointers
 
-	RpnItem(Token *_token, int _noperands = 0, RpnItem **_operand = NULL)
+public:
+	RpnItem(Token *token, int nOperands = 0, RpnItem **operand = NULL)
 	{
-		token = _token;
-		noperands = _noperands;
-		operand = _operand;
+		m_token = token;
+		m_nOperands = nOperands;
+		m_operand = operand;
 	}
 	~RpnItem()
 	{
-		delete token;
-		if (noperands > 0)
+		delete m_token;
+		if (m_nOperands > 0)
 		{
-			delete[] operand;
+			delete[] m_operand;
 		}
 	}
 
-	// function to set operands without allocating a new array
-	void set(int _noperands, RpnItem **_operand)
+	// access functions
+	Token *token(void)
 	{
-		noperands = _noperands;
-		operand = _operand;
+		return m_token;
+	}
+	void setToken(Token *token)
+	{
+		m_token = token;
+	}
+
+	int nOperands(void)
+	{
+		return m_nOperands;
+	}
+	void setNOperands(int nOperands)
+	{
+		m_nOperands = nOperands;
+	}
+
+	RpnItem **operand(void)
+	{
+		return m_operand;
+	}
+	void setOperand(RpnItem **operand)
+	{
+		m_operand = operand;
+	}
+	RpnItem *operand(int index)
+	{
+		return m_operand[index];
+	}
+	void setOperand(int index, RpnItem *operand)
+	{
+		m_operand[index] = operand;
+	}
+
+	// function to set operands without allocating a new array
+	void set(int nOperands, RpnItem **operand)
+	{
+		m_nOperands = nOperands;
+		m_operand = operand;
 	}
 };
 
 
 class Translator {
-	struct HoldStackItem {
+	struct HoldItem {
 		Token *token;				// token pointer on hold stack
 		Token *first;				// operator token's first operand pointer
 	};
-	struct DoneStackItem {
+	struct DoneItem {
 		RpnItem *rpnItem;			// pointer to RPN item
 		Token *first;				// operator token's first operand pointer
 		Token *last;				// operator token's last operand pointer
 	};
 	struct CountItem {
-		char noperands;				// number of operands seen
-		char nexpected;				// number of arguments expected
+		char nOperands;				// number of operands seen
+		char nExpected;				// number of arguments expected
 		Code code;					// table index of internal function
 	};
 	enum State {
@@ -115,42 +152,42 @@ class Translator {
 		EndExpr_State,				// expecting end of expression (2011-03-05)
         EndStmt_State,				// expecting end of statement (2011-03-19)
 		sizeof_State
-	} state;						// current state of translator
+	} m_state;						// current state of translator
 
-	Table &table;					// pointer to the table object
-	QList<RpnItem *> *output;		// pointer to RPN list output
-	QStack<HoldStackItem> hold_stack;  // operator/function holding stack
-	QStack<DoneStackItem> done_stack;  // items processed stack
-	Token *pending_paren;			// closing parentheses token is pending
-	int last_precedence;			// precedence of last op added during paren
-	QStack<CountItem> count_stack;	// number of operands counter stack
-	TokenMode mode;					// current assignment mode
-	QStack<CmdItem> cmd_stack;		// stack of commands waiting processing
-	bool exprmode;					// expression only mode active flag
+	Table &m_table;					// pointer to the table object
+	QList<RpnItem *> *m_output;		// pointer to RPN list output
+	QStack<HoldItem> m_holdStack;	// operator/function holding stack
+	QStack<DoneItem> m_doneStack;	// items processed stack
+	Token *m_pendingParen;			// closing parentheses token is pending
+	int m_lastPrecedence;			// precedence of last op added during paren
+	QStack<CountItem> m_countStack;	// number of operands counter stack
+	TokenMode m_mode;				// current assignment mode
+	QStack<CmdItem> m_cmdStack;		// stack of commands waiting processing
+	bool m_exprMode;				// expression only mode active flag
 
 public:
-	Translator(Table &t): table(t), output(NULL), pending_paren(NULL) {}
-	void start(bool _exprmode = false)
+	Translator(Table &t): m_table(t), m_output(NULL), m_pendingParen(NULL) {}
+	void start(bool exprMode = false)
 	{
-		exprmode = _exprmode;  // save flag
-		output = new QList<RpnItem *>;
-		state = Initial_State;
+		m_exprMode = exprMode;  // save flag
+		m_output = new QList<RpnItem *>;
+		m_state = Initial_State;
 		// (expression mode for testing)
-		mode = exprmode ? Expression_TokenMode : Command_TokenMode;
+		m_mode = m_exprMode ? Expression_TokenMode : Command_TokenMode;
 	}
 	// function to access if operand state
-	bool get_operand_state(void)
+	bool getOperandState(void)
 	{
-		return state == Operand_State || state == OperandOrEnd_State;
+		return m_state == Operand_State || m_state == OperandOrEnd_State;
 	}
-	TokenStatus add_token(Token *&token);
-	QList<RpnItem *> *get_result(void)	// only call when add_token returns Done
+	TokenStatus addToken(Token *&token);
+	QList<RpnItem *> *getResult(void)	// only call when add_token returns Done
 	{
-		QList<RpnItem *> *list = output;
-		output = NULL;
+		QList<RpnItem *> *list = m_output;
+		m_output = NULL;
 		return list;
 	}
-	void clean_up(void);			// only call when add_token returns an error
+	void cleanUp(void);			// only call when add_token returns an error
 
 private:
 	enum Match {
@@ -160,14 +197,14 @@ private:
 		sizeof_Match
 	};
 
-	TokenStatus process_operand(Token *&token);
-	TokenStatus end_expression_error(void);
-	bool process_unary_operator(Token *&token, TokenStatus &status);
-    TokenStatus process_binary_operator(Token *&token);
-	TokenStatus process_operator(Token *&token);
-	TokenStatus operator_error(void);
+	TokenStatus processOperand(Token *&token);
+	TokenStatus endExpressionError(void);
+	bool processUnaryOperator(Token *&token, TokenStatus &status);
+    TokenStatus processBinaryOperator(Token *&token);
+	TokenStatus processOperator(Token *&token);
+	TokenStatus operatorError(void);
 	// TODO move this function to translator.cpp
-	void set_default_datatype(Token *token)
+	void setDefaultDataType(Token *token)
 	{
 		// only set to double if not an internal function
 		if (token->isDataType(None_DataType)
@@ -184,33 +221,33 @@ private:
 			token->setDataType(TmpStr_DataType);
 		}
 	}
-	TokenStatus process_first_operand(Token *&token);
-	TokenStatus process_final_operand(Token *&token, Token *token2,
-		int operand_index, int noperands = 0);
-	TokenStatus find_code(Token *&token, int operand_index,
+	TokenStatus processFirstOperand(Token *&token);
+	TokenStatus processFinalOperand(Token *&token, Token *token2,
+		int operandIndex, int nOperands = 0);
+	TokenStatus findCode(Token *&token, int operandIndex,
 		Token **first = NULL, Token **last = NULL);
-	void do_pending_paren(Token *token);
-	TokenStatus expression_end(void);
-	TokenStatus paren_status(void);
-	TokenStatus get_expr_datatype(DataType &datatype);
-	void delete_close_paren(Token *last);
-	TokenStatus call_command_handler(Token *&token);
+	void doPendingParen(Token *token);
+	TokenStatus expressionEnd(void);
+	TokenStatus parenStatus(void);
+	TokenStatus getExprDataType(DataType &dataType);
+	void deleteCloseParen(Token *last);
+	TokenStatus callCommandHandler(Token *&token);
 
 	// COMMAND SPECIFIC FUNCTIONS
-	TokenStatus add_print_code(void);
-	TokenStatus check_assignlist_token(Token *&token);
-	TokenStatus set_assign_command(Token *&token, Code assign_code);
+	TokenStatus addPrintCode(void);
+	TokenStatus checkAssignListToken(Token *&token);
+	TokenStatus setAssignCommand(Token *&token, Code assign_code);
 
 	// By DataType Access Functions
-	static TokenStatus errStatusExpected(DataType dataType);
-	static TokenStatus errStatusActual(DataType dataType);
-	static TokenStatus errStatusVariable(DataType dataType);
+	static TokenStatus expectedErrStatus(DataType dataType);
+	static TokenStatus actualErrStatus(DataType dataType);
+	static TokenStatus variableErrStatus(DataType dataType);
 	static DataType equivalentDataType(DataType dataType);
 
 public:
 	// function to delete an open paren token
 	// (public to be used to delete token to prevent memory leak)
-	void delete_open_paren(Token *first);
+	void deleteOpenParen(Token *first);
 
 	// token handler friend function definitions section
 	friend TokenStatus Operator_Handler(Translator &t, Token *&token);
@@ -230,15 +267,6 @@ public:
 	friend TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item,
 		Token *token);
 };
-
-
-// token handler function definitions section
-extern TokenStatus Operator_Handler(Translator &t, Token *&token);
-extern TokenStatus Equal_Handler(Translator &t, Token *&token);
-extern TokenStatus Comma_Handler(Translator &t, Token *&token);
-extern TokenStatus CloseParen_Handler(Translator &t, Token *&token);
-extern TokenStatus EndOfLine_Handler(Translator &t, Token *&token);
-extern TokenStatus SemiColon_Handler(Translator &t, Token *&token);
 
 
 #endif  // TRANSLATOR_H

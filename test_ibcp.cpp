@@ -387,24 +387,24 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 	parser.setInput(QString(testInput));
 	do {
 		// set parser operand state from translator (2011-03-27)
-		parser.setOperandState(translator.get_operand_state());
+		parser.setOperandState(translator.getOperandState());
 		orgToken = token = parser.getToken();
 		// 2010-03-18: need to check for a parser error
 		if (token->isType(Error_TokenType))
 		{
 			printError(cout, token, token->string());
 			delete token;
-			translator.clean_up();
+			translator.cleanUp();
 			return;
 		}
 		//printToken(cout, token, tab);
-		status = translator.add_token(token);
+		status = translator.addToken(token);
 	}
 	while (status == Good_TokenStatus);
 	if (status == Done_TokenStatus)
 	{
 		// 2010-05-15: change rpn_list from Token pointers
-		QList<RpnItem *> *rpnList = translator.get_result();
+		QList<RpnItem *> *rpnList = translator.getResult();
 		// 2010-05-15: added separate print loop so operands can also be printed
 		printOutput(cout, "Output", *rpnList);
 		// 2010-03-21: corrected to handle an empty RPN list
@@ -432,9 +432,9 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 		}
 		else  // check if token is open paren (2011-01-30 leak)
 		{
-			translator.delete_open_paren(token);
+			translator.deleteOpenParen(token);
 		}
-		translator.clean_up();
+		translator.cleanUp();
 		cout << endl;  // FIXME not needed, here to match current results
 	}
 }
@@ -533,14 +533,14 @@ void printOutput(QTextStream &cout, const QString &header,
 	cout << header << ": ";
 	foreach (RpnItem *rpnItem, rpnList)
 	{
-		printSmallToken(cout, rpnItem->token);
-		if (rpnItem->noperands > 0)
+		printSmallToken(cout, rpnItem->token());
+		if (rpnItem->nOperands() > 0)
 		{
 			QChar separator('[');
-			for (int i = 0; i < rpnItem->noperands; i++)
+			for (int i = 0; i < rpnItem->nOperands(); i++)
 			{
 				cout << separator;
-				printSmallToken(cout, rpnItem->operand[i]->token);
+				printSmallToken(cout, rpnItem->operand(i)->token());
 				separator = ',';
 			}
 			cout << ']';
