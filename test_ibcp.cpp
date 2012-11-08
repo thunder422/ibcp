@@ -213,7 +213,7 @@
 
 void parseInput(QTextStream &cout, Parser &parser, const QString &testInput);
 void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
-	const QString &testInput, bool exprmode);
+	const QString &testInput, bool exprMode);
 bool printToken(QTextStream &cout, Token *token, bool tab);
 void printOutput(QTextStream &cout, const QString &header,
 	QList<RpnItem *> &output);
@@ -221,7 +221,8 @@ bool printSmallToken(QTextStream &cout, Token *token);
 void printError(QTextStream &cout, Token *token, const QString &error);
 
 
-// 2012-10-11: new function to replace test_parser() and test_translator()
+// function to process a test input file specified on the command line
+// or accept input lines from the user
 bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 	int argc, char *argv[])
 {
@@ -352,7 +353,7 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 }
 
 
-// 2010-03-11: created from parts of main
+// function to parse an input line and print the resulting tokens
 void parseInput(QTextStream &cout, Parser &parser, const QString &testInput)
 {
 	Token *token;
@@ -374,22 +375,21 @@ void parseInput(QTextStream &cout, Parser &parser, const QString &testInput)
 }
 
 
-// 2010-03-18: new function for testing translator
-// 2010-04-16: added new expression mode flag argument
+// function to parse an input line, translate to an RPN list
+// and output the resulting RPN list
 void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
-	const QString &testInput, bool exprmode)
+	const QString &testInput, bool exprMode)
 {
 	Token *token;
 	Token *orgToken;
 	TokenStatus status;
 
-	translator.start(exprmode);
+	translator.start(exprMode);
 	parser.setInput(QString(testInput));
 	do {
-		// set parser operand state from translator (2011-03-27)
+		// set parser operand state from translator
 		parser.setOperandState(translator.getOperandState());
 		orgToken = token = parser.getToken();
-		// 2010-03-18: need to check for a parser error
 		if (token->isType(Error_TokenType))
 		{
 			printError(cout, token, token->string());
@@ -403,34 +403,28 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 	while (status == Good_TokenStatus);
 	if (status == Done_TokenStatus)
 	{
-		// 2010-05-15: change rpn_list from Token pointers
 		QList<RpnItem *> *rpnList = translator.getResult();
-		// 2010-05-15: added separate print loop so operands can also be printed
 		printOutput(cout, "Output", *rpnList);
-		// 2010-03-21: corrected to handle an empty RPN list
-		// 2011-01-29: rewrote to remove last item instead of first item
 		while (!rpnList->isEmpty())
 		{
 			delete rpnList->takeLast();
 		}
-		// 2012-10-24: fix memory leak
 		delete rpnList;
 	}
 	else  // error occurred, output it
 	{
-		// 2010-06-25: replaced status switch with token->message(status)
 		// token pointer is set to cause of error
 		printError(cout, token, QString(token->message(status)));
 		if (token == orgToken)
 		{
-			// 2010-04-14: only deleted error token if it's the original token
-			//             returned from the parser, if not then this token is
-			//             in the output list and will be deleted by the
-			//             clean_up() function (the original token has been
-			//             already been deleted by the Translator) XXX
+			// only deleted error token if it's the original token
+			// returned from the parser, if not then this token is
+			// in the output list and will be deleted by the
+			// clean_up() function (the original token has been
+			// already been deleted by the Translator) XXX
 			delete token;
 		}
-		else  // check if token is open paren (2011-01-30 leak)
+		else  // check if token is open paren
 		{
 			translator.deleteOpenParen(token);
 		}
@@ -440,20 +434,17 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 }
 
 
-// 2010-03-11: created from parts parse_input()
-// 2011-01-29: added argument flag for printing out leading tab character
+// function to print the contents of a token
 bool printToken(QTextStream &cout, Token *token, bool tab)
 {
-	// 2012-10-12: replaced all name text arrays with auto-generated file
+	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
 
 	if (token->isType(Error_TokenType))
 	{
-		// 2010-03-20: moved code to print_error()
 		printError(cout, token, token->string());
 		return false;
 	}
-	// 2010-03-13: test new Token static functions
 	QString info("  ");
 	if (token->hasParen())
 	{
@@ -473,7 +464,6 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 	switch (token->type())
 	{
 	case Remark_TokenType:
-		// 2011-03-08: removed output of token code
 		cout << ' ' << code_name[token->code()];
 		// fall thru
 	case DefFuncN_TokenType:
@@ -481,7 +471,6 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0) << " |" << token->string() << '|';
 		break;
-	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
 		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
@@ -510,7 +499,6 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 			<< qSetFieldWidth(0);
 		// fall thru
 	case Command_TokenType:
-		// 2011-03-08: removed output of token code
 		cout << " " << code_name[token->code()];
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
@@ -526,7 +514,7 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 }
 
 
-// 2012-10-27: print entire output rpn list
+// function to print entire output rpn list
 void printOutput(QTextStream &cout, const QString &header,
 	QList<RpnItem *> &rpnList)
 {
@@ -551,12 +539,11 @@ void printOutput(QTextStream &cout, const QString &header,
 }
 
 
-// 2010-03-20: reimplemented print_token for small output
+// function to print the abbreviated contents of a token
 bool printSmallToken(QTextStream &cout, Token *token)
 {
 	Table &table = Table::instance();
 
-	// 2010-03-13: test new Token static functions
 	switch (token->type())
 	{
 	case Remark_TokenType:
@@ -566,7 +553,6 @@ bool printSmallToken(QTextStream &cout, Token *token)
 		// TODO
 		cout << token->string();
 		break;
-	// 2011-03-26: separated tokens with parens, add paren to output
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
 		cout << token->string() << '(';  // TODO
@@ -590,14 +576,11 @@ bool printSmallToken(QTextStream &cout, Token *token)
 		}
 		else
 		{
-			// 2010-04-02: output name2 (if set) for debug output string
-			// 2010-04-04: replaced with debug_name call
 			cout << table.debugName(token->code());
 		}
 		break;
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
-		// 2010-04-04: replaced with debug_name call
 		cout << table.debugName(token->code());
 		break;
 	case Command_TokenType:
@@ -608,7 +591,6 @@ bool printSmallToken(QTextStream &cout, Token *token)
 		else
 		{
 			cout << table.name(token->code());
-			// 2010-06-06: call name2() instead of name()
 			if (table.name2(token->code()) != NULL)
 			{
 				cout << '-' << table.name2(token->code());
@@ -619,13 +601,10 @@ bool printSmallToken(QTextStream &cout, Token *token)
 		// nothing more to output
 		break;
 	}
-	// 2010-04-12: output reference identifier
 	if (token->reference())
 	{
 		cout << "<ref>";
 	}
-	// 2010-05-29: output sub-code flags
-	// 2011-01-22: ignore used sub-code
 	if (token->isSubCode(~Used_SubCode))
 	{
 		cout << '\'';
@@ -637,13 +616,10 @@ bool printSmallToken(QTextStream &cout, Token *token)
 		{
 			cout << "LET";
 		}
-		// 2010-08-01: removed Comma_SubCode
-		// 2010-06-08: added semicolon subcode flag
 		if (token->isSubCode(SemiColon_SubCode))
 		{
 			cout << ';';
 		}
-		// 2011-03-20: added keep and end subcodes
 		if (token->isSubCode(Keep_SubCode))
 		{
 			cout << "Keep";
@@ -652,7 +628,6 @@ bool printSmallToken(QTextStream &cout, Token *token)
 		{
 			cout << "End";
 		}
-		// 2011-03-22: added question subcodes
 		if (token->isSubCode(Question_SubCode))
 		{
 			cout << "Question";
@@ -663,15 +638,14 @@ bool printSmallToken(QTextStream &cout, Token *token)
 }
 
 
-// 2010-03-20: created from parts print_token()
+// function to print a token with an error
 void printError(QTextStream &cout, Token *token, const QString &error)
 {
-	// 2010-03-07: modified to use new error length
+	// use new length
 	for (int i = -7; i < token->column(); i++)
 	{
 		cout << ' ';
 	}
-	// 2011-01-11: removed extra code, token now contains correct length
 	for (int i = 0; i < token->length(); i++)
 	{
 		cout << '^';

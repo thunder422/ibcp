@@ -134,20 +134,17 @@ void printGplHeader(QTextStream &cout, const QString &name)
 		<< "redistribute it under certain conditions.\n" << endl;
 }
 
-// Program Name and Length less extension (2012-10-11)
+// Program Name and Length less extension
 // TODO this needs to be put into a class somewhere)
 QString programName;
 
-// function to print version number (2011-06-11)
+// function to print version number
 bool ibcpVersion(QTextStream &cout, const QString &name, int argc, char *argv[])
 {
 	if (argc != 2 || QString::compare(argv[1], "-v") != 0)
 	{
 		return false;  // not our options
 	}
-	// 2010-03-13: changed to output actual program name
-	// 2012-10-23: changed to get release string from cmake without 'release'
-	// 2012-10-23: added program name length
 	cout << name << " version " << ibcp_RELEASE_STRING + 7 << endl;
 	return true;
 }
@@ -160,15 +157,14 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 
 int main(int argc, char *argv[])
 {
-	// get base file name of program from first argument (2012-10-29)
+	// get base file name of program from first argument
 	programName = QFileInfo(argv[0]).baseName();
 
-	// setup standard output stream (2012-10-29)
+	// setup standard output stream
 	QFile output;
 	output.open(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
 	QTextStream cout(&output);
 
-	// 2012-10-23: moved version output before gpl output
 	if (ibcpVersion(cout, programName, argc, argv))
 	{
 		return 0;
@@ -193,15 +189,8 @@ int main(int argc, char *argv[])
 	Translator translator(Table::instance());
 	Parser parser(Table::instance());
 
-	// 2010-03-18: added call to test_translator
-	// 2010-04-25: added "-t" to usage string
-	// 2011-06-11: added check for version option
-	// 2012-10-10: replaced test_parser and test_translator with test_ibcp
-	// 2012-10-23: moved version output before gpl output
 	if (!ibcpTest(cout, translator, parser, argc, argv))
 	{
-		// 2010-05-28: replaced strrchr(argv[1],...) call with 'program_name'
-		// 2011-06-11: added "-v" to usage string
 		qWarning("usage: %s -v -t <test_file>|-tp|-te|-tt",
 			qPrintable(programName));
 	}

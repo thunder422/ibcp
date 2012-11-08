@@ -35,12 +35,12 @@
 enum TokenType {
 	Command_TokenType,
 	Operator_TokenType,
-	IntFuncN_TokenType,  // 2010-03-11: replaces IntFunc_TokenType
-	IntFuncP_TokenType,  // 2010-03-11: replaces IntFunc_TokenType
+	IntFuncN_TokenType,
+	IntFuncP_TokenType,
 	Remark_TokenType,
 	Constant_TokenType,
-	DefFuncN_TokenType,  // 2010-03-06: replaces DefFunc_TokenType
-	DefFuncP_TokenType,  // 2010-03-06: replaces DefFunc_TokenType
+	DefFuncN_TokenType,
+	DefFuncP_TokenType,
 	NoParen_TokenType,
 	Paren_TokenType,
 	Error_TokenType,

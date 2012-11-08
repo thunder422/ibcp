@@ -235,25 +235,22 @@ struct TableEntry {
 Table *Table::m_instance;			// pointer to single table instance
 
 
-// 2010-05-03: expression information for codes
-
-// 2010-05-05: this macro produces two entries for the ExprInfo constructor,
-//             one for the number of operands, one for the pointer to the
-//             operand data type array
-
+// this macro produces two entries for the ExprInfo constructor,
+// one for the number of operands, one for the pointer to the
+// operand data type array
 #define Operands(type)  (sizeof(type ## _OperandArray) \
 	/ sizeof(type ## _OperandArray[0])), type ## _OperandArray
 
-// 2010-07-18: modified to set assoc2code to zero
+// macro produces associated code fields for table entries
 #define AssocCode(code)  (sizeof(code ## _AssocCode) \
 	/ sizeof(code ## _AssocCode[0])), 0, code ## _AssocCode
 
-// 2010-07-18: new macro with second operand assoc code index
+// macro produces associated code fields with secondary index for table entries
 #define AssocCode2(code, index2)  (sizeof(code ## _AssocCode) \
 	/ sizeof(code ## _AssocCode[0])), index2, code ## _AssocCode
 
 
-// 2010-05-05: operand data type arrays
+// operand data type arrays
 static DataType Dbl_OperandArray[] = {
 	Double_DataType
 };
@@ -295,10 +292,9 @@ static DataType StrStrInt_OperandArray[] = {
 static DataType StrTmpInt_OperandArray[] = {
 	String_DataType, TmpStr_DataType, Integer_DataType
 };
-static DataType Sub_OperandArray[] = {  // 2010-07-01
+static DataType Sub_OperandArray[] = {
 	SubStr_DataType
 };
-// 2010-05-19: added new operand data type array
 static DataType SubStr_OperandArray[] = {
 	SubStr_DataType, String_DataType
 };
@@ -326,7 +322,7 @@ static DataType TmpTmpInt_OperandArray[] = {
 };
 
 
-// 2010-05-06: associated code data type arrays
+// associated code data type arrays
 static Code Abs_AssocCode[]				= {AbsInt_Code};
 static Code Add_AssocCode[]				= {
 	AddI1_Code, CatStr_Code, CatStrT1_Code, AddI2_Code
@@ -334,13 +330,11 @@ static Code Add_AssocCode[]				= {
 static Code AddI1_AssocCode[]			= {AddInt_Code};
 static Code Asc_AssocCode[]				= {AscTmp_Code};
 static Code Asc2_AssocCode[]			= {Asc2Tmp_Code};
-// 2010-05-19: added AssignSubStr_Code to list
 static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignSubStr_Code
 };
 static Code AssignStr_AssocCode[]		= {AssignTmp_Code};
 static Code AssignSubStr_AssocCode[]	= {AssignSubTmp_Code};
-// 2010-05-19: added AssignListMaxStr_Code to list
 static Code AssignList_AssocCode[]		= {
 	AssignListInt_Code, AssignListStr_Code, AssignListMix_Code
 };
@@ -369,7 +363,6 @@ static Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
 static Code GtEqStr_AssocCode[]			= {GtEqStrT2_Code};
 static Code GtEqStrT1_AssocCode[]		= {GtEqStrTT_Code};
 static Code InputBeginStr_AssocCode[]	= {InputBeginTmp_Code};
-// 2011-03-19: added input related associated code lists
 static Code InputAssign_AssocCode[]		= {
 	InputAssignInt_Code, InputAssignStr_Code, InputParse_Code
 };
@@ -405,7 +398,6 @@ static Code NotEqStr_AssocCode[]		= {NotEqStrT2_Code};
 static Code NotEqStrT1_AssocCode[]		= {NotEqStrTT_Code};
 static Code Power_AssocCode[]			= {PowerI1_Code, PowerMul_Code};
 static Code PowerI1_AssocCode[]			= {PowerInt_Code};
-// 2010-06-02: added associated codes for data type specific print
 static Code Print_AssocCode[]			= {
     PrintInt_Code, PrintStr_Code, PrintTmp_Code
 };
@@ -418,8 +410,7 @@ static Code SubI1_AssocCode[]			= {SubInt_Code};
 static Code Val_AssocCode[]				= {ValTmp_Code};
 
 
-// 2010-05-06: standard expression information structures
-// 2011-01-07: removed return datatype, removed resulting duplicates
+// standard expression information structures
 static ExprInfo Dbl_ExprInfo(Null_Code, Operands(Dbl));
 static ExprInfo DblDbl_ExprInfo(Null_Code, Operands(DblDbl));
 static ExprInfo DblInt_ExprInfo(Null_Code, Operands(DblInt));
@@ -432,7 +423,6 @@ static ExprInfo StrInt_ExprInfo(Null_Code, Operands(StrInt));
 static ExprInfo StrStr_ExprInfo(Null_Code, Operands(StrStr));  //?
 static ExprInfo StrStrInt_ExprInfo(Null_Code, Operands(StrStrInt));
 static ExprInfo StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
-// special copy for assign temporary string operators (2011-02-05)
 static ExprInfo Assign_StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
 static ExprInfo StrTmpInt_ExprInfo(Null_Code, Operands(StrTmpInt));
 static ExprInfo Assign_SubTmp_ExprInfo(Null_Code, Operands(SubTmp));
@@ -444,14 +434,14 @@ static ExprInfo TmpStrInt_ExprInfo(Null_Code, Operands(TmpStrInt));
 static ExprInfo TmpTmp_ExprInfo(Null_Code, Operands(TmpTmp));
 static ExprInfo TmpTmpInt_ExprInfo(Null_Code, Operands(TmpTmpInt));
 
-// 2010-05-19: changed to return SubStr
 static ExprInfo StrIntInt_ExprInfo(Null_Code, Operands(StrIntInt));
 static ExprInfo Sub_ExprInfo(Null_Code, Operands(Sub));
 
-// 2011-02-26: moved code from first member to comment
+// code enumeration names in comments after opening brace
+// (code enumeration generated from these by enums.awk)
 static TableEntry tableEntries[] =
 {
-	// moved Null_Code entry at beginning so Null_Code == 0
+	// Null_Code entry at beginning so Null_Code == 0
 	{	// Null_Code
 		Operator_TokenType
 	},

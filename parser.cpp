@@ -97,8 +97,6 @@ Token *Parser::getToken(void)
 	m_token = new Token(m_pos);  // allocate new token to return
 	if (m_input[m_pos].isNull())
 	{
-		// 2010-03-17: changed to return special end-of-line (last) token
-		// 2010-03-18: replaced code with function call
 		m_table.setToken(m_token, EOL_Code);
 		return m_token;
 	}
@@ -138,10 +136,8 @@ bool Parser::getIdentifier(void)
 	// defined function?
 	if (m_input.midRef(m_pos).startsWith("FN", Qt::CaseInsensitive))
 	{
-		// 2010-03-06: split DefFunc_TokenType
 		if (paren)
 		{
-			// don't include parentheses in string or length (2011-03-26)
 			m_token->setType(DefFuncP_TokenType);
 			m_token->setString(m_input.mid(m_pos, len - 1));
 			m_token->setLength(len - 1);
@@ -177,7 +173,6 @@ bool Parser::getIdentifier(void)
 		// whether opening parenthesis is present, and string of identifier
 		if (paren)
 		{
-			// don't include parentheses in string or length (2011-03-26)
 			m_token->setType(Paren_TokenType);
 			m_token->setString(m_input.mid(m_pos, len - 1));
 			m_token->setLength(len - 1);
@@ -238,7 +233,6 @@ bool Parser::getIdentifier(void)
 	m_token->setCode(code);
 	m_token->setLength(len2 + 1);
 
-	// 2010-03-20: moved to here so pos can be used to set length
 	m_pos = pos;  // move position past second word
 	return true;
 }
@@ -307,7 +301,6 @@ int Parser::scanWord(int pos, DataType &dataType, bool &paren)
 
 void Parser::skipWhitespace(void)
 {
-	// 2010-03-11: replaced space check with isblank() to allow tabs
 	while (m_input[m_pos].isSpace())
 	{
 		m_pos++;
@@ -345,7 +338,6 @@ bool Parser::getNumber(void)
 				digits = true;
 				if (!decimal && m_input[pos - 1] == '0' && m_input[pos] != '.')
 				{
-					// 2010-05-29: added check for single zero digit
 					// next character not a digit (or '.')?
 					if (!m_input[pos].isDigit())
 					{
@@ -356,9 +348,8 @@ bool Parser::getNumber(void)
 						// if didn't find a decimal point
 						// and first character is a zero
 						// and second character is not a decimal point,
-						// and second character is a digit (2010-05-29)
-						// this is in invalid number
-						// 2010-03-07: changed to error
+						// and second character is a digit
+						// then this is in invalid number
 						m_token->setError("invalid leading zero in numeric "
 							"constant");
 						return true;
@@ -415,7 +406,7 @@ bool Parser::getNumber(void)
 		{
 			if (!digits && !decimal)  // nothing found?
 			{
-				// look for negative sign (2011-03-27)
+				// look for negative sign
 				if (m_operandState && !sign && m_input[pos] == '-')
 				{
 					pos++;  // move past negative sign
@@ -512,7 +503,6 @@ bool Parser::getString(void)
 		}
 		m_token->setString(len++, m_input[pos++]);  // copy char into string
 	}
-	// 2010-03-08: removed no closing quote error check - now valid
 	m_token->setType(Constant_TokenType);
 	m_token->setDataType(String_DataType);
 	m_token->setLength(pos - m_pos);
@@ -531,8 +521,6 @@ bool Parser::getString(void)
 //     - returns false if no operator (position not changed)
 //     - returns true if there is and token is filled
 //     - returns true for errors setting special error token
-//
-// 2010-03-10: rewrote to properly handle two character operators
 
 bool Parser::getOperator(void)
 {
