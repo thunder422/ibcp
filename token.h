@@ -119,6 +119,7 @@ public:
 	{
 		return dataType == m_dataType;
 	}
+	void setDataType(void);  // set default data type if not already set
 
 	// string access function
 	QString string(void)

@@ -374,6 +374,7 @@
 //	2012-11-01	removed immediate command support
 
 #include "translator.h"
+#include "table.h"
 #include "tokenhandlers.h"
 
 
@@ -507,7 +508,7 @@ TokenStatus Translator::addToken(Token *&token)
 		// check for end of line at begin of input
 		if (token->isType(Operator_TokenType) && token->isCode(EOL_Code))
 		{
-			delete token;  // 2010-04-04: delete EOL token
+			delete token;  // delete EOL token
 			return Done_TokenStatus;
 		}
 
@@ -610,7 +611,7 @@ TokenStatus Translator::processOperand(Token *&token)
 	doPendingParen(m_holdStack.top().token);
 
 	// set default data type for token if it has none
-	setDefaultDataType(token);
+	token->setDataType();
 
 	if (token->hasParen())
 	{
@@ -1111,11 +1112,12 @@ void Translator::doPendingParen(Token *token)
 //   - no action if first operand token does not have a table entry
 //   - no action if first operand token is not a closing parentheses token
 
-void Translator::deleteOpenParen(Token *first)
+void Translator::deleteOpenParen(Token *token)
 {
-	if (first != NULL && first->hasTableEntry() && first->isCode(OpenParen_Code))
+	if (token != NULL && token->hasTableEntry()
+		&& token->isCode(OpenParen_Code))
 	{
-		delete first;  // delete CloseParen token of operand
+		delete token;  // delete CloseParen token of operand
 	}
 }
 
@@ -1131,19 +1133,20 @@ void Translator::deleteOpenParen(Token *first)
 //     as a dummy parentheses token, then last operand flag is cleared
 //   - if closing parentheses token is not being used, then it is deleted
 
-void Translator::deleteCloseParen(Token *last)
+void Translator::deleteCloseParen(Token *token)
 {
-	if (last != NULL && last->hasTableEntry() && last->isCode(CloseParen_Code))
+	if (token != NULL && token->hasTableEntry()
+		&& token->isCode(CloseParen_Code))
 	{
 		// check if parentheses token is still being used
-		if (last->isSubCode(Used_SubCode))
+		if (token->isSubCode(Used_SubCode))
 		{
 			// no longer used as last token
-			last->clearSubCodeMask(Last_SubCode);
+			token->clearSubCodeMask(Last_SubCode);
 		}
 		else  // not used, close parentheses token can be deleted
 		{
-			delete last;  // delete CloseParen token of operand
+			delete token;  // delete CloseParen token of operand
 		}
 	}
 }

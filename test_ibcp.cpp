@@ -208,6 +208,7 @@
 #include <QString>
 #include <QTextStream>
 
+#include "table.h"
 #include "parser.h"
 #include "translator.h"
 

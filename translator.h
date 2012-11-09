@@ -29,7 +29,8 @@
 #include <QStack>
 
 #include "token.h"
-#include "table.h"
+
+class Table;
 
 
 // command stack item flag values
@@ -154,7 +155,7 @@ class Translator {
 		sizeof_State
 	} m_state;						// current state of translator
 
-	Table &m_table;					// pointer to the table object
+	Table &m_table;					// reference to the table instance
 	QList<RpnItem *> *m_output;		// pointer to RPN list output
 	QStack<HoldItem> m_holdStack;	// operator/function holding stack
 	QStack<DoneItem> m_doneStack;	// items processed stack
@@ -166,7 +167,8 @@ class Translator {
 	bool m_exprMode;				// expression only mode active flag
 
 public:
-	Translator(Table &t): m_table(t), m_output(NULL), m_pendingParen(NULL) {}
+	Translator(Table &table): m_table(table), m_output(NULL),
+		m_pendingParen(NULL) {}
 	void start(bool exprMode = false)
 	{
 		m_exprMode = exprMode;  // save flag
@@ -203,24 +205,6 @@ private:
     TokenStatus processBinaryOperator(Token *&token);
 	TokenStatus processOperator(Token *&token);
 	TokenStatus operatorError(void);
-	// TODO move this function to translator.cpp
-	void setDefaultDataType(Token *token)
-	{
-		// only set to double if not an internal function
-		if (token->isDataType(None_DataType)
-			&& !token->isType(IntFuncP_TokenType))
-		{
-			// TODO for now just set default to double
-			token->setDataType(Double_DataType);
-		}
-		// change string DefFuncN/P to TmpStr
-		else if ((token->isType(DefFuncN_TokenType)
-			|| token->isType(DefFuncP_TokenType))
-			&& token->isDataType(String_DataType))
-		{
-			token->setDataType(TmpStr_DataType);
-		}
-	}
 	TokenStatus processFirstOperand(Token *&token);
 	TokenStatus processFinalOperand(Token *&token, Token *token2,
 		int operandIndex, int nOperands = 0);
@@ -230,7 +214,7 @@ private:
 	TokenStatus expressionEnd(void);
 	TokenStatus parenStatus(void);
 	TokenStatus getExprDataType(DataType &dataType);
-	void deleteCloseParen(Token *last);
+	void deleteCloseParen(Token *token);
 	TokenStatus callCommandHandler(Token *&token);
 
 	// COMMAND SPECIFIC FUNCTIONS
@@ -247,7 +231,7 @@ private:
 public:
 	// function to delete an open paren token
 	// (public to be used to delete token to prevent memory leak)
-	void deleteOpenParen(Token *first);
+	void deleteOpenParen(Token *token);
 
 	// token handler friend function definitions section
 	friend TokenStatus Operator_Handler(Translator &t, Token *&token);

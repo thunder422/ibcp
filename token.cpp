@@ -22,6 +22,7 @@
 //
 //	2012-11-03	initial version (parts removed from ibcp.cpp)
 
+#include "ibcp.h"
 #include "token.h"
 
 
@@ -125,6 +126,24 @@ void Token::initialize(void)
 	table[IntFuncN_TokenType] = true;
 	table[IntFuncP_TokenType] = true;
 	// FIXME should Remark_TokenType also have table entry flag set?
+}
+
+
+// function to set the default data type of the token
+void Token::setDataType(void)
+{
+	// only set to double if not an internal function
+	if (m_dataType == None_DataType && m_type != IntFuncP_TokenType)
+	{
+		// TODO for now just set default to double
+		m_dataType = Double_DataType;
+	}
+	// change string DefFuncN/P to TmpStr
+	else if ((m_type == DefFuncN_TokenType || m_type == DefFuncP_TokenType)
+		&& m_dataType == String_DataType)
+	{
+		m_dataType = TmpStr_DataType;
+	}
 }
 
 

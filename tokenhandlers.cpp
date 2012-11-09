@@ -23,6 +23,7 @@
 //	2012-11-02	initial version (parts removed from translator.cpp)
 
 #include "translator.h"
+#include "table.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
