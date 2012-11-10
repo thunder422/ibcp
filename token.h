@@ -70,9 +70,11 @@ public:
 		m_reference = false;
 		m_subCode = None_SubCode;
 	}
-	~Token(void)
+	Token(const Token &token)  // copy constructor
 	{
+		*this = token;
 	}
+	~Token(void) {}
 
 	// column and length access functions
 	int column(void)

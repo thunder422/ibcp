@@ -374,7 +374,9 @@
 //	2012-11-01	removed immediate command support
 
 #include "translator.h"
+#include "token.h"
 #include "table.h"
+#include "parser.h"
 #include "tokenhandlers.h"
 
 
@@ -487,6 +489,69 @@ TokenStatus Translator::variableErrStatus(DataType dataType)
 	};
 
 	return tokenStatus[dataType];
+}
+
+
+// function to parse and translate an input line to an RPN output list
+//
+//   - returns true if successful, use output() to get RPN output list
+//   - returns false if failed, use errorToken() and errorMessage()
+//     to get token error occurred at and the error message
+
+bool Translator::setInput(const QString &input, bool exprMode)
+{
+	Token *token;
+	Token *parsedToken;
+	TokenStatus status;
+
+	Parser parser(m_table);
+	parser.setInput(input);
+
+	m_exprMode = exprMode;  // save flag
+	// (expression mode for testing)
+	m_mode = m_exprMode ? Expression_TokenMode : Command_TokenMode;
+
+	m_output = new QList<RpnItem *>;
+	m_state = Initial_State;
+
+	do {
+		// set parser operand state from translator
+		parser.setOperandState(m_state == Operand_State
+			|| m_state == OperandOrEnd_State);
+		token = parsedToken = parser.getToken();
+		if (token->isType(Error_TokenType))
+		{
+			setErrorToken(token);
+			// XXX determine error code from what's expected next
+			m_errorMessage = token->string();
+			cleanUp();
+			return false;
+		}
+		status = addToken(token);
+	}
+	while (status == Good_TokenStatus);
+
+	if (status != Done_TokenStatus)
+	{
+		// token pointer is set to cause of error
+		// check if token is the parsed token or is an open paren
+		if (token == parsedToken || token->hasTableEntry()
+			&& token->isCode(OpenParen_Code))
+		{
+			// token is not already in the output list
+			setErrorToken(token);
+		}
+		else  // token is in the rpn output list
+		{
+			// make a copy of the token to save
+			setErrorToken(new Token(*token));
+		}
+		m_errorMessage = token->message(status);
+		cleanUp();
+		return false;
+	}
+	// TODO check if stacks are empty
+	return true;
 }
 
 

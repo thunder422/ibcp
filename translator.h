@@ -165,31 +165,35 @@ class Translator {
 	TokenMode m_mode;				// current assignment mode
 	QStack<CmdItem> m_cmdStack;		// stack of commands waiting processing
 	bool m_exprMode;				// expression only mode active flag
+	Token *m_errorToken;			// token when error occurred
+	QString m_errorMessage;			// message of error that occurred
 
 public:
 	Translator(Table &table): m_table(table), m_output(NULL),
-		m_pendingParen(NULL) {}
-	void start(bool exprMode = false)
+	    m_pendingParen(NULL), m_errorToken(NULL) {}
+	~Translator(void)
 	{
-		m_exprMode = exprMode;  // save flag
-		m_output = new QList<RpnItem *>;
-		m_state = Initial_State;
-		// (expression mode for testing)
-		m_mode = m_exprMode ? Expression_TokenMode : Command_TokenMode;
+		if (m_errorToken != NULL)
+		{
+			delete m_errorToken;
+		}
 	}
-	// function to access if operand state
-	bool getOperandState(void)
-	{
-		return m_state == Operand_State || m_state == OperandOrEnd_State;
-	}
-	TokenStatus addToken(Token *&token);
-	QList<RpnItem *> *getResult(void)	// only call when add_token returns Done
+
+	bool setInput(const QString &input, bool exprMode = false);
+	QList<RpnItem *> *output(void)	// only call when setInput() returns true
 	{
 		QList<RpnItem *> *list = m_output;
 		m_output = NULL;
 		return list;
 	}
-	void cleanUp(void);			// only call when add_token returns an error
+	Token *errorToken(void)     // only call when setInput() returns false
+	{
+		return m_errorToken;
+	}
+	QString errorMessage(void)	// only call when setInput() returns false
+	{
+		return m_errorMessage;
+	}
 
 private:
 	enum Match {
@@ -199,6 +203,7 @@ private:
 		sizeof_Match
 	};
 
+	TokenStatus addToken(Token *&token);
 	TokenStatus processOperand(Token *&token);
 	TokenStatus endExpressionError(void);
 	bool processUnaryOperator(Token *&token, TokenStatus &status);
@@ -214,8 +219,10 @@ private:
 	TokenStatus expressionEnd(void);
 	TokenStatus parenStatus(void);
 	TokenStatus getExprDataType(DataType &dataType);
+	void deleteOpenParen(Token *token);
 	void deleteCloseParen(Token *token);
 	TokenStatus callCommandHandler(Token *&token);
+	void cleanUp(void);		// only call when addToken() returns error
 
 	// COMMAND SPECIFIC FUNCTIONS
 	TokenStatus addPrintCode(void);
@@ -228,11 +235,17 @@ private:
 	static TokenStatus variableErrStatus(DataType dataType);
 	static DataType equivalentDataType(DataType dataType);
 
-public:
-	// function to delete an open paren token
-	// (public to be used to delete token to prevent memory leak)
-	void deleteOpenParen(Token *token);
+	// set error token (deleting any previous error token first)
+	void setErrorToken(Token *errorToken)
+	{
+		if (m_errorToken != NULL)
+		{
+			delete m_errorToken;
+		}
+		m_errorToken = errorToken;
+    }
 
+public:
 	// token handler friend function definitions section
 	friend TokenStatus Operator_Handler(Translator &t, Token *&token);
 	friend TokenStatus Equal_Handler(Translator &t, Token *&token);

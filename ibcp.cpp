@@ -151,8 +151,8 @@ bool ibcpVersion(QTextStream &cout, const QString &name, int argc, char *argv[])
 
 
 // prototype for test function
-bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
-	int argc, char *argv[]);
+bool ibcpTest(QTextStream &cout, Translator &translator, int argc,
+	char *argv[]);
 
 
 int main(int argc, char *argv[])
@@ -187,9 +187,8 @@ int main(int argc, char *argv[])
 	cout << "Table initialization successful." << endl;
 
 	Translator translator(Table::instance());
-	Parser parser(Table::instance());
 
-	if (!ibcpTest(cout, translator, parser, argc, argv))
+	if (!ibcpTest(cout, translator, argc, argv))
 	{
 		qWarning("usage: %s -v -t <test_file>|-tp|-te|-tt",
 			qPrintable(programName));

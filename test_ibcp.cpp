@@ -212,8 +212,8 @@
 #include "parser.h"
 #include "translator.h"
 
-void parseInput(QTextStream &cout, Parser &parser, const QString &testInput);
-void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
+void parseInput(QTextStream &cout, const QString &testInput);
+void translateInput(QTextStream &cout, Translator &translator,
 	const QString &testInput, bool exprMode);
 bool printToken(QTextStream &cout, Token *token, bool tab);
 void printOutput(QTextStream &cout, const QString &header,
@@ -224,8 +224,7 @@ void printError(QTextStream &cout, Token *token, const QString &error);
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
-bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
-	int argc, char *argv[])
+bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 {
 	extern char *programName;
 
@@ -332,13 +331,13 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 		switch (testMode)
 		{
 		case testParser:
-			parseInput(cout, parser, inputLine);
+			parseInput(cout, inputLine);
 			break;
 		case testExpression:
-			translateInput(cout, translator, parser, inputLine, true);
+			translateInput(cout, translator, inputLine, true);
 			break;
 		case testTranslator:
-			translateInput(cout, translator, parser, inputLine, false);
+			translateInput(cout, translator, inputLine, false);
 			break;
 		}
 	}
@@ -355,8 +354,9 @@ bool ibcpTest(QTextStream &cout, Translator &translator, Parser &parser,
 
 
 // function to parse an input line and print the resulting tokens
-void parseInput(QTextStream &cout, Parser &parser, const QString &testInput)
+void parseInput(QTextStream &cout, const QString &testInput)
 {
+	Parser parser(Table::instance());
 	Token *token;
 	bool more;
 
@@ -378,33 +378,12 @@ void parseInput(QTextStream &cout, Parser &parser, const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
+void translateInput(QTextStream &cout, Translator &translator,
 	const QString &testInput, bool exprMode)
 {
-	Token *token;
-	Token *orgToken;
-	TokenStatus status;
-
-	translator.start(exprMode);
-	parser.setInput(QString(testInput));
-	do {
-		// set parser operand state from translator
-		parser.setOperandState(translator.getOperandState());
-		orgToken = token = parser.getToken();
-		if (token->isType(Error_TokenType))
-		{
-			printError(cout, token, token->string());
-			delete token;
-			translator.cleanUp();
-			return;
-		}
-		//printToken(cout, token, tab);
-		status = translator.addToken(token);
-	}
-	while (status == Good_TokenStatus);
-	if (status == Done_TokenStatus)
+	if (translator.setInput(testInput, exprMode))
 	{
-		QList<RpnItem *> *rpnList = translator.getResult();
+		QList<RpnItem *> *rpnList = translator.output();
 		printOutput(cout, "Output", *rpnList);
 		while (!rpnList->isEmpty())
 		{
@@ -412,25 +391,14 @@ void translateInput(QTextStream &cout, Translator &translator, Parser &parser,
 		}
 		delete rpnList;
 	}
-	else  // error occurred, output it
+	else  // translate error occurred
 	{
-		// token pointer is set to cause of error
-		printError(cout, token, QString(token->message(status)));
-		if (token == orgToken)
+		Token *token = translator.errorToken();
+		printError(cout, token, translator.errorMessage());
+		if (!token->isType(Error_TokenType))
 		{
-			// only deleted error token if it's the original token
-			// returned from the parser, if not then this token is
-			// in the output list and will be deleted by the
-			// clean_up() function (the original token has been
-			// already been deleted by the Translator) XXX
-			delete token;
+			cout << endl;  // FIXME not needed, here to match current results
 		}
-		else  // check if token is open paren
-		{
-			translator.deleteOpenParen(token);
-		}
-		translator.cleanUp();
-		cout << endl;  // FIXME not needed, here to match current results
 	}
 }
 
