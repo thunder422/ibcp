@@ -1,0 +1,344 @@
+
+ibcp  Copyright (C) 2010-2012  Thunder422
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to
+redistribute it under certain conditions.
+
+Table initialization successful.
+
+Input: ?
+       ^-- PARSER: unrecognizable character
+
+Input: A?
+        ^-- PARSER: unrecognizable character
+
+Input: A,?
+         ^-- PARSER: unrecognizable character
+
+Input: A=?
+         ^-- PARSER: unrecognizable character
+
+Input: A=1?
+          ^-- PARSER: unrecognizable character
+
+Input: A=1+?
+           ^-- PARSER: unrecognizable character
+
+Input: A$=MID$(?
+               ^-- PARSER: unrecognizable character
+
+Input: A$=MID$(B$?
+                 ^-- PARSER: unrecognizable character
+
+Input: A$=MID$(B$,?
+                  ^-- PARSER: unrecognizable character
+
+Input: A$=MID$(B$,3?
+                   ^-- PARSER: unrecognizable character
+
+Input: A$=MID$(B$,3,?
+                    ^-- PARSER: unrecognizable character
+
+Input: A$=MID$(B$,3,4?
+                     ^-- PARSER: unrecognizable character
+
+Input: PRINT ?
+             ^-- PARSER: unrecognizable character
+
+Input: PRINT A?
+              ^-- PARSER: unrecognizable character
+
+Input: PRINT A,?
+               ^-- PARSER: unrecognizable character
+
+Input: PRINT A,,?
+                ^-- PARSER: unrecognizable character
+
+Input: 01
+       ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A 01
+         ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A,01
+         ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A=01
+         ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A=1 01
+           ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A=1+01
+           ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A$=MID$(01
+               ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A$=MID$(B$01
+                 ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A$=MID$(B$,01
+                  ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A$=MID$(B$,3 01
+                    ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A$=MID$(B$,3,01
+                    ^-- PARSER: invalid leading zero in numeric constant
+
+Input: A$=MID$(B$,3,4 01
+                      ^-- PARSER: invalid leading zero in numeric constant
+
+Input: PRINT 01
+             ^-- PARSER: invalid leading zero in numeric constant
+
+Input: PRINT A 01
+               ^-- PARSER: invalid leading zero in numeric constant
+
+Input: PRINT A,01
+               ^-- PARSER: invalid leading zero in numeric constant
+
+Input: PRINT A,,01
+                ^-- PARSER: invalid leading zero in numeric constant
+
+Input: ..
+       ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A..
+        ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A,..
+         ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A=..
+         ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A=1 ..
+           ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A=1+..
+           ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A$=MID$(..
+               ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A$=MID$(B$..
+                 ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A$=MID$(B$,..
+                  ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A$=MID$(B$,3 ..
+                    ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A$=MID$(B$,3,..
+                    ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: A$=MID$(B$,3,4 ..
+                      ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: PRINT ..
+             ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: PRINT A..
+              ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: PRINT A,..
+               ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: PRINT A,,..
+                ^^-- PARSER: constant only contains a decimal point or has two decimal points
+
+Input: .e
+       ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A.e
+        ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A,.e
+         ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A=.e
+         ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A=1 .e
+           ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A=1+.e
+           ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A$=MID$(.e
+               ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A$=MID$(B$.e
+                 ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A$=MID$(B$,.e
+                  ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A$=MID$(B$,3 .e
+                    ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A$=MID$(B$,3,.e
+                    ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: A$=MID$(B$,3,4 .e
+                      ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: PRINT .e
+             ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: PRINT A.e
+              ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: PRINT A,.e
+               ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: PRINT A,,.e
+                ^-- PARSER: mantissa of constant only contains a decimal point
+
+Input: 1e
+         ^-- PARSER: exponent contains no digits
+
+Input: A 1e
+           ^-- PARSER: exponent contains no digits
+
+Input: A,1e
+           ^-- PARSER: exponent contains no digits
+
+Input: A=1e
+           ^-- PARSER: exponent contains no digits
+
+Input: A=1 1e
+             ^-- PARSER: exponent contains no digits
+
+Input: A=1+1e
+             ^-- PARSER: exponent contains no digits
+
+Input: A$=MID$(1e
+                 ^-- PARSER: exponent contains no digits
+
+Input: A$=MID$(B$1e
+                   ^-- PARSER: exponent contains no digits
+
+Input: A$=MID$(B$,1e
+                    ^-- PARSER: exponent contains no digits
+
+Input: A$=MID$(B$,3 1e
+                      ^-- PARSER: exponent contains no digits
+
+Input: A$=MID$(B$,3,1e
+                      ^-- PARSER: exponent contains no digits
+
+Input: A$=MID$(B$,3,4 1e
+                        ^-- PARSER: exponent contains no digits
+
+Input: PRINT 1e
+               ^-- PARSER: exponent contains no digits
+
+Input: PRINT A 1e
+                 ^-- PARSER: exponent contains no digits
+
+Input: PRINT A,1e
+                 ^-- PARSER: exponent contains no digits
+
+Input: PRINT A,,1e
+                  ^-- PARSER: exponent contains no digits
+
+Input: .
+       ^-- PARSER: constant only contains a decimal point
+
+Input: A.
+        ^-- PARSER: constant only contains a decimal point
+
+Input: A,.
+         ^-- PARSER: constant only contains a decimal point
+
+Input: A=.
+         ^-- PARSER: constant only contains a decimal point
+
+Input: A=1 .
+           ^-- PARSER: constant only contains a decimal point
+
+Input: A=1+.
+           ^-- PARSER: constant only contains a decimal point
+
+Input: A$=MID$(.
+               ^-- PARSER: constant only contains a decimal point
+
+Input: A$=MID$(B$.
+                 ^-- PARSER: constant only contains a decimal point
+
+Input: A$=MID$(B$,.
+                  ^-- PARSER: constant only contains a decimal point
+
+Input: A$=MID$(B$,3 .
+                    ^-- PARSER: constant only contains a decimal point
+
+Input: A$=MID$(B$,3,.
+                    ^-- PARSER: constant only contains a decimal point
+
+Input: A$=MID$(B$,3,4 .
+                      ^-- PARSER: constant only contains a decimal point
+
+Input: PRINT .
+             ^-- PARSER: constant only contains a decimal point
+
+Input: PRINT A.
+              ^-- PARSER: constant only contains a decimal point
+
+Input: PRINT A,.
+               ^-- PARSER: constant only contains a decimal point
+
+Input: PRINT A,,.
+                ^-- PARSER: constant only contains a decimal point
+
+Input: 1e999
+       ^^^^^-- PARSER: constant is out of range
+
+Input: A 1e999
+         ^^^^^-- PARSER: constant is out of range
+
+Input: A,1e999
+         ^^^^^-- PARSER: constant is out of range
+
+Input: A=1e999
+         ^^^^^-- PARSER: constant is out of range
+
+Input: A=1 1e999
+           ^^^^^-- PARSER: constant is out of range
+
+Input: A=1+1e999
+           ^^^^^-- PARSER: constant is out of range
+
+Input: A$=MID$(1e999
+               ^^^^^-- PARSER: constant is out of range
+
+Input: A$=MID$(B$1e999
+                 ^^^^^-- PARSER: constant is out of range
+
+Input: A$=MID$(B$,1e999
+                  ^^^^^-- PARSER: constant is out of range
+
+Input: A$=MID$(B$,3 1e999
+                    ^^^^^-- PARSER: constant is out of range
+
+Input: A$=MID$(B$,3,1e999
+                    ^^^^^-- PARSER: constant is out of range
+
+Input: A$=MID$(B$,3,4 1e999
+                      ^^^^^-- PARSER: constant is out of range
+
+Input: PRINT 1e999
+             ^^^^^-- PARSER: constant is out of range
+
+Input: PRINT A 1e999
+               ^^^^^-- PARSER: constant is out of range
+
+Input: PRINT A,1e999
+               ^^^^^-- PARSER: constant is out of range
+
+Input: PRINT A,,1e999
+                ^^^^^-- PARSER: constant is out of range
+

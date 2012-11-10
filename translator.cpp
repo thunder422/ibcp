@@ -523,7 +523,7 @@ bool Translator::setInput(const QString &input, bool exprMode)
 		{
 			setErrorToken(token);
 			// XXX determine error code from what's expected next
-			m_errorMessage = token->string();
+			m_errorMessage = "PARSER: " + token->string();
 			cleanUp();
 			return false;
 		}

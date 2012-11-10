@@ -1,0 +1,129 @@
+#####################################################
+#  Translator Test #14: Parser Errors (2012-11-10)  #
+#####################################################
+
+# unrecognizable character errors
+?
+A?
+A,?
+A=?
+A=1?
+A=1+?
+A$=MID$(?
+A$=MID$(B$?
+A$=MID$(B$,?
+A$=MID$(B$,3?
+A$=MID$(B$,3,?
+A$=MID$(B$,3,4?
+PRINT ?
+PRINT A?
+PRINT A,?
+PRINT A,,?
+
+# invalid loading zeri in numeric constant
+01
+A 01
+A,01
+A=01
+A=1 01
+A=1+01
+A$=MID$(01
+A$=MID$(B$01
+A$=MID$(B$,01
+A$=MID$(B$,3 01
+A$=MID$(B$,3,01
+A$=MID$(B$,3,4 01
+PRINT 01
+PRINT A 01
+PRINT A,01
+PRINT A,,01
+
+# constant only contains a decimal point or has two decimal points
+..
+A..
+A,..
+A=..
+A=1 ..
+A=1+..
+A$=MID$(..
+A$=MID$(B$..
+A$=MID$(B$,..
+A$=MID$(B$,3 ..
+A$=MID$(B$,3,..
+A$=MID$(B$,3,4 ..
+PRINT ..
+PRINT A..
+PRINT A,..
+PRINT A,,..
+
+# mantissa of constant only contains a decimal point
+.e
+A.e
+A,.e
+A=.e
+A=1 .e
+A=1+.e
+A$=MID$(.e
+A$=MID$(B$.e
+A$=MID$(B$,.e
+A$=MID$(B$,3 .e
+A$=MID$(B$,3,.e
+A$=MID$(B$,3,4 .e
+PRINT .e
+PRINT A.e
+PRINT A,.e
+PRINT A,,.e
+
+# exponent contains no digits
+1e
+A 1e
+A,1e
+A=1e
+A=1 1e
+A=1+1e
+A$=MID$(1e
+A$=MID$(B$1e
+A$=MID$(B$,1e
+A$=MID$(B$,3 1e
+A$=MID$(B$,3,1e
+A$=MID$(B$,3,4 1e
+PRINT 1e
+PRINT A 1e
+PRINT A,1e
+PRINT A,,1e
+
+# constant only contains a decimal point
+.
+A.
+A,.
+A=.
+A=1 .
+A=1+.
+A$=MID$(.
+A$=MID$(B$.
+A$=MID$(B$,.
+A$=MID$(B$,3 .
+A$=MID$(B$,3,.
+A$=MID$(B$,3,4 .
+PRINT .
+PRINT A.
+PRINT A,.
+PRINT A,,.
+
+# constant is out of range
+1e999
+A 1e999
+A,1e999
+A=1e999
+A=1 1e999
+A=1+1e999
+A$=MID$(1e999
+A$=MID$(B$1e999
+A$=MID$(B$,1e999
+A$=MID$(B$,3 1e999
+A$=MID$(B$,3,1e999
+A$=MID$(B$,3,4 1e999
+PRINT 1e999
+PRINT A 1e999
+PRINT A,1e999
+PRINT A,,1e999
