@@ -84,7 +84,6 @@ TokenStatus Operator_Handler(Translator &t, Token *&token)
 TokenStatus Equal_Handler(Translator &t, Token *&token)
 {
 	TokenStatus status;
-	Token *org_token;
 
 	// only check mode if not in parentheses (expression)
 	if (t.m_countStack.empty())
@@ -142,7 +141,6 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 
 TokenStatus Comma_Handler(Translator &t, Token *&token)
 {
-	int nOperands;
 	TokenStatus status;
 
 	// only check mode if not in parentheses (expression)
@@ -299,7 +297,6 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 {
 	Token *topToken;
 	int nOperands;			// for array/function support
-	int done_push = true;	// for print-only functions
 
 	// do closing parentheses processing
 	if (t.m_holdStack.empty())
