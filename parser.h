@@ -58,7 +58,6 @@ public:
 		m_operandState = false;
 	}
 	Token *getToken(void);
-	// 2011-03-27: added function to access operand state
 	void setOperandState(bool operandState)
 	{
 		m_operandState = operandState;

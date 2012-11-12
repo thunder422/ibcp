@@ -610,14 +610,8 @@ bool printSmallToken(QTextStream &cout, Token *token)
 // function to print a token with an error
 void printError(QTextStream &cout, Token *token, const QString &error)
 {
-	// use new length
-	for (int i = -7; i < token->column(); i++)
-	{
-		cout << ' ';
-	}
-	for (int i = 0; i < token->length(); i++)
-	{
-		cout << '^';
-	}
-	cout << "-- " << error << endl;
+	int col = token->column();
+	int len = token->length();
+	cout << QString(" ").repeated(7 + col) << QString("^").repeated(len)
+		<< "-- " << error << endl;
 }

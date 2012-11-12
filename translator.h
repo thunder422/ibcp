@@ -255,13 +255,13 @@ public:
 	friend TokenStatus SemiColon_Handler(Translator &t, Token *&token);
 
 	// command handler friend function definitions section
-	friend TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item,
+	friend TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmdItem,
 		Token *token);
-	friend TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item,
+	friend TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmdItem,
 		Token *token);
-	friend TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item,
+	friend TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmdItem,
 		Token *token);
-	friend TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item,
+	friend TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem,
 		Token *token);
 };
 

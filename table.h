@@ -79,7 +79,7 @@ struct CmdItem;
 
 // TODO see if these can be forward referenced pointers
 typedef TokenStatus (*TokenHandler)(Translator &t, Token *&token);
-typedef TokenStatus (*CommandHandler)(Translator &t, CmdItem *cmd_item,
+typedef TokenStatus (*CommandHandler)(Translator &t, CmdItem *cmdItem,
 	Token *token);
 
 

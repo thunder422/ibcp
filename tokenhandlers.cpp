@@ -51,7 +51,7 @@
 TokenStatus Operator_Handler(Translator &t, Token *&token)
 {
 	// only check mode if not in parentheses (expression)
-	if (t.m_countStack.empty())
+	if (t.m_countStack.isEmpty())
 	{
 		switch (t.m_mode)
 		{
@@ -86,7 +86,7 @@ TokenStatus Equal_Handler(Translator &t, Token *&token)
 	TokenStatus status;
 
 	// only check mode if not in parentheses (expression)
-	if (t.m_countStack.empty())
+	if (t.m_countStack.isEmpty())
 	{
 		switch (t.m_mode)
 		{
@@ -144,7 +144,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 	TokenStatus status;
 
 	// only check mode if not in parentheses (expression)
-	if (t.m_countStack.empty())
+	if (t.m_countStack.isEmpty())
 	{
 		switch (t.m_mode)
 		{
@@ -153,7 +153,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			// this is an assignment list
 			// (comma puts AssignList on hold stack)
 			// assignment for a comma separated list, change token
-			if (t.m_doneStack.empty())  // make sure stack not empty
+			if (t.m_doneStack.isEmpty())  // make sure stack not empty
 			{
 				// if nothing before comma, comma unexpected
 				// return appropriate error for mode
@@ -277,7 +277,7 @@ TokenStatus SemiColon_Handler(Translator &t, Token *&token)
 	// it is up to command handler to set state appropriately
 	if (status == Null_TokenStatus)  // command stack was empty
 	{
-		if (t.m_doneStack.empty())
+		if (t.m_doneStack.isEmpty())
 		{
 			// no tokens received yet
 			return ExpCmd_TokenStatus;
@@ -299,7 +299,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	int nOperands;			// for array/function support
 
 	// do closing parentheses processing
-	if (t.m_holdStack.empty())
+	if (t.m_holdStack.isEmpty())
 	{
 		// oops, stack is empty
 		return BUG_DoneStackEmptyParen;
@@ -307,7 +307,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	// don't pop top token yet in case error occurs
 	topToken = t.m_holdStack.top().token;
 
-	if (t.m_countStack.empty())
+	if (t.m_countStack.isEmpty())
 	{
 		return NoOpenParen_TokenStatus;
 	}
@@ -412,7 +412,7 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 	if (!t.m_exprMode)
 	{
 		// process command on top of command stack
-		if (t.m_cmdStack.empty())
+		if (t.m_cmdStack.isEmpty())
 		{
 			switch (t.m_mode)
 			{
@@ -448,7 +448,7 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 	else  // handle expression only test mode
 	{
 		// check if find result is only thing on done stack
-		if (t.m_doneStack.empty())
+		if (t.m_doneStack.isEmpty())
 		{
 			return BUG_DoneStackEmpty;
 		}
@@ -460,13 +460,13 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 	// pop and delete null token from top of stack
 	delete t.m_holdStack.pop().token;
 
-	if (!t.m_doneStack.empty())
+	if (!t.m_doneStack.isEmpty())
 	{
 		return BUG_DoneStackNotEmpty;
 	}
 
 	// make sure command stack is empty (temporary TODO)
-	if (!t.m_cmdStack.empty())
+	if (!t.m_cmdStack.isEmpty())
 	{
 		return BUG_CmdStackNotEmpty;
 	}

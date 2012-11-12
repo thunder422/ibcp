@@ -31,13 +31,13 @@ struct Token;
 
 
 // command handler function definitions
-extern TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmd_item,
+extern TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmdItem,
 	Token *token);
-extern TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmd_item,
+extern TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmdItem,
 	Token *token);
-extern TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmd_item,
+extern TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmdItem,
 	Token *token);
-extern TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmd_item,
+extern TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem,
 	Token *token);
 
 
