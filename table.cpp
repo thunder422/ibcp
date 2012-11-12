@@ -472,7 +472,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// InputPrompt_Code
 		Command_TokenType, TwoWord_Multiple,
-		"INPUT", "PROMPT", Null_Flag, 4, None_DataType, NULL, NULL,
+		"INPUT", "PROMPT", Null_Flag, 4, String_DataType, NULL, NULL,
 		Expression_TokenMode, Input_CmdHandler
 
 	},

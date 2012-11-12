@@ -7,905 +7,260 @@ redistribute it under certain conditions.
 Table initialization successful.
 
 Input: ?
-       ^-- PARSER: unrecognizable character
+       ^-- expected command
 
 Input: 01
-       ^-- PARSER: invalid leading zero in numeric constant
-
-Input: ..
-       ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: .e
-       ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: 1e
-         ^-- PARSER: exponent contains no digits
-
-Input: .
-       ^-- PARSER: constant only contains a decimal point
-
-Input: 1e999
-       ^^^^^-- PARSER: constant is out of range
+       ^-- expected command
 
 Input: A?
-        ^-- PARSER: unrecognizable character
-
-Input: A 01
-         ^-- PARSER: invalid leading zero in numeric constant
+        ^-- expected equal or comma for assignment
 
 Input: A..
-        ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A.e
-        ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A 1e
-           ^-- PARSER: exponent contains no digits
-
-Input: A.
-        ^-- PARSER: constant only contains a decimal point
-
-Input: A 1e999
-         ^^^^^-- PARSER: constant is out of range
+        ^-- expected equal or comma for assignment
 
 Input: A(?
-         ^-- PARSER: unrecognizable character
-
-Input: A(01
-         ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A(..
-         ^^-- PARSER: constant only contains a decimal point or has two decimal points
+         ^-- expected numeric expression
 
 Input: A(.e
-         ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A(1e
-           ^-- PARSER: exponent contains no digits
-
-Input: A(.
-         ^-- PARSER: constant only contains a decimal point
-
-Input: A(1e999
-         ^^^^^-- PARSER: constant is out of range
+         ^-- expected digits in mantissa in floating point constant
 
 Input: A(1?
-          ^-- PARSER: unrecognizable character
-
-Input: A(1 01
-           ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A(1 ..
-           ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A(1 .e
-           ^-- PARSER: mantissa of constant only contains a decimal point
+          ^-- expected operator, comma or closing parentheses
 
 Input: A(1 1e
-             ^-- PARSER: exponent contains no digits
-
-Input: A(1 .
-           ^-- PARSER: constant only contains a decimal point
-
-Input: A(1 1e999
-           ^^^^^-- PARSER: constant is out of range
+           ^-- expected operator, comma or closing parentheses
 
 Input: A(1,?
-           ^-- PARSER: unrecognizable character
-
-Input: A(1,01
-           ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A(1,..
-           ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A(1,.e
-           ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A(1,1e
-             ^-- PARSER: exponent contains no digits
+           ^-- expected numeric expression
 
 Input: A(1,.
-           ^-- PARSER: constant only contains a decimal point
-
-Input: A(1,1e999
-           ^^^^^-- PARSER: constant is out of range
+           ^-- expected digits in floating point constant
 
 Input: A,?
-         ^-- PARSER: unrecognizable character
-
-Input: A,01
-         ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A,..
-         ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A,.e
-         ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A,1e
-           ^-- PARSER: exponent contains no digits
-
-Input: A,.
-         ^-- PARSER: constant only contains a decimal point
+         ^-- expected double variable
 
 Input: A,1e999
-         ^^^^^-- PARSER: constant is out of range
+         ^-- expected double variable
 
 Input: A,B?
-          ^-- PARSER: unrecognizable character
+          ^-- expected equal or comma for assignment
 
 Input: A,B 01
-           ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A,B..
-          ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A,B.e
-          ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A,B 1e
-             ^-- PARSER: exponent contains no digits
-
-Input: A,B.
-          ^-- PARSER: constant only contains a decimal point
-
-Input: A,B 1e999
-           ^^^^^-- PARSER: constant is out of range
+           ^-- expected equal or comma for assignment
 
 Input: A,B,?
-           ^-- PARSER: unrecognizable character
-
-Input: A,B,01
-           ^-- PARSER: invalid leading zero in numeric constant
+           ^-- expected double variable
 
 Input: A,B,..
-           ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A,B,.e
-           ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A,B,1e
-             ^-- PARSER: exponent contains no digits
-
-Input: A,B,.
-           ^-- PARSER: constant only contains a decimal point
-
-Input: A,B,1e999
-           ^^^^^-- PARSER: constant is out of range
+           ^-- expected double variable
 
 Input: A=?
-         ^-- PARSER: unrecognizable character
-
-Input: A=01
-         ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A=..
-         ^^-- PARSER: constant only contains a decimal point or has two decimal points
+         ^-- expected numeric expression
 
 Input: A=.e
-         ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A=1e
-           ^-- PARSER: exponent contains no digits
-
-Input: A=.
-         ^-- PARSER: constant only contains a decimal point
-
-Input: A=1e999
-         ^^^^^-- PARSER: constant is out of range
+         ^-- expected digits in mantissa in floating point constant
 
 Input: A=1?
-          ^-- PARSER: unrecognizable character
-
-Input: A=1 01
-           ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A=1 ..
-           ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A=1 .e
-           ^-- PARSER: mantissa of constant only contains a decimal point
+          ^-- expected operator or end-of-statement
 
 Input: A=1 1e
-             ^-- PARSER: exponent contains no digits
-
-Input: A=1 .
-           ^-- PARSER: constant only contains a decimal point
-
-Input: A=1 1e999
-           ^^^^^-- PARSER: constant is out of range
+           ^-- expected operator or end-of-statement
 
 Input: A=1+?
-           ^-- PARSER: unrecognizable character
-
-Input: A=1+01
-           ^-- PARSER: invalid leading zero in numeric constant
+           ^-- expected numeric expression
 
 Input: A=1+..
-           ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A=1+.e
-           ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A=1+1e
-             ^-- PARSER: exponent contains no digits
-
-Input: A=1+.
-           ^-- PARSER: constant only contains a decimal point
-
-Input: A=1+1e999
-           ^^^^^-- PARSER: constant is out of range
+           ^^-- expected digits or single decimal point in floating point constant
 
 Input: A$=?
-          ^-- PARSER: unrecognizable character
-
-Input: A$=01
-          ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$=..
-          ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$=.e
-          ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$=1e
-            ^-- PARSER: exponent contains no digits
-
-Input: A$=.
-          ^-- PARSER: constant only contains a decimal point
+          ^-- expected string expression
 
 Input: A$=1e999
-          ^^^^^-- PARSER: constant is out of range
+          ^-- expected string expression
 
 Input: A$="A"?
-             ^-- PARSER: unrecognizable character
+             ^-- expected operator or end-of-statement
 
-Input: A$="A" 01
-              ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$="A" ..
-              ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$="A" .e
-              ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$="A" 1e
-                ^-- PARSER: exponent contains no digits
-
-Input: A$="A" .
-              ^-- PARSER: constant only contains a decimal point
-
-Input: A$="A" 1e999
-              ^^^^^-- PARSER: constant is out of range
+Input: A$="A"1e999
+             ^-- expected operator or end-of-statement
 
 Input: A$="A"+?
-              ^-- PARSER: unrecognizable character
+              ^-- expected string expression
 
 Input: A$="A"+01
-              ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$="A"+..
-              ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$="A"+.e
-              ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$="A"+1e
-                ^-- PARSER: exponent contains no digits
-
-Input: A$="A"+.
-              ^-- PARSER: constant only contains a decimal point
-
-Input: A$="A"+1e999
-              ^^^^^-- PARSER: constant is out of range
+              ^-- expected string expression
 
 Input: MID$(?
-            ^-- PARSER: unrecognizable character
-
-Input: MID$(01
-            ^-- PARSER: invalid leading zero in numeric constant
+            ^-- expected string variable
 
 Input: MID$(..
-            ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: MID$(.e
-            ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: MID$(1e
-              ^-- PARSER: exponent contains no digits
-
-Input: MID$(.
-            ^-- PARSER: constant only contains a decimal point
-
-Input: MID$(1e999
-            ^^^^^-- PARSER: constant is out of range
+            ^-- expected string variable
 
 Input: MID$(A$?
-              ^-- PARSER: unrecognizable character
-
-Input: MID$(A$01
-              ^-- PARSER: invalid leading zero in numeric constant
-
-Input: MID$(A$..
-              ^^-- PARSER: constant only contains a decimal point or has two decimal points
+              ^-- expected operator or comma
 
 Input: MID$(A$.e
-              ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: MID$(A$1e
-                ^-- PARSER: exponent contains no digits
-
-Input: MID$(A$.
-              ^-- PARSER: constant only contains a decimal point
-
-Input: MID$(A$1e999
-              ^^^^^-- PARSER: constant is out of range
+              ^-- expected operator or comma
 
 Input: MID$(A$,?
-               ^-- PARSER: unrecognizable character
-
-Input: MID$(A$,01
-               ^-- PARSER: invalid leading zero in numeric constant
-
-Input: MID$(A$,..
-               ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: MID$(A$,.e
-               ^-- PARSER: mantissa of constant only contains a decimal point
+               ^-- expected numeric expression
 
 Input: MID$(A$,1e
-                 ^-- PARSER: exponent contains no digits
-
-Input: MID$(A$,.
-               ^-- PARSER: constant only contains a decimal point
-
-Input: MID$(A$,1e999
-               ^^^^^-- PARSER: constant is out of range
+                 ^-- expected sign or digits for exponent in floating point constant
 
 Input: MID$(A$,3?
-                ^-- PARSER: unrecognizable character
-
-Input: MID$(A$,3 01
-                 ^-- PARSER: invalid leading zero in numeric constant
-
-Input: MID$(A$,3 ..
-                 ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: MID$(A$,3 .e
-                 ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: MID$(A$,3 1e
-                   ^-- PARSER: exponent contains no digits
+                ^-- expected operator, comma or closing parentheses
 
 Input: MID$(A$,3 .
-                 ^-- PARSER: constant only contains a decimal point
-
-Input: MID$(A$,3 1e999
-                 ^^^^^-- PARSER: constant is out of range
+                 ^-- expected operator, comma or closing parentheses
 
 Input: MID$(A$,3,?
-                 ^-- PARSER: unrecognizable character
-
-Input: MID$(A$,3,01
-                 ^-- PARSER: invalid leading zero in numeric constant
-
-Input: MID$(A$,3,..
-                 ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: MID$(A$,3,.e
-                 ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: MID$(A$,3,1e
-                   ^-- PARSER: exponent contains no digits
-
-Input: MID$(A$,3,.
-                 ^-- PARSER: constant only contains a decimal point
+                 ^-- expected numeric expression
 
 Input: MID$(A$,3,1e999
-                 ^^^^^-- PARSER: constant is out of range
+                 ^^^^^-- floating point constant is out of range
 
 Input: MID$(A$,3,4?
-                  ^-- PARSER: unrecognizable character
+                  ^-- expected operator or closing parentheses
 
 Input: MID$(A$,3,4 01
-                   ^-- PARSER: invalid leading zero in numeric constant
-
-Input: MID$(A$,3,4 ..
-                   ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: MID$(A$,3,4 .e
-                   ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: MID$(A$,3,4 1e
-                     ^-- PARSER: exponent contains no digits
-
-Input: MID$(A$,3,4 .
-                   ^-- PARSER: constant only contains a decimal point
-
-Input: MID$(A$,3,4 1e999
-                   ^^^^^-- PARSER: constant is out of range
+                   ^-- expected operator or closing parentheses
 
 Input: A$=MID$(?
-               ^-- PARSER: unrecognizable character
-
-Input: A$=MID$(01
-               ^-- PARSER: invalid leading zero in numeric constant
+               ^-- expected string expression
 
 Input: A$=MID$(..
-               ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$=MID$(.e
-               ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$=MID$(1e
-                 ^-- PARSER: exponent contains no digits
-
-Input: A$=MID$(.
-               ^-- PARSER: constant only contains a decimal point
-
-Input: A$=MID$(1e999
-               ^^^^^-- PARSER: constant is out of range
+               ^-- expected string expression
 
 Input: A$=MID$(B$?
-                 ^-- PARSER: unrecognizable character
-
-Input: A$=MID$(B$01
-                 ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$=MID$(B$..
-                 ^^-- PARSER: constant only contains a decimal point or has two decimal points
+                 ^-- expected operator or comma
 
 Input: A$=MID$(B$.e
-                 ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$=MID$(B$1e
-                   ^-- PARSER: exponent contains no digits
-
-Input: A$=MID$(B$.
-                 ^-- PARSER: constant only contains a decimal point
-
-Input: A$=MID$(B$1e999
-                 ^^^^^-- PARSER: constant is out of range
+                 ^-- expected operator or comma
 
 Input: A$=MID$(B$,?
-                  ^-- PARSER: unrecognizable character
-
-Input: A$=MID$(B$,01
-                  ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$=MID$(B$,..
-                  ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$=MID$(B$,.e
-                  ^-- PARSER: mantissa of constant only contains a decimal point
+                  ^-- expected numeric expression
 
 Input: A$=MID$(B$,1e
-                    ^-- PARSER: exponent contains no digits
-
-Input: A$=MID$(B$,.
-                  ^-- PARSER: constant only contains a decimal point
-
-Input: A$=MID$(B$,1e999
-                  ^^^^^-- PARSER: constant is out of range
+                    ^-- expected sign or digits for exponent in floating point constant
 
 Input: A$=MID$(B$,3?
-                   ^-- PARSER: unrecognizable character
-
-Input: A$=MID$(B$,3 01
-                    ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$=MID$(B$,3 ..
-                    ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$=MID$(B$,3 .e
-                    ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$=MID$(B$,3 1e
-                      ^-- PARSER: exponent contains no digits
+                   ^-- expected operator, comma or closing parentheses
 
 Input: A$=MID$(B$,3 .
-                    ^-- PARSER: constant only contains a decimal point
-
-Input: A$=MID$(B$,3 1e999
-                    ^^^^^-- PARSER: constant is out of range
+                    ^-- expected operator, comma or closing parentheses
 
 Input: A$=MID$(B$,3,?
-                    ^-- PARSER: unrecognizable character
-
-Input: A$=MID$(B$,3,01
-                    ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$=MID$(B$,3,..
-                    ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$=MID$(B$,3,.e
-                    ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$=MID$(B$,3,1e
-                      ^-- PARSER: exponent contains no digits
-
-Input: A$=MID$(B$,3,.
-                    ^-- PARSER: constant only contains a decimal point
+                    ^-- expected numeric expression
 
 Input: A$=MID$(B$,3,1e999
-                    ^^^^^-- PARSER: constant is out of range
+                    ^^^^^-- floating point constant is out of range
 
 Input: A$=MID$(B$,3,4?
-                     ^-- PARSER: unrecognizable character
+                     ^-- expected operator or closing parentheses
 
 Input: A$=MID$(B$,3,4 01
-                      ^-- PARSER: invalid leading zero in numeric constant
-
-Input: A$=MID$(B$,3,4 ..
-                      ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: A$=MID$(B$,3,4 .e
-                      ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: A$=MID$(B$,3,4 1e
-                        ^-- PARSER: exponent contains no digits
-
-Input: A$=MID$(B$,3,4 .
-                      ^-- PARSER: constant only contains a decimal point
-
-Input: A$=MID$(B$,3,4 1e999
-                      ^^^^^-- PARSER: constant is out of range
+                      ^-- expected operator or closing parentheses
 
 Input: PRINT ?
-             ^-- PARSER: unrecognizable character
-
-Input: PRINT 01
-             ^-- PARSER: invalid leading zero in numeric constant
+             ^-- expected expression
 
 Input: PRINT ..
-             ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: PRINT .e
-             ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: PRINT 1e
-               ^-- PARSER: exponent contains no digits
-
-Input: PRINT .
-             ^-- PARSER: constant only contains a decimal point
-
-Input: PRINT 1e999
-             ^^^^^-- PARSER: constant is out of range
+             ^^-- expected digits or single decimal point in floating point constant
 
 Input: PRINT A?
-              ^-- PARSER: unrecognizable character
-
-Input: PRINT A 01
-               ^-- PARSER: invalid leading zero in numeric constant
-
-Input: PRINT A..
-              ^^-- PARSER: constant only contains a decimal point or has two decimal points
+              ^-- expected operator or end-of-statement
 
 Input: PRINT A.e
-              ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: PRINT A 1e
-                 ^-- PARSER: exponent contains no digits
-
-Input: PRINT A.
-              ^-- PARSER: constant only contains a decimal point
-
-Input: PRINT A 1e999
-               ^^^^^-- PARSER: constant is out of range
+              ^-- expected operator or end-of-statement
 
 Input: PRINT A(?
-               ^-- PARSER: unrecognizable character
-
-Input: PRINT A(01
-               ^-- PARSER: invalid leading zero in numeric constant
-
-Input: PRINT A(..
-               ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: PRINT A(.e
-               ^-- PARSER: mantissa of constant only contains a decimal point
+               ^-- expected expression
 
 Input: PRINT A(1e
-                 ^-- PARSER: exponent contains no digits
-
-Input: PRINT A(.
-               ^-- PARSER: constant only contains a decimal point
-
-Input: PRINT A(1e999
-               ^^^^^-- PARSER: constant is out of range
+                 ^-- expected sign or digits for exponent in floating point constant
 
 Input: PRINT A(1?
-                ^-- PARSER: unrecognizable character
-
-Input: PRINT A(1 01
-                 ^-- PARSER: invalid leading zero in numeric constant
-
-Input: PRINT A(1 ..
-                 ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: PRINT A(1 .e
-                 ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: PRINT A(1 1e
-                   ^-- PARSER: exponent contains no digits
+                ^-- expected operator, comma or closing parentheses
 
 Input: PRINT A(1 .
-                 ^-- PARSER: constant only contains a decimal point
-
-Input: PRINT A(1 1e999
-                 ^^^^^-- PARSER: constant is out of range
+                 ^-- expected operator, comma or closing parentheses
 
 Input: PRINT A(1,?
-                 ^-- PARSER: unrecognizable character
-
-Input: PRINT A(1,01
-                 ^-- PARSER: invalid leading zero in numeric constant
-
-Input: PRINT A(1,..
-                 ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: PRINT A(1,.e
-                 ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: PRINT A(1,1e
-                   ^-- PARSER: exponent contains no digits
-
-Input: PRINT A(1,.
-                 ^-- PARSER: constant only contains a decimal point
+                 ^-- expected expression
 
 Input: PRINT A(1,1e999
-                 ^^^^^-- PARSER: constant is out of range
+                 ^^^^^-- floating point constant is out of range
 
 Input: PRINT A,?
-               ^-- PARSER: unrecognizable character
+               ^-- expected expression
 
 Input: PRINT A,01
-               ^-- PARSER: invalid leading zero in numeric constant
-
-Input: PRINT A,..
-               ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: PRINT A,.e
-               ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: PRINT A,1e
-                 ^-- PARSER: exponent contains no digits
-
-Input: PRINT A,.
-               ^-- PARSER: constant only contains a decimal point
-
-Input: PRINT A,1e999
-               ^^^^^-- PARSER: constant is out of range
+               ^-- expected non-zero leading digit in numeric constant
 
 Input: PRINT A,,?
-                ^-- PARSER: unrecognizable character
-
-Input: PRINT A,,01
-                ^-- PARSER: invalid leading zero in numeric constant
+                ^-- expected expression
 
 Input: PRINT A,,..
-                ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: PRINT A,,.e
-                ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: PRINT A,,1e
-                  ^-- PARSER: exponent contains no digits
-
-Input: PRINT A,,.
-                ^-- PARSER: constant only contains a decimal point
-
-Input: PRINT A,,1e999
-                ^^^^^-- PARSER: constant is out of range
+                ^^-- expected digits or single decimal point in floating point constant
 
 Input: INPUT ?
-             ^-- PARSER: unrecognizable character
-
-Input: INPUT 01
-             ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT ..
-             ^^-- PARSER: constant only contains a decimal point or has two decimal points
+             ^-- expected variable
 
 Input: INPUT .e
-             ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT 1e
-               ^-- PARSER: exponent contains no digits
-
-Input: INPUT .
-             ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT 1e999
-             ^^^^^-- PARSER: constant is out of range
+             ^-- expected variable
 
 Input: INPUT A?
-              ^-- PARSER: unrecognizable character
-
-Input: INPUT A 01
-               ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT A..
-              ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT A.e
-              ^-- PARSER: mantissa of constant only contains a decimal point
+              ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT A 1e
-                 ^-- PARSER: exponent contains no digits
-
-Input: INPUT A.
-              ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT A 1e999
-               ^^^^^-- PARSER: constant is out of range
+               ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT A,?
-               ^-- PARSER: unrecognizable character
-
-Input: INPUT A,01
-               ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT A,..
-               ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT A,.e
-               ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT A,1e
-                 ^-- PARSER: exponent contains no digits
+               ^-- expected variable
 
 Input: INPUT A,.
-               ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT A,1e999
-               ^^^^^-- PARSER: constant is out of range
+               ^-- expected variable
 
 Input: INPUT A(1,?
-                 ^-- PARSER: unrecognizable character
-
-Input: INPUT A(1,01
-                 ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT A(1,..
-                 ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT A(1,.e
-                 ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT A(1,1e
-                   ^-- PARSER: exponent contains no digits
-
-Input: INPUT A(1,.
-                 ^-- PARSER: constant only contains a decimal point
+                 ^-- expected numeric expression
 
 Input: INPUT A(1,1e999
-                 ^^^^^-- PARSER: constant is out of range
+                 ^^^^^-- floating point constant is out of range
 
 Input: INPUT PROMPT ?
-                    ^-- PARSER: unrecognizable character
+                    ^-- expected string expression
 
 Input: INPUT PROMPT 01
-                    ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT PROMPT ..
-                    ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT PROMPT .e
-                    ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT PROMPT 1e
-                      ^-- PARSER: exponent contains no digits
-
-Input: INPUT PROMPT .
-                    ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT PROMPT 1e999
-                    ^^^^^-- PARSER: constant is out of range
+                    ^-- expected string expression
 
 Input: INPUT PROMPT "A"?
-                       ^-- PARSER: unrecognizable character
-
-Input: INPUT PROMPT "A"01
-                       ^-- PARSER: invalid leading zero in numeric constant
+                       ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT PROMPT "A"..
-                       ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT PROMPT "A".e
-                       ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT PROMPT "A"1e
-                         ^-- PARSER: exponent contains no digits
-
-Input: INPUT PROMPT "A".
-                       ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT PROMPT "A"1e999
-                       ^^^^^-- PARSER: constant is out of range
+                       ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT PROMPT "A",?
-                        ^-- PARSER: unrecognizable character
-
-Input: INPUT PROMPT "A",01
-                        ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT PROMPT "A",..
-                        ^^-- PARSER: constant only contains a decimal point or has two decimal points
+                        ^-- expected variable
 
 Input: INPUT PROMPT "A",.e
-                        ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT PROMPT "A",1e
-                          ^-- PARSER: exponent contains no digits
-
-Input: INPUT PROMPT "A",.
-                        ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT PROMPT "A",1e999
-                        ^^^^^-- PARSER: constant is out of range
+                        ^-- expected variable
 
 Input: INPUT PROMPT "A",A?
-                         ^-- PARSER: unrecognizable character
-
-Input: INPUT PROMPT "A",A 01
-                          ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT PROMPT "A",A..
-                         ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT PROMPT "A",A.e
-                         ^-- PARSER: mantissa of constant only contains a decimal point
+                         ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT PROMPT "A",A 1e
-                            ^-- PARSER: exponent contains no digits
-
-Input: INPUT PROMPT "A",A.
-                         ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT PROMPT "A",A 1e999
-                          ^^^^^-- PARSER: constant is out of range
+                          ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT PROMPT A$(1,?
-                         ^-- PARSER: unrecognizable character
-
-Input: INPUT PROMPT A$(1,01
-                         ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT PROMPT A$(1,..
-                         ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT PROMPT A$(1,.e
-                         ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT PROMPT A$(1,1e
-                           ^-- PARSER: exponent contains no digits
+                         ^-- expected expression
 
 Input: INPUT PROMPT A$(1,.
-                         ^-- PARSER: constant only contains a decimal point
-
-Input: INPUT PROMPT A$(1,1e999
-                         ^^^^^-- PARSER: constant is out of range
+                         ^-- expected digits in floating point constant
 
 Input: INPUT PROMPT "A";A(1,?
-                            ^-- PARSER: unrecognizable character
-
-Input: INPUT PROMPT "A";A(1,01
-                            ^-- PARSER: invalid leading zero in numeric constant
-
-Input: INPUT PROMPT "A";A(1,..
-                            ^^-- PARSER: constant only contains a decimal point or has two decimal points
-
-Input: INPUT PROMPT "A";A(1,.e
-                            ^-- PARSER: mantissa of constant only contains a decimal point
-
-Input: INPUT PROMPT "A";A(1,1e
-                              ^-- PARSER: exponent contains no digits
-
-Input: INPUT PROMPT "A";A(1,.
-                            ^-- PARSER: constant only contains a decimal point
+                            ^-- expected numeric expression
 
 Input: INPUT PROMPT "A";A(1,1e999
-                            ^^^^^-- PARSER: constant is out of range
+                            ^^^^^-- floating point constant is out of range
 

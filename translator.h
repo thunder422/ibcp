@@ -203,37 +203,44 @@ private:
 		sizeof_Match
 	};
 
+	// Main Processing Functions
 	TokenStatus addToken(Token *&token);
 	TokenStatus processOperand(Token *&token);
-	TokenStatus endExpressionError(void);
 	bool processUnaryOperator(Token *&token, TokenStatus &status);
     TokenStatus processBinaryOperator(Token *&token);
 	TokenStatus processOperator(Token *&token);
-	TokenStatus operatorError(void);
 	TokenStatus processFirstOperand(Token *&token);
 	TokenStatus processFinalOperand(Token *&token, Token *token2,
 		int operandIndex, int nOperands = 0);
+	TokenStatus expressionEnd(void);
+
+	// Support Functions
+	TokenStatus callCommandHandler(Token *&token);
 	TokenStatus findCode(Token *&token, int operandIndex,
 		Token **first = NULL, Token **last = NULL);
-	void doPendingParen(Token *token);
-	TokenStatus expressionEnd(void);
-	TokenStatus parenStatus(void);
 	TokenStatus getExprDataType(DataType &dataType);
+	TokenStatus parenStatus(void);
+	void doPendingParen(Token *token);
 	void deleteOpenParen(Token *token);
 	void deleteCloseParen(Token *token);
-	TokenStatus callCommandHandler(Token *&token);
 	void cleanUp(void);		// only call when addToken() returns error
 
-	// COMMAND SPECIFIC FUNCTIONS
+	// Command Specific Functions
 	TokenStatus addPrintCode(void);
 	TokenStatus checkAssignListToken(Token *&token);
 	TokenStatus setAssignCommand(Token *&token, Code assign_code);
 
-	// By DataType Access Functions
+	// Determin Error Funtions (By DataType)
 	static TokenStatus expectedErrStatus(DataType dataType);
 	static TokenStatus actualErrStatus(DataType dataType);
 	static TokenStatus variableErrStatus(DataType dataType);
 	static DataType equivalentDataType(DataType dataType);
+
+	// Determine Error Functions (By Current State)
+	TokenStatus operatorError(void);
+	TokenStatus assignmentError(void);
+	TokenStatus endExpressionError(void);
+	TokenStatus unexpectedEndError(void);
 
 	// set error token (deleting any previous error token first)
 	void setErrorToken(Token *errorToken)

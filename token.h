@@ -210,34 +210,25 @@ public:
 	}
 
 	// set error functions
-	void setError(const QString &msg)
+	void setError(const QString &msg, DataType dataType = Double_DataType)
 	{
 		m_length = 1;
 		m_type = Error_TokenType;
-		m_dataType = None_DataType;
+		m_dataType = dataType;
 		m_string = msg;
 	}
 	void setError(int column, const QString  &msg)
 	{
-		m_column = column;
-		m_length = 1;
+		m_length = -column;  // assume length=1, specifies alternate column
 		m_type = Error_TokenType;
-		m_dataType = None_DataType;
+		m_dataType = Double_DataType;
 		m_string = msg;
 	}
 	void setError(const QString &msg, int len)
 	{
 		m_length = len;
 		m_type = Error_TokenType;
-		m_dataType = None_DataType;
-		m_string = msg;
-	}
-	void setError(int column, const QString &msg, int len)
-	{
-		m_column = column;
-		m_length = len;
-		m_type = Error_TokenType;
-		m_dataType = None_DataType;
+		m_dataType = Double_DataType;
 		m_string = msg;
 	}
 

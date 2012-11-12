@@ -612,6 +612,11 @@ void printError(QTextStream &cout, Token *token, const QString &error)
 {
 	int col = token->column();
 	int len = token->length();
+	if (len < 0)  // alternate column?
+	{
+		col = -len;
+		len = 1;
+	}
 	cout << QString(" ").repeated(7 + col) << QString("^").repeated(len)
 		<< "-- " << error << endl;
 }

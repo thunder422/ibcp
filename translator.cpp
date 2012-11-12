@@ -428,69 +428,6 @@ static Code cvtCodeHaveNeed[numberof_DataType][numberof_DataType] = {
 	}
 };
 
-// function to return equivalent data type for data type
-// (really to convert the various string data types to String_DataType)
-DataType Translator::equivalentDataType(DataType dataType)
-{
-	static DataType equivalent[numberof_DataType] = {
-		Double_DataType,	// Double
-		Integer_DataType,	// Integer
-		String_DataType,	// String
-		String_DataType,	// TmpStr
-		String_DataType		// SubStr
-	};
-
-	return equivalent[dataType];
-}
-
-// function to return the token error status for an expected data type
-TokenStatus Translator::expectedErrStatus(DataType dataType)
-{
-	static TokenStatus tokenStatus[sizeof_DataType] = {
-		ExpNumExpr_TokenStatus,		// Double
-		ExpNumExpr_TokenStatus,		// Integer
-		ExpStrExpr_TokenStatus,		// String
-		ExpStrExpr_TokenStatus,		// TmpStr
-		ExpStrExpr_TokenStatus,		// SubStr
-		BUG_InvalidDataType,		// numberof
-		ExpExpr_TokenStatus			// None
-	};
-
-	return tokenStatus[dataType];
-}
-
-// function to return the token error status for an actual data type
-TokenStatus Translator::actualErrStatus(DataType dataType)
-{
-	static TokenStatus tokenStatus[sizeof_DataType] = {
-		ExpStrExpr_TokenStatus,		// Double
-		ExpStrExpr_TokenStatus,		// Integer
-		ExpNumExpr_TokenStatus,		// String
-		ExpNumExpr_TokenStatus,		// TmpStr
-		ExpNumExpr_TokenStatus,		// SubStr
-		BUG_InvalidDataType,		// numberof
-		BUG_InvalidDataType			// None
-	};
-
-	return tokenStatus[dataType];
-}
-
-// function to return the token error status for a variable data type
-TokenStatus Translator::variableErrStatus(DataType dataType)
-{
-	static TokenStatus tokenStatus[sizeof_DataType] = {
-		ExpDblVar_TokenStatus,		// Double
-		ExpIntVar_TokenStatus,		// Integer
-		ExpStrItem_TokenStatus,		// String
-		BUG_InvalidDataType,		// TmpStr
-		BUG_InvalidDataType,		// SubStr
-		BUG_InvalidDataType,		// numberof
-		ExpAssignItem_TokenStatus	// None
-	};
-
-	return tokenStatus[dataType];
-}
-
 
 // function to parse and translate an input line to an RPN output list
 //
@@ -522,8 +459,88 @@ bool Translator::setInput(const QString &input, bool exprMode)
 		if (token->isType(Error_TokenType))
 		{
 			setErrorToken(token);
-			// XXX determine error code from what's expected next
-			m_errorMessage = "PARSER: " + token->string();
+			if (m_mode == Command_TokenMode)
+			{
+				token->setLength(1);  // just point to first character
+				status = ExpCmd_TokenStatus;
+			}
+			else if (m_state == EndExpr_State)
+			{
+				token->setLength(1);  // just point to first character
+				status = endExpressionError();
+			}
+			else if (m_state != Operand_State && m_state != OperandOrEnd_State)
+			{
+				token->setLength(1);  // just point to first character
+				status = operatorError();
+			}
+			else  // Operand_State
+			{
+				DataType dataType;
+
+				switch (m_mode)
+				{
+				case Assignment_TokenMode:
+				case AssignmentList_TokenMode:
+					// in a comma separated list
+					status = assignmentError();
+					if (status != ExpNumExpr_TokenStatus)
+					{
+						token->setLength(1);  // just point to first character
+					}
+					else if (token->dataType() == Double_DataType)
+					{
+						// token has number error, return parser error
+						status = Null_TokenStatus;
+					}
+					break;
+
+				case Expression_TokenMode:
+					// something is on the stack that's not suppose to be there
+					// this is a diagnostic error, should not occur
+					if ((status = getExprDataType(dataType))
+						== Good_TokenStatus)
+					{
+						status = expectedErrStatus(dataType);
+					}
+					if ((status == ExpNumExpr_TokenStatus
+						|| status == ExpExpr_TokenStatus)
+						&& token->dataType() == Double_DataType)
+					{
+						// for numeric parser errors in numeric expressions
+						status = Null_TokenStatus;  // return parser error
+					}
+					else
+					{
+						token->setLength(1);  // just point to first character
+					}
+					break;
+
+				case Reference_TokenMode:
+					if (m_countStack.isEmpty())
+					{
+						token->setLength(1);  // just point to first character
+						status = ExpVar_TokenStatus;
+					}
+					else if (token->dataType() != Double_DataType)
+					{
+						token->setLength(1);  // just point to first character
+						status = ExpNumExpr_TokenStatus;
+					}
+					else
+					{
+						// for numeric parser errors in numeric expressions
+						status = Null_TokenStatus;  // return parser error
+					}
+					break;
+
+				default:
+					status = BUG_InvalidMode;
+					break;
+				}
+			}
+			m_errorMessage = status == Null_TokenStatus
+				?  token->string() : token->message(status);
 			cleanUp();
 			return false;
 		}
@@ -628,7 +645,7 @@ TokenStatus Translator::addToken(Token *&token)
 			if (m_state != OperandOrEnd_State)
 			{
 				// an operand is expected, get the appropriate error
-				return endExpressionError();
+				return unexpectedEndError();
 			}
 			// fall thru to process end of expression operator token
 		}
@@ -685,7 +702,7 @@ TokenStatus Translator::processOperand(Token *&token)
 		{
 			// detect invalid print-only function
 			if ((m_table.flags(token->code()) & Print_Flag)
-				&& (!m_cmdStack.empty()
+				&& (!m_cmdStack.isEmpty()
 				&& !m_cmdStack.top().token->isCode(Print_Code)
 				|| !m_holdStack.top().token->isNull()))
 			{
@@ -702,7 +719,7 @@ TokenStatus Translator::processOperand(Token *&token)
 			{
 			case Command_TokenMode:
 			case Assignment_TokenMode:
-				if (m_countStack.empty())
+				if (m_countStack.isEmpty())
 				{
 					if (m_table.dataType(token->code()) != SubStr_DataType)
 					{
@@ -734,7 +751,7 @@ TokenStatus Translator::processOperand(Token *&token)
 				break;
 
 			case Reference_TokenMode:
-				if (m_countStack.empty())
+				if (m_countStack.isEmpty())
 				{
 					return ExpVar_TokenStatus;
 				}
@@ -742,7 +759,7 @@ TokenStatus Translator::processOperand(Token *&token)
 			}
 		}
 		// for reference mode, only no parentheses tokens allowed
-		else if (m_countStack.empty() && !token->isType(Paren_TokenType))
+		else if (m_countStack.isEmpty() && !token->isType(Paren_TokenType))
 		{
 			// return appropriate error for mode
 			if (m_mode == Command_TokenMode || m_mode == Assignment_TokenMode)
@@ -784,7 +801,7 @@ TokenStatus Translator::processOperand(Token *&token)
 	else  // !token->hasParen()
 	{
 		// for reference mode, only no parentheses tokens allowed
-		if (m_mode == Reference_TokenMode && m_countStack.empty()
+		if (m_mode == Reference_TokenMode && m_countStack.isEmpty()
 			&& !token->isType(NoParen_TokenType))
 		{
 			return ExpVar_TokenStatus;
@@ -807,7 +824,7 @@ TokenStatus Translator::processOperand(Token *&token)
 		m_doneStack.top().first = m_doneStack.top().last = NULL;
 		// in reference mode, if have variable, set end expression state
 		// otherwise next token must be a binary operator
-		m_state = m_mode == Reference_TokenMode && m_countStack.empty()
+		m_state = m_mode == Reference_TokenMode && m_countStack.isEmpty()
 			? EndExpr_State : BinOp_State;
 	}
 
@@ -821,69 +838,11 @@ TokenStatus Translator::processOperand(Token *&token)
 }
 
 
-// function to get the error for a premature end to an expression when
-// another operand is expected
-//
-//   - for command and assignments modes, count stack determines error
-//   - for expression mode, current expression type determines error
-
-TokenStatus Translator::endExpressionError(void)
-{
-	TokenStatus status = Good_TokenStatus;
-	DataType dataType;
-
-	// unexpected of end expression - determine error to return
-	switch (m_mode)
-	{
-	case Command_TokenMode:
-	case Assignment_TokenMode:
-	case AssignmentList_TokenMode:
-		// make sure done stack is not empty
-		if (m_countStack.empty())
-		{
-			status = variableErrStatus(m_cmdStack.top().token->dataType());
-		}
-		else if (m_countStack.top().nExpected == 0)
-		{
-			// in array
-			status = ExpNumExpr_TokenStatus;
-		}
-		else if (m_countStack.top().nOperands == 1)
-		{
-			// in function at first argument (sub-string function)
-			status = ExpStrVar_TokenStatus;
-		}
-		else  // in function not at first argument
-		{
-			status = expectedErrStatus(m_table
-				.operandDataType(m_countStack.top().code,
-				m_countStack.top().nOperands - 1));
-		}
-		break;
-
-	case Expression_TokenMode:
-		if ((status = getExprDataType(dataType)) == Good_TokenStatus)
-		{
-			status = expectedErrStatus(dataType);
-		}
-		break;
-
-	case Reference_TokenMode:
-		status = ExpVar_TokenStatus;
-		break;
-
-	default:
-		status = BUG_InvalidMode;
-		break;
-	}
-	return status;
-}
-
 
 bool Translator::processUnaryOperator(Token *&token, TokenStatus &status)
 {
 	// check if count stack is empty before checking mode
-	if (m_countStack.empty())
+	if (m_countStack.isEmpty())
 	{
         switch (m_mode)
         {
@@ -986,7 +945,7 @@ TokenStatus Translator::processBinaryOperator(Token *&token)
 		// TODO currently only occurs after print function
 		// TODO add correct error based on current command
 		// TODO call command handler to get appropriate error here
-		return ExpSemiCommaOrEnd_TokenStatus;
+		return endExpressionError();
 	}
 
 	if (!token->isOperator())
@@ -1078,142 +1037,6 @@ TokenStatus Translator::processOperator(Token *&token)
 		tokenHandler = Operator_Handler;
 	}
 	return (*tokenHandler)(*this, token);
-}
-
-
-// function to return error when an operator is expected, first paren_status()
-// is called to get appropriate error when inside parentheses, internal function
-// of array/user function, and if not inside parentheses, then error is
-// dependent on current token mode
-
-TokenStatus Translator::operatorError(void)
-{
-	TokenStatus status;
-
-	if ((status = parenStatus()) == Good_TokenStatus)
-	{
-		// error is dependent on mode
-		switch (m_mode)
-		{
-		case Command_TokenMode:
-		case Assignment_TokenMode:
-		case AssignmentList_TokenMode:
-			status = ExpEqualOrComma_TokenStatus;
-			break;
-
-		case Expression_TokenMode:
-			status = ExpOpOrEnd_TokenStatus;
-			break;
-
-		default:
-			status = BUG_InvalidMode;
-			break;
-		}
-	}
-	return status;
-}
-
-
-// function to check if there is a pending parentheses token and if there is,
-// check to see if it should be added to the output as a dummy token so that
-// the Recreator can added the unnecessary, but entered by the user, set of
-// parentheses
-//
-//   - index argument is table index of operator to check against
-
-void Translator::doPendingParen(Token *token)
-{
-	if (m_pendingParen != NULL)  // is a closing parentheses token pending?
-	{
-		// may need to add a dummy token if the precedence of the last
-		// operator added within the last parentheses sub-expression
-		// is higher than or same as (operand state only) the operator
-		int precedence = m_table.precedence(token);
-		if (m_lastPrecedence > precedence
-			|| m_state == Operand_State && m_lastPrecedence == precedence)
-		{
-			if (m_output->last()->token()->isSubCode(Paren_SubCode))
-			{
-				// already has parentheses sub-code set,
-				// so add dummy token
-				m_output->append(new RpnItem(m_pendingParen));
-				// reset pending token and return
-				m_pendingParen = NULL;
-				return;
-			}
-			else
-			{
-				QList<RpnItem *>::iterator last = m_output->end() - 1;
-				if (m_table.flags((*last)->token()) & Hidden_Flag)
-				{
-					// last token added is a hidden code
-					last--;  // so get token before hidden code
-				}
-				(*last)->token()->setSubCodeMask(Paren_SubCode);
-			}
-			// TODO something needed on done stack?
-			// TODO (reference flag already cleared by close parentheses)
-		}
-		// check if being used as last operand before deleting
-		if (m_pendingParen->isSubCode(Last_SubCode))
-		{
-			// still used as last operand token, just clear used flag
-			m_pendingParen->clearSubCodeMask(Used_SubCode);
-		}
-		else  // don't need pending token
-		{
-			delete m_pendingParen;  // release it's memory
-		}
-		m_pendingParen = NULL;  // reset pending token
-	}
-}
-
-
-// function to delete a opening parentheses token that is no longer being used
-// as the first operand token of another token
-//
-//   - the first operand token pointer is passed
-//   - no action if first operand token pointer is not set
-//   - no action if first operand token does not have a table entry
-//   - no action if first operand token is not a closing parentheses token
-
-void Translator::deleteOpenParen(Token *token)
-{
-	if (token != NULL && token->hasTableEntry()
-		&& token->isCode(OpenParen_Code))
-	{
-		delete token;  // delete CloseParen token of operand
-	}
-}
-
-
-// function to delete a closing parentheses token that is no longer being used
-// as the last operand token of another token
-//
-//   - the last operand token pointer is passed
-//   - no action if last operand token pointer is not set
-//   - no action if last operand token does not have a table entry
-//   - no action if last operand token is not a closing parentheses token
-//   - if closing parentheses is being used by pending parentheses or in output
-//     as a dummy parentheses token, then last operand flag is cleared
-//   - if closing parentheses token is not being used, then it is deleted
-
-void Translator::deleteCloseParen(Token *token)
-{
-	if (token != NULL && token->hasTableEntry()
-		&& token->isCode(CloseParen_Code))
-	{
-		// check if parentheses token is still being used
-		if (token->isSubCode(Used_SubCode))
-		{
-			// no longer used as last token
-			token->clearSubCodeMask(Last_SubCode);
-		}
-		else  // not used, close parentheses token can be deleted
-		{
-			delete token;  // delete CloseParen token of operand
-		}
-	}
 }
 
 
@@ -1370,7 +1193,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		first = NULL;   // token itself is first operand
 		last = token2;  // token's CloseParen is last
 		// check for end of array in reference mode
-		if (m_mode == Reference_TokenMode && m_countStack.empty())
+		if (m_mode == Reference_TokenMode && m_countStack.isEmpty())
 		{
 			// have array element, set end expression state
 			m_state = EndExpr_State;
@@ -1388,7 +1211,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		// save operands for storage in output list
 		for (int i = nOperands; --i >= 0;)
 		{
-			if (m_doneStack.empty())
+			if (m_doneStack.isEmpty())
 			{
 				return BUG_DoneStackEmptyOperands;
 			}
@@ -1417,6 +1240,112 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 }
 
 
+// function to do end of expression hold stack check to make sure
+// nothing is on the hold stack (the initial null entry should be on
+// top)
+//
+//   - checks if there is an open parentheses, parentheses token or
+//     internal function on hold stack (missing closing parentheses)
+//   - checks the null token is on top of stack
+//   - or some other unexpected token (BUG)
+//   - performs pending parentheses check before returning
+//   - returns good status or error status
+
+TokenStatus Translator::expressionEnd(void)
+{
+	TokenStatus status;
+	Token *token;
+
+	// do end of statement processing
+	if (m_holdStack.isEmpty())
+	{
+		// oops, stack is empty
+		return BUG_HoldStackEmpty;
+	}
+
+	if ((status = parenStatus()) != Good_TokenStatus)
+	{
+		return status;
+	}
+	else
+	{
+		token = m_holdStack.top().token;
+		if (!token->hasTableEntry())
+		{
+			return BUG_Debug2;
+		}
+		if (!token->isCode(Null_Code))
+		{
+			// check if there is some unexpected token on hold stack
+			// could be assignment on hold stack
+			switch (m_mode)
+			{
+			// note: Command_TokenMode can't happen here
+			case Assignment_TokenMode:
+				// expression hasn't started yet
+				return ExpEqualOrComma_TokenStatus;
+
+			case AssignmentList_TokenMode:
+				// in a comma separated list
+				return ExpEqualOrComma_TokenStatus;
+
+			case Expression_TokenMode:
+				// something is on the stack that's not suppose to be there
+				// this is a diagnostic error, should not occur
+				return ExpOpOrEnd_TokenStatus;
+
+			default:
+				return BUG_InvalidMode;
+			}
+		}
+	}
+
+	// check if there is a pending closing parentheses
+	// pass Null_Code token (will always add dummy)
+	doPendingParen(token);
+	return Good_TokenStatus;
+}
+
+
+// function to call command handler of command on top of command stack
+//
+//   - if command stack empty and expression only mode, return null
+//     status indicating token was not supported by command (caller will
+//     report appropriate error)
+//   - otherwise if command stack, then bug
+//   - if command stack top does not have a command handler, then bug
+//   - if command handler returns an error, then token passed in is
+//      deletedunless it is the token reported as the error
+//   - for errors, the token returned by the command handler is returned
+
+TokenStatus Translator::callCommandHandler(Token *&token)
+{
+	if (m_cmdStack.isEmpty())
+	{
+		// token was not expected
+		// let caller report the appropriate error
+		return Null_TokenStatus;
+	}
+	CmdItem cmdItem = m_cmdStack.top();
+	CommandHandler cmdHandler = m_table.commandHandler(cmdItem.token->code());
+	if (cmdHandler == NULL)  // missing command handler?
+	{
+		return BUG_NotYetImplemented;
+	}
+	TokenStatus status = (*cmdHandler)(*this, &cmdItem, token);
+	if (status != Good_TokenStatus)
+	{
+		// delete token if error at another token
+		if (cmdItem.token != token)
+		{
+			delete token;
+		}
+		token = cmdItem.token;  // command decided where error is
+	}
+	return status;
+}
+
+
 // function to find a code where the expected data types of the operands match
 // the actual operands present; the code in the token is checked first followed
 // by any associated codes that the main code has; the token is updated to the
@@ -1433,7 +1362,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	Token **last)
 {
-	if (m_doneStack.empty())
+	if (m_doneStack.isEmpty())
 	{
 		// oops, there should have been operands on done stack
 		return BUG_DoneStackEmptyFindCode;
@@ -1601,70 +1530,76 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 }
 
 
-// function to do end of expression hold stack check to make sure
-// nothing is on the hold stack (the initial null entry should be on
-// top)
+// function to get current expression data type
 //
-//   - checks if there is an open parentheses, parentheses token or
-//     internal function on hold stack (missing closing parentheses)
-//   - checks the null token is on top of stack
-//   - or some other unexpected token (BUG)
-//   - performs pending parentheses check before returning
-//   - returns good status or error status
+//   - sets data type from current expression
+//   - return Good_TokenStatus is successful, error otherwise
+//   - if operator on hold stack, then get it's operand's data type
+//   - if Null (empty hold stack), then get command's expression type
+//   - if OpenParen, then get it's data type (which could be None)
+//   - if internal function, then get it's current operand's data type
+//   - if array or non-internal function, then data type is None
 
-TokenStatus Translator::expressionEnd(void)
+TokenStatus Translator::getExprDataType(DataType &dataType)
 {
-	TokenStatus status;
-	Token *token;
-
-	// do end of statement processing
-	if (m_holdStack.empty())
+	TokenStatus status = Good_TokenStatus;
+	if (m_holdStack.isEmpty())  // at least NULL token should be on hold stack
 	{
-		// oops, stack is empty
-		return BUG_HoldStackEmpty;
+		status = BUG_HoldStackEmpty;
 	}
-
-	if ((status = parenStatus()) != Good_TokenStatus)
+	else if (m_holdStack.top().token->isOperator())
 	{
-		return status;
-	}
-	else
-	{
-		token = m_holdStack.top().token;
-		if (!token->hasTableEntry())
+		Code code = m_holdStack.top().token->code();
+		if (code == Null_Code)
 		{
-			return BUG_Debug2;
-		}
-		if (!token->isCode(Null_Code))
-		{
-			// check if there is some unexpected token on hold stack
-			// could be assignment on hold stack
-			switch (m_mode)
+			// nothing on hold stack, get expected type for command
+			if (m_cmdStack.isEmpty())
 			{
-			// note: Command_TokenMode can't happen here
-			case Assignment_TokenMode:
-				// expression hasn't started yet
-				return ExpEqualOrComma_TokenStatus;
-
-			case AssignmentList_TokenMode:
-				// in a comma separated list
-				return ExpEqualOrComma_TokenStatus;
-
-			case Expression_TokenMode:
-				// something is on the stack that's not suppose to be there
-				// this is a diagnostic error, should not occur
-				return ExpOpOrEnd_TokenStatus;
-
-			default:
-				return BUG_InvalidMode;
+				if (!m_exprMode)
+				{
+					status = BUG_CmdStackEmptyExpr;  // this shouldn't happen
+				}
+			}
+			else
+			{
+				dataType = m_cmdStack.top().token->dataType();
 			}
 		}
+		else if (code == OpenParen_Code)
+		{
+			// no operator, get data type of open parentheses (could be none)
+			dataType = m_holdStack.top().token->dataType();
+		}
+		else  // an regular operator on top of hold stack
+		{
+			// data type from operand of operator on top of hold stack
+			// (first operand for unary and second operand for binary operator)
+			dataType = m_table.operandDataType(code,
+				m_table.isUnaryOperator(code) ? 0 : 1);
+		}
 	}
-
-	// check if there is a pending closing parentheses
-	// pass Null_Code token (will always add dummy)
-	doPendingParen(token);
-	return Good_TokenStatus;
+	else if (m_countStack.isEmpty())  // no parentheses, array or function?
+	{
+		// this situation should have been handled above
+		status = BUG_CountStackEmpty;  // this shouldn't happen
+	}
+	else if (m_countStack.top().nExpected > 0)  // internal function?
+	{
+		// data type from current operator of internal function
+		dataType = m_table.operandDataType(m_countStack.top().code,
+			m_countStack.top().nOperands - 1);
+	}
+	else if (m_countStack.top().nOperands == 0)  // in parentheses?
+	{
+		// this situation should have been handled above
+		status = BUG_UnexpParenExpr;
+	}
+	else  // in array or non-internal function
+	{
+		// (cannot determine type of expression)
+		dataType = None_DataType;
+	}
+	return status;
 }
 
 
@@ -1684,7 +1619,7 @@ TokenStatus Translator::expressionEnd(void)
 
 TokenStatus Translator::parenStatus(void)
 {
-	if (m_countStack.empty())
+	if (m_countStack.isEmpty())
 	{
 		// no parentheses
 		return Good_TokenStatus;
@@ -1744,115 +1679,106 @@ TokenStatus Translator::parenStatus(void)
 }
 
 
-// function to get current expression data type
+// function to check if there is a pending parentheses token and if there is,
+// check to see if it should be added to the output as a dummy token so that
+// the Recreator can added the unnecessary, but entered by the user, set of
+// parentheses
 //
-//   - sets data type from current expression
-//   - return Good_TokenStatus is successful, error otherwise
-//   - if operator on hold stack, then get it's operand's data type
-//   - if Null (empty hold stack), then get command's expression type
-//   - if OpenParen, then get it's data type (which could be None)
-//   - if internal function, then get it's current operand's data type
-//   - if array or non-internal function, then data type is None
+//   - index argument is table index of operator to check against
 
-TokenStatus Translator::getExprDataType(DataType &dataType)
+void Translator::doPendingParen(Token *token)
 {
-	TokenStatus status = Good_TokenStatus;
-	if (m_holdStack.empty())  // at least NULL token should be on hold stack
+	if (m_pendingParen != NULL)  // is a closing parentheses token pending?
 	{
-		status = BUG_HoldStackEmpty;
-	}
-	else if (m_holdStack.top().token->isOperator())
-	{
-		Code code = m_holdStack.top().token->code();
-		if (code == Null_Code)
+		// may need to add a dummy token if the precedence of the last
+		// operator added within the last parentheses sub-expression
+		// is higher than or same as (operand state only) the operator
+		int precedence = m_table.precedence(token);
+		if (m_lastPrecedence > precedence
+			|| m_state == Operand_State && m_lastPrecedence == precedence)
 		{
-			// nothing on hold stack, get expected type for command
-			if (m_cmdStack.empty())
+			if (m_output->last()->token()->isSubCode(Paren_SubCode))
 			{
-				if (!m_exprMode)
-				{
-					status = BUG_CmdStackEmptyExpr;  // this shouldn't happen
-				}
+				// already has parentheses sub-code set,
+				// so add dummy token
+				m_output->append(new RpnItem(m_pendingParen));
+				// reset pending token and return
+				m_pendingParen = NULL;
+				return;
 			}
 			else
 			{
-				dataType = m_cmdStack.top().token->dataType();
+				QList<RpnItem *>::iterator last = m_output->end() - 1;
+				if (m_table.flags((*last)->token()) & Hidden_Flag)
+				{
+					// last token added is a hidden code
+					last--;  // so get token before hidden code
+				}
+				(*last)->token()->setSubCodeMask(Paren_SubCode);
 			}
+			// TODO something needed on done stack?
+			// TODO (reference flag already cleared by close parentheses)
 		}
-		else if (code == OpenParen_Code)
+		// check if being used as last operand before deleting
+		if (m_pendingParen->isSubCode(Last_SubCode))
 		{
-			// no operator, get data type of open parentheses (could be none)
-			dataType = m_holdStack.top().token->dataType();
+			// still used as last operand token, just clear used flag
+			m_pendingParen->clearSubCodeMask(Used_SubCode);
 		}
-		else  // an regular operator on top of hold stack
+		else  // don't need pending token
 		{
-			// data type from operand of operator on top of hold stack
-			// (first operand for unary and second operand for binary operator)
-			dataType = m_table.operandDataType(code,
-				m_table.isUnaryOperator(code) ? 0 : 1);
+			delete m_pendingParen;  // release it's memory
 		}
+		m_pendingParen = NULL;  // reset pending token
 	}
-	else if (m_countStack.empty())  // no parentheses, array or function?
-	{
-		// this situation should have been handled above
-		status = BUG_CountStackEmpty;  // this shouldn't happen
-	}
-	else if (m_countStack.top().nExpected > 0)  // internal function?
-	{
-		// data type from current operator of internal function
-		dataType = m_table.operandDataType(m_countStack.top().code,
-			m_countStack.top().nOperands - 1);
-	}
-	else if (m_countStack.top().nOperands == 0)  // in parentheses?
-	{
-		// this situation should have been handled above
-		status = BUG_UnexpParenExpr;
-	}
-	else  // in array or non-internal function
-	{
-		// (cannot determine type of expression)
-		dataType = None_DataType;
-	}
-	return status;
 }
 
 
-// function to call command handler of command on top of command stack
+// function to delete a opening parentheses token that is no longer being used
+// as the first operand token of another token
 //
-//   - if command stack empty and expression only mode, return null
-//     status indicating token was not supported by command (caller will
-//     report appropriate error)
-//   - otherwise if command stack, then bug
-//   - if command stack top does not have a command handler, then bug
-//   - if command handler returns an error, then token passed in is
-//      deletedunless it is the token reported as the error
-//   - for errors, the token returned by the command handler is returned
+//   - the first operand token pointer is passed
+//   - no action if first operand token pointer is not set
+//   - no action if first operand token does not have a table entry
+//   - no action if first operand token is not a closing parentheses token
 
-TokenStatus Translator::callCommandHandler(Token *&token)
+void Translator::deleteOpenParen(Token *token)
 {
-	if (m_cmdStack.empty())
+	if (token != NULL && token->hasTableEntry()
+		&& token->isCode(OpenParen_Code))
 	{
-		// token was not expected
-		// let caller report the appropriate error
-		return Null_TokenStatus;
+		delete token;  // delete CloseParen token of operand
 	}
-	CmdItem cmdItem = m_cmdStack.top();
-	CommandHandler cmdHandler = m_table.commandHandler(cmdItem.token->code());
-	if (cmdHandler == NULL)  // missing command handler?
+}
+
+
+// function to delete a closing parentheses token that is no longer being used
+// as the last operand token of another token
+//
+//   - the last operand token pointer is passed
+//   - no action if last operand token pointer is not set
+//   - no action if last operand token does not have a table entry
+//   - no action if last operand token is not a closing parentheses token
+//   - if closing parentheses is being used by pending parentheses or in output
+//     as a dummy parentheses token, then last operand flag is cleared
+//   - if closing parentheses token is not being used, then it is deleted
+
+void Translator::deleteCloseParen(Token *token)
+{
+	if (token != NULL && token->hasTableEntry()
+		&& token->isCode(CloseParen_Code))
 	{
-		return BUG_NotYetImplemented;
-	}
-	TokenStatus status = (*cmdHandler)(*this, &cmdItem, token);
-	if (status != Good_TokenStatus)
-	{
-		// delete token if error at another token
-		if (cmdItem.token != token)
+		// check if parentheses token is still being used
+		if (token->isSubCode(Used_SubCode))
 		{
-			delete token;
+			// no longer used as last token
+			token->clearSubCodeMask(Last_SubCode);
 		}
-		token = cmdItem.token;  // command decided where error is
+		else  // not used, close parentheses token can be deleted
+		{
+			delete token;  // delete CloseParen token of operand
+		}
 	}
-	return status;
 }
 
 
@@ -1863,21 +1789,21 @@ TokenStatus Translator::callCommandHandler(Token *&token)
 void Translator::cleanUp(void)
 {
 	// clean up from error
-	while (!m_holdStack.empty())
+	while (!m_holdStack.isEmpty())
 	{
 		// delete first token in command stack item
 		deleteOpenParen(m_holdStack.top().first);
 		// delete to free the token that was on the stack
 		delete m_holdStack.pop().token;
 	}
-	while (!m_doneStack.empty())
+	while (!m_doneStack.isEmpty())
 	{
 		deleteOpenParen(m_doneStack.top().first);
 		// check if operand's last token was CloseParen
 		deleteCloseParen(m_doneStack.pop().last);
 	}
 	// comma support - need to empty count_stack
-	while (!m_countStack.empty())
+	while (!m_countStack.isEmpty())
 	{
 		m_countStack.resize(m_countStack.size() - 1);
 	}
@@ -1894,7 +1820,7 @@ void Translator::cleanUp(void)
 		delete m_pendingParen;
 		m_pendingParen = NULL;
 	}
-	while (!m_cmdStack.empty())
+	while (!m_cmdStack.isEmpty())
 	{
 		// delete token in command stack item
 		delete m_cmdStack.pop().token;
@@ -1918,7 +1844,7 @@ void Translator::cleanUp(void)
 
 TokenStatus Translator::addPrintCode(void)
 {
-	if (!m_doneStack.empty())
+	if (!m_doneStack.isEmpty())
 	{
 		// create token for data type specific print token
 		Token *token = m_table.newToken(PrintDbl_Code);
@@ -1950,7 +1876,7 @@ TokenStatus Translator::setAssignCommand(Token *&token, Code assign_code)
 		return status;
 	}
 
-	if (m_cmdStack.empty())  // still command mode?
+	if (m_cmdStack.isEmpty())  // still command mode?
 	{
 		m_cmdStack.resize(m_cmdStack.size() + 1);  // push new command on stack
 	}
@@ -1977,7 +1903,7 @@ TokenStatus Translator::setAssignCommand(Token *&token, Code assign_code)
 
 TokenStatus Translator::checkAssignListToken(Token *&token)
 {
-	if (!m_doneStack.empty())
+	if (!m_doneStack.isEmpty())
 	{
 		// delete close paren (array or sub-string) on operand
 		deleteCloseParen(m_doneStack.top().last);
@@ -2003,6 +1929,204 @@ TokenStatus Translator::checkAssignListToken(Token *&token)
 		}
 	}
 	return Good_TokenStatus;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           DETERMINE ERROR FUNCTIONS                        //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+// function to return equivalent data type for data type
+// (really to convert the various string data types to String_DataType)
+DataType Translator::equivalentDataType(DataType dataType)
+{
+	static DataType equivalent[numberof_DataType] = {
+		Double_DataType,	// Double
+		Integer_DataType,	// Integer
+		String_DataType,	// String
+		String_DataType,	// TmpStr
+		String_DataType		// SubStr
+	};
+
+	return equivalent[dataType];
+}
+
+
+// function to return the token error status for an expected data type
+TokenStatus Translator::expectedErrStatus(DataType dataType)
+{
+	static TokenStatus tokenStatus[sizeof_DataType] = {
+		ExpNumExpr_TokenStatus,		// Double
+		ExpNumExpr_TokenStatus,		// Integer
+		ExpStrExpr_TokenStatus,		// String
+		ExpStrExpr_TokenStatus,		// TmpStr
+		ExpStrExpr_TokenStatus,		// SubStr
+		BUG_InvalidDataType,		// numberof
+		ExpExpr_TokenStatus			// None
+	};
+
+	return tokenStatus[dataType];
+}
+
+
+// function to return the token error status for an actual data type
+TokenStatus Translator::actualErrStatus(DataType dataType)
+{
+	static TokenStatus tokenStatus[sizeof_DataType] = {
+		ExpStrExpr_TokenStatus,		// Double
+		ExpStrExpr_TokenStatus,		// Integer
+		ExpNumExpr_TokenStatus,		// String
+		ExpNumExpr_TokenStatus,		// TmpStr
+		ExpNumExpr_TokenStatus,		// SubStr
+		BUG_InvalidDataType,		// numberof
+		BUG_InvalidDataType			// None
+	};
+
+	return tokenStatus[dataType];
+}
+
+
+// function to return the token error status for a variable data type
+TokenStatus Translator::variableErrStatus(DataType dataType)
+{
+	static TokenStatus tokenStatus[sizeof_DataType] = {
+		ExpDblVar_TokenStatus,		// Double
+		ExpIntVar_TokenStatus,		// Integer
+		ExpStrItem_TokenStatus,		// String
+		BUG_InvalidDataType,		// TmpStr
+		BUG_InvalidDataType,		// SubStr
+		BUG_InvalidDataType,		// numberof
+		ExpAssignItem_TokenStatus	// None
+	};
+
+	return tokenStatus[dataType];
+}
+
+
+// function to return error when an operator is expected, first paren_status()
+// is called to get appropriate error when inside parentheses, internal function
+// of array/user function, and if not inside parentheses, then error is
+// dependent on current token mode
+
+TokenStatus Translator::operatorError(void)
+{
+	TokenStatus status;
+
+	if ((status = parenStatus()) == Good_TokenStatus)
+	{
+		// error is dependent on mode
+		switch (m_mode)
+		{
+		case Command_TokenMode:
+		case Assignment_TokenMode:
+		case AssignmentList_TokenMode:
+			status = ExpEqualOrComma_TokenStatus;
+			break;
+
+		case Expression_TokenMode:
+			// FIXME better solution needed once more commands are implemented
+			if (m_cmdStack.top().token->isCode(InputPrompt_Code))
+			{
+				status = ExpSemiCommaOrEnd_TokenStatus;
+			}
+			else
+			{
+				status = ExpOpOrEnd_TokenStatus;
+			}
+			break;
+
+		default:
+			status = BUG_InvalidMode;
+			break;
+		}
+	}
+	return status;
+}
+
+
+// function to get the proper status when an error occurs in an assignment
+//
+//   - should only be called when m_mode is Assignment or AssignmentList
+
+TokenStatus Translator::assignmentError(void)
+{
+	if (m_countStack.isEmpty())
+	{
+		// not in a sub-string function of array assignment
+		return variableErrStatus(m_cmdStack.top().token->dataType());
+	}
+	else if (m_countStack.top().nExpected == 0)
+	{
+		// in array assignement at substript
+		return ExpNumExpr_TokenStatus;
+	}
+	else if (m_countStack.top().nOperands == 1)
+	{
+		// in sub-string function assignment at first argument
+		return ExpStrVar_TokenStatus;
+	}
+	else  // in sub-string function assignment not at first argument
+	{
+		return expectedErrStatus(
+			m_table.operandDataType(m_countStack.top().code,
+			m_countStack.top().nOperands - 1));
+	}
+}
+
+
+// function to get the error for when an non-end token occurs when the
+// in expression end state
+//
+//   - current command on command stack determines error
+
+TokenStatus Translator::endExpressionError(void)
+{
+	// TODO currently only occurs after print function and input command
+	// TODO add correct error based on current command
+	// TODO call command handler to get appropriate error here
+	return ExpSemiCommaOrEnd_TokenStatus;
+}
+
+
+// function to get the error for a premature end to an expression when
+// another operand is expected
+//
+//   - for command and assignments modes, count stack determines error
+//   - for expression mode, current expression type determines error
+
+TokenStatus Translator::unexpectedEndError(void)
+{
+	TokenStatus status = Good_TokenStatus;
+	DataType dataType;
+
+	// unexpected of end expression - determine error to return
+	switch (m_mode)
+	{
+	case Command_TokenMode:
+	case Assignment_TokenMode:
+	case AssignmentList_TokenMode:
+		status = assignmentError();
+		break;
+
+	case Expression_TokenMode:
+		if ((status = getExprDataType(dataType)) == Good_TokenStatus)
+		{
+			status = expectedErrStatus(dataType);
+		}
+		break;
+
+	case Reference_TokenMode:
+		status = ExpVar_TokenStatus;
+		break;
+
+	default:
+		status = BUG_InvalidMode;
+		break;
+	}
+	return status;
 }
 
 

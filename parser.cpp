@@ -104,7 +104,7 @@ Token *Parser::getToken(void)
 	if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		m_token->setError("unrecognizable character");
+		m_token->setError("unrecognizable character", None_DataType);
 	}
 	return m_token;  // token may contain an error
 }
@@ -323,12 +323,23 @@ void Parser::skipWhitespace(void)
 
 bool Parser::getNumber(void)
 {
+	QString ExpNonZeroDigit_ErrMsg("expected non-zero leading digit in numeric "
+		"constant");;
+	QString ExpDigitsOrSngDP_ErrMsg("expected digits or single decimal point "
+		"in floating point constant");
+	QString ExpManDigits_ErrMsg("expected digits in mantissa in floating point "
+		"constant");
+	QString ExpExpDigits_ErrMsg("expected sign or digits for exponent in "
+		"floating point constant");
+	QString ExpDigits_ErrMsg("expected digits in floating point constant");
+	QString FPOutOfRange_ErrMsg("floating point constant is out of range");
+
 	bool digits = false;		// digits were found flag
 	bool decimal = false;		// decimal point was found flag
 	bool sign = false;			// have negative sign flag (2011-03-27)
 
 	int pos = m_pos;
-	for (;;)
+	forever
 	{
 		if (m_input[pos].isDigit())
 		{
@@ -350,8 +361,7 @@ bool Parser::getNumber(void)
 						// and second character is not a decimal point,
 						// and second character is a digit
 						// then this is in invalid number
-						m_token->setError("invalid leading zero in numeric "
-							"constant");
+						m_token->setError(ExpNonZeroDigit_ErrMsg);
 						return true;
 					}
 				}
@@ -363,8 +373,7 @@ bool Parser::getNumber(void)
 			{
 				if (!digits)  // no digits found?
 				{
-					m_token->setError("constant only contains a decimal point "
-						"or has two decimal points", 2);
+					m_token->setError(ExpDigitsOrSngDP_ErrMsg, 2);
 					return true;
 				}
 				break;  // exit loop to process string
@@ -378,8 +387,7 @@ bool Parser::getNumber(void)
 			{
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				m_token->setError("mantissa of constant only contains a "
-					"decimal point");
+				m_token->setError(ExpManDigits_ErrMsg);
 				return true;
 			}
 			pos++;  // move past 'e' or 'E'
@@ -396,7 +404,7 @@ bool Parser::getNumber(void)
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				m_token->setError(pos, "exponent contains no digits");
+				m_token->setError(pos, ExpExpDigits_ErrMsg);
 				return true;
 			}
 			decimal = true;  // process as double
@@ -419,7 +427,7 @@ bool Parser::getNumber(void)
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				m_token->setError("constant only contains a decimal point");
+				m_token->setError(ExpDigits_ErrMsg);
 				return true;
 			}
 			else
@@ -457,7 +465,7 @@ bool Parser::getNumber(void)
 		if (!ok)
 		{
 			// overflow or underflow, constant is not valid
-			m_token->setError("constant is out of range", len);
+			m_token->setError(FPOutOfRange_ErrMsg, len);
 			return true;
 		}
 		m_token->setType(Constant_TokenType);

@@ -2,354 +2,141 @@
 #  Translator Test #14: Parser Errors (2012-11-10)  #
 #####################################################
 
-# 1: unrecognizable character errors
-# 2: invalid loading zero in numeric constant
-# 3: constant only contains a decimal point or has two decimal points
-# 4: mantissa of constant only contains a decimal point
-# 5: exponent contains no digits
-# 6: constant only contains a decimal point
-# 7: constant is out of range
+# possible parser errors:
+# 1: unrecognizable character
+# the following a number parser errors:
+# 2: expected non-zero leading digit in numeric constant
+# 3: expected digits or single decimal point in floating point constant
+# 4: expected digits in mantissa in floating point constant
+# 5: expected sign or digits for exponent in floating point constant
+# 6: expected digits in floating point constan
+# 7: floating point constant is out of range
 
 ?
 01
-..
-.e
-1e
-.
-1e999
 
 A?
-A 01
 A..
-A.e
-A 1e
-A.
-A 1e999
 
 A(?
-A(01
-A(..
 A(.e
-A(1e
-A(.
-A(1e999
 
 A(1?
-A(1 01
-A(1 ..
-A(1 .e
 A(1 1e
-A(1 .
-A(1 1e999
 
 A(1,?
-A(1,01
-A(1,..
-A(1,.e
-A(1,1e
 A(1,.
-A(1,1e999
 
 A,?
-A,01
-A,..
-A,.e
-A,1e
-A,.
 A,1e999
 
 A,B?
 A,B 01
-A,B..
-A,B.e
-A,B 1e
-A,B.
-A,B 1e999
 
 A,B,?
-A,B,01
 A,B,..
-A,B,.e
-A,B,1e
-A,B,.
-A,B,1e999
 
 A=?
-A=01
-A=..
 A=.e
-A=1e
-A=.
-A=1e999
 
 A=1?
-A=1 01
-A=1 ..
-A=1 .e
 A=1 1e
-A=1 .
-A=1 1e999
 
 A=1+?
-A=1+01
 A=1+..
-A=1+.e
-A=1+1e
-A=1+.
-A=1+1e999
 
 A$=?
-A$=01
-A$=..
-A$=.e
-A$=1e
-A$=.
 A$=1e999
 
 A$="A"?
-A$="A" 01
-A$="A" ..
-A$="A" .e
-A$="A" 1e
-A$="A" .
-A$="A" 1e999
+A$="A"1e999
 
 A$="A"+?
 A$="A"+01
-A$="A"+..
-A$="A"+.e
-A$="A"+1e
-A$="A"+.
-A$="A"+1e999
 
 MID$(?
-MID$(01
 MID$(..
-MID$(.e
-MID$(1e
-MID$(.
-MID$(1e999
 
 MID$(A$?
-MID$(A$01
-MID$(A$..
 MID$(A$.e
-MID$(A$1e
-MID$(A$.
-MID$(A$1e999
 
 MID$(A$,?
-MID$(A$,01
-MID$(A$,..
-MID$(A$,.e
 MID$(A$,1e
-MID$(A$,.
-MID$(A$,1e999
 
 MID$(A$,3?
-MID$(A$,3 01
-MID$(A$,3 ..
-MID$(A$,3 .e
-MID$(A$,3 1e
 MID$(A$,3 .
-MID$(A$,3 1e999
 
 MID$(A$,3,?
-MID$(A$,3,01
-MID$(A$,3,..
-MID$(A$,3,.e
-MID$(A$,3,1e
-MID$(A$,3,.
 MID$(A$,3,1e999
 
 MID$(A$,3,4?
 MID$(A$,3,4 01
-MID$(A$,3,4 ..
-MID$(A$,3,4 .e
-MID$(A$,3,4 1e
-MID$(A$,3,4 .
-MID$(A$,3,4 1e999
 
 A$=MID$(?
-A$=MID$(01
 A$=MID$(..
-A$=MID$(.e
-A$=MID$(1e
-A$=MID$(.
-A$=MID$(1e999
 
 A$=MID$(B$?
-A$=MID$(B$01
-A$=MID$(B$..
 A$=MID$(B$.e
-A$=MID$(B$1e
-A$=MID$(B$.
-A$=MID$(B$1e999
 
 A$=MID$(B$,?
-A$=MID$(B$,01
-A$=MID$(B$,..
-A$=MID$(B$,.e
 A$=MID$(B$,1e
-A$=MID$(B$,.
-A$=MID$(B$,1e999
 
 A$=MID$(B$,3?
-A$=MID$(B$,3 01
-A$=MID$(B$,3 ..
-A$=MID$(B$,3 .e
-A$=MID$(B$,3 1e
 A$=MID$(B$,3 .
-A$=MID$(B$,3 1e999
 
 A$=MID$(B$,3,?
-A$=MID$(B$,3,01
-A$=MID$(B$,3,..
-A$=MID$(B$,3,.e
-A$=MID$(B$,3,1e
-A$=MID$(B$,3,.
 A$=MID$(B$,3,1e999
 
 A$=MID$(B$,3,4?
 A$=MID$(B$,3,4 01
-A$=MID$(B$,3,4 ..
-A$=MID$(B$,3,4 .e
-A$=MID$(B$,3,4 1e
-A$=MID$(B$,3,4 .
-A$=MID$(B$,3,4 1e999
 
 PRINT ?
-PRINT 01
 PRINT ..
-PRINT .e
-PRINT 1e
-PRINT .
-PRINT 1e999
 
 PRINT A?
-PRINT A 01
-PRINT A..
 PRINT A.e
-PRINT A 1e
-PRINT A.
-PRINT A 1e999
 
 PRINT A(?
-PRINT A(01
-PRINT A(..
-PRINT A(.e
 PRINT A(1e
-PRINT A(.
-PRINT A(1e999
 
 PRINT A(1?
-PRINT A(1 01
-PRINT A(1 ..
-PRINT A(1 .e
-PRINT A(1 1e
 PRINT A(1 .
-PRINT A(1 1e999
 
 PRINT A(1,?
-PRINT A(1,01
-PRINT A(1,..
-PRINT A(1,.e
-PRINT A(1,1e
-PRINT A(1,.
 PRINT A(1,1e999
 
 PRINT A,?
 PRINT A,01
-PRINT A,..
-PRINT A,.e
-PRINT A,1e
-PRINT A,.
-PRINT A,1e999
 
 PRINT A,,?
-PRINT A,,01
 PRINT A,,..
-PRINT A,,.e
-PRINT A,,1e
-PRINT A,,.
-PRINT A,,1e999
 
 INPUT ?
-INPUT 01
-INPUT ..
 INPUT .e
-INPUT 1e
-INPUT .
-INPUT 1e999
 
 INPUT A?
-INPUT A 01
-INPUT A..
-INPUT A.e
 INPUT A 1e
-INPUT A.
-INPUT A 1e999
 
 INPUT A,?
-INPUT A,01
-INPUT A,..
-INPUT A,.e
-INPUT A,1e
 INPUT A,.
-INPUT A,1e999
 
 INPUT A(1,?
-INPUT A(1,01
-INPUT A(1,..
-INPUT A(1,.e
-INPUT A(1,1e
-INPUT A(1,.
 INPUT A(1,1e999
 
 INPUT PROMPT ?
 INPUT PROMPT 01
-INPUT PROMPT ..
-INPUT PROMPT .e
-INPUT PROMPT 1e
-INPUT PROMPT .
-INPUT PROMPT 1e999
 
 INPUT PROMPT "A"?
-INPUT PROMPT "A"01
 INPUT PROMPT "A"..
-INPUT PROMPT "A".e
-INPUT PROMPT "A"1e
-INPUT PROMPT "A".
-INPUT PROMPT "A"1e999
 
 INPUT PROMPT "A",?
-INPUT PROMPT "A",01
-INPUT PROMPT "A",..
 INPUT PROMPT "A",.e
-INPUT PROMPT "A",1e
-INPUT PROMPT "A",.
-INPUT PROMPT "A",1e999
 
 INPUT PROMPT "A",A?
-INPUT PROMPT "A",A 01
-INPUT PROMPT "A",A..
-INPUT PROMPT "A",A.e
 INPUT PROMPT "A",A 1e
-INPUT PROMPT "A",A.
-INPUT PROMPT "A",A 1e999
 
 INPUT PROMPT A$(1,?
-INPUT PROMPT A$(1,01
-INPUT PROMPT A$(1,..
-INPUT PROMPT A$(1,.e
-INPUT PROMPT A$(1,1e
 INPUT PROMPT A$(1,.
-INPUT PROMPT A$(1,1e999
 
 INPUT PROMPT "A";A(1,?
-INPUT PROMPT "A";A(1,01
-INPUT PROMPT "A";A(1,..
-INPUT PROMPT "A";A(1,.e
-INPUT PROMPT "A";A(1,1e
-INPUT PROMPT "A";A(1,.
 INPUT PROMPT "A";A(1,1e999
