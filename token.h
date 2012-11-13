@@ -77,11 +77,11 @@ public:
 	~Token(void) {}
 
 	// column and length access functions
-	int column(void)
+	int column(void) const
 	{
 		return m_column;
 	}
-	int length(void)
+	int length(void) const
 	{
 		return m_length;
 	}
@@ -95,7 +95,7 @@ public:
 	}
 
 	// type access functions
-	TokenType type(void)
+	TokenType type(void) const
 	{
 		return m_type;
 	}
@@ -103,13 +103,13 @@ public:
 	{
 		m_type = type;
 	}
-	bool isType(TokenType type)
+	bool isType(TokenType type) const
 	{
 		return type == m_type;
 	}
 
 	// data type access functions
-	DataType dataType(void)
+	DataType dataType(void) const
 	{
 		return m_dataType;
 	}
@@ -117,14 +117,14 @@ public:
 	{
 		m_dataType = dataType;
 	}
-	bool isDataType(DataType dataType)
+	bool isDataType(DataType dataType) const
 	{
 		return dataType == m_dataType;
 	}
 	void setDataType(void);  // set default data type if not already set
 
 	// string access function
-	QString string(void)
+	QString string(void) const
 	{
 		return m_string;
 	}
@@ -136,13 +136,13 @@ public:
 	{
 		m_string[pos] = character;
 	}
-	int stringLength(void)
+	int stringLength(void) const
 	{
 		return m_string.length();
 	}
 
 	// code access functions
-	Code code(void)
+	Code code(void) const
 	{
 		return m_code;
 	}
@@ -154,13 +154,13 @@ public:
 	{
 		return ++m_code;
 	}
-	bool isCode(Code code)
+	bool isCode(Code code) const
 	{
 		return code == m_code;
 	}
 
 	// reference access functions
-	bool reference(void)
+	bool reference(void) const
 	{
 		return m_reference;
 	}
@@ -170,11 +170,11 @@ public:
 	}
 
 	// sub-code access functions
-	int subCode(void)
+	int subCode(void) const
 	{
 		return m_subCode;
 	}
-	int isSubCode(int subCode)
+	int isSubCode(int subCode) const
 	{
 		return m_subCode & subCode;
 	}
@@ -192,11 +192,11 @@ public:
 	}
 
 	// value access functions
-	double valueDbl(void)
+	double valueDbl(void) const
 	{
 		return m_valueDbl;
 	}
-	int valueInt(void)
+	int valueInt(void) const
 	{
 		return m_valueInt;
 	}
@@ -233,23 +233,23 @@ public:
 	}
 
 	// token information functions
-	bool isOperator(void)
+	bool isOperator(void) const
 	{
 		return op[m_type];
 	}
-	bool hasParen(void)
+	bool hasParen(void) const
 	{
 		return paren[m_type];
 	}
-	int precedence(void)
+	int precedence(void) const
 	{
 		return prec[m_type];
 	}
-	int hasTableEntry(void)
+	int hasTableEntry(void) const
 	{
 		return table[m_type];
 	}
-	bool isNull(void)
+	bool isNull(void) const
 	{
 		return hasTableEntry() && m_code == Null_Code;
 	}

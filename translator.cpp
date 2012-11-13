@@ -455,7 +455,7 @@ bool Translator::setInput(const QString &input, bool exprMode)
 		// set parser operand state from translator
 		parser.setOperandState(m_state == Operand_State
 			|| m_state == OperandOrEnd_State);
-		token = parsedToken = parser.getToken();
+		token = parsedToken = parser.token();
 		if (token->isType(Error_TokenType))
 		{
 			setErrorToken(token);
@@ -1540,7 +1540,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 //   - if internal function, then get it's current operand's data type
 //   - if array or non-internal function, then data type is None
 
-TokenStatus Translator::getExprDataType(DataType &dataType)
+TokenStatus Translator::getExprDataType(DataType &dataType) const
 {
 	TokenStatus status = Good_TokenStatus;
 	if (m_holdStack.isEmpty())  // at least NULL token should be on hold stack
@@ -1617,7 +1617,7 @@ TokenStatus Translator::getExprDataType(DataType &dataType)
 //     to determine if an operator or parentheses is expected, or an operator,
 //     comma or parentheses is expected
 
-TokenStatus Translator::parenStatus(void)
+TokenStatus Translator::parenStatus(void) const
 {
 	if (m_countStack.isEmpty())
 	{
@@ -2011,7 +2011,7 @@ TokenStatus Translator::variableErrStatus(DataType dataType)
 // of array/user function, and if not inside parentheses, then error is
 // dependent on current token mode
 
-TokenStatus Translator::operatorError(void)
+TokenStatus Translator::operatorError(void) const
 {
 	TokenStatus status;
 
@@ -2051,7 +2051,7 @@ TokenStatus Translator::operatorError(void)
 //
 //   - should only be called when m_mode is Assignment or AssignmentList
 
-TokenStatus Translator::assignmentError(void)
+TokenStatus Translator::assignmentError(void) const
 {
 	if (m_countStack.isEmpty())
 	{
@@ -2082,7 +2082,7 @@ TokenStatus Translator::assignmentError(void)
 //
 //   - current command on command stack determines error
 
-TokenStatus Translator::endExpressionError(void)
+TokenStatus Translator::endExpressionError(void) const
 {
 	// TODO currently only occurs after print function and input command
 	// TODO add correct error based on current command
@@ -2097,7 +2097,7 @@ TokenStatus Translator::endExpressionError(void)
 //   - for command and assignments modes, count stack determines error
 //   - for expression mode, current expression type determines error
 
-TokenStatus Translator::unexpectedEndError(void)
+TokenStatus Translator::unexpectedEndError(void) const
 {
 	TokenStatus status = Good_TokenStatus;
 	DataType dataType;

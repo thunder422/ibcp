@@ -1563,38 +1563,38 @@ QStringList Table::initialize(void)
 //================================
 
 // returns token type for code
-TokenType Table::type(Code code)
+TokenType Table::type(Code code) const
 {
 	return m_entry[code].type;
 }
 
 // returns data type for code
-DataType Table::dataType(Code code)
+DataType Table::dataType(Code code) const
 {
 	return m_entry[code].dataType;
 }
 
 // returns multiple word or character type for code
-Multiple Table::multiple(Code code)
+Multiple Table::multiple(Code code) const
 {
 	return m_entry[code].multiple;
 }
 
 // returns primary name for code
-const QString Table::name(Code code)
+const QString Table::name(Code code) const
 {
 	return m_entry[code].name;
 }
 
 // returns second name of a two word command for code
-const QString Table::name2(Code code)
+const QString Table::name2(Code code) const
 {
 	return m_entry[code].name2;
 }
 
 // returns the debug name for code, which is the primary name
 // except for internal functions with multiple argument footprints
-const QString Table::debugName(Code code)
+const QString Table::debugName(Code code) const
 {
 	QString name = m_entry[code].name2;
 	if (name.isEmpty())
@@ -1605,87 +1605,87 @@ const QString Table::debugName(Code code)
 }
 
 // returns the flags for code
-int Table::flags(Code code)
+int Table::flags(Code code) const
 {
 	return m_entry[code].flags;
 }
 
 // returns the token mode to set after command for code
-TokenMode Table::tokenMode(Code code)
+TokenMode Table::tokenMode(Code code) const
 {
 	return m_entry[code].tokenMode;
 }
 
 // returns the unary operator code (or Null_Code if none) for code
-Code Table::unaryCode(Code code)
+Code Table::unaryCode(Code code) const
 {
 	ExprInfo *ei = m_entry[code].exprInfo;
 	return ei == NULL ? Null_Code : ei->m_unaryCode;
 }
 
 // returns the precedence for code
-int Table::precedence(Code code)
+int Table::precedence(Code code) const
 {
 	return m_entry[code].precedence;
 }
 
 // returns the number of operators (arguments) for code
-int Table::nOperands(Code code)
+int Table::nOperands(Code code) const
 {
 	return m_entry[code].exprInfo->m_nOperands;
 }
 
 // returns the data type for a specific operator for code
-DataType Table::operandDataType(Code code, int operand)
+DataType Table::operandDataType(Code code, int operand) const
 {
 	return m_entry[code].exprInfo->m_operandDataType[operand];
 }
 
 // returns the number of associate codes for code
-int Table::nAssocCodes(Code code)
+int Table::nAssocCodes(Code code) const
 {
 	return m_entry[code].exprInfo->m_nAssocCodes;
 }
 
 // returns the associate code for a specific index for code
-Code Table::assocCode(Code code, int index)
+Code Table::assocCode(Code code, int index) const
 {
 	return m_entry[code].exprInfo->m_assocCode[index];
 }
 
 // returns the start index of the secondary associated codes for code
-int Table::assoc2Index(Code code)
+int Table::assoc2Index(Code code) const
 {
 	return m_entry[code].exprInfo->m_assoc2Index;
 }
 
 // returns the secondary associated code for a specific index for code
-Code Table::assoc2Code(Code code, int index)
+Code Table::assoc2Code(Code code, int index) const
 {
 	return m_entry[code].exprInfo->m_assocCode[assoc2Index(code) + index];
 }
 
 // returns the number of string operands for code
-int Table::nStrings(Code code)
+int Table::nStrings(Code code) const
 {
 	return m_entry[code].exprInfo->m_nStrings;
 }
 
 // returns whether the code is a unary operator code
 // (convenience function to avoid confusion)
-bool Table::isUnaryOperator(Code code)
+bool Table::isUnaryOperator(Code code) const
 {
 	return code == unaryCode(code);
 }
 
 // returns the pointer to the token handler (if any) for code
-TokenHandler Table::tokenHandler(Code code)
+TokenHandler Table::tokenHandler(Code code) const
 {
 	return m_entry[code].tokenHandler;
 }
 
 // returns the pointer to the command handler (if anyy) for code
-CommandHandler Table::commandHandler(Code code)
+CommandHandler Table::commandHandler(Code code) const
 {
 	return m_entry[code].commandHandler;
 }
@@ -1699,7 +1699,7 @@ CommandHandler Table::commandHandler(Code code)
 //
 //   - the precedence is obtained from the token
 //   - if this is -1 then the precedences if obtained for the token's code
-int Table::precedence(Token *token)
+int Table::precedence(Token *token) const
 {
 	int prec = token->precedence();
 	return prec != -1 ? prec : precedence(token->code());
@@ -1708,7 +1708,7 @@ int Table::precedence(Token *token)
 // returns the flags of the code contained in a token
 //
 //   - returns Null_Flag is the token does not contain a code
-int Table::flags(Token *token)
+int Table::flags(Token *token) const
 {
 	// (non-table entry token types have no flags)
 	return token->hasTableEntry() ? flags(token->code()) : Null_Flag;
@@ -1741,7 +1741,7 @@ Token *Table::newToken(Code code)
 //     - returns the index of the entry that is found
 //     - returns -1 if the string was not found in the table
 
-Code Table::search(SearchType type, const QStringRef &string)
+Code Table::search(SearchType type, const QStringRef &string) const
 {
 	Code i = m_range[type].beg;
 	Code end = m_range[type].end;
@@ -1763,7 +1763,7 @@ Code Table::search(SearchType type, const QStringRef &string)
 //     - returns the index of the entry that is found
 //     - returns -1 if the string was not found in the table
 
-Code Table::search(const QStringRef &word1, const QStringRef &word2)
+Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 {
 	for (Code i = m_range[PlainWord_SearchType].beg;
 		i < m_range[PlainWord_SearchType].end; i++)
@@ -1790,7 +1790,7 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2)
 //     - search begins at entry after index
 //     - search ends at end of section
 
-Code Table::search(Code index, int nArguments)
+Code Table::search(Code index, int nArguments) const
 {
 	for (Code i = index + 1; m_entry[i].name != NULL; i++)
 	{
@@ -1813,7 +1813,7 @@ Code Table::search(Code index, int nArguments)
 //     - the code specified must have associated codes
 //     - the number of data types must match that of the code
 
-Code Table::search(Code code, DataType *datatype)
+Code Table::search(Code code, DataType *datatype) const
 {
 	if (match(code, datatype))
 	{
@@ -1836,7 +1836,7 @@ Code Table::search(Code code, DataType *datatype)
 //
 //    - returns true if there is match, otherwise returns false
 
-bool Table::match(Code code, DataType *datatype)
+bool Table::match(Code code, DataType *datatype) const
 {
 	for (int n = nOperands(code); --n >= 0;)
 	{

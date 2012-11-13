@@ -186,11 +186,11 @@ public:
 		m_output = NULL;
 		return list;
 	}
-	Token *errorToken(void)     // only call when setInput() returns false
+	Token *errorToken(void) const     // only call when setInput() returns false
 	{
 		return m_errorToken;
 	}
-	QString errorMessage(void)	// only call when setInput() returns false
+	QString errorMessage(void) const  // only call when setInput() returns false
 	{
 		return m_errorMessage;
 	}
@@ -218,8 +218,8 @@ private:
 	TokenStatus callCommandHandler(Token *&token);
 	TokenStatus findCode(Token *&token, int operandIndex,
 		Token **first = NULL, Token **last = NULL);
-	TokenStatus getExprDataType(DataType &dataType);
-	TokenStatus parenStatus(void);
+	TokenStatus getExprDataType(DataType &dataType) const;
+	TokenStatus parenStatus(void) const;
 	void doPendingParen(Token *token);
 	void deleteOpenParen(Token *token);
 	void deleteCloseParen(Token *token);
@@ -237,10 +237,10 @@ private:
 	static DataType equivalentDataType(DataType dataType);
 
 	// Determine Error Functions (By Current State)
-	TokenStatus operatorError(void);
-	TokenStatus assignmentError(void);
-	TokenStatus endExpressionError(void);
-	TokenStatus unexpectedEndError(void);
+	TokenStatus operatorError(void) const;
+	TokenStatus assignmentError(void) const;
+	TokenStatus endExpressionError(void) const;
+	TokenStatus unexpectedEndError(void) const;
 
 	// set error token (deleting any previous error token first)
 	void setErrorToken(Token *errorToken)

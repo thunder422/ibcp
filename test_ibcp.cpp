@@ -363,7 +363,7 @@ void parseInput(QTextStream &cout, const QString &testInput)
 	parser.setInput(QString(testInput));
 	// 2010-03-18: fix loop since get_token() no longer returns null
 	do {
-		token = parser.getToken();
+		token = parser.token();
 		more = printToken(cout, token, true);
 		if (more && token->isType(Operator_TokenType)
 			&& token->isCode(EOL_Code))

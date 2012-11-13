@@ -107,39 +107,39 @@ public:
 	static Table &instance(void);
 
 	// CODE RELATED TABLE FUNCTIONS
-	TokenType type(Code code);
-	DataType dataType(Code code);
-	Multiple multiple(Code code);
-	const QString name(Code code);
-	const QString name2(Code code);
-	const QString debugName(Code code);
-	int flags(Code code);
-	TokenMode tokenMode(Code code);
-	Code unaryCode(Code code);
-	int precedence(Code code);
-	int nOperands(Code code);
-	DataType operandDataType(Code code, int operand);
-	int nAssocCodes(Code code);
-	Code assocCode(Code code, int index);
-	int assoc2Index(Code code);
-	Code assoc2Code(Code code, int index = 0);
-	int nStrings(Code code);
-	bool isUnaryOperator(Code code);
-	TokenHandler tokenHandler(Code code);
-	CommandHandler commandHandler(Code code);
+	TokenType type(Code code) const;
+	DataType dataType(Code code) const;
+	Multiple multiple(Code code) const;
+	const QString name(Code code) const;
+	const QString name2(Code code) const;
+	const QString debugName(Code code) const;
+	int flags(Code code) const;
+	TokenMode tokenMode(Code code) const;
+	Code unaryCode(Code code) const;
+	int precedence(Code code) const;
+	int nOperands(Code code) const;
+	DataType operandDataType(Code code, int operand) const;
+	int nAssocCodes(Code code) const;
+	Code assocCode(Code code, int index) const;
+	int assoc2Index(Code code) const;
+	Code assoc2Code(Code code, int index = 0) const;
+	int nStrings(Code code) const;
+	bool isUnaryOperator(Code code) const;
+	TokenHandler tokenHandler(Code code) const;
+	CommandHandler commandHandler(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
-	int precedence(Token *token);
-	int flags(Token *token);
+	int precedence(Token *token) const;
+	int flags(Token *token) const;
 	void setToken(Token *token, Code code);
 	Token *newToken(Code code);
 
 	// TABLE SPECIFIC FUNCTIONS
-	Code search(SearchType type, const QStringRef &string);
-	Code search(const QStringRef &word1, const QStringRef &word2);
-	Code search(Code code, int nArguments);
-	Code search(Code code, DataType *dataType);
-	bool match(Code code, DataType *dataType);
+	Code search(SearchType type, const QStringRef &string) const;
+	Code search(const QStringRef &word1, const QStringRef &word2) const;
+	Code search(Code code, int nArguments) const;
+	Code search(Code code, DataType *dataType) const;
+	bool match(Code code, DataType *dataType) const;
 };
 
 
