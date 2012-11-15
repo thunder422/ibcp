@@ -183,7 +183,7 @@ BEGIN {
 
 		# write 'enum Code' to 'autoenums.h'
 		printf "\n" > "autoenums.h"
-		printf "enum Code {\n" > "autoenums.h"
+		printf "enum Code\n{\n" > "autoenums.h"
 		printf "\tInvalid_Code = -1,\n" > "autoenums.h"
 		for (i = 0; i < n; i++)
 		{
@@ -194,7 +194,7 @@ BEGIN {
 
 		# write 'enum TokenStatus' to 'autoenums.h'
 		printf "\n" > "autoenums.h"
-		printf "enum TokenStatus {\n" > "autoenums.h"
+		printf "enum TokenStatus\n{\n" > "autoenums.h"
 		for (i = 0; i < nts; i++)
 		{
 			printf "\t%s,\n", ts_array[i] > "autoenums.h"

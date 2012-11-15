@@ -37,7 +37,8 @@
 
 
 // bit definitions for flags field
-enum {
+enum TableFlag
+{
 	Null_Flag           = 0x00000000,  // entry has no flags
 	// table entry flags (each must have unique bit set)
 	Multiple_Flag       = 0x00000001,  // function has multiple forms
@@ -52,7 +53,8 @@ enum {
 
 
 // categories for searching the table entries
-enum SearchType {  // table search types
+enum SearchType  // table search types
+{
 	PlainWord_SearchType,
 	ParenWord_SearchType,
 	DataTypeWord_SearchType,
@@ -62,7 +64,8 @@ enum SearchType {  // table search types
 
 
 // multiple word command or multiple character operator type
-enum Multiple {
+enum Multiple
+{
 	OneWord_Multiple,
 	OneChar_Multiple = OneWord_Multiple,
 	TwoWord_Multiple,
@@ -84,11 +87,13 @@ typedef TokenStatus (*CommandHandler)(Translator &t, CmdItem *cmdItem,
 
 
 // 2011-02-26: removed index_code[], index(), and code(); changed index to code
-class Table {
+class Table
+{
 	static Table *m_instance;		// single instance of table
 
 	TableEntry *m_entry;			// pointer to table entries
-	struct Range {
+	struct Range
+	{
 		Code beg;					// begin index of range
 		Code end;					// end index of range
 	} m_range[sizeof_SearchType];	// range for each search type

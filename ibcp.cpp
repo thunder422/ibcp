@@ -131,7 +131,7 @@ void printGplHeader(QTextStream &cout, const QString &name)
 		<< "  Thunder422" << endl
 		<< "This program comes with ABSOLUTELY NO WARRANTY." << endl
 		<< "This is free software, and you are welcome to" << endl
-		<< "redistribute it under certain conditions.\n" << endl;
+		<< "redistribute it under certain conditions." << endl << endl;
 }
 
 // Program Name and Length less extension
@@ -145,7 +145,8 @@ bool ibcpVersion(QTextStream &cout, const QString &name, int argc, char *argv[])
 	{
 		return false;  // not our options
 	}
-	cout << name << " version " << ibcp_RELEASE_STRING + 7 << endl;
+	cout << name << QObject::tr(" version %1").arg(ibcp_RELEASE_STRING + 7)
+		<< endl;
 	return true;
 }
 
@@ -179,9 +180,10 @@ int main(int argc, char *argv[])
 		int n = 0;
 		foreach (QString error, errors)
 		{
-			qWarning("Error #%d: %s", ++n, qPrintable(error));
+			qWarning("%s", qPrintable(QObject::tr("Error #%1: %2").arg(++n)
+				.arg(error)));
 		}
-		qWarning("Program aborting!");
+		qWarning("%s", qPrintable(QObject::tr("Program aborting!")));
 		return 1;
 	}
 	cout << "Table initialization successful." << endl;
@@ -190,8 +192,9 @@ int main(int argc, char *argv[])
 
 	if (!ibcpTest(cout, translator, argc, argv))
 	{
-		qWarning("usage: %s -v -t <test_file>|-tp|-te|-tt",
-			qPrintable(programName));
+		qWarning("%s: %s -v -t <%s>|-tp|-te|-tt",
+			qPrintable(QObject::tr("usage")), qPrintable(programName),
+			qPrintable(QObject::tr("test_file")));
 	}
 	return 0;
 }

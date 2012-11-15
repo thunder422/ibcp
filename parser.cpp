@@ -104,7 +104,7 @@ Token *Parser::token(void)
 	if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		m_token->setError("unrecognizable character", None_DataType);
+		m_token->setError(tr("unrecognizable character"), None_DataType);
 	}
 	return m_token;  // token may contain an error
 }
@@ -323,16 +323,16 @@ void Parser::skipWhitespace(void)
 
 bool Parser::getNumber(void)
 {
-	QString ExpNonZeroDigit_ErrMsg("expected non-zero leading digit in numeric "
-		"constant");;
-	QString ExpDigitsOrSngDP_ErrMsg("expected digits or single decimal point "
-		"in floating point constant");
-	QString ExpManDigits_ErrMsg("expected digits in mantissa in floating point "
-		"constant");
-	QString ExpExpDigits_ErrMsg("expected sign or digits for exponent in "
-		"floating point constant");
-	QString ExpDigits_ErrMsg("expected digits in floating point constant");
-	QString FPOutOfRange_ErrMsg("floating point constant is out of range");
+	QString ExpNonZeroDigit_ErrMsg(tr("expected non-zero leading digit in "
+		"numeric constant"));
+	QString ExpDigitsOrSngDP_ErrMsg(tr("expected digits or single decimal "
+		"point in floating point constant"));
+	QString ExpManDigits_ErrMsg(tr("expected digits in mantissa in floating "
+		"point constant"));
+	QString ExpExpDigits_ErrMsg(tr("expected sign or digits for exponent in "
+		"floating point constant"));
+	QString ExpDigits_ErrMsg(tr("expected digits in floating point constant"));
+	QString FPOutOfRange_ErrMsg(tr("floating point constant is out of range"));
 
 	bool digits = false;		// digits were found flag
 	bool decimal = false;		// decimal point was found flag

@@ -56,7 +56,8 @@ enum {
 
 
 // command item
-struct CmdItem {
+struct CmdItem
+{
 	Token *token;				// pointer to command token
 	int flag;					// generic flag for command use
 	int index;  				// index into output list for command use
@@ -64,7 +65,8 @@ struct CmdItem {
 
 
 // structure for holding RPN output list information
-class RpnItem {
+class RpnItem
+{
 	Token *m_token;				// pointer to token
 	int m_nOperands;			// number of operands
 	RpnItem **m_operand;		// array of operand pointers
@@ -130,22 +132,27 @@ public:
 };
 
 
-class Translator {
-	struct HoldItem {
+class Translator
+{
+	struct HoldItem
+	{
 		Token *token;				// token pointer on hold stack
 		Token *first;				// operator token's first operand pointer
 	};
-	struct DoneItem {
+	struct DoneItem
+	{
 		RpnItem *rpnItem;			// pointer to RPN item
 		Token *first;				// operator token's first operand pointer
 		Token *last;				// operator token's last operand pointer
 	};
-	struct CountItem {
+	struct CountItem
+	{
 		char nOperands;				// number of operands seen
 		char nExpected;				// number of arguments expected
 		Code code;					// table index of internal function
 	};
-	enum State {
+	enum State
+	{
 		Initial_State,				// initial state
 		BinOp_State,				// expecting binary operator
 		Operand_State,				// expecting unary operator or operand
@@ -196,7 +203,8 @@ public:
 	}
 
 private:
-	enum Match {
+	enum Match
+	{
 		No_Match,
 		Yes_Match,
 		Cvt_Match,

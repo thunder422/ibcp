@@ -26,13 +26,15 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <QCoreApplication>
 #include <QString>
 
 #include "ibcp.h"
 
 
 // changes to TokenType may require changes to ibcp.cpp: Token::initialize()
-enum TokenType {
+enum TokenType
+{
 	Command_TokenType,
 	Operator_TokenType,
 	IntFuncN_TokenType,
@@ -48,7 +50,10 @@ enum TokenType {
 };
 
 
-class Token {
+class Token
+{
+	Q_DECLARE_TR_FUNCTIONS(Token)
+
 	int m_column;			// start column of token
 	int m_length;			// length of token
 	TokenType m_type;		// type of the token

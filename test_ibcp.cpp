@@ -203,6 +203,7 @@
 //				changed QByteArray to QString
 //				removed immediate command support
 
+#include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
 #include <QString>
@@ -226,9 +227,10 @@ void printError(QTextStream &cout, Token *token, const QString &error);
 // or accept input lines from the user
 bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 {
-	extern char *programName;
+	extern QString programName;
 
-	enum testModeEnum {
+	enum testModeEnum
+	{
 		testParser, testExpression, testTranslator, sizeofTestMode
 	} testMode;
 	QVector<QString> name(sizeofTestMode);
@@ -272,7 +274,8 @@ bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 		}
 		else
 		{
-			qCritical("usage: %s -t (%s|%s|%s)[XX]\n", qPrintable(programName),
+			qCritical("%s: %s -t (%s|%s|%s)[xx]",
+				qPrintable(QObject::tr("usage")), qPrintable(programName),
 				qPrintable(name[testParser]), qPrintable(name[testExpression]),
 				qPrintable(name[testTranslator]));
 			return true;  // our options were bad
@@ -290,7 +293,7 @@ bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 
 	if (inputMode)
 	{
-		cout << endl << "Testing " << name[testMode] << "...";
+		cout << endl << QObject::tr("Testing ") << name[testMode] << "...";
 		file.open(stdin, QIODevice::ReadOnly);
 	}
 	else
@@ -298,8 +301,8 @@ bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 		file.setFileName(argv[2]);
 		if (!file.open(QIODevice::ReadOnly))
 		{
-			qCritical("%s: error opening '%s'\n", qPrintable(programName),
-				argv[2]);
+			qCritical("%s: %s", qPrintable(programName),
+				qPrintable(QObject::tr("error opening '%1'").arg(argv[2])));
 			return true;
 		}
 	}
@@ -307,7 +310,7 @@ bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 	{
 		if (inputMode)
 		{
-			cout << endl << "Input: " << flush;
+			cout << endl << QObject::tr("Input: ") << flush;
 			inputLine = input.readLine();
 			if (inputLine.isEmpty() || inputLine[0] == '\n')
 			{

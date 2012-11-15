@@ -196,7 +196,8 @@ const int MaxAssocCodes = 4;
 
 
 // expression information for operators and internal functions
-struct ExprInfo {
+struct ExprInfo
+{
 	Code m_unaryCode;				// operator unary code (Null_Code if none)
 	short m_nOperands;				// number of operands (operators/functions)
 	short m_nAssocCodes;			// number of associated codes
@@ -217,7 +218,8 @@ struct ExprInfo {
 };
 
 
-struct TableEntry {
+struct TableEntry
+{
 	TokenType type;					// type of token for entry
 	Multiple multiple;				// multiple word command/character operator
 	const QString name;				// name for table entry

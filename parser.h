@@ -25,6 +25,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <QCoreApplication>
 #include <QString>
 
 #include "token.h"
@@ -32,7 +33,10 @@
 class Table;
 
 
-class Parser {
+class Parser
+{
+	Q_DECLARE_TR_FUNCTIONS(Parser)
+
 	Table &m_table;			// pointer to the table object
 	QString m_input;		// input line being parsed
 	int m_pos;				// index to current position in input string
