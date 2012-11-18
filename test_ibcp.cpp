@@ -225,7 +225,7 @@ void printError(QTextStream &cout, Token *token, const QString &error);
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
-bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
+bool ibcpTest(QTextStream &cout, Translator &translator, QStringList &args)
 {
 	extern QString programName;
 
@@ -239,25 +239,26 @@ bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 	name[testTranslator] = "translator";
 	bool inputMode;
 
-	if (argc == 2 && QString::compare(argv[1], "-tp") == 0)
+	int argc = args.count();
+	if (argc == 2 && args.at(1).compare("-tp") == 0)
 	{
 		testMode = testParser;
 		inputMode = true;
 	}
-	else if (argc == 2 && QString::compare(argv[1], "-te") == 0)
+	else if (argc == 2 && args.at(1).compare("-te") == 0)
 	{
 		testMode = testExpression;
 		inputMode = true;
 	}
-	else if (argc == 2 && QString::compare(argv[1], "-tt") == 0)
+	else if (argc == 2 && args.at(1).compare("-tt") == 0)
 	{
 		testMode = testTranslator;
 		inputMode = true;
 	}
-	else if (argc == 3 && QString::compare(argv[1], "-t") == 0)
+	else if (argc == 3 && args.at(1).compare("-t") == 0)
 	{
 		// find start of file name less path
-		QString fileName = QFileInfo(argv[2]).baseName();
+		QString fileName = QFileInfo(args.at(2)).baseName();
 
 		// get and check beginning of file name
 		if (fileName.startsWith(name[testParser], Qt::CaseInsensitive))
@@ -298,11 +299,11 @@ bool ibcpTest(QTextStream &cout, Translator &translator, int argc, char *argv[])
 	}
 	else
 	{
-		file.setFileName(argv[2]);
+		file.setFileName(args.at(2));
 		if (!file.open(QIODevice::ReadOnly))
 		{
 			qCritical("%s: %s", qPrintable(programName),
-				qPrintable(QObject::tr("error opening '%1'").arg(argv[2])));
+				qPrintable(QObject::tr("error opening '%1'").arg(args.at(2))));
 			return true;
 		}
 	}

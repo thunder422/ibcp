@@ -20,52 +20,24 @@
 #  Change History:
 #
 #  2011-06-11	initial version
-#  2012-09-23	changed GCC 4.5+ fatal error to just a warning
-#  2012-10-07	add if GCC < 4.5 then don't add static libraries
-#  2012-10-08	corrected in source directory builds
-#  2012-10-12	added a configure_file command for the regtest script
-#  2012-10-14	renamed test_codes.awk to test_names.awk, which now generates
-#               test_names.h that also includes text enums from ibcp.h
-#  2012-10-16	added build of test programs with separate tests target
-#  2012-10-21	corrected check whether to add static linking, which should have
-#				  been greater than 4.4, not less than 4.5
-#				replaced add_definitions, which are for compiler options, with
-#				  set_target_properties where link flags are set for added the
-#				  static linking options
-#
-#  2012-10-23	streamlined not found check for PROGRAM_AWK
-#				renamed variables from VERSION to RELEASE
-#				allow negative patch numbers indicating developmental releases
-#				added code to get a unique release string using git, and if git
-#				  is not available use the three RELEASE variables
-#  2012-10-24	detect the CMAKE_BUILD_TYPE environment variable and set the
-#				  cmake variable if not already set, then report the build type
-#  2012-10-25	added configuration of new memtest script on non-Windows builds
-#  2012-10-26	added changed for Qt libraries
-#  2012-10-28	removed list.h (Qt lists used) and test_stack program
-#  2012-10-29	removed stack.h (Qt stacks used) and test_stack2 program
-#  2012-10-31	corrected problem when git is present but not the git repository
-#  2012-11-01	removed string.h, string.cpp and test_string
-#  2012-11-02	removed the rest of the test programs
-#  2012-11-03	added new source and headers for separated classes
-
-cmake_minimum_required(VERSION 2.8)
 
 project(ibcp)
 
+cmake_minimum_required(VERSION 2.8)
+
 # find Qt package
-find_package(Qt4 REQUIRED QtCore)
+find_package(Qt4 REQUIRED QtCore QtGui)
 include(${QT_USE_FILE})
 
 # check GCC versionn
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
 	OUTPUT_VARIABLE GCC_VERSION
 )
-if (GCC_VERSION VERSION_LESS 4.5)
-	message(WARNING_ERROR
-		"GCC 4.5+ Required for static building with libstdc++"
-	)
-endif (GCC_VERSION VERSION_LESS 4.5)
+#-if (GCC_VERSION VERSION_LESS 4.5)
+#-	message(WARNING_ERROR
+#-		"GCC 4.5+ Required for static building with libstdc++"
+#-	)
+#-endif (GCC_VERSION VERSION_LESS 4.5)
 
 # ckeck is a specific build type is set in the environment
 if (NOT $ENV{CMAKE_BUILD_TYPE} STREQUAL "")
@@ -184,10 +156,10 @@ add_executable(ibcp
 	${ibcp_SOURCES}
 )
 target_link_libraries(ibcp ${QT_LIBRARIES})
-
-# make linker link in static libgcc.a and libstrc++.a
-if (GCC_VERSION VERSION_GREATER 4.4)
-	set_target_properties(ibcp
-		PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++"
-	)
-endif (GCC_VERSION VERSION_GREATER 4.4)
+#-
+#-# make linker link in static libgcc.a and libstrc++.a
+#-if (GCC_VERSION VERSION_GREATER 4.4)
+#-	set_target_properties(ibcp
+#-		PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++"
+#-	)
+#-endif (GCC_VERSION VERSION_GREATER 4.4)
