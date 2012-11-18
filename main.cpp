@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: ibcp.h - miscellaneous functions
-//	Copyright (C) 2010-2011  Thunder422
+//	File: main.cpp - main function
+//	Copyright (C) 2010-2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -112,4 +112,4 @@ int main(int argc, char *argv[])
 }
 
 
-// end: ibcp.cpp
+// end: main.cpp

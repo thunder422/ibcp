@@ -44,13 +44,13 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 2)
-set(ibcp_RELEASE_PATCH -1)
+set(ibcp_RELEASE_PATCH -5)
 
 set(ibcp_COPYRIGHT_YEAR 2012)
 
-find_program (PROGRAM_GIT git)
-if (PROGRAM_GIT)
-	execute_process(COMMAND ${PROGRAM_GIT} describe
+find_package(Git)
+if (GIT_FOUND)
+	execute_process(COMMAND ${GIT_EXECUTABLE} describe
 		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 		OUTPUT_VARIABLE ibcp_RELEASE_STRING
 		OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -58,17 +58,17 @@ if (PROGRAM_GIT)
 		ERROR_VARIABLE PREVENT_STDERR_OUTPUT
 	)
 	if (NOT ${GIT_RESULT} EQUAL 0)
-		unset(PROGRAM_GIT CACHE)
+		unset(GIT_FOUND)
 	endif (NOT ${GIT_RESULT} EQUAL 0)
-endif (PROGRAM_GIT)
-if (NOT PROGRAM_GIT)
+endif (GIT_FOUND)
+if (NOT GIT_FOUND)
 	set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
 	if (ibcp_RELEASE_PATCH LESS 0)
 		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}${ibcp_RELEASE_PATCH})
 	else (ibcp_RELEASE_PATCH LESS 0)
 		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}.${ibcp_RELEASE_PATCH})
 	endif (ibcp_RELEASE_PATCH LESS 0)
-endif (NOT PROGRAM_GIT)
+endif (NOT GIT_FOUND)
 message(STATUS "Build version: ${ibcp_RELEASE_STRING}")
 
 # find awk executable
@@ -134,7 +134,7 @@ set(ibcp_HEADERS
 # list the main program sources
 set(ibcp_SOURCES
 	commandhandlers.cpp
-	ibcp.cpp
+	main.cpp
 	parser.cpp
 	table.cpp
 	token.cpp
