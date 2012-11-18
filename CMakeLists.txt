@@ -40,35 +40,43 @@ if (NOT $ENV{CMAKE_BUILD_TYPE} STREQUAL "")
         set(CMAKE_BUILD_TYPE $ENV{CMAKE_BUILD_TYPE})
     endif (NOT CMAKE_BUILD_TYPE)
 endif (NOT $ENV{CMAKE_BUILD_TYPE} STREQUAL "")
+if (NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE "Release")
+endif (NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+set(ibcp_COPYRIGHT_YEAR 2012)
 
 set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 2)
 set(ibcp_RELEASE_PATCH -5)
 
-set(ibcp_COPYRIGHT_YEAR 2012)
+set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
+if (ibcp_RELEASE_PATCH LESS 0)
+	set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}${ibcp_RELEASE_PATCH})
+else (ibcp_RELEASE_PATCH LESS 0)
+	set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}.${ibcp_RELEASE_PATCH})
+endif (ibcp_RELEASE_PATCH LESS 0)
 
 find_package(Git)
 if (GIT_FOUND)
 	execute_process(COMMAND ${GIT_EXECUTABLE} describe
 		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-		OUTPUT_VARIABLE ibcp_RELEASE_STRING
+		OUTPUT_VARIABLE git_release_string
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 		RESULT_VARIABLE GIT_RESULT
 		ERROR_VARIABLE PREVENT_STDERR_OUTPUT
 	)
-	if (NOT ${GIT_RESULT} EQUAL 0)
-		unset(GIT_FOUND)
-	endif (NOT ${GIT_RESULT} EQUAL 0)
+	if (${GIT_RESULT} EQUAL 0)
+		string(REGEX MATCH ${ibcp_RELEASE_STRING} match ${git_release_string})
+		if ("${match}" STREQUAL "")
+			message(FATAL_ERROR "Release string '${ibcp_RELEASE_STRING}' "
+				"does not match git '${git_release_string}'"
+			)
+		endif ("${match}" STREQUAL "")
+		set(ibcp_RELEASE_STRING ${git_release_string})
+	endif (${GIT_RESULT} EQUAL 0)
 endif (GIT_FOUND)
-if (NOT GIT_FOUND)
-	set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
-	if (ibcp_RELEASE_PATCH LESS 0)
-		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}${ibcp_RELEASE_PATCH})
-	else (ibcp_RELEASE_PATCH LESS 0)
-		set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}.${ibcp_RELEASE_PATCH})
-	endif (ibcp_RELEASE_PATCH LESS 0)
-endif (NOT GIT_FOUND)
 message(STATUS "Build version: ${ibcp_RELEASE_STRING}")
 
 # find awk executable
