@@ -33,11 +33,6 @@ include(${QT_USE_FILE})
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
 	OUTPUT_VARIABLE GCC_VERSION
 )
-#-if (GCC_VERSION VERSION_LESS 4.5)
-#-	message(WARNING_ERROR
-#-		"GCC 4.5+ Required for static building with libstdc++"
-#-	)
-#-endif (GCC_VERSION VERSION_LESS 4.5)
 
 # ckeck is a specific build type is set in the environment
 if (NOT $ENV{CMAKE_BUILD_TYPE} STREQUAL "")
@@ -156,10 +151,3 @@ add_executable(ibcp
 	${ibcp_SOURCES}
 )
 target_link_libraries(ibcp ${QT_LIBRARIES})
-#-
-#-# make linker link in static libgcc.a and libstrc++.a
-#-if (GCC_VERSION VERSION_GREATER 4.4)
-#-	set_target_properties(ibcp
-#-		PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++"
-#-	)
-#-endif (GCC_VERSION VERSION_GREATER 4.4)
