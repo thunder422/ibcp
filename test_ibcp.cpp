@@ -20,188 +20,7 @@
 //
 //	Change History:
 //
-//	2010-03-01	initial release
-//
-//	2010-03-06	added support for a command line argument to indicate which test
-//				to run, added test input lines for testing identifiers, split
-//				DefFunc_TokenType into DefFuncN_TokenType and
-//				DefFuncP_TokenType
-//
-//	2010-03-07	added test input lines for testing numbers,
-//				changed error display to use new length value in token
-//
-//	2010-03-08	added test input lines for testing strings
-//
-//	2010-03-10	added test input lines for testing operators
-//
-//	2010-03-11	added command line option to input lines interactively,
-//				separated code into new parse_input() function
-//
-//	2010-03-13	replaced IncFunc with IntFuncN and IntFuncP token types
-//				added new Token static functions that indicate whether token
-//				  has a parentheses or is and operator
-//				changed main() to test_parser(), moved print_gpl_header, and
-//				  table initialization to new ibcp.cpp source file
-//
-//	2010-03-17	renamed file from test_parser.cpp - will now contain all test
-//				  code
-//				separated print_token() from parse_input() so that it can be
-//				  used from other functions
-//				added string for new Code values to print_token
-//				changed all token->code to token->index
-//
-//	2010-03-18	fixed loop since get_token() no longer returns null
-//				added new functions test_translator() and translate_input() for
-//				  testing translator
-//
-//	2010-03-20	implemented test translator code, made print_small_token() so
-//				that RPN list could be output in a compact form
-//
-//	2010-03-21	added check for parser errors in translator test code
-//				corrected output RPN list to handle an empty list
-//				added bad length check to print_error()
-//				corrected print_error() to handle error tokens
-//				added more simple expressions test inputs
-//
-//	2010-03-25	added expressions for testing expressions with parentheses
-//				added additional errors for parentheses errors
-//
-//	2010-03-26	added more parentheses test expressions
-//
-//	2010-04-02	added expressions for testing expressions with arrays functions
-//				added additional errors for arrays/function errors
-//				in print_small_token() for operators, use name2 for output if
-//				  set, otherwise use name
-//
-//	2010-04-04	added expressions for testing the number of arguments
-//				check for internal functions
-//				added an additional error
-//				added calls to debug_name() in print_small_token()
-//
-//	2010-04-11	replaced unexpected comma error with two errors
-//				added assignment errors
-//				added new assignment codes to print_token()
-//	2010-04-12	added output of "<ref>" if token reference flag set
-//	2010-04-14	correct token memory allocation problem (only delete token if
-//				it is the original token passed to the Translator)
-//	2010-04-16	added assignment/reference and parentheses errors
-//				modified translator_input() to set expression test mode in
-//				  Translator for previous test inputs
-//				added assignment statement test inputs
-//	2010-04-17	added another unexpected comma error
-//
-//	2010-04-25	added errors for data type handling
-//				return get_str() to get_ptr()
-//				added new data handling errors
-//	2010-04-27	corrected previous translation test inputs
-//				added data type handling test inputs
-//
-//	2010-05-09	corrected expresion in translator test input set 6
-//				added assignment data type handling test inputs (set 7)
-//
-//	2010-05-15	modified code because output list from Translator now contains
-//				  RpnItem* instead of Token*
-//				added additional loop to output list from Translator with no
-//				  deleting, necessary so that the operands of tokens saved by
-//				  the Translator can also be printed
-//
-//	2010-05-19	created testinput8 for translator substring tests
-//	2010-05-21	added rest of test inputs for substring assignment tests
-//
-//	2010-05-22	added more of test inputs for substring assignment tests that
-//				contain mix string list assignments
-//
-//	2010-05-28	added static in front of all test input definitions to prevent
-//				code from being generated
-//	2010-05-29	added support for sub-code output to print_small_token()
-//				renamed Translator::Status names to _TokenStatus names
-//				added support for unexpected command error
-//				updated datatype_name[] and code_name[] arrays for changes made
-//				  since parser testing was last used
-//				corrected output of double and integer token output to used
-//				  originally entered string instead of stored value
-//				added '0' constants tests to parser test input set #3
-//				added message to identifier Parser or Translator testing for
-//				  input mode testing
-//				added testinput9 for translator command testing with tests for
-//				  LET command
-//	2010-05-30	added command stack not empty bug error
-//
-//	2010-06-02	updated print_token() for new codes
-//	2010-06-06	corrected to call name2() in print_small_token()
-//	2010-06-08	added PRINT statement test inputs
-//				added semicolon sub-code flag support to print_small_token()
-//	2010-06-09	added unexpected comma in arguments error
-//				renamed bug errors for clarity
-//	2010-06-10	added new translator test sets (10 and 11)
-//	2010-06-10	added expected unary or operand error
-//	2010-06-01/14  updated many error enumeration names and string messages for
-//				   clarity
-//
-//	2010-06-25	removed token status switch (messages moved to ibcp.cpp)
-//	2010-06-26	added more error test inputs
-//	2010-06-29	corrected print_error() to take into account double quotes
-//				  surrounding and used internally on string constants
-//				added new translator expression type test set (12)
-//	2010-07-04	moved semicolon error tests from testinput11 to new testinput13
-//				added more error tests to testinput11
-//				added more error tests in testinput12
-//
-//	2010-08-01	removed comma sub-code
-//	2010-10-05	added more translator tests
-//				modified to get code_name[] contents from auto-generated include
-//				  file
-//
-//	2011-01-04	added translator test 14 - expression type tests
-//	2011-01-11	removed redundant code in print_error() for determining length
-//				  of token (can now just use token length member)
-//	2011-01-22	ignore Used_SubCode in print_small_token()
-//				added more statements to translator test 14
-//	2011-01-29	modified for updated List class functions
-//				implemented memory leak detection, including new outputting
-//				  leaks with new print_token_leaks
-//	2011-01-30	corrected memory leak for errors at open parentheses
-//	2011-02-01	added additional array tests to translator test 12
-//	2011-02-05	added temporary strings tests in new translator test 15
-//
-//	2011-02-26	updated for change of table index to code
-//	2011-03-03	added more print function expression tests
-//	2011-03-08	removed output of token codes in print_token() to prevent
-//				  parser test failures due to code/table entry changes
-//	2011-03-20	added translator test 16 for input statment tests
-//				added keep and end  subcodes to print_small_token()
-//	2011-03-22	added question subcode to print_small_token()
-//
-//	2011-03-26	modified print_token() and print_small_token() to output an
-//				  open parentheses for DefFuncP and Paren token types that are
-//				  no longer stored in the tokens string
-//	2011-03-27	set parser operand state from translator before each token
-//				added translator test 17 for negative constant tests
-//	2011-06-07	added checks for gets() return value to remove compiler warnings
-//
-//	2012-10-11	implemented new function test_ibcp() to replace test_parser()
-//				  and test_translator(), which reads the test input from a file
-//				  specified on the command line (all test inputs moved to test
-//				  input data files from the code here)
-//	2012-10-14	added code to parser constant double output to remove third
-//				  exponent digit if present and is zero - this is for Windows
-//				  that outputs 3 digits all the time (Linux does not)
-//
-//	2012-10-24	deleted the rpnlist object after deleting all the list members
-//				  (to fix a memory leak)
-//	2012-10-27	changed translator output from List class to QList
-//				created separate print_output() so can be used for debugging
-//	2012-10-28	removed token leak output routine
-//	2012-10-29	converted strings to QString (and QByteArray)
-//				converted file I/O to QFile (and QFileInfo)
-//				converted output to QTextStream
-//				renamed variables and functions to Qt naming convention
-//	2012-10-31	changed from reading file directory with QByteArray to using a
-//				  QTextStream so that QString can be read
-//	2012-11-01	renamed Parser functions to Qt Style naming
-//				pass QString to Parser instead of char*
-//				changed QByteArray to QString
-//				removed immediate command support
+//	2010-03-01	initial version
 
 #include <QCoreApplication>
 #include <QFile>
@@ -209,109 +28,157 @@
 #include <QString>
 #include <QTextStream>
 
+#include "test_ibcp.h"
 #include "table.h"
 #include "parser.h"
 #include "translator.h"
 
-void parseInput(QTextStream &cout, const QString &testInput);
-void translateInput(QTextStream &cout, Translator &translator,
-	const QString &testInput, bool exprMode);
-bool printToken(QTextStream &cout, Token *token, bool tab);
-void printOutput(QTextStream &cout, const QString &header,
-	QList<RpnItem *> &output);
-bool printSmallToken(QTextStream &cout, Token *token);
-void printError(QTextStream &cout, Token *token, const QString &error);
+
+extern void printGplHeader(QTextStream &cout, const QString &name);
 
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
-bool ibcpTest(QTextStream &cout, Translator &translator, QStringList &args)
+Tester::Tester(QStringList &args)
 {
-	extern QString programName;
+	QMap<enum Option, QString> name;
+	name[OptParser] = "parser";
+	name[OptExpression] = "expression";
+	name[OptTranslator] = "translator";
 
-	enum testModeEnum
-	{
-		testParser, testExpression, testTranslator, sizeofTestMode
-	} testMode;
-	QVector<QString> name(sizeofTestMode);
-	name[testParser] = "parser";
-	name[testExpression] = "expression";
-	name[testTranslator] = "translator";
-	bool inputMode;
+	// get base file name of program from first argument
+	m_programName = QFileInfo(args.at(0)).baseName();
 
-	int argc = args.count();
-	if (argc == 2 && args.at(1).compare("-tp") == 0)
+	// scan arguments for test options (ignore others)
+	m_option = OptNone;
+	for (int i = 1; i < args.count(); i++)
 	{
-		testMode = testParser;
-		inputMode = true;
-	}
-	else if (argc == 2 && args.at(1).compare("-te") == 0)
-	{
-		testMode = testExpression;
-		inputMode = true;
-	}
-	else if (argc == 2 && args.at(1).compare("-tt") == 0)
-	{
-		testMode = testTranslator;
-		inputMode = true;
-	}
-	else if (argc == 3 && args.at(1).compare("-t") == 0)
-	{
-		// find start of file name less path
-		QString fileName = QFileInfo(args.at(2)).baseName();
-
-		// get and check beginning of file name
-		if (fileName.startsWith(name[testParser], Qt::CaseInsensitive))
+		if (!isOption(args.at(i), "-tp", OptParser, name[OptParser])
+			&& !isOption(args.at(i), "-te", OptExpression, name[OptExpression])
+			&& !isOption(args.at(i), "-tt", OptTranslator, name[OptTranslator])
+			&& args.at(i).compare("-t") == 0)
 		{
-			testMode = testParser;
+			if (m_option & OptAny)
+			{
+				m_option |= OptError;
+				m_errorMessage = tr("%1: multiple test options not allowed")
+					.arg(m_programName);
+			}
+			else
+			{
+				i++;  // advance to next argument
+				if (i >= args.count())
+				{
+					m_option |= OptError;
+					m_errorMessage = tr("%1: missing test file name")
+						.arg(m_programName);
+				}
+				else
+				{
+					// find start of file name less path
+					m_testFileName = args.at(i);
+					QString baseName = QFileInfo(m_testFileName).baseName();
+
+					QMapIterator<enum Option, QString> it(name);
+					while (it.hasNext())
+					{
+						it.next();
+						// check beginning of file name
+						if (baseName.startsWith(it.value(),
+							Qt::CaseInsensitive))
+						{
+							m_option |= it.key();
+							m_testName = name[it.key()];
+							break;
+						}
+					}
+					if ((m_option & OptAny) == 0)  // no matching names?
+					{
+						m_option |= OptError;
+						m_errorMessage = QString("%1: %2 -t (%3|%4|%5)[xx]")
+							.arg(tr("usage")).arg(m_programName)
+							.arg(name[OptParser]).arg(name[OptExpression])
+							.arg(name[OptTranslator]);
+					}
+					else
+					{
+						m_option |= OptFile;
+					}
+				}
+			}
 		}
-		else if (fileName.startsWith(name[testExpression], Qt::CaseInsensitive))
+		// ignore non-test options
+	}
+}
+
+
+bool Tester::isOption(const QString &arg, const QString &exp,
+	enum Option option, QString name)
+{
+	if (arg.compare(exp) == 0)
+	{
+		if (m_option & OptAny)
 		{
-			testMode = testExpression;
-		}
-		else if (fileName.startsWith(name[testTranslator], Qt::CaseInsensitive))
-		{
-			testMode = testTranslator;
+			m_option |= OptError;
+			m_errorMessage = tr("%1: multiple test options not allowed")
+				.arg(m_programName);
 		}
 		else
 		{
-			qCritical("%s: %s -t (%s|%s|%s)[xx]",
-				qPrintable(QObject::tr("usage")), qPrintable(programName),
-				qPrintable(name[testParser]), qPrintable(name[testExpression]),
-				qPrintable(name[testTranslator]));
-			return true;  // our options were bad
+			m_option |= option;
+			m_testName = name;
 		}
-		inputMode = false;
+		return true;
 	}
-	else
-	{
-		return false;  // not our options
-	}
+	return false;
+}
 
+
+bool Tester::run(QTextStream &cout)
+{
 	QFile file;
 	QTextStream input(&file);
 	QString inputLine;
 
+	bool inputMode = (m_option & OptFile) == 0;
 	if (inputMode)
 	{
-		cout << endl << QObject::tr("Testing ") << name[testMode] << "...";
+		cout << endl << tr("Testing %1...").arg(m_testName);
 		file.open(stdin, QIODevice::ReadOnly);
 	}
 	else
 	{
-		file.setFileName(args.at(2));
+		file.setFileName(m_testFileName);
 		if (!file.open(QIODevice::ReadOnly))
 		{
-			qCritical("%s: %s", qPrintable(programName),
-				qPrintable(QObject::tr("error opening '%1'").arg(args.at(2))));
-			return true;
+			m_errorMessage = tr("%1: error opening '%2'").arg(m_programName)
+				.arg(m_testFileName);
+			return false;
 		}
 	}
+
+	// initialize the worker classes
+	Token::initialize();
+	QStringList errors = Table::create();
+	if (!errors.isEmpty())
+	{
+		int n = 0;
+		foreach (QString error, errors)
+		{
+			qWarning("%s", qPrintable(tr("Error #%1: %2").arg(++n).arg(error)));
+		}
+		qFatal("%s", qPrintable(tr("Program aborting!")));
+	}
+	printGplHeader(cout, m_programName);
+	cout << "Table initialization successful." << endl;
+
+	Translator translator(Table::instance());
+
 	for (int lineno = 1;; lineno++)
 	{
 		if (inputMode)
 		{
-			cout << endl << QObject::tr("Input: ") << flush;
+			cout << endl << tr("Input: ") << flush;
 			inputLine = input.readLine();
 			if (inputLine.isEmpty() || inputLine[0] == '\n')
 			{
@@ -329,26 +196,27 @@ bool ibcpTest(QTextStream &cout, Translator &translator, QStringList &args)
 			{
 				continue;  // skip blank and comment lines
 			}
+			// no 'tr()' for this string - must match expected results file
 			cout << endl << "Input: " << inputLine << endl;
 		}
 
-		switch (testMode)
+		if (m_option & OptParser)
 		{
-		case testParser:
 			parseInput(cout, inputLine);
-			break;
-		case testExpression:
+		}
+		else if (m_option & OptExpression)
+		{
 			translateInput(cout, translator, inputLine, true);
-			break;
-		case testTranslator:
+		}
+		else if (m_option & OptTranslator)
+		{
 			translateInput(cout, translator, inputLine, false);
-			break;
 		}
 	}
 	if (!inputMode)
 	{
 		file.close();
-		if (testMode != testParser)
+		if ((m_option & OptParser) == 0)
 		{
 			cout << endl;  // not for parser testing
 		}
@@ -358,14 +226,13 @@ bool ibcpTest(QTextStream &cout, Translator &translator, QStringList &args)
 
 
 // function to parse an input line and print the resulting tokens
-void parseInput(QTextStream &cout, const QString &testInput)
+void Tester::parseInput(QTextStream &cout, const QString &testInput)
 {
 	Parser parser(Table::instance());
 	Token *token;
 	bool more;
 
 	parser.setInput(QString(testInput));
-	// 2010-03-18: fix loop since get_token() no longer returns null
 	do {
 		token = parser.token();
 		more = printToken(cout, token, true);
@@ -382,7 +249,7 @@ void parseInput(QTextStream &cout, const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-void translateInput(QTextStream &cout, Translator &translator,
+void Tester::translateInput(QTextStream &cout, Translator &translator,
 	const QString &testInput, bool exprMode)
 {
 	if (translator.setInput(testInput, exprMode))
@@ -408,7 +275,7 @@ void translateInput(QTextStream &cout, Translator &translator,
 
 
 // function to print the contents of a token
-bool printToken(QTextStream &cout, Token *token, bool tab)
+bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
@@ -488,7 +355,7 @@ bool printToken(QTextStream &cout, Token *token, bool tab)
 
 
 // function to print entire output rpn list
-void printOutput(QTextStream &cout, const QString &header,
+void Tester::printOutput(QTextStream &cout, const QString &header,
 	QList<RpnItem *> &rpnList)
 {
 	cout << header << ": ";
@@ -513,7 +380,7 @@ void printOutput(QTextStream &cout, const QString &header,
 
 
 // function to print the abbreviated contents of a token
-bool printSmallToken(QTextStream &cout, Token *token)
+bool Tester::printSmallToken(QTextStream &cout, Token *token)
 {
 	Table &table = Table::instance();
 
@@ -612,7 +479,7 @@ bool printSmallToken(QTextStream &cout, Token *token)
 
 
 // function to print a token with an error
-void printError(QTextStream &cout, Token *token, const QString &error)
+void Tester::printError(QTextStream &cout, Token *token, const QString &error)
 {
 	int col = token->column();
 	int len = token->length();
@@ -624,3 +491,6 @@ void printError(QTextStream &cout, Token *token, const QString &error)
 	cout << QString(" ").repeated(7 + col) << QString("^").repeated(len)
 		<< "-- " << error << endl;
 }
+
+
+// end: test_ibcp.cpp

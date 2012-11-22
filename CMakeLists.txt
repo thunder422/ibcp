@@ -135,6 +135,7 @@ set(ibcp_HEADERS
 	ibcp.h
 	parser.h
 	table.h
+	test_ibcp.h
 	token.h
 	translator.h
 )

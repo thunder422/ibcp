@@ -23,17 +23,12 @@
 //	2010-03-13	initial version
 
 #include <QtGui/QApplication>
-#include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
 #include <QTimer>
 
-#include "ibcp.h"
 #include "ibcp_config.h"  // for cmake
-#include "token.h"
-#include "table.h"
-#include "parser.h"
-#include "translator.h"
+#include "test_ibcp.h"
 
 
 void printGplHeader(QTextStream &cout, const QString &name)
@@ -45,9 +40,6 @@ void printGplHeader(QTextStream &cout, const QString &name)
 		<< "redistribute it under certain conditions." << endl << endl;
 }
 
-// Program Name and Length less extension
-// TODO this needs to be put into a class somewhere)
-QString programName;
 
 // function to print version number
 bool ibcpVersion(QTextStream &cout, const QString &name, QStringList &args)
@@ -62,9 +54,6 @@ bool ibcpVersion(QTextStream &cout, const QString &name, QStringList &args)
 }
 
 
-// prototype for test function
-bool ibcpTest(QTextStream &cout, Translator &translator, QStringList &args);
-
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -72,7 +61,7 @@ int main(int argc, char *argv[])
 	QStringList args = app.arguments();
 
 	// get base file name of program from first argument
-	programName = QFileInfo(args.at(0)).baseName();
+	QString programName = QFileInfo(args.at(0)).baseName();
 
 	// setup standard output stream
 	QFile output;
@@ -81,32 +70,24 @@ int main(int argc, char *argv[])
 
 	if (!ibcpVersion(cout, programName, args))
 	{
-		printGplHeader(cout, programName);
-
-		Token::initialize();
-
-		QStringList errors = Table::create();
-		if (!errors.isEmpty())
+		Tester tester(args);
+		if (tester.hasError())
 		{
-			int n = 0;
-			foreach (QString error, errors)
-			{
-				qWarning("%s", qPrintable(QObject::tr("Error #%1: %2").arg(++n)
-					.arg(error)));
-			}
-			qFatal("%s", qPrintable(QObject::tr("Program aborting!")));
+			qWarning("%s", qPrintable(tester.errorMessage()));
 		}
-		cout << "Table initialization successful." << endl;
-
-		Translator translator(Table::instance());
-
-		if (!ibcpTest(cout, translator, args))
+		else if (!tester.hasOption())
 		{
 			qWarning("%s: %s -v -t <%s>|-tp|-te|-tt",
 				qPrintable(QObject::tr("usage")), qPrintable(programName),
 				qPrintable(QObject::tr("test_file")));
 		}
+		else if (!tester.run(cout))
+		{
+			qWarning("%s", qPrintable(tester.errorMessage()));
+		}
 	}
+
+	// force quit once event processing loop is started
 	QTimer::singleShot(0, &app, SLOT(quit()));
 	return app.exec();
 }
