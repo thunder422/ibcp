@@ -41,7 +41,7 @@ extern void printGplHeader(QTextStream &cout, const QString &name);
 // or accept input lines from the user
 Tester::Tester(QStringList &args)
 {
-	QMap<enum Option, QString> name;
+	QVector<QString> name(OptSizeOf);
 	name[OptParser] = "parser";
 	name[OptExpression] = "expression";
 	name[OptTranslator] = "translator";
@@ -51,86 +51,75 @@ Tester::Tester(QStringList &args)
 
 	// scan arguments for test options (ignore others)
 	m_option = OptNone;
-	for (int i = 1; i < args.count(); i++)
+	switch (args.count())
 	{
-		if (!isOption(args.at(i), "-tp", OptParser, name[OptParser])
-			&& !isOption(args.at(i), "-te", OptExpression, name[OptExpression])
-			&& !isOption(args.at(i), "-tt", OptTranslator, name[OptTranslator])
-			&& args.at(i).compare("-t") == 0)
+	case 2:
+		if (isOption(args.at(1), "-tp", OptParser, name[OptParser])
+			|| isOption(args.at(1), "-te", OptExpression, name[OptExpression])
+			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator]))
 		{
-			if (m_option & OptAny)
+			break;
+		}
+		// fall through
+	case 3:
+		if (args.at(1).compare("-t") == 0)
+		{
+			if (args.count() == 2)
 			{
-				m_option |= OptError;
-				m_errorMessage = tr("%1: multiple test options not allowed")
+				m_option = OptError;
+				m_errorMessage = tr("%1: missing test file name")
 					.arg(m_programName);
 			}
 			else
 			{
-				i++;  // advance to next argument
-				if (i >= args.count())
-				{
-					m_option |= OptError;
-					m_errorMessage = tr("%1: missing test file name")
-						.arg(m_programName);
-				}
-				else
-				{
-					// find start of file name less path
-					m_testFileName = args.at(i);
-					QString baseName = QFileInfo(m_testFileName).baseName();
+				// find start of file name less path
+				m_testFileName = args.at(2);
+				QString baseName = QFileInfo(m_testFileName).baseName();
 
-					QMapIterator<enum Option, QString> it(name);
-					while (it.hasNext())
+				for (int i = OptFirst; i < OptSizeOf; i++)
+				{
+					// check beginning of file name
+					if (baseName.startsWith(name.at(i), Qt::CaseInsensitive))
 					{
-						it.next();
-						// check beginning of file name
-						if (baseName.startsWith(it.value(),
-							Qt::CaseInsensitive))
-						{
-							m_option |= it.key();
-							m_testName = name[it.key()];
-							break;
-						}
+						m_option = i;
+						m_testName = name.at(i);
+						break;
 					}
-					if ((m_option & OptAny) == 0)  // no matching names?
-					{
-						m_option |= OptError;
-						m_errorMessage = QString("%1: %2 -t (%3|%4|%5)[xx]")
-							.arg(tr("usage")).arg(m_programName)
-							.arg(name[OptParser]).arg(name[OptExpression])
-							.arg(name[OptTranslator]);
-					}
-					else
-					{
-						m_option |= OptFile;
-					}
+				}
+				if (m_option == OptNone)  // no matching names?
+				{
+					m_option = OptError;
+					m_errorMessage = QString("%1: %2 -t (%3|%4|%5)[xx]")
+						.arg(tr("usage")).arg(m_programName)
+						.arg(name[OptParser]).arg(name[OptExpression])
+						.arg(name[OptTranslator]);
 				}
 			}
 		}
-		// ignore non-test options
 	}
+	// ignore non-test or invalid test options
 }
 
 
+// function to see if argument is expected option
 bool Tester::isOption(const QString &arg, const QString &exp,
 	enum Option option, QString name)
 {
 	if (arg.compare(exp) == 0)
 	{
-		if (m_option & OptAny)
-		{
-			m_option |= OptError;
-			m_errorMessage = tr("%1: multiple test options not allowed")
-				.arg(m_programName);
-		}
-		else
-		{
-			m_option |= option;
-			m_testName = name;
-		}
+		m_option = option;
+		m_testName = name;
 		return true;
 	}
 	return false;
+}
+
+
+// function to return list of valid options
+QStringList Tester::options(void) const
+{
+	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
+		<< "-te" << "-tt";
 }
 
 
@@ -140,7 +129,7 @@ bool Tester::run(QTextStream &cout)
 	QTextStream input(&file);
 	QString inputLine;
 
-	bool inputMode = (m_option & OptFile) == 0;
+	bool inputMode = m_testFileName.isEmpty();
 	if (inputMode)
 	{
 		cout << endl << tr("Testing %1...").arg(m_testName);
@@ -200,23 +189,23 @@ bool Tester::run(QTextStream &cout)
 			cout << endl << "Input: " << inputLine << endl;
 		}
 
-		if (m_option & OptParser)
+		switch (m_option)
 		{
+		case OptParser:
 			parseInput(cout, inputLine);
-		}
-		else if (m_option & OptExpression)
-		{
+			break;
+		case OptExpression:
 			translateInput(cout, translator, inputLine, true);
-		}
-		else if (m_option & OptTranslator)
-		{
+			break;
+		case OptTranslator:
 			translateInput(cout, translator, inputLine, false);
+			break;
 		}
 	}
 	if (!inputMode)
 	{
 		file.close();
-		if ((m_option & OptParser) == 0)
+		if (m_option != OptParser)
 		{
 			cout << endl;  // not for parser testing
 		}

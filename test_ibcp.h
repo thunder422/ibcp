@@ -37,13 +37,13 @@ class Tester
 	Q_DECLARE_TR_FUNCTIONS(Test)
 
 	enum Option {  // contains bit masks
-		OptNone			= 1 << 0,
-		OptParser		= 1 << 1,
-		OptExpression	= 1 << 2,
-		OptTranslator	= 1 << 3,
-		OptFile			= 1 << 4,  // will be set along with one of the above
-		OptError		= 1 << 15,
-		OptAny			= OptParser | OptExpression | OptTranslator | OptFile
+		OptNone = -1,
+		OptFirst,
+		OptParser = OptFirst,
+		OptExpression,
+		OptTranslator,
+		OptSizeOf,
+		OptError = OptSizeOf
 	};
 
 	bool isOption(const QString &arg, const QString &exp,
@@ -66,16 +66,17 @@ public:
 	Tester(QStringList &args);
 	~Tester(void) {}
 
+	QStringList options(void) const;
 	bool run(QTextStream &cout);
-	bool hasOption(void)  // has a test option been specified?
+	bool hasOption(void) const  // has a test option been specified?
 	{
-		return (m_option & OptAny) != 0;
+		return m_option != OptNone;
 	}
-	bool hasError(void)  // does test arguments contain an error
+	bool hasError(void) const  // does test arguments contain an error?
 	{
-		return (m_option & OptError) != 0;
+		return m_option == OptError;
 	}
-	QString errorMessage(void)  // message of error
+	QString errorMessage(void) const  // message of error
 	{
 		return m_errorMessage;
 	}

@@ -46,7 +46,7 @@ bool ibcpVersion(QTextStream &cout, const QString &name, QStringList &args)
 {
 	if (args.count() != 2 || args.at(1).compare("-v") != 0)
 	{
-		return false;  // not our options
+		return false;  // not our option or extra/invalid options
 	}
 	cout << name << QObject::tr(" version %1").arg(ibcp_RELEASE_STRING + 7)
 		<< endl;
@@ -77,9 +77,10 @@ int main(int argc, char *argv[])
 		}
 		else if (!tester.hasOption())
 		{
-			qWarning("%s: %s -v -t <%s>|-tp|-te|-tt",
-				qPrintable(QObject::tr("usage")), qPrintable(programName),
-				qPrintable(QObject::tr("test_file")));
+			QStringList options = tester.options();
+			options.prepend("-v");
+			qWarning("%s: %s %s", qPrintable(QObject::tr("usage")),
+				qPrintable(programName), qPrintable(options.join("|")));
 		}
 		else if (!tester.run(cout))
 		{
