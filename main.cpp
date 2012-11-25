@@ -44,7 +44,7 @@ void printGplHeader(QTextStream &cout, const QString &name)
 // function to print version number
 bool ibcpVersion(QTextStream &cout, const QString &name, QStringList &args)
 {
-	if (args.count() != 2 || args.at(1).compare("-v") != 0)
+	if (args.count() != 2 || args.at(1) != "-v")
 	{
 		return false;  // not our option or extra/invalid options
 	}

@@ -62,7 +62,7 @@ Tester::Tester(QStringList &args)
 		}
 		// fall through
 	case 3:
-		if (args.at(1).compare("-t") == 0)
+		if (args.at(1) == "-t")
 		{
 			if (args.count() == 2)
 			{
@@ -105,7 +105,7 @@ Tester::Tester(QStringList &args)
 bool Tester::isOption(const QString &arg, const QString &exp,
 	enum Option option, QString name)
 {
-	if (arg.compare(exp) == 0)
+	if (arg == exp)
 	{
 		m_option = option;
 		m_testName = name;

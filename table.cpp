@@ -1477,7 +1477,7 @@ QStringList Table::initialize(void)
 			if (m_entry[i].flags & Multiple_Flag != 0)
 			{
 				ExprInfo *exprInfo2 = m_entry[i + 1].exprInfo;
-				if (m_entry[i].name.compare(m_entry[i + 1].name) != 0)
+				if (m_entry[i].name != m_entry[i + 1].name)
 				{
 					errorList.append(QString("Multiple entry '%1' name "
 						"mis-match '%2'").arg(m_entry[i].name)
@@ -1796,7 +1796,7 @@ Code Table::search(Code index, int nArguments) const
 {
 	for (Code i = index + 1; m_entry[i].name != NULL; i++)
 	{
-		if (m_entry[index].name.compare(m_entry[i].name) == 0
+		if (m_entry[index].name == m_entry[i].name
 			&& nArguments == nOperands(i))
 		{
 			return i;
