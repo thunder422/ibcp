@@ -41,7 +41,7 @@ extern void printGplHeader(QTextStream &cout, const QString &name);
 // or accept input lines from the user
 Tester::Tester(QStringList &args)
 {
-	QVector<QString> name(OptSizeOf);
+	QString name[OptSizeOf];
 	name[OptParser] = "parser";
 	name[OptExpression] = "expression";
 	name[OptTranslator] = "translator";
@@ -79,10 +79,10 @@ Tester::Tester(QStringList &args)
 				for (int i = OptFirst; i < OptSizeOf; i++)
 				{
 					// check beginning of file name
-					if (baseName.startsWith(name.at(i), Qt::CaseInsensitive))
+					if (baseName.startsWith(name[i], Qt::CaseInsensitive))
 					{
 						m_option = i;
-						m_testName = name.at(i);
+						m_testName = name[i];
 						break;
 					}
 				}
