@@ -63,11 +63,11 @@ class Tester
 	QString m_testFileName;		// name of test file (OptFile only)
 	QString m_errorMessage;		// message if error occurred
 public:
-	Tester(QStringList &args);
+	Tester(const QStringList &args);
 	~Tester(void) {}
 
 	QStringList options(void) const;
-	bool run(QTextStream &cout);
+	bool run(QTextStream &cout, const QStringList &gplStatement);
 	bool hasOption(void) const  // has a test option been specified?
 	{
 		return m_option != OptNone;

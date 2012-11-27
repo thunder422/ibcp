@@ -34,12 +34,9 @@
 #include "translator.h"
 
 
-extern void printGplHeader(QTextStream &cout, const QString &name);
-
-
 // function to process a test input file specified on the command line
 // or accept input lines from the user
-Tester::Tester(QStringList &args)
+Tester::Tester(const QStringList &args)
 {
 	QString name[OptSizeOf];
 	name[OptParser] = "parser";
@@ -123,7 +120,7 @@ QStringList Tester::options(void) const
 }
 
 
-bool Tester::run(QTextStream &cout)
+bool Tester::run(QTextStream &cout, const QStringList &gplStatement)
 {
 	QFile file;
 	QTextStream input(&file);
@@ -158,8 +155,14 @@ bool Tester::run(QTextStream &cout)
 		}
 		qFatal("%s", qPrintable(tr("Program aborting!")));
 	}
-	printGplHeader(cout, m_programName);
-	cout << "Table initialization successful." << endl;
+
+	cout << endl;
+	foreach (QString line, gplStatement)
+	{
+		cout << line << endl;
+	}
+
+	cout << endl << "Table initialization successful." << endl;
 
 	Translator translator(Table::instance());
 

@@ -132,6 +132,7 @@ add_custom_command(OUTPUT test_names.h
 
 # list the include files
 set(ibcp_HEADERS
+	commandline.h
 	ibcp.h
 	parser.h
 	table.h
@@ -143,6 +144,7 @@ set(ibcp_HEADERS
 # list the main program sources
 set(ibcp_SOURCES
 	commandhandlers.cpp
+	commandline.cpp
 	main.cpp
 	parser.cpp
 	table.cpp

@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: main.cpp - main function
-//	Copyright (C) 2010-2012  Thunder422
+//	File: commandline.h - command line header file
+//	Copyright (C) 2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,32 +20,35 @@
 //
 //	Change History:
 //
-//	2010-03-13	initial version
+//	2012-11-25	initial version
 
-#include <QtGui/QApplication>
+#ifndef COMMANDLINE_H
+#define COMMANDLINE_H
+
+#include <QCoreApplication>
+#include <QStringList>
 #include <QTextStream>
-#include <QTimer>
 
-#include "ibcp_config.h"  // for cmake
-#include "commandline.h"
-
-
-int main(int argc, char *argv[])
+class CommandLine
 {
-	QApplication app(argc, argv);
+	Q_DECLARE_TR_FUNCTIONS(CommandLine)
 
-	CommandLine commandLine(app.arguments());
-	if (commandLine.processed())
+	bool version(const QStringList &args);
+	QTextStream &cout(void);
+
+	QString m_programName;
+	QStringList m_gplStatement;
+	bool m_processed;
+	QTextStream m_cout;
+public:
+    CommandLine(const QStringList &args);
+	~CommandLine();
+
+	bool processed(void) const  // if processed then exit program
 	{
-		// force quit once event processing loop is started
-		QTimer::singleShot(0, &app, SLOT(quit()));
+		return m_processed;
 	}
-	else
-	{
-		// start GUI here
-	}
-	return app.exec();
-}
+};
 
 
-// end: main.cpp
+#endif // COMMANDLINE_H
