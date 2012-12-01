@@ -57,7 +57,7 @@ CommandLine::CommandLine(const QStringList &args)
 	Tester tester(args);
 	if (tester.hasError())
 	{
-		qWarning("%s", qPrintable(tester.errorMessage()));
+		cout(stderr) << tester.errorMessage() << endl;
 		m_returnCode = 1;
 		return;
 	}
@@ -69,7 +69,8 @@ CommandLine::CommandLine(const QStringList &args)
 		}
 		else
 		{
-			qWarning("%s", qPrintable(tester.errorMessage()));
+			coutClose();  // close stdout
+			cout(stderr) << tester.errorMessage() << endl;
 			m_returnCode = 1;
 		}
 		return;
@@ -77,15 +78,35 @@ CommandLine::CommandLine(const QStringList &args)
 
 	// unsupported option (NOTE: other options get checked before this)
 	QStringList options = tester.options();
-	options.prepend("-v");
 	// append any other options here
-	qWarning("%s: %s %s", qPrintable(tr("usage")), qPrintable(m_programName),
-		qPrintable(options.join("|")));
-	m_returnCode = 1;
+	options.prepend("-h|-?|-v");
+	m_returnCode = isHelpOption(args) ? 0 : 1;  // error if not help option
+	cout(m_returnCode == 0 ? stdout : stderr) << tr("usage: ") << m_programName
+		<< options.join("|") << endl;
 }
 
 
 CommandLine::~CommandLine()
+{
+	coutClose();
+}
+
+
+QTextStream &CommandLine::cout(FILE *stream)
+{
+	if (!m_cout.device())
+	{
+		// setup standard output stream first time
+		QFile *output = new QFile;
+		output->open(stream, QIODevice::WriteOnly | QIODevice::Unbuffered);
+		m_cout.setDevice(output);
+	}
+	return m_cout;
+}
+
+
+
+void CommandLine::coutClose(void)
 {
 	if (m_cout.device())
 	{
@@ -93,19 +114,6 @@ CommandLine::~CommandLine()
 		m_cout.setDevice(0);
 		delete output;
 	}
-}
-
-
-QTextStream &CommandLine::cout(void)
-{
-	if (!m_cout.device())
-	{
-		// setup standard output stream first time
-		QFile *output = new QFile;
-		output->open(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
-		m_cout.setDevice(output);
-	}
-	return m_cout;
 }
 
 
@@ -119,6 +127,13 @@ bool CommandLine::version(const QStringList &args)
 	cout() << tr("%1 version %2").arg(m_programName)
 		.arg(ibcp_RELEASE_STRING + 7) << endl;
 	return true;
+}
+
+
+// function to check for help options
+bool CommandLine::isHelpOption(const QStringList &args) const
+{
+	return args.count() == 2 && (args.at(1) == "-?" || args.at(1) == "-h");
 }
 
 

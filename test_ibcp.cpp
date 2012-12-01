@@ -151,7 +151,8 @@ bool Tester::run(QTextStream &cout, const QStringList &gplStatement)
 		int n = 0;
 		foreach (QString error, errors)
 		{
-			qWarning("%s", qPrintable(tr("Error #%1: %2").arg(++n).arg(error)));
+			qCritical("%s", qPrintable(tr("Error #%1: %2").arg(++n)
+				.arg(error)));
 		}
 		qFatal("%s", qPrintable(tr("Program aborting!")));
 	}

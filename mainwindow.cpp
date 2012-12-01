@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	CommandLine commandLine(qApp->arguments());
 	if (commandLine.processed())
 	{
-		// force quit once event processing loop is started
+		// don't start GUI and retrieve the return code
 		m_guiActive = false;
 		m_returnCode = commandLine.returnCode();
 		return;

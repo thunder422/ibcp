@@ -34,7 +34,9 @@ class CommandLine
 	Q_DECLARE_TR_FUNCTIONS(CommandLine)
 
 	bool version(const QStringList &args);
-	QTextStream &cout(void);
+	QTextStream &cout(FILE *stream = stdout);
+	void cclose(void);
+	bool isHelpOption(const QStringList &args) const;
 
 	QString m_programName;
 	QStringList m_gplStatement;
