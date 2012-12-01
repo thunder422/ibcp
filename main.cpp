@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	MainWindow mainWindow;
 	if (!mainWindow.isGuiActive())
 	{
-		return 0;
+		return mainWindow.returnCode();
 	}
 	mainWindow.show();
 	return app.exec();

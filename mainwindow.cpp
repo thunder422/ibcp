@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	{
 		// force quit once event processing loop is started
 		m_guiActive = false;
+		m_returnCode = commandLine.returnCode();
 		return;
 	}
 

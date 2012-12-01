@@ -42,10 +42,15 @@ public:
 	{
 		return m_guiActive;
 	}
+	int returnCode(void) const	// valid only if GUI not active
+	{
+		return m_returnCode;
+	}
 
 private:
 	Ui::MainWindow *ui;
 	bool m_guiActive;
+	int m_returnCode;
 };
 
 #endif // MAINWINDOW_H

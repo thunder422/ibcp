@@ -33,12 +33,13 @@ CommandLine::CommandLine(const QStringList &args)
 {
 	// get base file name of program from first argument
 	m_programName = QFileInfo(args.at(0)).baseName();
-	m_processed = false;
+	m_returnCode = -1;
+	// NOTE: leave m_returnCode set to -1 to start GUI,
 
 	// parse command line arguments
 	if (version(args))
 	{
-		m_processed = true;
+		m_returnCode = 0;
 		return;
 	}
 
@@ -57,20 +58,22 @@ CommandLine::CommandLine(const QStringList &args)
 	if (tester.hasError())
 	{
 		qWarning("%s", qPrintable(tester.errorMessage()));
-		m_processed = true;
+		m_returnCode = 1;
 		return;
 	}
 	else if (tester.hasOption())
 	{
-		if (!tester.run(cout(), m_gplStatement))
+		if (tester.run(cout(), m_gplStatement))
+		{
+			m_returnCode = 0;
+		}
+		else
 		{
 			qWarning("%s", qPrintable(tester.errorMessage()));
+			m_returnCode = 1;
 		}
-		m_processed = true;
 		return;
 	}
-	// NOTE: leave m_processed set to false to start GUI,
-	//       for now there is no GUI so always processed
 
 	// unsupported option (NOTE: other options get checked before this)
 	QStringList options = tester.options();
@@ -78,7 +81,7 @@ CommandLine::CommandLine(const QStringList &args)
 	// append any other options here
 	qWarning("%s: %s %s", qPrintable(tr("usage")), qPrintable(m_programName),
 		qPrintable(options.join("|")));
-	m_processed = true;
+	m_returnCode = 1;
 }
 
 

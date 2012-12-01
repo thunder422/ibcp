@@ -38,7 +38,7 @@ class CommandLine
 
 	QString m_programName;
 	QStringList m_gplStatement;
-	bool m_processed;
+	int m_returnCode;
 	QTextStream m_cout;
 public:
     CommandLine(const QStringList &args);
@@ -46,7 +46,11 @@ public:
 
 	bool processed(void) const  // if processed then exit program
 	{
-		return m_processed;
+		return m_returnCode >= 0;
+	}
+	int returnCode(void) const  // valid only if processed
+	{
+		return m_returnCode;
 	}
 };
 
