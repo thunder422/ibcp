@@ -107,11 +107,7 @@ endif (NOT WIN32)
 
 # add the binary tree to the search path for include files
 # so that ibcp_config.h, autoenums.h, test_names.h can be found
-# which is not necessary for in source build
-string(COMPARE NOTEQUAL ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR} OUT_SOURCE)
-if (OUT_SOURCE)
-	include_directories("${PROJECT_BINARY_DIR}")
-endif (OUT_SOURCE)
+include_directories("${PROJECT_BINARY_DIR}")
 
 
 # custom target
