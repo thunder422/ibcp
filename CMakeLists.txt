@@ -130,7 +130,7 @@ add_custom_command(OUTPUT test_names.h
 	DEPENDS table.cpp token.h ibcp.h
 )
 
-# list the include files
+# list the header files
 set(ibcp_HEADERS
 	commandline.h
 	ibcp.h
@@ -146,6 +146,7 @@ set(ibcp_SOURCES
 	commandhandlers.cpp
 	commandline.cpp
 	main.cpp
+	mainwindow.cpp
 	parser.cpp
 	table.cpp
 	token.cpp
@@ -154,11 +155,25 @@ set(ibcp_SOURCES
 	test_ibcp.cpp
 )
 
+# list the header files containing QOBJECT
+set(ibcp_MOC_SOURCES
+	mainwindow.h
+)
+qt4_wrap_cpp(ibcp_MOCS ${ibcp_MOC_SOURCES})
+
+# list the program forms
+set(ibcp_UIS
+	mainwindow.ui
+)
+qt4_wrap_ui(ibcp_UI_HEADERS ${ibcp_UIS})
+
 # add the executable
 add_executable(ibcp
 	autoenums.h
 	test_names.h
 	${ibcp_HEADERS}
 	${ibcp_SOURCES}
+	${ibcp_MOCS}
+	${ibcp_UI_HEADERS}
 )
 target_link_libraries(ibcp ${QT_LIBRARIES})

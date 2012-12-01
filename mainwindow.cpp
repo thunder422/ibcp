@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: main.cpp - main function
-//	Copyright (C) 2010-2012  Thunder422
+//	File: mainwinow.cpp - main window functions
+//	Copyright (C) 2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,27 +20,36 @@
 //
 //	Change History:
 //
-//	2010-03-13	initial version
+//	2012-11-28	initial version
 
-#include <QtGui/QApplication>
-#include <QTextStream>
+#include <QApplication>
 
-#include "ibcp_config.h"  // for cmake
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "commandline.h"
 
-
-int main(int argc, char *argv[])
+MainWindow::MainWindow(QWidget *parent) :
+	QMainWindow(parent),
+	ui(new Ui::MainWindow)
 {
-	QApplication app(argc, argv);
-
-	MainWindow mainWindow;
-	if (!mainWindow.isGuiActive())
+	CommandLine commandLine(qApp->arguments());
+	if (commandLine.processed())
 	{
-		return 0;
+		// force quit once event processing loop is started
+		m_guiActive = false;
+		return;
 	}
-	mainWindow.show();
-	return app.exec();
+
+	// start GUI here
+	ui->setupUi(this);
+	m_guiActive = true;
 }
 
 
-// end: main.cpp
+MainWindow::~MainWindow()
+{
+	delete ui;
+}
+
+
+// end: mainwindow.cpp
