@@ -39,16 +39,16 @@
 // bit definitions for flags field
 enum TableFlag
 {
-	Null_Flag           = 0x00000000,  // entry has no flags
+	Null_Flag			= 0x00000000,  // entry has no flags
 	// table entry flags (each must have unique bit set)
-	Multiple_Flag       = 0x00000001,  // function has multiple forms
-	Reference_Flag      = 0x00000002,  // code requires a reference
+	Multiple_Flag		= 0x00000001,  // function has multiple forms
+	Reference_Flag		= 0x00000002,  // code requires a reference
 	// note: value 0x00000004 is available
-	Hidden_Flag         = 0x00000008,  // code is hidden operator/function
-	Print_Flag          = 0x00000010,  // print-only function
-	String_Flag         = 0x00000020,  // code has string operands
-	EndExpr_Flag        = 0x00000040,  // end expression
-	EndStmt_Flag        = 0x00000080   // end statement
+	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
+	Print_Flag			= 0x00000010,  // print-only function
+	String_Flag			= 0x00000020,  // code has string operands
+	EndExpr_Flag		= 0x00000040,  // end expression
+	EndStmt_Flag		= 0x00000080   // end statement
 };
 
 
@@ -89,7 +89,8 @@ typedef TokenStatus (*CommandHandler)(Translator &t, CmdItem *cmdItem,
 // 2011-02-26: removed index_code[], index(), and code(); changed index to code
 class Table
 {
-	static Table *m_instance;		// single instance of table
+	static Table *s_instance;		// single instance of table
+	static QStringList s_errorList;	// list of errors found during initialize
 
 	TableEntry *m_entry;			// pointer to table entries
 	struct Range
@@ -103,13 +104,18 @@ class Table
 	Table(TableEntry *entry) : m_entry(entry) {}
 	Table(Table const &) {}
 	Table &operator=(Table const &) {return *this;}
-	// function to initialize and check the table entries
-	QStringList initialize(void);
+
+	// function to setup and check the table entries
+	QStringList setupAndCheck(void);
 public:
-	// function to create the single table instance
-	static QStringList create(void);
+	// function to create the single instance, initialize and check the table
+	static void initialize(void);
 	// function to return a reference to the single table instance
 	static Table &instance(void);
+	// function to report if there were any table errors
+	static bool hasErrors(void);
+	// function to returns list of table errors
+	static QStringList errorList(void);
 
 	// CODE RELATED TABLE FUNCTIONS
 	TokenType type(Code code) const;

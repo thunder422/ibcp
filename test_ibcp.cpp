@@ -144,12 +144,10 @@ bool Tester::run(QTextStream &cout, const QStringList &gplStatement)
 	}
 
 	// initialize the worker classes
-	Token::initialize();
-	QStringList errors = Table::create();
-	if (!errors.isEmpty())
+	if (Table::hasErrors())
 	{
 		int n = 0;
-		foreach (QString error, errors)
+		foreach (QString error, Table::errorList())
 		{
 			qCritical("%s", qPrintable(tr("Error #%1: %2").arg(++n)
 				.arg(error)));

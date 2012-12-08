@@ -26,6 +26,7 @@
 #include <QTextStream>
 
 #include "ibcp_config.h"  // for cmake
+#include "table.h"
 #include "mainwindow.h"
 
 
@@ -33,6 +34,8 @@ int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 
+	Token::initialize();
+	Table::initialize();
 	MainWindow mainWindow;
 	if (!mainWindow.isGuiActive())
 	{

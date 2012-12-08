@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: table.cpp - contains operator/command/function table
-//	Copyright (C) 2010-2011  Thunder422
+//	Copyright (C) 2010-2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,161 +20,7 @@
 //
 //	Change History:
 //
-//	2010-02-18	initial release
-//
-//	2010-03-01	renamed ImCommand_TokenType to ImmCmd_TokenType
-//
-//	2010-03-06	changed None_DataType to String_DataType for the internal string
-//				functions
-//
-//	2010-03-10	corrected multiple entry for operators <, <=, and <>
-//				(was OneChar, changed to TwoChar)
-//
-//	2010-03-11	split IntFunc_TokenType into IntFuncN_TokenType and
-//				IntFuncP_TokenType; changed tables entries accordingly
-//
-//	2010-03-17	added data for new unary_code field with all set to Null_Code
-//				  except for Sub_Code and Not_Code
-//				added new table entries for Null_Code, Neg_Code and EOL_Code
-//
-//	2010-03-20	added precedence values to the table entries
-//
-//	2010-03-21	for Neg_Code temporarily replaced "-" with "Neq" for testing
-//				and changed unary_code from Null_Code to Neq_Code
-//
-//	2010-03-25	added unary code for (, changed precedence values for ( & )
-//
-//	2010-04-02	changed precedence value in comma entry
-//				corrected name for VAL( from "Val(" to "VAL("
-//				for operators, name is actual (recreator) output string,
-//				  name2 is debug output string (only affects Neg for now)
-//
-//	2010-04-04	added values for number of arguments variable
-//				added entry for Asc2_Code
-//				replaced Mid_Code entry Mid2_Code and Mid3_Code entries
-//				replaced Instr_Code entry Instr2_Code and Instr3_Code entries
-//				added Multiple_Flag for Asc_Code, Mid2_Code and Instr2_Code
-//				implemented new number of arguments search function
-//
-//	2010-04-11	added table entries for assignment operators
-//				set correct precedence for internal functions
-//				removed unnecessary 0 initializers from entries
-//
-//	2010-04-24	added values for the number of operands to the operator entries
-//				added values for new operand_datatype[] and assoc_code[] arrays
-//				corrected data type for many operators and internal functions
-//				added entries for the associated codes
-//				moved the Null_Code to the end of the table
-//				added entries for FRAC, CDBL, CvtDbl and CvtDbl
-//
-//	2010-05-03	began to add support for initialization of expression
-//				  information structures for the table entries
-//	2010-05-04	updated table entries for the expression information structures
-//	2010-05-05	modified the assignment operator entries for data type handling
-//				added entries for associated assignment operators
-//				added Operands and AssocCode macros
-//	2010-05-08	added expression information structures for unary operators
-//
-//	2010-05-15	modified codes that return string to return TmpStr (Chr, Repeat,
-//				  Space, Str, CatStr, and StrInt) - new ExprInfos were added
-//				added String_Flag to all codes that have string operands
-//
-//	2010-05-19	changed data type of LEFT, MID2, MID3 and RIGHT to SubStr
-//				added new associated code AssignSubStr_Code to Assign_Code along
-//				  with their new table entries
-//	2010-05-20	added code to check if the Max_Operands and Max_Assoc_Codes
-//				agree with the tables entries, reporting errors if not
-//
-//	2010-05-22	removed String_Flag from codes with string operands and replaced
-//				  this with the automatic setting the flag by looking at the
-//				  entries during table initialization
-//				added new associated code AssignListMixStr along with its new
-//				  table entry
-//
-//	2010-05-27	changed precedence values for CloseParen_Code and Comma_Code
-//				  from 4 to 6 so commands are not emptied from the hold stack
-//				added precedence value of 4 (and NUll_Flag) to all commands
-//	2010-05-28	added value for new token_mode to Let_Code
-//				added values for new token_handler to Eq_Code, CloseParen_Code,
-//				  Comma_Code, and EOL_Code
-//	2010-05-29	added Hidden_Flag to CvtInt_Code and CvtDbl_Code
-//
-//	2010-06-01	added print-only function support (Spc_Code and Tab_Code)
-//				initiated PRINT command development
-//	2010-06-02	added data type specific print hidden code entries
-//				changed precedence and added token handler value to SemiColon
-//	2010-06-05	added command handler function pointers for PRINT and assign
-//				table entries
-//	2010-06-06	added end expression flag to Comma, SemiColon and EOL
-//	2010-06-09	swapped table entries of MID$, INSTR, and ASC so that the larger
-//				number of arguments entry is first, which is necessary for the
-//				new number of arguments checking at comma
-//	2010-06-13	added command handler to Let entry
-//	2010-06-14	removed AssignList_Flag from AssignList table entries
-//
-//	2010-06-25	Replaced TableError with generic Error template
-//				renamed TableSearch enum to SearchType
-//	2010-06-26	added end statment flag to EOL
-//	2010-06-29	added expr_type value to PRINT code
-//	2010-07-02	changed assign and assign list operators expression information
-//				  from two operands to one - the assign operators are no longer
-//				  handled by the standard operator routines
-//
-//	2010-07-18	added second associate code index to support checking each
-//				  operand when first processed
-//	2010-08-10	swapped function with multiple arguments (ASC, INSTR, MID) back
-//				  where least number of argument form is first
-//				validate multiple argument codes (ASC, INSTR, MID)
-//	2010-12-23	automatically generate new table entry number of string
-//				  arguments
-//
-//	2010-12-29	added Print_Flag to the print type codes
-//	2011-01-05	removed expr_type from table entries, added datatype values
-//	2011-01-07	moved all datatype values from exprinfo to main entry
-//				updated all ExprInfo constants (and removed duplicates)
-//	2011-02-03	started implementing associated entries for TmpStr type
-//	2011-02-04	continue implementing TmpStr associated entries
-//	2011-02-05	changed all AssocCode2 macro calls with 0 for index with the
-//				  AssocCode macro call, which is the same for index = 0
-//				changed table initialization to not count temporary strings
-//				changed table initialization to allow assoc2_index to equal
-//				  nassoc_codes so that no associated codes are searched for
-//				  matching the second operand if not desired (for assigns)
-//				changed assign string code entries to have their own expression
-//				  info instances because the first string operand does not get
-//				  get counted for the number of strings
-//				modified table initialization to not could the first string
-//				  operand if reference flag is set (assignment operators)
-//
-//	2011-02-26	removed code from first memory in table entries to comment at
-//				  beginning of entry, which is used by codes.awk to generated
-//				  codes.h containing the Code enumeration
-//				moved Null_Code entry from end to beginning so that Null_Code
-//				  enumeration value will be zero
-//				removed table index/code duplicate and missing checking (not
-//				  necessary since codes are new generated directly from table)
-//				added bracketing around immediate commands
-//				updated search() functions to return Code enumeration value
-//	2011-03-01	started INPUT command handler, added INPUT PROMPT table entry,
-//				  add InputBegin tale entries
-//				removed String flags - automatically set in Table::Table()
-//	2011-03-19	added input assign codes plus their associated code lists,
-//				  which sets the input parse codes as second associated codes
-//				renamed EndStatment_Flag to EndStmt_Flag
-//
-//	2011-03-26	corrected Assoc2Code_ErrorType error
-//
-//	2012-10-28	Table::Table() now Table::initialize() and instead of throwing
-//				  an exception for any errors found, returns a list of error
-//				  strings as a QStringList (no longer uses Error Template)
-//	2012-11-01	replaced some char* with QStringRef
-//				removed immediate commands from table
-//	2012-11-04	moved all table specific (private) definitions from table.h
-//				moved code for access functions from table.h
-//				renamed variables and functions to Qt style naming
-//				made all array initalizers static
-//				changed the rest of char* to QString, removed use of strcmp()
-//	2012-11-04	modified table class so that only one instance can be created
+//	2010-02-18	initial version
 
 #include <QChar>
 #include <QString>
@@ -209,8 +55,8 @@ struct ExprInfo
 	ExprInfo(Code unaryCode = Null_Code, short nOperands = 0,
 		DataType *operandDataType = NULL, short nAssocCodes = 0,
 		short assoc2Index = 0, Code *assocCode = NULL) :
-	    m_unaryCode(unaryCode), m_nOperands(nOperands),
-	    m_operandDataType(operandDataType), m_nAssocCodes(nAssocCodes),
+		m_unaryCode(unaryCode), m_nOperands(nOperands),
+		m_operandDataType(operandDataType), m_nAssocCodes(nAssocCodes),
 		m_assoc2Index(assoc2Index), m_assocCode(assocCode), m_nStrings(0)
 		// default for m_nStrings; will be filled in later
 	{
@@ -234,7 +80,8 @@ struct TableEntry
 };
 
 
-Table *Table::m_instance;			// pointer to single table instance
+Table *Table::s_instance;			// pointer to single table instance
+QStringList Table::s_errorList;		// list of errors found during initialize
 
 
 // this macro produces two entries for the ExprInfo constructor,
@@ -395,13 +242,13 @@ static Code Neg_AssocCode[]				= {NegInt_Code};
 static Code NotEq_AssocCode[]			= {
 	NotEqI1_Code, NotEqStr_Code, NotEqStrT1_Code, NotEqI2_Code
 };
-static Code NotEqI1_AssocCode[] 	   	= {NotEqInt_Code};
+static Code NotEqI1_AssocCode[] 		= {NotEqInt_Code};
 static Code NotEqStr_AssocCode[]		= {NotEqStrT2_Code};
 static Code NotEqStrT1_AssocCode[]		= {NotEqStrTT_Code};
 static Code Power_AssocCode[]			= {PowerI1_Code, PowerMul_Code};
 static Code PowerI1_AssocCode[]			= {PowerInt_Code};
 static Code Print_AssocCode[]			= {
-    PrintInt_Code, PrintStr_Code, PrintTmp_Code
+	PrintInt_Code, PrintStr_Code, PrintTmp_Code
 };
 static Code Repeat_AssocCode[]			= {RepeatTmp_Code};
 static Code RndArgs_AssocCode[]			= {RndArgInt_Code};
@@ -1333,10 +1180,10 @@ static TableEntry tableEntries[] =
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "PrintTmp", Print_Flag, 2, None_DataType, &Tmp_ExprInfo
 	},
-    {	// InputBegin_Code
-        IntFuncN_TokenType, OneWord_Multiple,
-        "", "InputBegin", Null_Flag, 2, None_DataType
-    },
+	{	// InputBegin_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "InputBegin", Null_Flag, 2, None_DataType
+	},
 	{	// InputBeginStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "InputBeginStr", Null_Flag, 2, None_DataType,
@@ -1379,39 +1226,73 @@ static TableEntry tableEntries[] =
 
 // function to create the single instance of the table
 //
+//   - creates the single table instance with the table entries
 //   - fatally aborts if called more than once
 //   - returns list of errors if any detected during initialization
 //   - returns empty list upon successful initialization
+//   - will not allow an second instance to be created
 
-QStringList Table::create(void)
+void Table::initialize(void)
 {
-	if (m_instance != NULL)
+	if (s_instance != NULL || !s_errorList.isEmpty())
 	{
 		qFatal("Only one Table instance may be created!");
 	}
-	m_instance = new Table(tableEntries);
+	s_instance = new Table(tableEntries);
 
-	QStringList errors = m_instance->initialize();
-	if (!errors.isEmpty())
+	s_errorList = s_instance->setupAndCheck();
+	if (!s_errorList.isEmpty())
 	{
-		delete m_instance;
-		m_instance = NULL;
+		delete s_instance;
+		s_instance = NULL;
 	}
-	return errors;
 }
 
 
-// function to return a refernce to the single table instance
+// static function to return a refernce to the single table instance
 //
+//   - fatally aborts if table entry errors were detected
 //   - fatally aborts if called before the instance is created
 
 Table &Table::instance(void)
 {
-	if (m_instance == NULL)
+	if (!s_errorList.isEmpty())
+	{
+		qFatal("Table entry errors were detected!");
+	}
+	if (s_instance == NULL)
 	{
 		qFatal("Table instance was not created!");
 	}
-	return *m_instance;
+	return *s_instance;
+}
+
+
+// static function that checks if any table entries were detected
+//
+//   - fatally aborts if called before instance creation was attempted
+
+bool Table::hasErrors(void)
+{
+	if (s_instance == NULL && s_errorList.isEmpty())
+	{
+		qFatal("Table initialization was not attempted!");
+	}
+	return !s_errorList.isEmpty();
+}
+
+
+// static function that returns list of table errors detected
+//
+//   - fatally aborts if called before instance creation was attempted
+
+QStringList Table::errorList(void)
+{
+	if (s_instance == NULL && s_errorList.isEmpty())
+	{
+		qFatal("Table initialization was not attempted!");
+	}
+	return s_errorList;
 }
 
 
@@ -1420,7 +1301,7 @@ Table &Table::instance(void)
 //   - if any error found then list of error messages returned
 //   - an empty list is returned if no errors were detected
 
-QStringList Table::initialize(void)
+QStringList Table::setupAndCheck(void)
 {
 	QStringList errorList;
 	int i;
@@ -1740,8 +1621,8 @@ Token *Table::newToken(Code code)
 // search function to look for a string of a particular type in
 // the Table, the search is case insensitive
 //
-//     - returns the index of the entry that is found
-//     - returns -1 if the string was not found in the table
+//   - returns the index of the entry that is found
+//   - returns -1 if the string was not found in the table
 
 Code Table::search(SearchType type, const QStringRef &string) const
 {
@@ -1762,8 +1643,8 @@ Code Table::search(SearchType type, const QStringRef &string) const
 // the search is case insensitive an only entries containing a second
 // word are checked
 //
-//     - returns the index of the entry that is found
-//     - returns -1 if the string was not found in the table
+//   - returns the index of the entry that is found
+//   - returns -1 if the string was not found in the table
 
 Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 {
@@ -1785,12 +1666,12 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 // name as the index specified and matching the same number of
 // arguments specified
 //
-//     - returns the index of the entry that is found
-//     - returns -1 if the function with same noperands was not found
-//     - case sensitive compare used (all entry names must match)
-//     - name of function found at index specified
-//     - search begins at entry after index
-//     - search ends at end of section
+//   - returns the index of the entry that is found
+//   - returns -1 if the function with same noperands was not found
+//   - case sensitive compare used (all entry names must match)
+//   - name of function found at index specified
+//   - search begins at entry after index
+//   - search ends at end of section
 
 Code Table::search(Code index, int nArguments) const
 {
@@ -1810,10 +1691,10 @@ Code Table::search(Code index, int nArguments) const
 // data types as specified in the argument, the main code is
 // checked first and then each of the associated codes
 //
-//     - returns the index of the code that is found
-//     - returns -1 if there is not matching code
-//     - the code specified must have associated codes
-//     - the number of data types must match that of the code
+//   - returns the index of the code that is found
+//   - returns -1 if there is not matching code
+//   - the code specified must have associated codes
+//   - the number of data types must match that of the code
 
 Code Table::search(Code code, DataType *datatype) const
 {
@@ -1836,7 +1717,7 @@ Code Table::search(Code code, DataType *datatype) const
 // function to check to see if data types specified match the data
 // types of the code at the index specified
 //
-//    - returns true if there is match, otherwise returns false
+//   - returns true if there is match, otherwise returns false
 
 bool Table::match(Code code, DataType *datatype) const
 {
