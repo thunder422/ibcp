@@ -35,7 +35,7 @@ class CommandLine
 
 	bool version(const QStringList &args);
 	QTextStream &cout(FILE *stream = stdout);
-	void cclose(void);
+	void coutClose(void);
 	bool isHelpOption(const QStringList &args) const;
 
 	QString m_programName;
