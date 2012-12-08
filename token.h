@@ -240,19 +240,19 @@ public:
 	// token information functions
 	bool isOperator(void) const
 	{
-		return op[m_type];
+		return s_op[m_type];
 	}
 	bool hasParen(void) const
 	{
-		return paren[m_type];
+		return s_paren[m_type];
 	}
 	int precedence(void) const
 	{
-		return prec[m_type];
+		return s_prec[m_type];
 	}
 	int hasTableEntry(void) const
 	{
-		return table[m_type];
+		return s_table[m_type];
 	}
 	bool isNull(void) const
 	{
@@ -268,18 +268,18 @@ public:
 
 private:
 	// static members
-	static bool paren[sizeof_TokenType];
-	static bool op[sizeof_TokenType];
-	static int prec[sizeof_TokenType];
-	static bool table[sizeof_TokenType];
-	static const QString messageArray[sizeof_TokenStatus];
+	static bool s_paren[sizeof_TokenType];
+	static bool s_op[sizeof_TokenType];
+	static int s_prec[sizeof_TokenType];
+	static bool s_table[sizeof_TokenType];
+	static const QString s_messageArray[sizeof_TokenStatus];
 
 public:
 	// static member functions
 	static void initialize(void);
 	static const QString message(TokenStatus status)
 	{
-		return messageArray[status];
+		return s_messageArray[status];
 	}
 };
 

@@ -27,16 +27,16 @@
 
 
 // static token variables
-bool Token::paren[sizeof_TokenType];
-bool Token::op[sizeof_TokenType];
-int Token::prec[sizeof_TokenType];
-bool Token::table[sizeof_TokenType];
+bool Token::s_paren[sizeof_TokenType];
+bool Token::s_op[sizeof_TokenType];
+int Token::s_prec[sizeof_TokenType];
+bool Token::s_table[sizeof_TokenType];
 
 // token status message array
 //   (TokenStatus enumeration generated from names
 //   in comments at the end each line by enums.awk,
 //   lines starting with comments are ignored)
-const QString Token::messageArray[sizeof_TokenStatus] = {
+const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	tr("Null_TokenStatus (BUG)"),							// Null
 	tr("Good_TokenStatus (BUG)"),							// Good
 	tr("Done_TokenStatus (BUG)"),							// Done
@@ -105,26 +105,26 @@ const QString Token::messageArray[sizeof_TokenStatus] = {
 void Token::initialize(void)
 {
 	// set true for types that contain an opening parentheses
-	paren[IntFuncP_TokenType] = true;
-	paren[DefFuncP_TokenType] = true;
-	paren[Paren_TokenType] = true;
+	s_paren[IntFuncP_TokenType] = true;
+	s_paren[DefFuncP_TokenType] = true;
+	s_paren[Paren_TokenType] = true;
 
 	// set true for types that are considered an operator
-	op[Command_TokenType] = true;
-	op[Operator_TokenType] = true;
+	s_op[Command_TokenType] = true;
+	s_op[Operator_TokenType] = true;
 
 	// set precedence for non-table token types
-	prec[Command_TokenType] = -1;  // use table precedence if -1
-	prec[Operator_TokenType] = -1;
-	prec[IntFuncP_TokenType] = -1;
-	prec[DefFuncP_TokenType] = 2;  // same as open parentheses (Paren_TokenType)
-	prec[Paren_TokenType] = 2;
+	s_prec[Command_TokenType] = -1;  // use table precedence if -1
+	s_prec[Operator_TokenType] = -1;
+	s_prec[IntFuncP_TokenType] = -1;
+	s_prec[DefFuncP_TokenType] = 2;  // same as open parentheses (Paren_TokenType)
+	s_prec[Paren_TokenType] = 2;
 
 	// set token type has a table entry flags
-	table[Command_TokenType] = true;
-	table[Operator_TokenType] = true;
-	table[IntFuncN_TokenType] = true;
-	table[IntFuncP_TokenType] = true;
+	s_table[Command_TokenType] = true;
+	s_table[Operator_TokenType] = true;
+	s_table[IntFuncN_TokenType] = true;
+	s_table[IntFuncP_TokenType] = true;
 	// FIXME should Remark_TokenType also have table entry flag set?
 }
 
