@@ -29,6 +29,7 @@
 #include <QTextStream>
 
 #include "test_ibcp.h"
+#include "commandline.h"
 #include "table.h"
 #include "parser.h"
 #include "translator.h"
@@ -120,7 +121,7 @@ QStringList Tester::options(void) const
 }
 
 
-bool Tester::run(QTextStream &cout, const QStringList &gplStatement)
+bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 {
 	QFile file;
 	QTextStream input(&file);
@@ -155,8 +156,17 @@ bool Tester::run(QTextStream &cout, const QStringList &gplStatement)
 	}
 
 	cout << endl;
-	foreach (QString line, gplStatement)
+
+	const char **gpl = commandLine->gplStatement();
+	for (int i = 0; gpl[i]; i++)
 	{
+		// don't use tr() here to get strings so output matches expected results
+		QString line = QString(gpl[i]);
+		if (i == 0)
+		{
+			line = line.arg(commandLine->programName())
+				.arg(commandLine->copyrightYear());
+		}
 		cout << line << endl;
 	}
 

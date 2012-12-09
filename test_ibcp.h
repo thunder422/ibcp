@@ -28,6 +28,7 @@
 #include <QCoreApplication>
 #include <QStringList>
 
+class CommandLine;
 class Token;
 class RpnItem;
 class Translator;
@@ -67,7 +68,7 @@ public:
 	~Tester(void) {}
 
 	QStringList options(void) const;
-	bool run(QTextStream &cout, const QStringList &gplStatement);
+	bool run(QTextStream &cout, CommandLine *commandLine);
 	bool hasOption(void) const  // has a test option been specified?
 	{
 		return m_option != OptNone;

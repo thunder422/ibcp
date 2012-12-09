@@ -29,6 +29,16 @@
 #include "test_ibcp.h"
 
 
+// create GPL statement string list
+const char *CommandLine::s_gplStatement[] = {
+	QT_TR_NOOP("%1  Copyright (C) 2010-%2  Thunder422"),
+	QT_TR_NOOP("This program comes with ABSOLUTELY NO WARRANTY."),
+	QT_TR_NOOP("This is free software, and you are welcome to"),
+	QT_TR_NOOP("redistribute it under certain conditions."),
+    NULL
+};
+
+
 CommandLine::CommandLine(const QStringList &args)
 {
 	// get base file name of program from first argument
@@ -43,17 +53,6 @@ CommandLine::CommandLine(const QStringList &args)
 		return;
 	}
 
-	// create GPL statement string list
-	m_gplStatement
-		.append(QString(QT_TR_NOOP("%1  Copyright (C) 2010-%2  Thunder422"))
-		.arg(m_programName).arg(ibcp_COPYRIGHT_YEAR));
-	m_gplStatement
-		.append(QT_TR_NOOP("This program comes with ABSOLUTELY NO WARRANTY."));
-	m_gplStatement
-		.append(QT_TR_NOOP("This is free software, and you are welcome to"));
-	m_gplStatement
-		.append(QT_TR_NOOP("redistribute it under certain conditions."));
-
 	Tester tester(args);
 	if (tester.hasError())
 	{
@@ -63,7 +62,7 @@ CommandLine::CommandLine(const QStringList &args)
 	}
 	else if (tester.hasOption())
 	{
-		if (tester.run(cout(), m_gplStatement))
+		if (tester.run(cout(), this))
 		{
 			m_returnCode = 0;
 		}
@@ -134,6 +133,13 @@ bool CommandLine::version(const QStringList &args)
 bool CommandLine::isHelpOption(const QStringList &args) const
 {
 	return args.count() == 2 && (args.at(1) == "-?" || args.at(1) == "-h");
+}
+
+
+// function to return the copyright year value
+int CommandLine::copyrightYear(void) const
+{
+	return ibcp_COPYRIGHT_YEAR;
 }
 
 

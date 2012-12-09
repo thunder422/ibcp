@@ -38,8 +38,9 @@ class CommandLine
 	void coutClose(void);
 	bool isHelpOption(const QStringList &args) const;
 
+	static const char *s_gplStatement[];
+
 	QString m_programName;
-	QStringList m_gplStatement;
 	int m_returnCode;
 	QTextStream m_cout;
 public:
@@ -53,6 +54,15 @@ public:
 	int returnCode(void) const  // valid only if processed
 	{
 		return m_returnCode;
+	}
+	QString programName(void) const
+	{
+		return m_programName;
+	}
+	int copyrightYear(void) const;
+	static const char **gplStatement(void)
+	{
+		return s_gplStatement;
 	}
 };
 
