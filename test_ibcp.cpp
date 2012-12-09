@@ -129,7 +129,6 @@ bool Tester::run(QTextStream &cout, const QStringList &gplStatement)
 	bool inputMode = m_testFileName.isEmpty();
 	if (inputMode)
 	{
-		cout << endl << tr("Testing %1...").arg(m_testName);
 		file.open(stdin, QIODevice::ReadOnly);
 	}
 	else
@@ -164,6 +163,11 @@ bool Tester::run(QTextStream &cout, const QStringList &gplStatement)
 	cout << endl << "Table initialization successful." << endl;
 
 	Translator translator(Table::instance());
+
+	if (inputMode)
+	{
+		cout << endl << tr("Testing %1...").arg(m_testName);
+	}
 
 	for (int lineno = 1;; lineno++)
 	{
