@@ -20,26 +20,7 @@
 #
 #  Change History:
 #
-#  2010-05-29  initial release
-#  2010-06-10  added translator tests 10 and 11
-#  2010-06-29  added translator test 12
-#  2010-07-04  added translator test 13
-#  2011-01-04  added translator test 14
-#  2011-01-09  changed name of executable from ibcp to ibcp.exe to make
-#              it work properly on Linux (this still works under windows;
-#              before the .exe was being added automatically)
-#  2011-02-05  added translator test 15
-#  2011-03-20  added translator test 16
-#  2011-03-27  added translator test 17
-#
-#  2012-10-13  renamed to regtest.in so that source directory can be
-#              confingured when cmake is run; replaced the parser and
-#              translator test loops with a single loop that tests all the
-#              available *.dat test input files
-#  2012-10-22  added "./" in front of "ibcp" so that program can be run without
-#              having to have "." in the current PATH
-#
-#  2012-10-29  added version output
+#  2010-05-29  initial version
 #
 #
 #  Usage:

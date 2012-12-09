@@ -20,31 +20,7 @@
 #
 #  Change History:
 #
-#  2010-03-20  initial release
-#
-#  2010-04-04  added comment header with GPL, change history and usage
-#              modified script to handle digits in code names
-#
-#  2010-04-28  added code to allow for multiple codes on a line
-#              allow for Invalid_Code = -1
-#              added -d to sort command to ignore "_" in codes names
-#
-#  2010-09-06  modified to only look for codes in the Code enumeration
-#
-#  2011-02-26  rewrote script to generate codes.h and codes.txt directly from
-#              the table.cpp source file (all code performed in BEGIN block)
-#
-#  2011-03-26  renamed from codes.awk to enums.awk
-#              updated to write autoenums.h that includes enum Code and
-#                enum TokenStatus (which comes from ibcp.cpp)
-#              added exit code upon failure to terminate build
-#  2011-06-12  for use with cmake, added an optional path to the source files
-#              as the first argument on the awk command line
-#  2012-10-06  modified to remove the CR at the end of the lines in DOS format
-#              files, but do nothing with Unix format files
-#
-#  2012-11-01  changed 'const char *' to 'QString' for message_array[]
-#  2012-11-03  changed ibcp.cpp to token.cpp
+#  2010-03-20  initial version
 #
 #
 #  Usage: awk -f enums.awk [source path]

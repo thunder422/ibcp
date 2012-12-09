@@ -21,7 +21,6 @@
 //	Change History:
 //
 //	2012-11-02	initial version (parts removed from ibcp.h)
-//	2012-11-03	changed to class, renamed variables and functions to Qt style
 
 #ifndef TOKEN_H
 #define TOKEN_H

@@ -21,11 +21,6 @@
 //	Change History:
 //
 //	2012-11-03	initial version (parts removed from ibcp.h)
-//	2012-11-04	moved all table specific (private) definitions to table.cpp
-//				moved code for access functions to table.cpp
-//				renamed variables and functions to Qt style naming
-//				changed the rest of char* to QString
-//	2012-11-04	modified table class so that only one instance can be created
 
 #ifndef TABLE_H
 #define TABLE_H

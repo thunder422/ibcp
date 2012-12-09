@@ -21,9 +21,6 @@
 //	Change History:
 //
 //	2011-06-11	initial version
-//
-//	2012-10-23	renamed variables from VERSION to RELEASE
-//				added new ibcp_RELEASE_STRING
 
 // the configured options and settings for ibcp
 // (for passing values from cmake to ibcp source files)

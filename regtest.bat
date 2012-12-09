@@ -20,20 +20,7 @@ rem
 rem
 rem  Change History:
 rem
-rem  2010-05-29  initial release
-rem  2010-06-10  added translator tests 10 and 11
-rem  2010-06-29  added translator test 12
-rem  2010-07-04  added translator test 13
-rem  2011-01-04  added translator test 14
-rem  2011-02-05  added translator test 15
-rem  2011-03-20  added translator test 16
-rem  2011-03-27  added translator test 17
-rem
-rem  2012-10-13  modified to change in test code that now reads test inputs
-rem                from test input files
-rem              removed specific test numbers, batch file now runs tests for
-rem                add the *.dat files present in the test directory
-rem              added compare for expression tests
+rem  2010-05-29  initial version
 rem
 rem
 rem  Usage:

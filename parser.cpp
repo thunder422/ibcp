@@ -20,66 +20,7 @@
 //
 //  Change History:
 //
-//	2010-03-01	initial release
-//
-//	2010-03-06	split DefFunc_TokenType into DefFuncN_TokenType and
-//				DefFuncP_TokenType so that it can be determined if define
-//				function name has a parentheses or not
-//
-//	2010-03-07	in get_number() changed situation of 0 leading another digit
-//				  from terminating the number at the first 0 to a leading zero
-//				  error (no legal BASIC would have this situation;
-//				changed several set_error() calls to have a length
-//				  argument for the new length of token error field in Token
-//
-//	2010-03-08	removed no closing quote check from get_string() since this
-//				condition was made acceptable in scan_string()
-//
-//	2010-03-10	rewrote get_operator() to properly handle two character
-//				operators
-//
-//	2010-03-11	allow tabs to be white space in skip_whitespace()
-//
-//	2010-03-17	modified get_token() to return special end-of-line token
-//				  instead of a NULL pointer
-//				changed all token->code to token->index
-//
-//	2010-03-18	replaced code with call to set_token()
-//
-//	2010-03-20	set length of token field for words, two words, string
-//				constants, one and two character operators
-//
-//	2010-03-21	FIXME removed an error check for translator simple expression
-//				testing
-//
-//	2010-04-16	removed the unexpected character errors in scan_command() that
-//				was occurring in a statements like "A,B=3" because these were
-//				not valid immediate commands, so these errors were removed to
-//				let the Translator process it (and report an error as necessary)
-//
-//	2010-05-29	corrected a problem in the get_number() function where a
-//				constant of a single '0' caused "invalid leading zero in numeric
-//				constant" error, the solution was to check if the next character
-//				is a digit, the number is complete, otherwise an error occurs
-//
-//	2010-06-25	TableSearch replaced with SearchType
-//
-//	2011-01-11	set token length for identifiers and number constants
-//
-//	2011-02-26	changed all table index to code, search() now returns code
-//
-//	2011-03-14	also set token length for FN identifiers
-//
-//	2011-03-26	modified get_identifier() to not store the open parentheses of
-//				  DefFuncP and Paren token types
-//	2011-03-27	modified get_number() to look for a negative sign in front of
-//				  constants if the new operand_state flag is set
-//	2011-06-07	added checks for maximum integer in scan_command() and
-//				get_number(), necessary when compiling on with 64-bit
-//	2012-10-31	added 'const' to 'char *' variables (input not modified)
-//	2012-11-01	removed immediate command parsing
-//				replaced String, char processing with QString and QChar
-//				renamed variables and functions to Qt style naming
+//	2010-03-01	initial version
 
 #include "parser.h"
 #include "table.h"

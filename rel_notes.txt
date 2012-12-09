@@ -20,6 +20,7 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap (needs to redone):
 
+	Implement GUI
 	Translator - Colons (Parser issues, Token Status Enumeration)
 	Encoder - (for commands implemented so far)
 	Dictionary Definition (variables and arrays)
@@ -35,6 +36,34 @@ Planned Roadmap (needs to redone):
 	Command - DO-LOOP
 	Command - Single line DEF FN
 	To be defined...
+
+	Note: For this release on, changes to individual source files will no
+	longer be listed (there are too many files).  However, changes to the
+	major classes will be included.  Complete details of the changes can be
+	found in the git repository at https://github.com/thunder422/ibcp.
+
+
+Release 0.2.0 (2012-12-09)
+
+	Project developmental release - the project was transitioned to using
+	the Qt graphical development toolkit.  This includes using the Qt tool
+	classes instead of the C standard library functions.  Implementation
+	of the GUI was started, but only the about box is functional when the
+	program is started with no command line options.  The following
+	additional major changes were made in this release:
+
+	  - new tester, command line and main window classes
+	  - class definitions put into their own header files
+	  - translator token and command handlers in their own source files
+	  - test functions put into new tester class
+	  - list, stack and string classes replaced with Qt classes
+	  - variable and function names renamed using camel casing
+	  - main source file changed from ibcp.cpp to main.cpp
+	  - header change commands were removed from source files
+	    (see the git repository for details of changes)
+	  - cmake now detects when version number mismatches with git repository
+	  - new memory leak detection test script
+	  - test programs and results removed (no longer applicable)
 
 
 Release 0.1.16 (2011-03-25)

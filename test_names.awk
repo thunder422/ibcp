@@ -23,24 +23,6 @@
 #
 #  2010-09-06  initial release (started with codes.awk)
 #
-#  2011-02-26  rewrote script to generate test_codes.h directly from the
-#              table.cpp source file (all code performed in BEGIN block)
-#
-#  2011-06-12  for use with cmake, added an optional path to the source files
-#              as the first argument on the awk command line
-#  2012-10-06  changed the length argument of the substr() that extracts the
-#              name of the code from the "_Code" suffix so that it will also
-#              work with a DOS format file that contains the extra CR character
-#              on the end of the line, because if the RS variable was set to
-#              "/r/n" then this script no longer works on Linux
-#  2012-10-14  renamed from test_codes.awk and now writes test_names.h
-#              changed to write complete code_name[] array along with generating
-#              the tokentype_name[] and datatype_name[] arrays from ibcp.h
-#  2012-10-14  continued lines cause problems on Windows, so these were removed
-#              by using an output variable to hold the "test_names.h" name
-#
-#  2012-11-03  modified for header file location changes of enumerations
-#
 #
 #  Usage: awk -f test_names.awk
 #
