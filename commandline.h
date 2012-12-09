@@ -33,9 +33,9 @@ class CommandLine
 {
 	Q_DECLARE_TR_FUNCTIONS(CommandLine)
 
-	bool version(const QStringList &args);
 	QTextStream &cout(FILE *stream = stdout);
 	void coutClose(void);
+	bool isVersionOption(const QStringList &args);
 	bool isHelpOption(const QStringList &args) const;
 
 	static const char *s_gplStatement[];
@@ -59,6 +59,7 @@ public:
 	{
 		return m_programName;
 	}
+	QString version(void) const;
 	int copyrightYear(void) const;
 	static const char **gplStatement(void)
 	{

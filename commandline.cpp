@@ -47,7 +47,7 @@ CommandLine::CommandLine(const QStringList &args)
 	// NOTE: leave m_returnCode set to -1 to start GUI,
 
 	// parse command line arguments
-	if (version(args))
+	if (isVersionOption(args))
 	{
 		m_returnCode = 0;
 		return;
@@ -116,15 +116,14 @@ void CommandLine::coutClose(void)
 }
 
 
-// function to print version number
-bool CommandLine::version(const QStringList &args)
+// function to check if version option was specified and to process it
+bool CommandLine::isVersionOption(const QStringList &args)
 {
 	if (args.count() != 2 || args.at(1) != "-v")
 	{
 		return false;  // not our option or extra/invalid options
 	}
-	cout() << tr("%1 version %2").arg(m_programName)
-		.arg(ibcp_RELEASE_STRING + 7) << endl;
+	cout() << tr("%1 version %2").arg(m_programName).arg(version()) << endl;
 	return true;
 }
 
@@ -140,6 +139,13 @@ bool CommandLine::isHelpOption(const QStringList &args) const
 int CommandLine::copyrightYear(void) const
 {
 	return ibcp_COPYRIGHT_YEAR;
+}
+
+
+// function to return the version number string
+QString CommandLine::version(void) const
+{
+	return QString(ibcp_RELEASE_STRING + 7);
 }
 
 
