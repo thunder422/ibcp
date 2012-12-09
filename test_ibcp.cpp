@@ -114,7 +114,7 @@ bool Tester::isOption(const QString &arg, const QString &exp,
 
 
 // function to return list of valid options
-QStringList Tester::options(void) const
+QStringList Tester::options(void)
 {
 	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
 		<< "-te" << "-tt";

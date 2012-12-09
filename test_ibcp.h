@@ -67,7 +67,7 @@ public:
 	Tester(const QStringList &args);
 	~Tester(void) {}
 
-	QStringList options(void) const;
+	static QStringList options(void);
 	bool run(QTextStream &cout, CommandLine *commandLine);
 	bool hasOption(void) const  // has a test option been specified?
 	{

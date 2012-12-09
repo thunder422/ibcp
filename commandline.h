@@ -43,6 +43,7 @@ class CommandLine
 	QString m_programName;
 	int m_returnCode;
 	QTextStream m_cout;
+	QString m_usage;
 public:
     CommandLine(const QStringList &args);
 	~CommandLine();
@@ -58,6 +59,10 @@ public:
 	QString programName(void) const
 	{
 		return m_programName;
+	}
+	QString usage(void) const
+	{
+		return m_usage;
 	}
 	QString version(void) const;
 	int copyrightYear(void) const;

@@ -46,6 +46,12 @@ CommandLine::CommandLine(const QStringList &args)
 	m_returnCode = -1;
 	// NOTE: leave m_returnCode set to -1 to start GUI,
 
+	// create usage string
+	QStringList options = Tester::options();
+	// append any other options here
+	options.prepend("-h|-?|-v");
+	m_usage = tr("usage: %1 %2").arg(m_programName).arg(options.join("|"));
+
 	// parse command line arguments
 	if (isVersionOption(args))
 	{
@@ -76,12 +82,8 @@ CommandLine::CommandLine(const QStringList &args)
 	}
 
 	// unsupported option (NOTE: other options get checked before this)
-	QStringList options = tester.options();
-	// append any other options here
-	options.prepend("-h|-?|-v");
 	m_returnCode = isHelpOption(args) ? 0 : 1;  // error if not help option
-	cout(m_returnCode == 0 ? stdout : stderr) << tr("usage: ") << m_programName
-		<< options.join("|") << endl;
+	cout(m_returnCode == 0 ? stdout : stderr) << m_usage << endl;
 }
 
 
