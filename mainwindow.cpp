@@ -23,6 +23,8 @@
 //	2012-11-28	initial version
 
 #include <QApplication>
+#include <QMessageBox>
+#include <QTimer>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -32,12 +34,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
-	CommandLine commandLine(qApp->arguments());
-	if (commandLine.processed())
+	m_commandLine = new CommandLine(qApp->arguments());
+	if (m_commandLine->processed())
 	{
 		// don't start GUI and retrieve the return code
 		m_guiActive = false;
-		m_returnCode = commandLine.returnCode();
+		m_returnCode = m_commandLine->returnCode();
 		return;
 	}
 
@@ -47,9 +49,38 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 
+void MainWindow::show(void)
+{
+	about();
+	QTimer::singleShot(0, qApp, SLOT(quit()));
+}
+
+
+void MainWindow::about(void)
+{
+	// build up about box string
+	QString aboutString(tr("<h2>Interactive BASIC Compiler Project</h2>"));
+
+	const char **gpl = m_commandLine->gplStatement();
+	// add version and copyright year to first string
+	aboutString.append(tr(gpl[0]).arg(tr("Version %1")
+		.arg(m_commandLine->version())).arg(m_commandLine->copyrightYear())
+		.append("<br>"));
+	for (int i = 1; gpl[i]; i++)
+	{
+		aboutString.append("<br>").append(tr(gpl[i]));
+	}
+	aboutString.append(tr("<p><i>Temporary GUI Placeholder</i>"));
+	aboutString.append(tr("<p>Command line %1").arg(m_commandLine->usage()));
+
+	QMessageBox::about(this, tr("About IBCP"), aboutString);
+}
+
+
 MainWindow::~MainWindow()
 {
 	delete ui;
+	delete m_commandLine;
 }
 
 

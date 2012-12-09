@@ -31,6 +31,8 @@ namespace Ui {
 class MainWindow;
 }
 
+class CommandLine;
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -47,10 +49,16 @@ public:
 		return m_returnCode;
 	}
 
+public slots:
+	void show(void);
+
 private:
+	void about(void);
+
 	Ui::MainWindow *ui;
 	bool m_guiActive;
 	int m_returnCode;
+	CommandLine *m_commandLine;
 };
 
 #endif // MAINWINDOW_H

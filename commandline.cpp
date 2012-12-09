@@ -50,7 +50,13 @@ CommandLine::CommandLine(const QStringList &args)
 	QStringList options = Tester::options();
 	// append any other options here
 	options.prepend("-h|-?|-v");
-	m_usage = tr("usage: %1 %2").arg(m_programName).arg(options.join("|"));
+	m_usage = tr("usage: %1 [%2]").arg(m_programName).arg(options.join("|"));
+
+	if (args.count() == 1)
+	{
+		// no options, start GUI
+		return;
+	}
 
 	// parse command line arguments
 	if (isVersionOption(args))
