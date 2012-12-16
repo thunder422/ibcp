@@ -49,12 +49,18 @@ public:
 		return m_returnCode;
 	}
 
+protected:
+	void closeEvent(QCloseEvent *event);
+
 private slots:
 	void about(void);
 
 private:
 	void createActions(void);
 	void createMenus(void);
+
+	void settingsRestore(void);
+	void settingsSave(void);
 
 	Ui::MainWindow *ui;
 	bool m_guiActive;

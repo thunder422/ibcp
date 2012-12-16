@@ -23,7 +23,9 @@
 //	2012-11-28	initial version
 
 #include <QApplication>
+#include <QCloseEvent>
 #include <QMessageBox>
+#include <QSettings>
 #include <QTimer>
 
 #include "mainwindow.h"
@@ -47,7 +49,16 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->setupUi(this);
 	createActions();
 	createMenus();
+	settingsRestore();
+	setWindowTitle("IBCP");
 	m_guiActive = true;
+}
+
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    settingsSave();
+    event->accept();
 }
 
 
@@ -99,6 +110,22 @@ void MainWindow::about(void)
 	aboutString.append(tr("<p>Command line %1").arg(m_commandLine->usage()));
 
 	QMessageBox::about(this, tr("About IBCP"), aboutString);
+}
+
+
+void MainWindow::settingsRestore(void)
+{
+    QSettings settings("Thunder422", "IBCP");
+
+    restoreGeometry(settings.value("geometry").toByteArray());
+}
+
+
+void MainWindow::settingsSave(void)
+{
+    QSettings settings("Thunder422", "IBCP");
+
+    settings.setValue("geometry", saveGeometry());
 }
 
 
