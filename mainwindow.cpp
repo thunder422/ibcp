@@ -45,21 +45,46 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// start GUI here
 	ui->setupUi(this);
+	createActions();
+	createMenus();
 	m_guiActive = true;
 }
 
 
-void MainWindow::show(void)
+void MainWindow::createActions(void)
 {
-	about();
-	QTimer::singleShot(0, qApp, SLOT(quit()));
+	m_actionExit = new QAction(tr("E&xit"), this);
+	m_actionExit->setShortcut(QKeySequence::Quit);
+	m_actionExit->setStatusTip(tr("Exit IBCP"));
+	connect(m_actionExit, SIGNAL(triggered()), this, SLOT(close()));
+
+	m_actionAbout = new QAction(tr("&About"), this);
+	m_actionAbout->setStatusTip(tr("Show the IBCP About box"));
+	connect(m_actionAbout, SIGNAL(triggered()), this, SLOT(about()));
+
+	m_actionAboutQt = new QAction(tr("About &Qt"), this);
+	m_actionAboutQt->setStatusTip(tr("Show the Qt library's About box"));
+	connect(m_actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+}
+
+
+void MainWindow::createMenus(void)
+{
+	m_menuFile = menuBar()->addMenu(tr("&File"));
+	m_menuFile->addAction(m_actionExit);
+
+	menuBar()->addSeparator();
+
+	m_menuHelp = menuBar()->addMenu(tr("&Help"));
+	m_menuHelp->addAction(m_actionAbout);
+	m_menuHelp->addAction(m_actionAboutQt);
 }
 
 
 void MainWindow::about(void)
 {
 	// build up about box string
-	QString aboutString(tr("<h2>Interactive BASIC Compiler Project</h2>"));
+	QString aboutString(tr("<h3>Interactive BASIC Compiler Project</h3>"));
 
 	const char **gpl = m_commandLine->gplStatement();
 	// add version and copyright year to first string

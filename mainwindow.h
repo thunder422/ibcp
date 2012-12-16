@@ -49,16 +49,24 @@ public:
 		return m_returnCode;
 	}
 
-public slots:
-	void show(void);
+private slots:
+	void about(void);
 
 private:
-	void about(void);
+	void createActions(void);
+	void createMenus(void);
 
 	Ui::MainWindow *ui;
 	bool m_guiActive;
 	int m_returnCode;
 	CommandLine *m_commandLine;
+
+	QAction *m_actionExit;
+	QAction *m_actionAbout;
+	QAction *m_actionAboutQt;
+
+	QMenu *m_menuFile;
+	QMenu *m_menuHelp;
 };
 
 #endif // MAINWINDOW_H
