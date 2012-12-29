@@ -67,7 +67,7 @@ class Token
 	};
 
 public:
-	Token(int column = -1)
+	explicit Token(int column = -1)
 	{
 		m_column = column;
 		m_length = 1;

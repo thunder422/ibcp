@@ -45,7 +45,7 @@ class CommandLine
 	QTextStream m_cout;
 	QString m_usage;
 public:
-    CommandLine(const QStringList &args);
+    explicit CommandLine(const QStringList &args);
 	~CommandLine();
 
 	bool processed(void) const  // if processed then exit program

@@ -54,7 +54,7 @@ class Parser
 	void skipWhitespace();
 	int scanWord(int pos, DataType &datatype, bool &paren);
 public:
-	Parser(Table &table): m_table(table) {}
+	explicit Parser(Table &table): m_table(table) {}
 	void setInput(const QString &input)
 	{
 		m_input = input;

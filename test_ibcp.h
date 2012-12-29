@@ -64,7 +64,7 @@ class Tester
 	QString m_testFileName;		// name of test file (OptFile only)
 	QString m_errorMessage;		// message if error occurred
 public:
-	Tester(const QStringList &args);
+	explicit Tester(const QStringList &args);
 	~Tester(void) {}
 
 	static QStringList options(void);

@@ -176,7 +176,7 @@ class Translator
 	QString m_errorMessage;			// message of error that occurred
 
 public:
-	Translator(Table &table): m_table(table), m_output(NULL),
+	explicit Translator(Table &table): m_table(table), m_output(NULL),
 	    m_pendingParen(NULL), m_errorToken(NULL) {}
 	~Translator(void)
 	{
