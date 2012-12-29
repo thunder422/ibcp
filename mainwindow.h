@@ -32,6 +32,7 @@ class MainWindow;
 }
 
 class CommandLine;
+class EditBox;
 
 class MainWindow : public QMainWindow
 {
@@ -73,6 +74,8 @@ private:
 
 	QMenu *m_menuFile;
 	QMenu *m_menuHelp;
+
+	EditBox *m_editBox;
 };
 
 #endif // MAINWINDOW_H

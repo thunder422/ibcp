@@ -141,6 +141,7 @@ set(ibcp_HEADERS
 set(ibcp_SOURCES
 	commandhandlers.cpp
 	commandline.cpp
+	editbox.cpp
 	main.cpp
 	mainwindow.cpp
 	parser.cpp
@@ -153,6 +154,7 @@ set(ibcp_SOURCES
 
 # list the header files containing QOBJECT
 set(ibcp_MOC_SOURCES
+	editbox.h
 	mainwindow.h
 )
 qt4_wrap_cpp(ibcp_MOCS ${ibcp_MOC_SOURCES})

@@ -31,6 +31,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "commandline.h"
+#include "editbox.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -51,6 +52,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	createMenus();
 	settingsRestore();
 	setWindowTitle("IBCP");
+
+	// create the starting program edit box
+	m_editBox = new EditBox;
+	setCentralWidget(m_editBox);
+
 	m_guiActive = true;
 }
 
