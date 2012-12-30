@@ -70,31 +70,88 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::createActions(void)
 {
-	m_actionExit = new QAction(tr("E&xit"), this);
-	m_actionExit->setShortcut(QKeySequence::Quit);
-	m_actionExit->setStatusTip(tr("Exit IBCP"));
-	connect(m_actionExit, SIGNAL(triggered()), this, SLOT(close()));
+	struct ActionInfo
+	{
+		Action action;
+		QString name;
+		QKeySequence::StandardKey key;
+		QString tip;
+	} infoArray[] =
+	{
+		{ New, tr("&New"),
+			QKeySequence::New, tr("Create a new program") },
+		{ Open, tr("&Open..."),
+			QKeySequence::Open, tr("Open an existing program") },
+		{ Save, tr("&Save"),
+			QKeySequence::Save, tr("Save the program to disk") },
+		{ SaveAs, tr("Save &As..."),
+			QKeySequence::SaveAs, tr("Save the program to a new file") },
+		{ Exit, tr("E&xit"),
+			QKeySequence::Quit, tr("Exit IBCP") },
+		{ About, tr("&About"),
+			QKeySequence::UnknownKey, tr("Show the IBCP About box") },
+		{ AboutQt, tr("About &Qt"),
+			QKeySequence::UnknownKey, tr("Show the Qt library's About box") },
+		{ sizeof_Action }  // marks the end
+	};
 
-	m_actionAbout = new QAction(tr("&About"), this);
-	m_actionAbout->setStatusTip(tr("Show the IBCP About box"));
-	connect(m_actionAbout, SIGNAL(triggered()), this, SLOT(about()));
+	for (ActionInfo *info = infoArray; info->action != sizeof_Action; info++)
+	{
+		QAction *action = new QAction(info->name, this);
+		m_action[info->action] = action;
+		if (info->key != QKeySequence::UnknownKey)
+		{
+			action->setShortcut(info->key);
+		}
+		action->setStatusTip(info->tip);
+	}
 
-	m_actionAboutQt = new QAction(tr("About &Qt"), this);
-	m_actionAboutQt->setStatusTip(tr("Show the Qt library's About box"));
-	connect(m_actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	// connect action triggered signals to functions
+	connect(m_action[New], SIGNAL(triggered()), this, SLOT(programNew()));
+	connect(m_action[Open], SIGNAL(triggered()), this, SLOT(programOpen()));
+	connect(m_action[Save], SIGNAL(triggered()), this, SLOT(programSave()));
+	connect(m_action[SaveAs], SIGNAL(triggered()), this, SLOT(programSaveAs()));
+	connect(m_action[Exit], SIGNAL(triggered()), this, SLOT(close()));
+	connect(m_action[About], SIGNAL(triggered()), this, SLOT(about()));
+	connect(m_action[AboutQt], SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 }
 
 
 void MainWindow::createMenus(void)
 {
 	m_menuFile = menuBar()->addMenu(tr("&File"));
-	m_menuFile->addAction(m_actionExit);
+	m_menuFile->addAction(m_action[New]);
+	m_menuFile->addAction(m_action[Open]);
+	m_menuFile->addAction(m_action[Save]);
+	m_menuFile->addAction(m_action[SaveAs]);
+	m_menuFile->addSeparator();
+	m_menuFile->addAction(m_action[Exit]);
 
 	menuBar()->addSeparator();
 
 	m_menuHelp = menuBar()->addMenu(tr("&Help"));
-	m_menuHelp->addAction(m_actionAbout);
-	m_menuHelp->addAction(m_actionAboutQt);
+	m_menuHelp->addAction(m_action[About]);
+	m_menuHelp->addAction(m_action[AboutQt]);
+}
+
+
+void MainWindow::programNew(void)
+{
+}
+
+
+void MainWindow::programOpen(void)
+{
+}
+
+
+void MainWindow::programSave(void)
+{
+}
+
+
+void MainWindow::programSaveAs(void)
+{
 }
 
 

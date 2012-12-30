@@ -54,6 +54,10 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
+	void programNew(void);
+	void programOpen(void);
+	void programSave(void);
+	void programSaveAs(void);
 	void about(void);
 
 private:
@@ -68,9 +72,18 @@ private:
 	int m_returnCode;
 	CommandLine *m_commandLine;
 
-	QAction *m_actionExit;
-	QAction *m_actionAbout;
-	QAction *m_actionAboutQt;
+	enum Action
+	{
+		New,
+		Open,
+		Save,
+		SaveAs,
+		Exit,
+		About,
+		AboutQt,
+		sizeof_Action
+	};
+	QAction *m_action[sizeof_Action];
 
 	QMenu *m_menuFile;
 	QMenu *m_menuHelp;
