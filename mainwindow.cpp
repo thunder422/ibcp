@@ -48,8 +48,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// start GUI here
 	ui->setupUi(this);
-	createActions();
-	createMenus();
 	settingsRestore();
 	setWindowTitle("IBCP");
 
@@ -68,94 +66,27 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 
-void MainWindow::createActions(void)
-{
-	struct ActionInfo
-	{
-		Action action;
-		QString name;
-		QKeySequence::StandardKey key;
-		QString tip;
-	} infoArray[] =
-	{
-		{ New, tr("&New"),
-			QKeySequence::New, tr("Create a new program") },
-		{ Open, tr("&Open..."),
-			QKeySequence::Open, tr("Open an existing program") },
-		{ Save, tr("&Save"),
-			QKeySequence::Save, tr("Save the program to disk") },
-		{ SaveAs, tr("Save &As..."),
-			QKeySequence::SaveAs, tr("Save the program to a new file") },
-		{ Exit, tr("E&xit"),
-			QKeySequence::Quit, tr("Exit IBCP") },
-		{ About, tr("&About"),
-			QKeySequence::UnknownKey, tr("Show the IBCP About box") },
-		{ AboutQt, tr("About &Qt"),
-			QKeySequence::UnknownKey, tr("Show the Qt library's About box") },
-		{ sizeof_Action }  // marks the end
-	};
-
-	for (ActionInfo *info = infoArray; info->action != sizeof_Action; info++)
-	{
-		QAction *action = new QAction(info->name, this);
-		m_action[info->action] = action;
-		if (info->key != QKeySequence::UnknownKey)
-		{
-			action->setShortcut(info->key);
-		}
-		action->setStatusTip(info->tip);
-	}
-
-	// connect action triggered signals to functions
-	connect(m_action[New], SIGNAL(triggered()), this, SLOT(programNew()));
-	connect(m_action[Open], SIGNAL(triggered()), this, SLOT(programOpen()));
-	connect(m_action[Save], SIGNAL(triggered()), this, SLOT(programSave()));
-	connect(m_action[SaveAs], SIGNAL(triggered()), this, SLOT(programSaveAs()));
-	connect(m_action[Exit], SIGNAL(triggered()), this, SLOT(close()));
-	connect(m_action[About], SIGNAL(triggered()), this, SLOT(about()));
-	connect(m_action[AboutQt], SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-}
-
-
-void MainWindow::createMenus(void)
-{
-	m_menuFile = menuBar()->addMenu(tr("&File"));
-	m_menuFile->addAction(m_action[New]);
-	m_menuFile->addAction(m_action[Open]);
-	m_menuFile->addAction(m_action[Save]);
-	m_menuFile->addAction(m_action[SaveAs]);
-	m_menuFile->addSeparator();
-	m_menuFile->addAction(m_action[Exit]);
-
-	menuBar()->addSeparator();
-
-	m_menuHelp = menuBar()->addMenu(tr("&Help"));
-	m_menuHelp->addAction(m_action[About]);
-	m_menuHelp->addAction(m_action[AboutQt]);
-}
-
-
-void MainWindow::programNew(void)
+void MainWindow::on_actionNew_triggered(void)
 {
 }
 
 
-void MainWindow::programOpen(void)
+void MainWindow::on_actionOpen_triggered(void)
 {
 }
 
 
-void MainWindow::programSave(void)
+void MainWindow::on_actionSave_triggered(void)
 {
 }
 
 
-void MainWindow::programSaveAs(void)
+void MainWindow::on_actionSaveAs_triggered(void)
 {
 }
 
 
-void MainWindow::about(void)
+void MainWindow::on_actionAbout_triggered(void)
 {
 	// build up about box string
 	QString aboutString(tr("<h3>Interactive BASIC Compiler Project</h3>"));
@@ -173,6 +104,12 @@ void MainWindow::about(void)
 	aboutString.append(tr("<p>Command line %1").arg(m_commandLine->usage()));
 
 	QMessageBox::about(this, tr("About IBCP"), aboutString);
+}
+
+
+void MainWindow::on_actionAboutQt_triggered(void)
+{
+	qApp->aboutQt();
 }
 
 

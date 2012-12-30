@@ -54,16 +54,14 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void programNew(void);
-	void programOpen(void);
-	void programSave(void);
-	void programSaveAs(void);
-	void about(void);
+	void on_actionNew_triggered(void);
+	void on_actionOpen_triggered(void);
+	void on_actionSave_triggered(void);
+	void on_actionSaveAs_triggered(void);
+	void on_actionAbout_triggered(void);
+	void on_actionAboutQt_triggered(void);
 
 private:
-	void createActions(void);
-	void createMenus(void);
-
 	void settingsRestore(void);
 	void settingsSave(void);
 
@@ -72,23 +70,8 @@ private:
 	int m_returnCode;
 	CommandLine *m_commandLine;
 
-	enum Action
-	{
-		New,
-		Open,
-		Save,
-		SaveAs,
-		Exit,
-		About,
-		AboutQt,
-		sizeof_Action
-	};
-	QAction *m_action[sizeof_Action];
-
-	QMenu *m_menuFile;
-	QMenu *m_menuHelp;
-
 	EditBox *m_editBox;
+
 };
 
 #endif // MAINWINDOW_H
