@@ -56,22 +56,29 @@ protected:
 private slots:
 	void on_actionNew_triggered(void);
 	void on_actionOpen_triggered(void);
-	void on_actionSave_triggered(void);
-	void on_actionSaveAs_triggered(void);
+	bool on_actionSave_triggered(void);
+	bool on_actionSaveAs_triggered(void);
 	void on_actionAbout_triggered(void);
 	void on_actionAboutQt_triggered(void);
 
 private:
+	bool isOkToContinue(void);
+	void setCurProgram(const QString &programPath);
+
+	bool programLoad(const QString &programPath);
+	bool programSave(const QString &programPath);
+
 	void settingsRestore(void);
 	void settingsSave(void);
 
+	// member variables
 	Ui::MainWindow *ui;
 	bool m_guiActive;
 	int m_returnCode;
 	CommandLine *m_commandLine;
 
 	EditBox *m_editBox;
-
+	QString m_curProgram;
 };
 
 #endif // MAINWINDOW_H

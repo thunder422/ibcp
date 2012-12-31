@@ -24,6 +24,8 @@
 
 #include <QApplication>
 #include <QCloseEvent>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QSettings>
 #include <QTimer>
@@ -49,42 +51,108 @@ MainWindow::MainWindow(QWidget *parent) :
 	// start GUI here
 	ui->setupUi(this);
 	settingsRestore();
-	setWindowTitle("IBCP");
+	setCurProgram("");
 
 	// create the starting program edit box
 	m_editBox = new EditBox;
 	setCentralWidget(m_editBox);
 
+	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
+		this, SLOT(setWindowModified(bool)));
+
 	m_guiActive = true;
 }
 
 
+// function called when the user is attempting to close the main window
+//
+//   - the signal is accepted if it is ok to continue, ignored otherwise
+//   - the current settings are saved
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    settingsSave();
-    event->accept();
+	if (isOkToContinue())
+	{
+		settingsSave();
+		event->accept();
+	}
+	else
+	{
+		event->ignore();
+	}
 }
 
+
+// function called when new program has been requested
+//
+//   - if it is ok to continue, the current program is cleared
 
 void MainWindow::on_actionNew_triggered(void)
 {
+	if (isOkToContinue())
+	{
+		m_editBox->clear();
+		setWindowModified(false);
+		setCurProgram("");
+	}
 }
 
+
+// function called when open program has been requested
+//
+//   - if it is ok to continue, an open file box requests the program to load
+//   - if a valid file path was selected, the program is loaded
 
 void MainWindow::on_actionOpen_triggered(void)
 {
+	if (isOkToContinue())
+	{
+		QString programPath = QFileDialog::getOpenFileName(this,
+			tr("Open Program"), ".", tr("Program files (*.*)"));
+		if (!programPath.isEmpty())
+		{
+			programLoad(programPath);
+		}
+	}
 }
 
 
-void MainWindow::on_actionSave_triggered(void)
+// function called when save program has been requested
+//
+//   - if the current program is not set, the save as function is called
+//   - otherwise the program is saved under the current program
+
+bool MainWindow::on_actionSave_triggered(void)
 {
+	if (m_curProgram.isEmpty())
+	{
+		return on_actionSaveAs_triggered();
+	}
+	else
+	{
+		return programSave(m_curProgram);
+	}
 }
 
 
-void MainWindow::on_actionSaveAs_triggered(void)
+// function called when save as program has been requested
+//
+//  - a save file box requests the file to save the program to
+//  - if a valid file path was selected, the program is saved
+
+bool MainWindow::on_actionSaveAs_triggered(void)
 {
+	QString programPath = QFileDialog::getSaveFileName(this,
+		tr("Save Program"), ".", tr("Program files (*.*)"));
+	if (programPath.isEmpty())
+	{
+		return false;
+	}
+	return programSave(programPath);
 }
 
+
+// function called when help about has been requested
 
 void MainWindow::on_actionAbout_triggered(void)
 {
@@ -107,25 +175,116 @@ void MainWindow::on_actionAbout_triggered(void)
 }
 
 
+// function called when help about Qt has been requested
 void MainWindow::on_actionAboutQt_triggered(void)
 {
 	qApp->aboutQt();
 }
 
 
-void MainWindow::settingsRestore(void)
+// function the sets the current program path and sets the window title
+void MainWindow::setCurProgram(const QString &programPath)
 {
-    QSettings settings("Thunder422", "IBCP");
-
-    restoreGeometry(settings.value("geometry").toByteArray());
+	m_curProgram = programPath;
+	QString program = tr("Untitled");
+	if (!m_curProgram.isEmpty())
+	{
+		program = QFileInfo(m_curProgram).fileName();
+	}
+	setWindowTitle(tr("%1[*] - %2").arg(program).arg(tr("IBCP")));
 }
 
 
+// function that checks if it is ok to continue when the current program
+// has been modified; return false if the user cancels the request to save
+// the modified program
+bool MainWindow::isOkToContinue(void)
+{
+	if (isWindowModified())
+	{
+		int answer = QMessageBox::warning(this, tr("IBCP"), tr("The program "
+			"has been modified.\nDo you want to save the changes?"),
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+		if (answer == QMessageBox::Yes)
+		{
+			return on_actionSave_triggered();
+		}
+		else if (answer == QMessageBox::Cancel)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// function to load a program into memory
+//
+//   - for now just reads a text file and puts the text in the edit box
+//   - eventually it will need to be parsed, translated, encoded and stored
+
+bool MainWindow::programLoad(const QString &programPath)
+{
+	QFile file(programPath);
+
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		QMessageBox::warning(this, tr("IBCP"), tr("Failed to open file."));
+		return false;
+	}
+	QTextStream input(&file);
+
+	m_editBox->setPlainText(input.readAll());
+	m_editBox->document()->setModified(false);
+
+	setCurProgram(programPath);
+	return true;
+}
+
+
+// function to save the program to the indicated path
+//
+//   - for now just grabs the text from the edit box and saves it
+//   - eventually this made be sufficient as the edit box will contain the
+//     text representation of the stored program, but may also need to
+//     collect the text from other edit boxes and/or subroutine/functions
+
+bool MainWindow::programSave(const QString &programPath)
+{
+	QFile file(programPath);
+
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+	{
+		QMessageBox::warning(this, tr("IBCP"), tr("Failed to save file."));
+		return false;
+	}
+	QTextStream output(&file);
+	output << m_editBox->toPlainText();
+	m_editBox->document()->setModified(false);
+
+	setCurProgram(programPath);
+	return true;
+}
+
+
+// function to restore the settings saved the last time the program was run
+//
+//   - if there are no saved settings, reasonable defaults are used
+
+void MainWindow::settingsRestore(void)
+{
+	QSettings settings("Thunder422", "IBCP");
+
+	restoreGeometry(settings.value("geometry").toByteArray());
+}
+
+
+// function to save the settings for the program to be restored later
 void MainWindow::settingsSave(void)
 {
-    QSettings settings("Thunder422", "IBCP");
+	QSettings settings("Thunder422", "IBCP");
 
-    settings.setValue("geometry", saveGeometry());
+	settings.setValue("geometry", saveGeometry());
 }
 
 
