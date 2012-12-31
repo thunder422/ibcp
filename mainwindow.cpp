@@ -238,6 +238,7 @@ bool MainWindow::programLoad(const QString &programPath)
 	m_editBox->document()->setModified(false);
 
 	setCurProgram(programPath);
+	statusBar()->showMessage(tr("Program loaded"), 2000);
 	return true;
 }
 
@@ -263,6 +264,7 @@ bool MainWindow::programSave(const QString &programPath)
 	m_editBox->document()->setModified(false);
 
 	setCurProgram(programPath);
+	statusBar()->showMessage(tr("Program saved"), 2000);
 	return true;
 }
 
