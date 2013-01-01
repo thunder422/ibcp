@@ -51,7 +51,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	// start GUI here
 	ui->setupUi(this);
 	settingsRestore();
-	setCurProgram("");
+
+	// TODO settings will eventually have info about edit boxes that were open
+	// TODO that will need to be restored, for now there is a single edit box
 
 	// create the starting program edit box
 	m_editBox = new EditBox;
@@ -59,6 +61,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
+
+	// restore program if one was saved
+	if (!m_curProgram.isEmpty()				   // saved program?
+	        && (!QFile::exists(m_curProgram)   // saved program not found?
+	        || !programLoad(m_curProgram)))    // saved program not loaded?
+	{
+		setCurProgram("");  // clear program path that was restored
+		// TODO should an warning message be issued here?
+	}
 
 	m_guiActive = true;
 }
@@ -291,6 +302,7 @@ void MainWindow::settingsRestore(void)
 	QSettings settings("Thunder422", "IBCP");
 
 	restoreGeometry(settings.value("geometry").toByteArray());
+	setCurProgram(settings.value("curProgram").toString());
 }
 
 
@@ -300,6 +312,7 @@ void MainWindow::settingsSave(void)
 	QSettings settings("Thunder422", "IBCP");
 
 	settings.setValue("geometry", saveGeometry());
+	settings.setValue("curProgram", m_curProgram);
 }
 
 
