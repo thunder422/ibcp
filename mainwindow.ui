@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="ibcp.qrc">
+    <normaloff>:/images/ibcp.png</normaloff>:/images/ibcp.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -129,7 +133,9 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="ibcp.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionExit</sender>

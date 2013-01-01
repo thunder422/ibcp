@@ -165,6 +165,12 @@ set(ibcp_UIS
 )
 qt4_wrap_ui(ibcp_UI_HEADERS ${ibcp_UIS})
 
+# list of program resources
+set(ibcp_RESOURCES
+	ibcp.qrc
+)
+qt4_add_resources(ibcp_RCC_SOURCES ${ibcp_RESOURCES})
+
 # add the executable
 add_executable(ibcp
 	autoenums.h
@@ -173,5 +179,6 @@ add_executable(ibcp
 	${ibcp_SOURCES}
 	${ibcp_MOCS}
 	${ibcp_UI_HEADERS}
+	${ibcp_RCC_SOURCES}
 )
 target_link_libraries(ibcp ${QT_LIBRARIES})
