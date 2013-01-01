@@ -55,9 +55,16 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNew"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/file-new.png</normaloff>:/images/file-new.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
@@ -72,6 +79,10 @@
    </property>
   </action>
   <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/file-open.png</normaloff>:/images/file-open.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -83,6 +94,10 @@
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/file-save.png</normaloff>:/images/file-save.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -94,6 +109,10 @@
    </property>
   </action>
   <action name="actionSaveAs">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/file-save-as.png</normaloff>:/images/file-save-as.png</iconset>
+   </property>
    <property name="text">
     <string>Save &amp;As...</string>
    </property>
@@ -105,6 +124,10 @@
    </property>
   </action>
   <action name="actionExit">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/file-exit.png</normaloff>:/images/file-exit.png</iconset>
+   </property>
    <property name="text">
     <string>E&amp;xit</string>
    </property>
@@ -116,6 +139,10 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/help-about.png</normaloff>:/images/help-about.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;About</string>
    </property>
@@ -124,6 +151,10 @@
    </property>
   </action>
   <action name="actionAboutQt">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/help-about-qt.png</normaloff>:/images/help-about-qt.png</iconset>
+   </property>
    <property name="text">
     <string>About &amp;Qt</string>
    </property>
