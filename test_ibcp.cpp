@@ -157,16 +157,17 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 
 	cout << endl;
 
-	const char **gpl = commandLine->gplStatement();
-	for (int i = 0; gpl[i]; i++)
+	// don't use tr() here to get strings so output matches expected results
+	const char *copyright = commandLine->copyrightStatement();
+	QString line = QString(copyright).arg(commandLine->programName())
+		.arg(commandLine->copyrightYear());
+	cout << line << endl;
+
+	const char **warranty = commandLine->warrantyStatement();
+	for (int i = 0; warranty[i]; i++)
 	{
 		// don't use tr() here to get strings so output matches expected results
-		QString line = QString(gpl[i]);
-		if (i == 0)
-		{
-			line = line.arg(commandLine->programName())
-				.arg(commandLine->copyrightYear());
-		}
+		QString line = QString(warranty[i]);
 		cout << line << endl;
 	}
 

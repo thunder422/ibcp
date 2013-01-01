@@ -29,9 +29,12 @@
 #include "test_ibcp.h"
 
 
-// create GPL statement string list
-const char *CommandLine::s_gplStatement[] = {
-	QT_TR_NOOP("%1  Copyright (C) 2010-%2  Thunder422"),
+// create copyright statement string
+const char *CommandLine::s_copyrightStatement =
+	QT_TR_NOOP("%1  Copyright (C) 2010-%2  Thunder422");
+
+// create warranty statement string list
+const char *CommandLine::s_warrantyStatement[] = {
 	QT_TR_NOOP("This program comes with ABSOLUTELY NO WARRANTY."),
 	QT_TR_NOOP("This is free software, and you are welcome to"),
 	QT_TR_NOOP("redistribute it under certain conditions."),

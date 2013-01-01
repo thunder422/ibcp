@@ -159,17 +159,30 @@ void MainWindow::on_actionAbout_triggered(void)
 	// build up about box string
 	QString aboutString(tr("<h3>Interactive BASIC Compiler Project</h3>"));
 
-	const char **gpl = m_commandLine->gplStatement();
-	// add version and copyright year to first string
-	aboutString.append(tr(gpl[0]).arg(tr("Version %1")
-		.arg(m_commandLine->version())).arg(m_commandLine->copyrightYear())
-		.append("<br>"));
-	for (int i = 1; gpl[i]; i++)
-	{
-		aboutString.append("<br>").append(tr(gpl[i]));
-	}
-	aboutString.append(tr("<p><i>Temporary GUI Placeholder</i>"));
-	aboutString.append(tr("<p>Command line %1").arg(m_commandLine->usage()));
+	const char *copyright = m_commandLine->copyrightStatement();
+	// add version and copyright year to string
+	aboutString.append(tr(copyright).arg(tr("Version %1")
+		.arg(m_commandLine->version())).arg(m_commandLine->copyrightYear()));
+
+	// add license statements
+	aboutString.append(tr("<p>This program is free software: you can "
+		"redistribute it and/or modify it under the terms of the GNU General "
+		"Public License as published by the Free Software Foundation, either "
+		"version 3 of the License, or (at your option) any later version."));
+	aboutString.append(tr("<p>This program is distributed in the hope that it "
+		"will be useful, but WITHOUT ANY WARRANTY; without even the implied "
+		"warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  "
+		"See the GNU General Public License for more details."));
+	aboutString.append(tr("<p>For a copy of the GNU General Public License, "
+        "<br>see <a href=\"http://www.gnu.org/licenses\" target=\"_blank\">"
+		"http://www.gnu.org/licenses</a>."));
+
+	// add oxygen icon license statement
+	aboutString.append(tr("<p>The Oxygen icons (see "
+		"<a href=\"http://www.oxygen-icons.org\" target=\"_blank\">"
+		"http://www.oxygen-icons.org</a>) are used<br>under LGPLv3, "
+		"see <a href=\"http://www.gnu.org/copyleft/lesser.html\" "
+		"target=\"_blank\">http://www.gnu.org/copyleft/lesser.html</a>."));
 
 	QMessageBox::about(this, tr("About IBCP"), aboutString);
 }

@@ -38,7 +38,8 @@ class CommandLine
 	bool isVersionOption(const QStringList &args);
 	bool isHelpOption(const QStringList &args) const;
 
-	static const char *s_gplStatement[];
+	static const char *s_copyrightStatement;
+	static const char *s_warrantyStatement[];
 
 	QString m_programName;
 	int m_returnCode;
@@ -66,9 +67,13 @@ public:
 	}
 	QString version(void) const;
 	int copyrightYear(void) const;
-	static const char **gplStatement(void)
+	static const char *copyrightStatement(void)
 	{
-		return s_gplStatement;
+		return s_copyrightStatement;
+	}
+	static const char **warrantyStatement(void)
+	{
+		return s_warrantyStatement;
 	}
 };
 

@@ -33,8 +33,11 @@ converts text input into BASIC language tokens.  The translator is
 currently being developed and currently supports the translation of
 BASIC expressions along a few BASIC commands (LET, PRINT, and INPUT)
 into a reverse polish notation format that will be used for fast
-execution of the BASIC program.  The GUI implementation has been
-started but currently only displays an about box.
+execution of the BASIC program.  The GUI implementation has been started
+and now has the basic GUI elements including file and help menus with
+basic file operation menu items, the tool bar with several file
+operations, an edit box for editing the program and a status bar.  For
+now the program only handles text files.
 
 
 Building The Program
@@ -66,7 +69,7 @@ Command Line Options
 --------------------
 The -v option will output the version string and exit.  The -h or -?
 option will output the usage message and exit.  No options will start
-the GUI, which currently only displays the about box and then exits.
+the GUI.
 
 
 Running Interactively
