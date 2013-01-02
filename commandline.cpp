@@ -52,7 +52,7 @@ CommandLine::CommandLine(const QStringList &args)
 	// create usage string
 	QStringList options = Tester::options();
 	// append any other options here
-	options.prepend("-h|-?|-v");
+	options.prepend("<program file>|-h|-?|-v");
 	m_usage = tr("usage: %1 [%2]").arg(m_programName).arg(options.join("|"));
 
 	if (args.count() == 1)
@@ -87,6 +87,14 @@ CommandLine::CommandLine(const QStringList &args)
 			cout(stderr) << tester.errorMessage() << endl;
 			m_returnCode = 1;
 		}
+		return;
+	}
+
+	// check if a possible file name was specified
+	if (args.count() == 2 && !args.at(1).startsWith("-"))
+	{
+		// not an option so assume argument is a file name
+		m_fileName = args.at(1);
 		return;
 	}
 

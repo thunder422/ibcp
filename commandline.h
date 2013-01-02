@@ -45,6 +45,7 @@ class CommandLine
 	int m_returnCode;
 	QTextStream m_cout;
 	QString m_usage;
+	QString m_fileName;
 public:
     explicit CommandLine(const QStringList &args);
 	~CommandLine();
@@ -67,6 +68,10 @@ public:
 	}
 	QString version(void) const;
 	int copyrightYear(void) const;
+	QString fileName(void) const
+	{
+		return m_fileName;
+	}
 	static const char *copyrightStatement(void)
 	{
 		return s_copyrightStatement;

@@ -62,12 +62,20 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
 
-	// restore program if one was saved
-	if (!m_curProgram.isEmpty()				   // saved program?
-	        && (!QFile::exists(m_curProgram)   // saved program not found?
-	        || !programLoad(m_curProgram)))    // saved program not loaded?
+	// if a file name was specified on the command line
+	// then it overrides the restored program
+	if (!m_commandLine->fileName().isEmpty())
 	{
-		setCurProgram("");  // clear program path that was restored
+		setCurProgram(m_commandLine->fileName());
+	}
+
+	// load program if one was saved or specified on command line
+	if (!m_curProgram.isEmpty()				   // load a program?
+	        && (!QFile::exists(m_curProgram)   // program not found?
+	        || !programLoad(m_curProgram))     // program not loaded?
+			&& m_commandLine->fileName().isEmpty())  // no program argument
+	{
+		setCurProgram("");  // clear program path that was restored/set
 		// TODO should an warning message be issued here?
 	}
 
