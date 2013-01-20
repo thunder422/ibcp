@@ -83,6 +83,7 @@ private:
 	EditBox *m_editBox;
 	QString m_curProgram;
 	RecentFiles *m_recentPrograms;
+	QString m_curDirectory;
 };
 
 #endif // MAINWINDOW_H

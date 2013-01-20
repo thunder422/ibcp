@@ -126,16 +126,18 @@ void MainWindow::on_actionNew_triggered(void)
 //
 //   - if it is ok to continue, an open file box requests the program to load
 //   - if a valid file path was selected, the program is loaded
+//   - the directory of the program loaded is saved
 
 void MainWindow::on_actionOpen_triggered(void)
 {
 	if (isOkToContinue())
 	{
 		QString programPath = QFileDialog::getOpenFileName(this,
-			tr("Open Program"), ".", tr("Program files (*.*)"));
+			tr("Open Program"), m_curDirectory, tr("Program files (*.*)"));
 		if (!programPath.isEmpty())
 		{
 			programLoad(programPath);
+			m_curDirectory = QFileInfo(programPath).path();
 		}
 	}
 }
@@ -325,6 +327,12 @@ bool MainWindow::programSave(const QString &programPath)
 }
 
 
+// names of the settings for the program
+const char *geometrySettingsName = "geometry";
+const char *curProgramSettingsName = "curProgram";
+const char *curDirectorySettingsName = "curDirectory";
+
+
 // function to restore the settings saved the last time the program was run
 //
 //   - if there are no saved settings, reasonable defaults are used
@@ -333,9 +341,10 @@ void MainWindow::settingsRestore(void)
 {
 	QSettings settings("Thunder422", "IBCP");
 
-	restoreGeometry(settings.value("geometry").toByteArray());
+	restoreGeometry(settings.value(geometrySettingsName).toByteArray());
 	m_recentPrograms->restore(settings);
-	m_curProgram = settings.value("curProgram").toString();
+	m_curProgram = settings.value(curProgramSettingsName).toString();
+	m_curDirectory = settings.value(curDirectorySettingsName, ".").toString();
 }
 
 
@@ -344,9 +353,10 @@ void MainWindow::settingsSave(void)
 {
 	QSettings settings("Thunder422", "IBCP");
 
-	settings.setValue("geometry", saveGeometry());
+	settings.setValue(geometrySettingsName, saveGeometry());
 	m_recentPrograms->save(settings);
-	settings.setValue("curProgram", m_curProgram);
+	settings.setValue(curProgramSettingsName, m_curProgram);
+	settings.setValue(curDirectorySettingsName, m_curDirectory);
 }
 
 
