@@ -186,6 +186,64 @@ bool MainWindow::on_actionSaveAs_triggered(void)
 }
 
 
+// function called when edit undo has been requested
+
+void MainWindow::on_actionUndo_triggered(void)
+{
+	m_editBox->undo();
+}
+
+
+// function called when edit Redo has been requested
+
+void MainWindow::on_actionRedo_triggered(void)
+{
+	m_editBox->redo();
+}
+
+
+// function called when edit Cut has been requested
+
+void MainWindow::on_actionCut_triggered(void)
+{
+	m_editBox->cut();
+}
+
+
+// function called when edit Copy has been requested
+
+void MainWindow::on_actionCopy_triggered(void)
+{
+	m_editBox->copy();
+}
+
+
+// function called when edit paste has been requested
+
+void MainWindow::on_actionPaste_triggered(void)
+{
+	m_editBox->paste();
+}
+
+
+// function called when edit delete has been requested
+
+void MainWindow::on_actionDelete_triggered(void)
+{
+	m_editBox->textCursor().removeSelectedText();
+}
+
+
+// function called when edit select all has been requested
+
+void MainWindow::on_actionSelectAll_triggered(void)
+{
+	QTextCursor textCursor = m_editBox->textCursor();
+	textCursor.select(QTextCursor::Document);
+	m_editBox->setTextCursor(textCursor);
+}
+
+
 // function called when help about has been requested
 
 void MainWindow::on_actionAbout_triggered(void)

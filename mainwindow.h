@@ -63,6 +63,13 @@ private slots:
 	void on_actionAbout_triggered(void);
 	void on_actionAboutQt_triggered(void);
 	void programOpen(const QString programPath);
+	void on_actionUndo_triggered(void);
+	void on_actionRedo_triggered(void);
+	void on_actionCut_triggered(void);
+	void on_actionCopy_triggered(void);
+	void on_actionPaste_triggered(void);
+	void on_actionDelete_triggered(void);
+	void on_actionSelectAll_triggered(void);
 
 private:
 	bool isOkToContinue(void);

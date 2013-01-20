@@ -8,6 +8,13 @@
         <file>images/file-save.png</file>
         <file>images/file-save-as.png</file>
         <file>images/file-exit.png</file>
+        <file>images/edit-undo.png</file>
+        <file>images/edit-redo.png</file>
+        <file>images/edit-cut.png</file>
+        <file>images/edit-copy.png</file>
+        <file>images/edit-paste.png</file>
+        <file>images/edit-delete.png</file>
+        <file>images/edit-select-all.png</file>
         <file>images/help-about.png</file>
         <file>images/help-about-qt.png</file>
     </qresource>
