@@ -3,6 +3,8 @@
         <file>images/ibcp.png</file>
         <file>images/file-new.png</file>
         <file>images/file-open.png</file>
+        <file>images/file-open-recent.png</file>
+        <file>images/file-clear-list.png</file>
         <file>images/file-save.png</file>
         <file>images/file-save-as.png</file>
         <file>images/file-exit.png</file>

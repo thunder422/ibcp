@@ -33,6 +33,7 @@ class MainWindow;
 
 class CommandLine;
 class EditBox;
+class RecentFiles;
 
 class MainWindow : public QMainWindow
 {
@@ -56,10 +57,12 @@ protected:
 private slots:
 	void on_actionNew_triggered(void);
 	void on_actionOpen_triggered(void);
+	void on_actionClearRecent_triggered(void);
 	bool on_actionSave_triggered(void);
 	bool on_actionSaveAs_triggered(void);
 	void on_actionAbout_triggered(void);
 	void on_actionAboutQt_triggered(void);
+	void programOpen(const QString programPath);
 
 private:
 	bool isOkToContinue(void);
@@ -79,6 +82,7 @@ private:
 
 	EditBox *m_editBox;
 	QString m_curProgram;
+	RecentFiles *m_recentPrograms;
 };
 
 #endif // MAINWINDOW_H

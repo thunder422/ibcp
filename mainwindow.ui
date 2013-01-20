@@ -31,8 +31,25 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="menuOpenRecent">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="title">
+      <string>Open &amp;Recent</string>
+     </property>
+     <property name="icon">
+      <iconset resource="ibcp.qrc">
+       <normaloff>:/images/file-open-recent.png</normaloff>:/images/file-open-recent.png</iconset>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="actionClearRecent"/>
+    </widget>
     <addaction name="actionNew"/>
+    <addaction name="separator"/>
     <addaction name="actionOpen"/>
+    <addaction name="menuOpenRecent"/>
+    <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
@@ -160,6 +177,18 @@
    </property>
    <property name="statusTip">
     <string>Show the Qt library's About box</string>
+   </property>
+  </action>
+  <action name="actionClearRecent">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/file-clear-list.png</normaloff>:/images/file-clear-list.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Clear Recent List</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear Recent List</string>
    </property>
   </action>
  </widget>

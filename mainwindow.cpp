@@ -34,6 +34,8 @@
 #include "ui_mainwindow.h"
 #include "commandline.h"
 #include "editbox.h"
+#include "recentfiles.h"
+
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -50,6 +52,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// start GUI here
 	ui->setupUi(this);
+	m_recentPrograms = new RecentFiles(ui->menuOpenRecent, this);
+	connect(m_recentPrograms, SIGNAL(openFile(QString)),
+		this, SLOT(programOpen(const QString)));
 	settingsRestore();
 
 	// TODO settings will eventually have info about edit boxes that were open
@@ -70,10 +75,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	}
 
 	// load program if one was saved or specified on command line
-	if (!m_curProgram.isEmpty()				   // load a program?
-	        && (!QFile::exists(m_curProgram)   // program not found?
-	        || !programLoad(m_curProgram))     // program not loaded?
-			&& m_commandLine->fileName().isEmpty())  // no program argument
+	if (!m_curProgram.isEmpty()						// load a program?
+			&& (!QFile::exists(m_curProgram)		// program not found?
+			|| !programLoad(m_curProgram))			// program not loaded?
+			&& m_commandLine->fileName().isEmpty())	// no program argument
 	{
 		setCurProgram("");  // clear program path that was restored/set
 		// TODO should an warning message be issued here?
@@ -136,6 +141,14 @@ void MainWindow::on_actionOpen_triggered(void)
 }
 
 
+// function called when clear recent program list has been requested
+
+void MainWindow::on_actionClearRecent_triggered(void)
+{
+	m_recentPrograms->clear();
+}
+
+
 // function called when save program has been requested
 //
 //   - if the current program is not set, the save as function is called
@@ -193,7 +206,7 @@ void MainWindow::on_actionAbout_triggered(void)
 		"warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  "
 		"See the GNU General Public License for more details."));
 	aboutString.append(tr("<p>For a copy of the GNU General Public License, "
-        "<br>see <a href=\"http://www.gnu.org/licenses\" target=\"_blank\">"
+		"<br>see <a href=\"http://www.gnu.org/licenses\" target=\"_blank\">"
 		"http://www.gnu.org/licenses</a>."));
 
 	// add oxygen icon license statement
@@ -221,7 +234,7 @@ void MainWindow::setCurProgram(const QString &programPath)
 	QString program = tr("Untitled");
 	if (!m_curProgram.isEmpty())
 	{
-		program = QFileInfo(m_curProgram).fileName();
+		program = m_recentPrograms->addFile(m_curProgram);
 	}
 	setWindowTitle(tr("%1[*] - %2").arg(program).arg(tr("IBCP")));
 }
@@ -247,6 +260,17 @@ bool MainWindow::isOkToContinue(void)
 		}
 	}
 	return true;
+}
+
+
+// slot function connected to the open file signal
+
+void MainWindow::programOpen(const QString programPath)
+{
+	if (isOkToContinue())
+	{
+		programLoad(programPath);
+	}
 }
 
 
@@ -310,7 +334,8 @@ void MainWindow::settingsRestore(void)
 	QSettings settings("Thunder422", "IBCP");
 
 	restoreGeometry(settings.value("geometry").toByteArray());
-	setCurProgram(settings.value("curProgram").toString());
+	m_recentPrograms->restore(settings);
+	m_curProgram = settings.value("curProgram").toString();
 }
 
 
@@ -320,6 +345,7 @@ void MainWindow::settingsSave(void)
 	QSettings settings("Thunder422", "IBCP");
 
 	settings.setValue("geometry", saveGeometry());
+	m_recentPrograms->save(settings);
 	settings.setValue("curProgram", m_curProgram);
 }
 
