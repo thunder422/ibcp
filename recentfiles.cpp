@@ -153,9 +153,10 @@ void RecentFiles::updateActions(void)
 			QString number = tr("%1").arg(i + 1);
 			number.insert(number.length() - 1, QChar('&'));
 			QString text = tr("%1 %2").arg(number)
-				.arg(fileName(m_files[i]));
+				.arg(fileName(m_files.at(i)));
 			m_actions[i]->setText(text);
-			m_actions[i]->setData(m_files[i]);
+			m_actions[i]->setData(m_files.at(i));
+			m_actions[i]->setStatusTip(tr("Open %1").arg(m_files.at(i)));
 			m_actions[i]->setVisible(true);
 		}
 		else

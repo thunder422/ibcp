@@ -190,6 +190,9 @@
    <property name="toolTip">
     <string>Clear Recent List</string>
    </property>
+   <property name="statusTip">
+    <string>Clear the recent program list</string>
+   </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
