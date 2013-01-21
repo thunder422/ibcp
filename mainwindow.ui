@@ -210,6 +210,9 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="ibcp.qrc">
      <normaloff>:/images/edit-undo.png</normaloff>:/images/edit-undo.png</iconset>
@@ -225,6 +228,9 @@
    </property>
   </action>
   <action name="actionRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="ibcp.qrc">
      <normaloff>:/images/edit-redo.png</normaloff>:/images/edit-redo.png</iconset>
@@ -240,6 +246,9 @@
    </property>
   </action>
   <action name="actionCut">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="ibcp.qrc">
      <normaloff>:/images/edit-cut.png</normaloff>:/images/edit-cut.png</iconset>
@@ -255,6 +264,9 @@
    </property>
   </action>
   <action name="actionCopy">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="ibcp.qrc">
      <normaloff>:/images/edit-copy.png</normaloff>:/images/edit-copy.png</iconset>
@@ -285,6 +297,9 @@
    </property>
   </action>
   <action name="actionDelete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="ibcp.qrc">
      <normaloff>:/images/edit-delete.png</normaloff>:/images/edit-delete.png</iconset>

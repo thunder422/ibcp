@@ -67,6 +67,18 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
 
+	// connect available signals to the appropriate edit actions
+	connect(m_editBox, SIGNAL(undoAvailable(bool)),
+		ui->actionUndo, SLOT(setEnabled(bool)));
+	connect(m_editBox, SIGNAL(redoAvailable(bool)),
+		ui->actionRedo, SLOT(setEnabled(bool)));
+	connect(m_editBox, SIGNAL(copyAvailable(bool)),
+		ui->actionCut, SLOT(setEnabled(bool)));
+	connect(m_editBox, SIGNAL(copyAvailable(bool)),
+		ui->actionCopy, SLOT(setEnabled(bool)));
+	connect(m_editBox, SIGNAL(copyAvailable(bool)),
+		ui->actionDelete, SLOT(setEnabled(bool)));
+
 	// if a file name was specified on the command line
 	// then it overrides the restored program
 	if (!m_commandLine->fileName().isEmpty())
