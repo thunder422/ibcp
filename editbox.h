@@ -32,6 +32,8 @@ class EditBox : public QTextEdit
 	Q_OBJECT
 public:
 	explicit EditBox(QWidget *parent = 0);
+	void remove(void);
+	void selectAll(void);
 
 signals:
 

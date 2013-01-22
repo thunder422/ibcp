@@ -242,7 +242,7 @@ void MainWindow::on_actionPaste_triggered(void)
 
 void MainWindow::on_actionDelete_triggered(void)
 {
-	m_editBox->textCursor().removeSelectedText();
+	m_editBox->remove();
 }
 
 
@@ -250,9 +250,7 @@ void MainWindow::on_actionDelete_triggered(void)
 
 void MainWindow::on_actionSelectAll_triggered(void)
 {
-	QTextCursor textCursor = m_editBox->textCursor();
-	textCursor.select(QTextCursor::Document);
-	m_editBox->setTextCursor(textCursor);
+	m_editBox->selectAll();
 }
 
 

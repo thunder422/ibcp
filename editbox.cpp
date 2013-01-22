@@ -27,6 +27,25 @@
 EditBox::EditBox(QWidget *parent) :
 	QTextEdit(parent)
 {
+	setAcceptRichText(false);
+}
+
+
+// function to delete the currently select text (not to clipboard)
+
+void EditBox::remove(void)
+{
+	textCursor().removeSelectedText();
+}
+
+
+// function to select all of the text in the edit box
+
+void EditBox::selectAll(void)
+{
+	QTextCursor cursor = textCursor();
+	cursor.select(QTextCursor::Document);
+	setTextCursor(cursor);
 }
 
 
