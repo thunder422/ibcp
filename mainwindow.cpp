@@ -85,6 +85,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	{
 		setCurProgram(m_commandLine->fileName());
 	}
+	else
+	{
+		// make sure window title is set before continuing
+		setCurProgram(m_curProgram);
+	}
 
 	// load program if one was saved or specified on command line
 	if (!m_curProgram.isEmpty()						// load a program?
