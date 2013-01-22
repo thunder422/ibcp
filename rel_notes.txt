@@ -43,14 +43,24 @@ Planned Roadmap (needs to redone):
 	found in the git repository at https://github.com/thunder422/ibcp.
 
 
-Release 0.3.0 (2013-01-13)
+Release 0.3.1 (2013-01-21)
+
+	Project developmental release - additional GUI elements have been
+	implemented including restoring the file that was last being edited,
+	option to load a file from the command line, an open recent file list
+	sub-menu with a clear list option, remembering the current working
+	directory, edit menu and tool bar edit actions for undo, redo, cut,
+	copy, paste, delete and select all.
+
+
+Release 0.3.0 (2013-01-01)
 
 	Project developmental release - basic GUI elements have been
-	implemented including file and help menus with basic file
-	operation menu items, the tool bar with several file operations,
-	an edit box for editing the program and a status bar.  For now
-	the program only handles text files.  A resources file has also
-	been added to support imbedded icons.
+	implemented including file and help menus with basic file operation
+	menu items, the tool bar with several file operations, an edit box for
+	editing the program and a status bar.  For now the program only handles
+	text files.  A resources file has also been added to support imbedded
+	icons.
 
 
 Release 0.2.0 (2012-12-09)

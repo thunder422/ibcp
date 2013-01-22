@@ -34,8 +34,8 @@ currently being developed and currently supports the translation of
 BASIC expressions along a few BASIC commands (LET, PRINT, and INPUT)
 into a reverse polish notation format that will be used for fast
 execution of the BASIC program.  The GUI implementation has been started
-and now has the basic GUI elements including file and help menus with
-basic file operation menu items, the tool bar with several file
+and now has the basic GUI elements including file, edit and help menus
+with basic operation menu items, the tool bar with several file and edit
 operations, an edit box for editing the program and a status bar.  For
 now the program only handles text files.
 
@@ -68,8 +68,8 @@ tests but also look for memory leaks (requires the valgrind program).
 Command Line Options
 --------------------
 The -v option will output the version string and exit.  The -h or -?
-option will output the usage message and exit.  No options will start
-the GUI.
+option will output the usage message and exit.  No options or a single
+lone file path will start the GUI.
 
 
 Running Interactively
