@@ -28,6 +28,11 @@ EditBox::EditBox(QWidget *parent) :
 	QTextEdit(parent)
 {
 	setAcceptRichText(false);
+	QFont font = currentFont();
+	font.setFixedPitch(true);
+	font.setFamily("Monospace");
+	font.setStyleHint(QFont::Monospace);
+	setCurrentFont(font);
 }
 
 
