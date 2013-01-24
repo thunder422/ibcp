@@ -22,17 +22,46 @@
 //
 //	2012-12-29	initial version
 
+#include <QApplication>
+#include <QEvent>
+#include <QKeyEvent>
+
 #include "editbox.h"
+
 
 EditBox::EditBox(QWidget *parent) :
 	QTextEdit(parent)
 {
+	// set to only paste plain text into the edit box
 	setAcceptRichText(false);
+
+	// set the edit box to a fixed width font
 	QFont font = currentFont();
 	font.setFixedPitch(true);
 	font.setFamily("Monospace");
 	font.setStyleHint(QFont::Monospace);
 	setCurrentFont(font);
+
+	// install event filter to catch keyboard events
+	installEventFilter(this);
+}
+
+
+bool EditBox::eventFilter(QObject *obj, QEvent *event)
+{
+	if (event->type() == QEvent::KeyPress) {
+		QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+		if ((keyEvent->key() == Qt::Key_Return
+			|| keyEvent->key() == Qt::Key_Enter)
+			&& keyEvent->modifiers() & Qt::ControlModifier)
+		{
+			keyEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
+				Qt::NoModifier);
+			QApplication::postEvent(this, keyEvent);
+			return true;
+		}
+	}
+	return QTextEdit::eventFilter(obj, event);
 }
 
 
