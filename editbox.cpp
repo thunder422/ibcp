@@ -41,27 +41,26 @@ EditBox::EditBox(QWidget *parent) :
 	font.setFamily("Monospace");
 	font.setStyleHint(QFont::Monospace);
 	setCurrentFont(font);
-
-	// install event filter to catch keyboard events
-	installEventFilter(this);
 }
 
 
-bool EditBox::eventFilter(QObject *obj, QEvent *event)
+void EditBox::keyPressEvent(QKeyEvent *event)
 {
-	if (event->type() == QEvent::KeyPress) {
-		QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-		if ((keyEvent->key() == Qt::Key_Return
-			|| keyEvent->key() == Qt::Key_Enter)
-			&& keyEvent->modifiers() & Qt::ControlModifier)
+	switch (event->key())
+	{
+	case Qt::Key_Return:
+	case Qt::Key_Enter:
+		// intercept Control+Return and change it to a Return event
+		if (event->modifiers() & Qt::ControlModifier)
 		{
-			keyEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
+			event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
 				Qt::NoModifier);
-			QApplication::postEvent(this, keyEvent);
-			return true;
+			QApplication::postEvent(this, event);
+			return;
 		}
+		break;
 	}
-	return QTextEdit::eventFilter(obj, event);
+	QTextEdit::keyPressEvent(event);
 }
 
 

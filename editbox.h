@@ -37,7 +37,7 @@ public:
 	void remove(void);
 	void selectAll(void);
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
 signals:
 
