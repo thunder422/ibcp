@@ -46,6 +46,8 @@ EditBox::EditBox(QWidget *parent) :
 
 void EditBox::keyPressEvent(QKeyEvent *event)
 {
+	QTextCursor cursor = textCursor();
+
 	switch (event->key())
 	{
 	case Qt::Key_Return:
@@ -53,9 +55,13 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		// intercept Control+Return and change it to a Return event
 		if (event->modifiers() & Qt::ControlModifier)
 		{
-			event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
-				Qt::NoModifier);
-			QApplication::postEvent(this, event);
+			cursor.insertText("\n");
+			return;
+		}
+		// intercept Return when cursor is not at the end of a line
+		if (!cursor.atBlockEnd() || cursor.atBlockStart())
+		{
+			moveCursor(QTextCursor::NextBlock);
 			return;
 		}
 		break;
