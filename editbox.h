@@ -45,6 +45,7 @@ signals:
 
 public slots:
 	void documentChanged(void);
+	void cursorMoved(void);
 
 private:
 	void captureModifiedLine(void);

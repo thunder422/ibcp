@@ -47,6 +47,9 @@ EditBox::EditBox(QWidget *parent) :
 	// connect to catch document changes
 	connect(document(), SIGNAL(contentsChanged()),
 		this, SLOT(documentChanged()));
+
+	// connect to catch cursor position changes
+	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(cursorMoved()));
 }
 
 
@@ -70,11 +73,6 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			moveCursor(QTextCursor::NextBlock);
 			return;
 		}
-		break;
-
-	case Qt::Key_Up:
-	case Qt::Key_Down:
-		captureModifiedLine();
 		break;
 	}
 	QTextEdit::keyPressEvent(event);
@@ -116,6 +114,18 @@ void EditBox::documentChanged(void)
 }
 
 
+// function to check if cursor was moved from the modified line
+
+void EditBox::cursorMoved(void)
+{
+	if (m_lineModified >= 0 && m_lineModified != textCursor().blockNumber())
+	{
+		// there is a modified line and cursor moved from that line
+		captureModifiedLine();
+	}
+}
+
+
 // function to check if current line was modified and to process it
 
 void EditBox::captureModifiedLine(void)
@@ -123,9 +133,9 @@ void EditBox::captureModifiedLine(void)
 	if (m_lineModified >= 0)
 	{
 		// FIXME for now just output modified line's number and new contents
-		QString line = textCursor().block().text();
-		qDebug("Line #%d: <%s>", textCursor().blockNumber(), qPrintable(line));
-		// TODO emit lineModified(textCursor().blockNumber(), line);
+		QString line = document()->findBlockByNumber(m_lineModified).text();
+		qDebug("Line #%d: <%s>", m_lineModified, qPrintable(line));
+		// TODO emit lineModified(m_lineModified, line);
 
 		m_lineModified = -1;  // line processed, reset modified line number
 	}
