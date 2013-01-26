@@ -79,6 +79,22 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_editBox, SIGNAL(copyAvailable(bool)),
 		ui->actionDelete, SLOT(setEnabled(bool)));
 
+	// create actions for edit box context menu
+	QList<QAction *> actions;
+	actions.append(ui->actionUndo);
+	actions.append(ui->actionRedo);
+	actions.append(new QAction(m_editBox));
+	actions.last()->setSeparator(true);
+	actions.append(ui->actionCut);
+	actions.append(ui->actionCopy);
+	actions.append(ui->actionPaste);
+	actions.append(ui->actionDelete);
+	actions.append(new QAction(m_editBox));
+	actions.last()->setSeparator(true);
+	actions.append(ui->actionSelectAll);
+	m_editBox->addActions(actions);
+	m_editBox->setContextMenuPolicy(Qt::ActionsContextMenu);
+
 	// if a file name was specified on the command line
 	// then it overrides the restored program
 	if (!m_commandLine->fileName().isEmpty())
