@@ -36,13 +36,20 @@ public:
 	explicit EditBox(QWidget *parent = 0);
 	void remove(void);
 	void selectAll(void);
+	void resetModified(void);
+
 protected:
     void keyPressEvent(QKeyEvent *event);
 
 signals:
 
 public slots:
+	void documentChanged(void);
 
+private:
+	void captureModifiedLine(void);
+
+	int m_lineModified;				// current line that has been modified
 };
 
 #endif // EDITBOX_H

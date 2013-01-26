@@ -366,7 +366,7 @@ bool MainWindow::programLoad(const QString &programPath)
 	QTextStream input(&file);
 
 	m_editBox->setPlainText(input.readAll());
-	m_editBox->document()->setModified(false);
+	m_editBox->resetModified();
 
 	setCurProgram(programPath);
 	statusBar()->showMessage(tr("Program loaded"), 2000);
@@ -392,7 +392,7 @@ bool MainWindow::programSave(const QString &programPath)
 	}
 	QTextStream output(&file);
 	output << m_editBox->toPlainText();
-	m_editBox->document()->setModified(false);
+	m_editBox->resetModified();
 
 	setCurProgram(programPath);
 	statusBar()->showMessage(tr("Program saved"), 2000);

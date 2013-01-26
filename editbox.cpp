@@ -25,12 +25,14 @@
 #include <QApplication>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QTextBlock>
 
 #include "editbox.h"
 
 
 EditBox::EditBox(QWidget *parent) :
-	QTextEdit(parent)
+	QTextEdit(parent),
+	m_lineModified(-1)
 {
 	// set to only paste plain text into the edit box
 	setAcceptRichText(false);
@@ -41,6 +43,10 @@ EditBox::EditBox(QWidget *parent) :
 	font.setFamily("Monospace");
 	font.setStyleHint(QFont::Monospace);
 	setCurrentFont(font);
+
+	// connect to catch document changes
+	connect(document(), SIGNAL(contentsChanged()),
+		this, SLOT(documentChanged()));
 }
 
 
@@ -65,6 +71,11 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			return;
 		}
 		break;
+
+	case Qt::Key_Up:
+	case Qt::Key_Down:
+		captureModifiedLine();
+		break;
 	}
 	QTextEdit::keyPressEvent(event);
 }
@@ -85,6 +96,39 @@ void EditBox::selectAll(void)
 	QTextCursor cursor = textCursor();
 	cursor.select(QTextCursor::Document);
 	setTextCursor(cursor);
+}
+
+
+// function to reset the document modified flag and other variables
+
+void EditBox::resetModified(void)
+{
+	document()->setModified(false);
+	m_lineModified = -1;
+}
+
+
+// function to record the current line number when the document was changed
+
+void EditBox::documentChanged(void)
+{
+	m_lineModified = textCursor().blockNumber();
+}
+
+
+// function to check if current line was modified and to process it
+
+void EditBox::captureModifiedLine(void)
+{
+	if (m_lineModified >= 0)
+	{
+		// FIXME for now just output modified line's number and new contents
+		QString line = textCursor().block().text();
+		qDebug("Line #%d: <%s>", textCursor().blockNumber(), qPrintable(line));
+		// TODO emit lineModified(textCursor().blockNumber(), line);
+
+		m_lineModified = -1;  // line processed, reset modified line number
+	}
 }
 
 
