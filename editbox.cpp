@@ -264,10 +264,8 @@ void EditBox::captureModifiedLine(void)
 {
 	if (m_lineModified >= 0)
 	{
-		// FIXME for now just output modified line's number and new contents
 		QString line = document()->findBlockByNumber(m_lineModified).text();
-		qDebug("Line #%d: <%s>", m_lineModified, qPrintable(line));
-		// TODO emit lineModified(m_lineModified, line);
+		emit lineChanged(m_lineModified, line);
 
 		m_lineModified = -1;  // line processed, reset modified line number
 	}

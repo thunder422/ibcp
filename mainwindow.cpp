@@ -66,6 +66,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
+	connect(m_editBox, SIGNAL(lineChanged(int, QString)),
+		this, SLOT(programLineChanged(int, QString)));
 
 	// connect available signals to the appropriate edit actions
 	connect(m_editBox, SIGNAL(undoAvailable(bool)),
@@ -413,6 +415,15 @@ bool MainWindow::programSave(const QString &programPath)
 	setCurProgram(programPath);
 	statusBar()->showMessage(tr("Program saved"), 2000);
 	return true;
+}
+
+
+// function to catch when lines of the program have been changed
+
+void MainWindow::programLineChanged(int number, QString line)
+{
+	// FIXME for now just echo to the console
+	qDebug("Line #%d: <%s>", number, qPrintable(line));
 }
 
 

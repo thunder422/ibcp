@@ -42,6 +42,7 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 signals:
+	void lineChanged(int number, QString line);
 
 public slots:
 	void documentChanged(void);

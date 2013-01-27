@@ -70,6 +70,7 @@ private slots:
 	void on_actionPaste_triggered(void);
 	void on_actionDelete_triggered(void);
 	void on_actionSelectAll_triggered(void);
+	void programLineChanged(int number, QString line);
 
 private:
 	bool isOkToContinue(void);
