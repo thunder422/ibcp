@@ -46,11 +46,17 @@ signals:
 public slots:
 	void documentChanged(void);
 	void cursorMoved(void);
+	void undo(void);
+	void redo(void);
+	void undoAdded(void);
 
 private:
 	void captureModifiedLine(void);
 
 	int m_lineModified;				// current line that has been modified
+	int m_lineModCount;				// number of modifications to line
+	bool m_undoActive;				// line modified due to undo
+	bool m_ignoreChange;			// ignore next document change flag
 };
 
 #endif // EDITBOX_H
