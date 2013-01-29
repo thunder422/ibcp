@@ -33,6 +33,7 @@
 EditBox::EditBox(QWidget *parent) :
 	QTextEdit(parent),
 	m_lineModified(-1),
+	m_lineModType(LineModified),
 	m_undoActive(false),
 	m_ignoreChange(false)
 {
@@ -68,13 +69,13 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Return:
 	case Qt::Key_Enter:
 		// intercept Control+Return and change it to a Return event
-		if (event->modifiers() & Qt::ControlModifier)
+		if (event->modifiers() & Qt::ControlModifier
+			|| cursor.atBlockEnd() && !cursor.atBlockStart())
 		{
-			cursor.insertText("\n");
+			insertNewLine();
 			return;
 		}
-		// intercept Return when cursor is not at the end of a line
-		if (!cursor.atBlockEnd() || cursor.atBlockStart())
+		else  // intercept Return when cursor is not at the end of a line
 		{
 			moveCursor(QTextCursor::NextBlock);
 			return;
@@ -142,6 +143,7 @@ void EditBox::documentChanged(void)
 		{
 			m_lineModified = textCursor().blockNumber();
 			m_lineModCount = 0;
+			qDebug("Line #%d MODIFIED", m_lineModified);
 		}
 		m_undoActive = false;
 	}
@@ -258,6 +260,34 @@ void EditBox::redo(void)
 }
 
 
+// function to insert a new line and make sure lines are emitted as modified
+//
+//   - if cursor is at end of line, capture this line if it has been modified
+//   - else mark current line as being modified since it is being split
+//   - after new line inserted, mark new line as modified and inserted
+
+void EditBox::insertNewLine(void)
+{
+	if (textCursor().atBlockEnd())
+	{
+		// cursor at end of line, capture this line if it has been modified
+		captureModifiedLine();
+	}
+	else
+	{
+		// mark current line as being modified  since it is being split
+		m_lineModified = textCursor().blockNumber();
+	}
+	m_ignoreChange = true;
+	textCursor().insertText("\n");
+
+	// mark this new line as modified and inserted
+	m_lineModified = textCursor().blockNumber();
+	m_lineModCount = 0;
+	m_lineModType = LineInserted;
+}
+
+
 // function to check if current line was modified and to process it
 
 void EditBox::captureModifiedLine(void)
@@ -265,9 +295,10 @@ void EditBox::captureModifiedLine(void)
 	if (m_lineModified >= 0)
 	{
 		QString line = document()->findBlockByNumber(m_lineModified).text();
-		emit lineChanged(m_lineModified, line);
+		emit lineChanged(m_lineModified, m_lineModType, line);
 
 		m_lineModified = -1;  // line processed, reset modified line number
+		m_lineModType = LineModified;
 	}
 }
 
