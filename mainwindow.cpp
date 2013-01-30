@@ -66,8 +66,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
-	connect(m_editBox, SIGNAL(lineChanged(int, EditBox::LineType, QString)),
-		this, SLOT(programLineChanged(int, EditBox::LineType, QString)));
+	connect(m_editBox, SIGNAL(lineChanged(int, QString)),
+		this, SLOT(programLineChanged(int, QString)));
+	connect(m_editBox, SIGNAL(linesInserted(int, QStringList)),
+		this, SLOT(programLinesInserted(int, QStringList)));
 
 	// connect available signals to the appropriate edit actions
 	connect(m_editBox, SIGNAL(undoAvailable(bool)),
@@ -420,21 +422,22 @@ bool MainWindow::programSave(const QString &programPath)
 
 // function to catch when lines of the program have been changed
 
-void MainWindow::programLineChanged(int number, EditBox::LineType type,
-	QString line)
+void MainWindow::programLineChanged(int number, QString line)
 {
 	// FIXME for now just echo to the console
-	QString typeStr;
-	switch (type)
+	qDebug("Line #%d Changed: <%s>", number, qPrintable(line));
+}
+
+
+// function to catch when lines of the program have been inserted
+
+void MainWindow::programLinesInserted(int number, QStringList lines)
+{
+	// FIXME for now just echo to the console
+	foreach (QString line, lines)
 	{
-	case EditBox::LineInserted:
-		typeStr = " Inserted";
-		break;
-	case EditBox::LineDeleted:
-		typeStr = " Deleted";
-		break;
+		qDebug("Line #%d Inserted <%s>", number++, qPrintable(line));
 	}
-	qDebug("Line #%d:%s <%s>", number, qPrintable(typeStr), qPrintable(line));
 }
 
 

@@ -33,7 +33,7 @@
 EditBox::EditBox(QWidget *parent) :
 	QTextEdit(parent),
 	m_lineModified(-1),
-	m_lineModType(LineModified),
+	m_lineModType(LineChanged),
 	m_undoActive(false),
 	m_ignoreChange(false)
 {
@@ -295,10 +295,17 @@ void EditBox::captureModifiedLine(void)
 	if (m_lineModified >= 0)
 	{
 		QString line = document()->findBlockByNumber(m_lineModified).text();
-		emit lineChanged(m_lineModified, m_lineModType, line);
+		if (m_lineModType == LineChanged)
+		{
+			emit lineChanged(m_lineModified, line);
+		}
+		else
+		{
+			emit linesInserted(m_lineModified, QStringList() << line);
+		}
 
 		m_lineModified = -1;  // line processed, reset modified line number
-		m_lineModType = LineModified;
+		m_lineModType = LineChanged;
 	}
 }
 

@@ -38,18 +38,13 @@ public:
 	void selectAll(void);
 	void resetModified(void);
 
-	enum LineType {
-		LineModified,
-		LineInserted,
-		LineDeleted,
-		sizeof_LineType
-	};
-
 protected:
     void keyPressEvent(QKeyEvent *event);
 
 signals:
-	void lineChanged(int number, EditBox::LineType type, QString line);
+	void lineChanged(int number, QString line);
+	void linesInserted(int number, QStringList lines);
+	void linesDeleted(int number, int count);
 
 public slots:
 	void documentChanged(void);
@@ -61,6 +56,13 @@ public slots:
 private:
 	void insertNewLine(void);
 	void captureModifiedLine(void);
+
+	enum LineType {
+		LineChanged,
+		LineInserted,
+		LineDeleted,
+		sizeof_LineType
+	};
 
 	int m_lineModified;				// current line that has been modified
 	int m_lineModCount;				// number of modifications to line
