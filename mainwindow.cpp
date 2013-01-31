@@ -70,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent) :
 		this, SLOT(programLineChanged(int, QString)));
 	connect(m_editBox, SIGNAL(linesInserted(int, QStringList)),
 		this, SLOT(programLinesInserted(int, QStringList)));
+	connect(m_editBox, SIGNAL(linesDeleted(int, int)),
+		this, SLOT(programLinesDeleted(int, int)));
 
 	// connect available signals to the appropriate edit actions
 	connect(m_editBox, SIGNAL(undoAvailable(bool)),
@@ -437,6 +439,18 @@ void MainWindow::programLinesInserted(int number, QStringList lines)
 	foreach (QString line, lines)
 	{
 		qDebug("Line #%d Inserted <%s>", number++, qPrintable(line));
+	}
+}
+
+
+// function to catch when lines of the program have been deleted
+
+void MainWindow::programLinesDeleted(int number, int count)
+{
+	// FIXME for now just echo to the console
+	while (--count >= 0)
+	{
+		qDebug("Line #%d Deleted", number++);
 	}
 }
 

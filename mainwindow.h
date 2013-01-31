@@ -73,6 +73,7 @@ private slots:
 	void on_actionSelectAll_triggered(void);
 	void programLineChanged(int number, QString line);
 	void programLinesInserted(int number, QStringList lines);
+	void programLinesDeleted(int number, int count);
 
 private:
 	bool isOkToContinue(void);

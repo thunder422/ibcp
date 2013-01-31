@@ -93,6 +93,24 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			redo();  // do redo here
 			return;
 		}
+		if (event->matches(QKeySequence::Delete))
+		{
+			if (cursor.atBlockEnd() && !cursor.atEnd()
+				 && !cursor.hasSelection())
+			{
+				// next line is about to be deleted
+				emit linesDeleted(cursor.blockNumber() + 1, 1);
+			}
+		}
+		if (event->key() == Qt::Key_Backspace)
+		{
+			if (cursor.atBlockStart() && !cursor.atStart()
+				 && !cursor.hasSelection())
+			{
+				// current line is about to be deleted
+				emit linesDeleted(cursor.blockNumber(), 1);
+			}
+		}
 	}
 	QTextEdit::keyPressEvent(event);
 }
