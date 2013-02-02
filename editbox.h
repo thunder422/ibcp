@@ -25,11 +25,11 @@
 #ifndef EDITBOX_H
 #define EDITBOX_H
 
-#include <QTextEdit>
+#include <QPlainTextEdit>
 
 class QEvent;
 
-class EditBox : public QTextEdit
+class EditBox : public QPlainTextEdit
 {
 	Q_OBJECT
 public:

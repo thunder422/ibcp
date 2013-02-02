@@ -31,21 +31,18 @@
 
 
 EditBox::EditBox(QWidget *parent) :
-	QTextEdit(parent),
+	QPlainTextEdit(parent),
 	m_lineModified(-1),
 	m_lineModType(LineChanged),
 	m_undoActive(false),
 	m_ignoreChange(false)
 {
-	// set to only paste plain text into the edit box
-	setAcceptRichText(false);
-
 	// set the edit box to a fixed width font
-	QFont font = currentFont();
+	QFont font = this->font();
 	font.setFixedPitch(true);
 	font.setFamily("Monospace");
 	font.setStyleHint(QFont::Monospace);
-	setCurrentFont(font);
+	setFont(font);
 
 	// connect to catch document changes
 	connect(document(), SIGNAL(contentsChanged()),
@@ -112,7 +109,7 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			}
 		}
 	}
-	QTextEdit::keyPressEvent(event);
+	QPlainTextEdit::keyPressEvent(event);
 }
 
 
@@ -211,7 +208,7 @@ void EditBox::undo(void)
 		m_ignoreChange = true;
 	}
 	int line = textCursor().blockNumber();
-	QTextEdit::undo();
+	QPlainTextEdit::undo();
 	m_ignoreChange = false;  // reset flag if still set
 
 	if (line != textCursor().blockNumber())
@@ -251,7 +248,7 @@ void EditBox::redo(void)
 	{
 		m_ignoreChange = true;
 	}
-	QTextEdit::redo();
+	QPlainTextEdit::redo();
 	m_ignoreChange = false;  // reset flag if still set
 
 	if (m_lineModified == -1)
