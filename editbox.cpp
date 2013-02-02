@@ -25,6 +25,7 @@
 #include <QApplication>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QPainter>
 #include <QTextBlock>
 
 #include "editbox.h"
@@ -54,6 +55,16 @@ EditBox::EditBox(QWidget *parent) :
 	// connect to catch when undo commands are added
 	connect(document(), SIGNAL(undoCommandAdded()),
 		this, SLOT(undoAdded()));
+
+	// create line number area width and connect signal to update it
+	m_lineNumberWidget = new LineNumberWidget(this);
+
+	connect(this, SIGNAL(blockCountChanged(int)),
+		this, SLOT(updateLineNumberWidgetWidth(int)));
+	connect(this, SIGNAL(updateRequest(QRect, int)),
+		this, SLOT(updateLineNumberWidget(QRect, int)));
+
+	updateLineNumberWidgetWidth();
 }
 
 
@@ -321,6 +332,92 @@ void EditBox::captureModifiedLine(void)
 
 		m_lineModified = -1;  // line processed, reset modified line number
 		m_lineModType = LineChanged;
+	}
+}
+
+
+// function to calculate the width needed for the line number area widget
+
+int EditBox::lineNumberWidgetWidth(void)
+{
+	int digits = 3;  // add one space to each side of the numbers
+	int max = blockCount();
+	while (max > 10 - BaseLineNumber)
+	{
+		max /= 10;
+		digits++;
+	}
+	return fontMetrics().width(QLatin1Char('9')) * digits;
+}
+
+
+// function to update the line number area width based on the maximum line
+
+void EditBox::updateLineNumberWidgetWidth(void)
+{
+	setViewportMargins(lineNumberWidgetWidth(), 0, 0, 0);
+}
+
+
+// function to update the line number area when display update requested
+
+void EditBox::updateLineNumberWidget(const QRect &rect, int dy)
+{
+	if (dy)
+	{
+		m_lineNumberWidget->scroll(0, dy);
+	}
+	else
+	{
+		m_lineNumberWidget->update(0, rect.y(), m_lineNumberWidget->width(),
+			rect.height());
+	}
+
+	if (rect.contains(viewport()->rect()))
+	{
+		updateLineNumberWidgetWidth();
+	}
+}
+
+
+// function to set line number area rectangle upon a resize event
+
+void EditBox::resizeEvent(QResizeEvent *event)
+{
+	QPlainTextEdit::resizeEvent(event);
+
+	QRect rect = contentsRect();
+	m_lineNumberWidget->setGeometry(QRect(rect.left(), rect.top(),
+		lineNumberWidgetWidth(), rect.height()));
+}
+
+
+// function to draw the line number area (from line number area paint event)
+
+void EditBox::paintLineNumberWidget(QPaintEvent *event)
+{
+	QPainter painter(m_lineNumberWidget);
+	painter.fillRect(event->rect(), Qt::lightGray);
+
+	QTextBlock block = firstVisibleBlock();
+	int blockNumber = block.blockNumber();
+	int top = (int)blockBoundingGeometry(block).translated(contentOffset())
+		.top();
+	int bottom = top + (int)blockBoundingRect(block).height();
+
+	while (block.isValid() && top <= event->rect().bottom())
+	{
+		if (block.isVisible() && bottom >= event->rect().top())
+		{
+			QString number = QString("%1 ").arg(blockNumber + BaseLineNumber);
+			painter.setPen(Qt::black);
+			painter.drawText(0, top, m_lineNumberWidget->width(),
+				fontMetrics().height(), Qt::AlignRight, number);
+		}
+		block = block.next();
+		top = bottom;
+		bottom = top + (int)blockBoundingRect(block).height();
+		blockNumber++;
 	}
 }
 

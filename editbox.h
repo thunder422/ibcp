@@ -37,9 +37,12 @@ public:
 	void remove(void);
 	void selectAll(void);
 	void resetModified(void);
+	int lineNumberWidgetWidth(void);
+	void paintLineNumberWidget(QPaintEvent *event);
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+	void keyPressEvent(QKeyEvent *event);
+	void resizeEvent(QResizeEvent *event);
 
 signals:
 	void lineChanged(int number, QString line);
@@ -53,6 +56,10 @@ public slots:
 	void redo(void);
 	void undoAdded(void);
 
+private slots:
+	void updateLineNumberWidgetWidth(void);
+	void updateLineNumberWidget(const QRect &rect, int dy);
+
 private:
 	void insertNewLine(void);
 	void captureModifiedLine(void);
@@ -63,12 +70,40 @@ private:
 		LineDeleted,
 		sizeof_LineType
 	};
+	enum {
+		BaseLineNumber = 0			// number of first line
+	};
 
 	int m_lineModified;				// current line that has been modified
 	int m_lineModCount;				// number of modifications to line
 	LineType m_lineModType;			// lone modification type
 	bool m_undoActive;				// line modified due to undo
 	bool m_ignoreChange;			// ignore next document change flag
+	QWidget *m_lineNumberWidget;	// widget to display line numbers
 };
+
+
+class LineNumberWidget : public QWidget
+{
+public:
+	LineNumberWidget(EditBox *editBox) : QWidget(editBox)
+	{
+		m_editBox = editBox;
+	}
+	QSize sizeHint() const
+	{
+		return QSize(m_editBox->lineNumberWidgetWidth(), 0);
+	}
+
+protected:
+	void paintEvent(QPaintEvent *event)
+	{
+		m_editBox->paintLineNumberWidget(event);
+	}
+
+private:
+	EditBox *m_editBox;
+};
+
 
 #endif // EDITBOX_H
