@@ -26,8 +26,48 @@
 #define EDITBOX_H
 
 #include <QPlainTextEdit>
+#include <QTextBlock>
 
 class QEvent;
+
+
+class Selection
+{
+	int m_start;					// start position of selection
+	int m_end;						// end position of selection
+	int m_startLine;				// start line of selection
+	int m_endLine;					// end line of selection
+
+public:
+	Selection(void) {}
+	void setFromCursor(const QTextCursor &cursor)
+	{
+		m_start = cursor.selectionStart();
+		m_end = cursor.selectionEnd();
+
+		QTextBlock block = cursor.document()->findBlock(m_start);
+		m_startLine = block.blockNumber();
+		block = cursor.document()->findBlock(m_end);
+		m_endLine = block.blockNumber();
+	}
+	bool isEmpty(void)
+	{
+		return m_start == m_end;
+	}
+	int lines(void)
+	{
+		return m_endLine - m_startLine + 1;
+	}
+	int startLine(void)
+	{
+		return m_startLine;
+	}
+	int endLine(void)
+	{
+		return m_endLine;
+	}
+};
+
 
 class EditBox : public QPlainTextEdit
 {
@@ -51,6 +91,7 @@ signals:
 
 public slots:
 	void documentChanged(void);
+	void documentChanged(int position, int charsRemoved, int charsAdded);
 	void cursorMoved(void);
 	void undo(void);
 	void redo(void);
@@ -63,6 +104,7 @@ private slots:
 private:
 	void insertNewLine(void);
 	void captureModifiedLine(void);
+	void captureDeletedLines(void);
 
 	enum LineType {
 		LineChanged,
@@ -80,6 +122,9 @@ private:
 	bool m_undoActive;				// line modified due to undo
 	bool m_ignoreChange;			// ignore next document change flag
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
+	Selection m_beforeSelection;	// selection info before edit operation
+	int m_charsRemoved;				// from most recent docuemnt change
+	int m_charsAdded;				// from most recent docuemnt change
 };
 
 

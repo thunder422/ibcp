@@ -36,7 +36,9 @@ EditBox::EditBox(QWidget *parent) :
 	m_lineModified(-1),
 	m_lineModType(LineChanged),
 	m_undoActive(false),
-	m_ignoreChange(false)
+	m_ignoreChange(false),
+	m_charsRemoved(0),
+	m_charsAdded(0)
 {
 	// set the edit box to a fixed width font
 	QFont font = this->font();
@@ -48,6 +50,10 @@ EditBox::EditBox(QWidget *parent) :
 	// connect to catch document changes
 	connect(document(), SIGNAL(contentsChanged()),
 		this, SLOT(documentChanged()));
+
+	// connect to catch specific document changes
+	connect(document(), SIGNAL(contentsChange(int, int, int)),
+		this, SLOT(documentChanged(int, int, int)));
 
 	// connect to catch cursor position changes
 	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(cursorMoved()));
@@ -71,6 +77,7 @@ EditBox::EditBox(QWidget *parent) :
 void EditBox::keyPressEvent(QKeyEvent *event)
 {
 	QTextCursor cursor = textCursor();
+	m_beforeSelection.setFromCursor(cursor);
 
 	switch (event->key())
 	{
@@ -121,10 +128,11 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
+	captureDeletedLines();
 }
 
 
-// function to delete the currently select text (not to clipboard)
+// function to delete the currently selected text (not to the clipboard)
 
 void EditBox::remove(void)
 {
@@ -169,10 +177,16 @@ void EditBox::documentChanged(void)
 		{
 			m_lineModified = textCursor().blockNumber();
 			m_lineModCount = 0;
-			qDebug("Line #%d MODIFIED", m_lineModified);
 		}
 		m_undoActive = false;
 	}
+}
+
+
+void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
+{
+	m_charsRemoved = charsRemoved;
+	m_charsAdded = charsAdded;
 }
 
 
@@ -333,6 +347,24 @@ void EditBox::captureModifiedLine(void)
 		m_lineModified = -1;  // line processed, reset modified line number
 		m_lineModType = LineChanged;
 	}
+}
+
+
+// function to check for modified lines when there is a selection
+
+void EditBox::captureDeletedLines(void)
+{
+	if (!m_beforeSelection.isEmpty() && m_charsRemoved > 0)
+	{
+		if (m_beforeSelection.lines() > 1)
+		{
+			emit linesDeleted(m_beforeSelection.startLine(),
+				m_beforeSelection.lines() - 1);
+		}
+	}
+	// reset charaters removed and added variables
+	m_charsRemoved = 0;
+	m_charsAdded = 0;
 }
 
 
