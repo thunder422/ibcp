@@ -132,11 +132,23 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 }
 
 
+// function to cut the currently selected text to the clipboard
+
+void EditBox::cut(void)
+{
+	m_beforeSelection.setFromCursor(textCursor());
+	QPlainTextEdit::cut();
+	captureDeletedLines();
+}
+
+
 // function to delete the currently selected text (not to the clipboard)
 
 void EditBox::remove(void)
 {
+	m_beforeSelection.setFromCursor(textCursor());
 	textCursor().removeSelectedText();
+	captureDeletedLines();
 }
 
 

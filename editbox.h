@@ -74,6 +74,7 @@ class EditBox : public QPlainTextEdit
 	Q_OBJECT
 public:
 	explicit EditBox(QWidget *parent = 0);
+	void cut(void);
 	void remove(void);
 	void selectAll(void);
 	void resetModified(void);
