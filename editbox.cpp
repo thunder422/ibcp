@@ -122,13 +122,28 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			if (cursor.atBlockStart() && !cursor.atStart()
 				 && !cursor.hasSelection())
 			{
-				// current line is about to be deleted
-				emit linesDeleted(cursor.blockNumber(), 1);
+				if (m_lineModType == LineInserted)
+				{
+					// this line has not actually been added yet (reset status)
+					m_lineModified = -1;
+					m_lineModType == LineChanged;
+					if (cursor.atBlockEnd())  // is line blank?
+					{
+						// don't let modified line get set
+						m_ignoreChange = true;
+					}
+				}
+				else
+				{
+					// current line is about to be deleted
+					emit linesDeleted(cursor.blockNumber(), 1);
+				}
 			}
 		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
 	captureDeletedLines();
+	m_ignoreChange = false;
 }
 
 
@@ -179,11 +194,7 @@ void EditBox::resetModified(void)
 
 void EditBox::documentChanged(void)
 {
-	if (m_ignoreChange)
-	{
-		m_ignoreChange = false;
-	}
-	else
+	if (!m_ignoreChange)
 	{
 		if (m_lineModified == -1)
 		{
@@ -206,7 +217,8 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void EditBox::cursorMoved(void)
 {
-	if (m_lineModified >= 0 && m_lineModified != textCursor().blockNumber())
+	if (!m_ignoreChange && m_lineModified >= 0
+		&& m_lineModified != textCursor().blockNumber())
 	{
 		// there is a modified line and cursor moved from that line
 		captureModifiedLine();
@@ -332,6 +344,7 @@ void EditBox::insertNewLine(void)
 	}
 	m_ignoreChange = true;
 	textCursor().insertText("\n");
+	m_ignoreChange = false;
 
 	// mark this new line as modified and inserted
 	m_lineModified = textCursor().blockNumber();
