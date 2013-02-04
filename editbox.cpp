@@ -66,7 +66,7 @@ EditBox::EditBox(QWidget *parent) :
 	m_lineNumberWidget = new LineNumberWidget(this);
 
 	connect(this, SIGNAL(blockCountChanged(int)),
-		this, SLOT(updateLineNumberWidgetWidth(int)));
+		this, SLOT(updateLineNumberWidgetWidth()));
 	connect(this, SIGNAL(updateRequest(QRect, int)),
 		this, SLOT(updateLineNumberWidget(QRect, int)));
 
