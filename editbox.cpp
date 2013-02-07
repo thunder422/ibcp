@@ -114,8 +114,15 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 				 && !cursor.hasSelection())
 			{
 				// next line is about to be deleted
-				emit linesDeleted(cursor.blockNumber() + 1, 1);
+				int line = cursor.blockNumber() + 1;
+				if (document()->findBlockByLineNumber(line).text().isEmpty())
+				{
+					// next line blank, prevent delete setting modified line
+					m_ignoreChange = true;
+				}
+				emit linesDeleted(line, 1);
 			}
+			break;
 		}
 		if (event->key() == Qt::Key_Backspace)
 		{
@@ -129,16 +136,34 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 					m_lineModType == LineChanged;
 					if (cursor.atBlockEnd())  // is line blank?
 					{
-						// don't let modified line get set
+						// prevent backspace setting modified line
 						m_ignoreChange = true;
 					}
 				}
 				else
 				{
-					// current line is about to be deleted
-					emit linesDeleted(cursor.blockNumber(), 1);
+					int line = cursor.blockNumber();
+					if (document()->findBlockByLineNumber(line - 1).text()
+					    .isEmpty())
+					{
+						// previous line blank, mark it for deletion instead
+						line--;
+						m_ignoreChange = true;
+					}
+					// indicate line is about to be deleted
+					emit linesDeleted(line, 1);
+					// line was deleted, make sure it is not reported changed
+					m_lineModified = -1;
+
+					// is line is blank, combine won't modified previous line
+					if (cursor.atBlockEnd())
+					{
+						// prevent backspace setting modified line
+						m_ignoreChange = true;
+					}
 				}
 			}
+			break;
 		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
