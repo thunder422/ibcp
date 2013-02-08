@@ -133,7 +133,7 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 				{
 					// this line has not actually been added yet (reset status)
 					m_lineModified = -1;
-					m_lineModType == LineChanged;
+					m_lineModType = LineChanged;
 					if (cursor.atBlockEnd())  // is line blank?
 					{
 						// prevent backspace setting modified line
