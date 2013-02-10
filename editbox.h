@@ -76,6 +76,7 @@ public:
 	explicit EditBox(QWidget *parent = 0);
 	void cut(void);
 	void remove(void);
+	void paste(void);
 	void selectAll(void);
 	void resetModified(void);
 	int lineNumberWidgetWidth(void);
@@ -104,7 +105,7 @@ private slots:
 
 private:
 	void backspace(QTextCursor &cursor);
-	void insertNewLine(void);
+	void insertText(const QString &text);
 	void captureModifiedLine(void);
 	void captureDeletedLines(void);
 
