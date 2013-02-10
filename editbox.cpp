@@ -148,14 +148,22 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 					{
 						// previous line blank, mark it for deletion instead
 						line--;
+						if (m_lineModified >= 0)  // current line modified?
+						{
+							// adjust modified line to its new line
+							m_lineModified--;
+						}
 						m_ignoreChange = true;
+					}
+					else
+					{
+						// line was deleted, do not report as changed
+						m_lineModified = -1;
 					}
 					// indicate line is about to be deleted
 					emit linesDeleted(line, 1);
-					// line was deleted, make sure it is not reported changed
-					m_lineModified = -1;
 
-					// is line is blank, combine won't modified previous line
+					// is line is blank, combine won't modify previous line
 					if (cursor.atBlockEnd())
 					{
 						// prevent backspace setting modified line
