@@ -126,51 +126,7 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		}
 		if (event->key() == Qt::Key_Backspace)
 		{
-			if (cursor.atBlockStart() && !cursor.atStart()
-				 && !cursor.hasSelection())
-			{
-				if (m_lineModType == LineInserted)
-				{
-					// this line has not actually been added yet (reset status)
-					m_lineModified = -1;
-					m_lineModType = LineChanged;
-					if (cursor.atBlockEnd())  // is line blank?
-					{
-						// prevent backspace setting modified line
-						m_ignoreChange = true;
-					}
-				}
-				else
-				{
-					int line = cursor.blockNumber();
-					if (document()->findBlockByLineNumber(line - 1).text()
-					    .isEmpty())
-					{
-						// previous line blank, mark it for deletion instead
-						line--;
-						if (m_lineModified >= 0)  // current line modified?
-						{
-							// adjust modified line to its new line
-							m_lineModified--;
-						}
-						m_ignoreChange = true;
-					}
-					else
-					{
-						// line was deleted, do not report as changed
-						m_lineModified = -1;
-					}
-					// indicate line is about to be deleted
-					emit linesDeleted(line, 1);
-
-					// is line is blank, combine won't modify previous line
-					if (cursor.atBlockEnd())
-					{
-						// prevent backspace setting modified line
-						m_ignoreChange = true;
-					}
-				}
-			}
+			backspace(cursor);
 			break;
 		}
 	}
@@ -197,6 +153,64 @@ void EditBox::remove(void)
 	m_beforeSelection.setFromCursor(textCursor());
 	textCursor().removeSelectedText();
 	captureDeletedLines();
+}
+
+
+// function to process a backspace (check if line will be combined with previous)
+//
+//   - if not at beginning of line or at beginning of file or there is a
+//     selection, then there is nothing to do here
+//   - if current line is a new (inserted) line not reported yet,
+//     then the modified line and inserted status is reset
+//   - else if previous line is blank, then previous line is marked for deletion
+//     otherwise the current line is marked for deleted (modified line reset)
+//   - emits the line being deleted
+//   - if current line is blank, then previous line will not be modified
+//     when combined so ignore the change
+
+void EditBox::backspace(QTextCursor &cursor)
+{
+	if (!cursor.atBlockStart() || cursor.atStart() || cursor.hasSelection())
+	{
+		return;
+	}
+
+	if (m_lineModType == LineInserted)
+	{
+		// this line has not actually been added yet (reset status)
+		m_lineModified = -1;
+		m_lineModType = LineChanged;
+	}
+	else
+	{
+		int line = cursor.blockNumber();
+		if (document()->findBlockByLineNumber(line - 1).text()
+		    .isEmpty())
+		{
+			// previous line blank, mark it for deletion instead
+			line--;
+			if (m_lineModified >= 0)  // current line modified?
+			{
+				// adjust modified line to its new line
+				m_lineModified--;
+			}
+			m_ignoreChange = true;
+		}
+		else
+		{
+			// line was deleted, do not report as changed
+			m_lineModified = -1;
+		}
+		// indicate line is about to be deleted
+		emit linesDeleted(line, 1);
+	}
+
+	if (cursor.atBlockEnd())  // is line blank?
+	{
+		// prevent backspace setting modified line
+		// (previous line not actually be modified)
+		m_ignoreChange = true;
+	}
 }
 
 

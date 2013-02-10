@@ -103,6 +103,7 @@ private slots:
 	void updateLineNumberWidget(const QRect &rect, int dy);
 
 private:
+	void backspace(QTextCursor &cursor);
 	void insertNewLine(void);
 	void captureModifiedLine(void);
 	void captureDeletedLines(void);
