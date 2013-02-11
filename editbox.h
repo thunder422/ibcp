@@ -84,6 +84,7 @@ public:
 
 protected:
 	void keyPressEvent(QKeyEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
 	void resizeEvent(QResizeEvent *event);
 
 signals:

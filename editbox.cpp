@@ -75,6 +75,8 @@ EditBox::EditBox(QWidget *parent) :
 }
 
 
+// function to handle key press events
+
 void EditBox::keyPressEvent(QKeyEvent *event)
 {
 	QTextCursor cursor = textCursor();
@@ -139,6 +141,20 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 	QPlainTextEdit::keyPressEvent(event);
 	captureDeletedLines();
 	m_ignoreChange = false;
+}
+
+
+// function to handle mouse release events
+
+void EditBox::mouseReleaseEvent(QMouseEvent *event)
+{
+	QClipboard *clipboard = QApplication::clipboard();
+	if (event->button() == Qt::MiddleButton && clipboard->supportsSelection())
+	{
+		insertText(clipboard->text(QClipboard::Selection));
+		return;
+	}
+	QPlainTextEdit::mouseReleaseEvent(event);
 }
 
 
@@ -224,8 +240,7 @@ void EditBox::backspace(QTextCursor &cursor)
 
 void EditBox::paste(void)
 {
-	QString text = QApplication::clipboard()->text();
-	insertText(text);
+	insertText(QApplication::clipboard()->text());
 }
 
 
