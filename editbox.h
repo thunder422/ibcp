@@ -106,6 +106,7 @@ private slots:
 
 private:
 	void backspace(QTextCursor &cursor);
+	bool pasteSelection(const QPoint &pos = QPoint());
 	void insertText(const QString &text);
 	void captureModifiedLine(void);
 	void captureDeletedLines(void);

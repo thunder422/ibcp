@@ -100,6 +100,19 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		}
 		break;
 
+	case Qt::Key_Backspace:
+		backspace(cursor);
+		break;
+
+	case Qt::Key_Insert:
+		if (event->modifiers() & Qt::ShiftModifier
+			&& event->modifiers() & Qt::ControlModifier
+			&& pasteSelection())
+		{
+			return;
+		}
+		break;
+
 	default:  // check for key sequences
 		if (event->matches(QKeySequence::Undo))
 		{
@@ -127,11 +140,6 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			}
 			break;
 		}
-		if (event->key() == Qt::Key_Backspace)
-		{
-			backspace(cursor);
-			break;
-		}
 		if (event->matches(QKeySequence::Paste))
 		{
 			paste();  // intercept paste
@@ -148,11 +156,8 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 
 void EditBox::mouseReleaseEvent(QMouseEvent *event)
 {
-	QClipboard *clipboard = QApplication::clipboard();
-	if (event->button() == Qt::MiddleButton && clipboard->supportsSelection())
+	if (event->button() == Qt::MiddleButton && pasteSelection(event->pos()))
 	{
-		setTextCursor(cursorForPosition(event->pos()));
-		insertText(clipboard->text(QClipboard::Selection));
 		return;
 	}
 	QPlainTextEdit::mouseReleaseEvent(event);
@@ -245,6 +250,24 @@ void EditBox::paste(void)
 }
 
 
+// function to paste the current selection if supported into the program
+
+bool EditBox::pasteSelection(const QPoint &pos)
+{
+	QClipboard *clipboard = QApplication::clipboard();
+	if (clipboard->supportsSelection())
+	{
+		if (pos != QPoint())
+		{
+			setTextCursor(cursorForPosition(pos));
+		}
+		insertText(clipboard->text(QClipboard::Selection));
+		return true;
+	}
+	return false;
+}
+
+
 // function to select all of the text in the edit box
 
 void EditBox::selectAll(void)
@@ -278,6 +301,7 @@ void EditBox::documentChanged(void)
 		{
 			m_lineModified = textCursor().blockNumber();
 			m_lineModCount = 0;
+			qDebug("MODIFIED Line #%d", m_lineModified);
 		}
 		m_undoActive = false;
 	}
