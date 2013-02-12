@@ -151,6 +151,7 @@ void EditBox::mouseReleaseEvent(QMouseEvent *event)
 	QClipboard *clipboard = QApplication::clipboard();
 	if (event->button() == Qt::MiddleButton && clipboard->supportsSelection())
 	{
+		setTextCursor(cursorForPosition(event->pos()));
 		insertText(clipboard->text(QClipboard::Selection));
 		return;
 	}
