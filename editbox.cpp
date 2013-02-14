@@ -105,11 +105,20 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		break;
 
 	case Qt::Key_Insert:
-		if (event->modifiers() & Qt::ShiftModifier
-			&& event->modifiers() & Qt::ControlModifier
-			&& pasteSelection())
+		if (event->modifiers() & Qt::ShiftModifier)
 		{
-			return;
+			if (event->modifiers() & Qt::ControlModifier)
+			{
+				if (pasteSelection())
+				{
+					return;
+				}
+			}
+			else
+			{
+				paste();  // intercept paste
+				return;
+			}
 		}
 		break;
 
@@ -140,7 +149,7 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			}
 			break;
 		}
-		if (event->matches(QKeySequence::Paste))
+		if (event->matches(QKeySequence::Paste))  // this is only Control+V
 		{
 			paste();  // intercept paste
 			return;
@@ -251,6 +260,8 @@ void EditBox::paste(void)
 
 
 // function to paste the current selection if supported into the program
+//
+//   - return true on success, false if selection is not supported
 
 bool EditBox::pasteSelection(const QPoint &pos)
 {
