@@ -105,6 +105,11 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		break;
 
 	case Qt::Key_Insert:
+		if (event->modifiers() == Qt::NoModifier)
+		{
+			setOverwriteMode(!overwriteMode());
+			return;
+		}
 		if (event->modifiers() & Qt::ShiftModifier)
 		{
 			if (event->modifiers() & Qt::ControlModifier)
