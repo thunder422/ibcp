@@ -555,10 +555,32 @@ void EditBox::captureDeletedLines(void)
 {
 	if (!m_beforeSelection.isEmpty() && m_charsRemoved > 0)
 	{
-		if (m_beforeSelection.lines() > 1)
+		if (m_beforeSelection.newLines() > 0)
 		{
-			emit linesDeleted(m_beforeSelection.startLine(),
-				m_beforeSelection.lines() - 1);
+			int firstLine = m_beforeSelection.startLine();
+
+			// if start is not at begin of line
+			// or start is at end of line and end is not at begin of line
+			// then don't report first line as deleted
+			if (!m_beforeSelection.startAtLineBegin()
+				|| m_beforeSelection.startAtLineEnd()
+				&& !m_beforeSelection.endAtLineBegin())
+			{
+				firstLine++;
+			}
+
+			// if start and end are at begin of line
+			// or start and end are at end of line
+			// then current line after deltion should not be set as modified
+			if (m_beforeSelection.startAtLineBegin()
+				&& m_beforeSelection.endAtLineBegin()
+				|| m_beforeSelection.startAtLineEnd()
+				&& m_beforeSelection.endAtLineEnd())
+			{
+				m_lineModified = -1;
+			}
+
+			emit linesDeleted(firstLine, m_beforeSelection.newLines());
 		}
 	}
 	// reset charaters removed and added variables

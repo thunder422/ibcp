@@ -37,9 +37,14 @@ class Selection
 	int m_end;						// end position of selection
 	int m_startLine;				// start line of selection
 	int m_endLine;					// end line of selection
+	int m_startLineBegin;			// position of begin of start line
+	int m_startLineEnd;				// position of end of start line
+	int m_endLineBegin;				// position of begin of end line
+	int m_endLineEnd;				// position of end of end line
 
 public:
 	Selection(void) {}
+	// set selction info from a text cursor
 	void setFromCursor(const QTextCursor &cursor)
 	{
 		m_start = cursor.selectionStart();
@@ -47,24 +52,52 @@ public:
 
 		QTextBlock block = cursor.document()->findBlock(m_start);
 		m_startLine = block.blockNumber();
+		m_startLineBegin = block.position();
+		m_startLineEnd = m_startLineBegin + block.length() - 1;
 		block = cursor.document()->findBlock(m_end);
 		m_endLine = block.blockNumber();
+		m_endLineBegin = block.position();
+		m_endLineEnd = m_endLineBegin + block.length() - 1;
 	}
+	// return if there is no selection
 	bool isEmpty(void)
 	{
 		return m_start == m_end;
 	}
-	int lines(void)
+	// return number of new lines in selection
+	int newLines(void)
 	{
-		return m_endLine - m_startLine + 1;
+		return m_endLine - m_startLine;
 	}
+	// return start selection line number
 	int startLine(void)
 	{
 		return m_startLine;
 	}
+	// return end selection line number
 	int endLine(void)
 	{
 		return m_endLine;
+	}
+	// return if start selection position is at the begin of the line
+	bool startAtLineBegin(void)
+	{
+		return m_start == m_startLineBegin;
+	}
+	// return if start selection position is at the end of the line
+	bool startAtLineEnd(void)
+	{
+		return m_start == m_startLineEnd;
+	}
+	// return if end selection position is at being of the line
+	bool endAtLineBegin(void)
+	{
+		return m_end == m_endLineBegin;
+	}
+	// return if end selection position is at end of the line
+	bool endAtLineEnd(void)
+	{
+		return m_end == m_endLineEnd;
 	}
 };
 
