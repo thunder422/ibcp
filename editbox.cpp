@@ -572,10 +572,10 @@ void EditBox::captureDeletedLines(void)
 			// if start and end are at begin of line
 			// or start and end are at end of line
 			// then current line after deltion should not be set as modified
-			if (m_beforeSelection.startAtLineBegin()
+			if (m_charsAdded == 0 && (m_beforeSelection.startAtLineBegin()
 				&& m_beforeSelection.endAtLineBegin()
 				|| m_beforeSelection.startAtLineEnd()
-				&& m_beforeSelection.endAtLineEnd())
+				&& m_beforeSelection.endAtLineEnd()))
 			{
 				m_lineModified = -1;
 			}
