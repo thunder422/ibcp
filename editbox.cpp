@@ -303,6 +303,17 @@ void EditBox::resetModified(void)
 }
 
 
+// overloaded function  to catch when setting document text
+
+void EditBox::setPlainText(const QString &text)
+{
+	// ignore changes caused by setting document text
+	m_ignoreChange = true;
+	QPlainTextEdit::setPlainText(text);
+	m_ignoreChange = false;
+}
+
+
 // function to record the current line number when the document was changed
 //
 //   - if indicated to ignore change, then just returns
@@ -326,6 +337,11 @@ void EditBox::documentChanged(void)
 
 void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 {
+	if (m_ignoreChange)
+	{
+		return;
+	}
+
 	m_charsRemoved = charsRemoved;
 	m_charsAdded = charsAdded;
 }

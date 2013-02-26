@@ -112,6 +112,8 @@ public:
 	void paste(void);
 	void selectAll(void);
 	void resetModified(void);
+	void setPlainText(const QString &text);
+
 	int lineNumberWidgetWidth(void);
 	void paintLineNumberWidget(QPaintEvent *event);
 
