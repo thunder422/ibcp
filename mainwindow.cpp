@@ -66,12 +66,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
-	connect(m_editBox, SIGNAL(lineChanged(int, QString)),
-		this, SLOT(programLineChanged(int, QString)));
-	connect(m_editBox, SIGNAL(linesInserted(int, QStringList)),
-		this, SLOT(programLinesInserted(int, QStringList)));
-	connect(m_editBox, SIGNAL(linesDeleted(int, int)),
-		this, SLOT(programLinesDeleted(int, int)));
+	connect(m_editBox, SIGNAL(linesChanged(int, int, int, QStringList)),
+		this, SLOT(programChanged(int, int, int, QStringList)));
 
 	// connect available signals to the appropriate edit actions
 	connect(m_editBox, SIGNAL(undoAvailable(bool)),
@@ -424,33 +420,24 @@ bool MainWindow::programSave(const QString &programPath)
 
 // function to catch when lines of the program have been changed
 
-void MainWindow::programLineChanged(int number, QString line)
+void MainWindow::programChanged(int lineNumber, int linesDeleted,
+		int linesInserted, QStringList lines)
 {
 	// FIXME for now just echo to the console
-	qDebug("Line #%d Changed: <%s>", number, qPrintable(line));
-}
-
-
-// function to catch when lines of the program have been inserted
-
-void MainWindow::programLinesInserted(int number, QStringList lines)
-{
-	// FIXME for now just echo to the console
-	foreach (QString line, lines)
+	int i;
+	int count = lines.count();
+	for (i = 0; i < count - linesInserted; i++)
 	{
-		qDebug("Line #%d Inserted <%s>", number++, qPrintable(line));
+		qDebug("Line #%d Changed: <%s>", lineNumber++, qPrintable(lines.at(i)));
 	}
-}
-
-
-// function to catch when lines of the program have been deleted
-
-void MainWindow::programLinesDeleted(int number, int count)
-{
-	// FIXME for now just echo to the console
-	while (--count >= 0)
+	for (; i < linesDeleted; i++)
 	{
-		qDebug("Line #%d Deleted", number++);
+		qDebug("Line #%d Deleted", lineNumber++);
+	}
+	while (i < count)
+	{
+		qDebug("Line #%d Inserted <%s>", lineNumber++,
+			qPrintable(lines.at(i++)));
 	}
 }
 

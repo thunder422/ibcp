@@ -35,11 +35,10 @@
 EditBox::EditBox(QWidget *parent) :
 	QPlainTextEdit(parent),
 	m_lineModified(-1),
+	m_lineModCount(0),
 	m_lineModType(LineChanged),
 	m_undoActive(false),
-	m_ignoreChange(false),
-	m_charsRemoved(0),
-	m_charsAdded(0)
+	m_ignoreChange(false)
 {
 	// set the edit box to a fixed width font
 	QFont font = this->font();
@@ -47,10 +46,6 @@ EditBox::EditBox(QWidget *parent) :
 	font.setFamily("Monospace");
 	font.setStyleHint(QFont::Monospace);
 	setFont(font);
-
-	// connect to catch document changes
-	connect(document(), SIGNAL(contentsChanged()),
-		this, SLOT(documentChanged()));
 
 	// connect to catch specific document changes
 	connect(document(), SIGNAL(contentsChange(int, int, int)),
@@ -90,7 +85,7 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		if (event->modifiers() & Qt::ControlModifier
 			|| cursor.atBlockEnd() && !cursor.atBlockStart())
 		{
-			insertText("\n");
+			cursor.insertText("\n");
 			return;
 		}
 		else  // intercept Return when cursor is not at the end of a line
@@ -138,22 +133,6 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			redo();  // do redo here
 			return;
 		}
-		if (event->matches(QKeySequence::Delete))
-		{
-			if (cursor.atBlockEnd() && !cursor.atEnd()
-				 && !cursor.hasSelection())
-			{
-				// next line is about to be deleted
-				int line = cursor.blockNumber() + 1;
-				if (document()->findBlockByLineNumber(line).text().isEmpty())
-				{
-					// next line blank, prevent delete setting modified line
-					m_ignoreChange = true;
-				}
-				emit linesDeleted(line, 1);
-			}
-			break;
-		}
 		if (event->matches(QKeySequence::Paste))  // this is only Control+V
 		{
 			paste();  // intercept paste
@@ -161,7 +140,6 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
-	captureDeletedLines();
 	m_ignoreChange = false;
 }
 
@@ -184,7 +162,6 @@ void EditBox::cut(void)
 {
 	m_beforeSelection.setFromCursor(textCursor());
 	QPlainTextEdit::cut();
-	captureDeletedLines();
 }
 
 
@@ -194,7 +171,6 @@ void EditBox::remove(void)
 {
 	m_beforeSelection.setFromCursor(textCursor());
 	textCursor().removeSelectedText();
-	captureDeletedLines();
 }
 
 
@@ -236,7 +212,7 @@ void EditBox::backspace(QTextCursor &cursor)
 				// adjust modified line to its new line
 				m_lineModified--;
 			}
-			m_ignoreChange = true;
+			// FIXME m_ignoreChange = true;
 		}
 		else
 		{
@@ -244,14 +220,14 @@ void EditBox::backspace(QTextCursor &cursor)
 			m_lineModified = -1;
 		}
 		// indicate line is about to be deleted
-		emit linesDeleted(line, 1);
+		// FIXME emit linesDeleted(line, 1);
 	}
 
 	if (cursor.atBlockEnd())  // is line blank?
 	{
 		// prevent backspace setting modified line
 		// (previous line not actually be modified)
-		m_ignoreChange = true;
+		// FIXME m_ignoreChange = true;
 	}
 }
 
@@ -260,7 +236,7 @@ void EditBox::backspace(QTextCursor &cursor)
 
 void EditBox::paste(void)
 {
-	insertText(QApplication::clipboard()->text());
+	QPlainTextEdit::paste();
 }
 
 
@@ -310,30 +286,16 @@ void EditBox::setPlainText(const QString &text)
 	// ignore changes caused by setting document text
 	m_ignoreChange = true;
 	QPlainTextEdit::setPlainText(text);
+	m_lineCount = document()->blockCount();
 	m_ignoreChange = false;
 }
 
 
-// function to record the current line number when the document was changed
+// function to detect lines changed when the document was changed
 //
-//   - if indicated to ignore change, then just returns
-//   - if no modified line, then set modified line to current line
-//   - resets undo active flag, don't track undos as line changes
-
-void EditBox::documentChanged(void)
-{
-	if (!m_ignoreChange)
-	{
-		if (m_lineModified == -1)
-		{
-			m_lineModified = textCursor().blockNumber();
-			m_lineModCount = 0;
-			qDebug("MODIFIED Line #%d", m_lineModified);
-		}
-		m_undoActive = false;
-	}
-}
-
+//   - determines the number of lines that were modified
+//   - determines the net line count changed of the document
+//   - determines if lines were inserted, changed or deleted
 
 void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 {
@@ -342,8 +304,76 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		return;
 	}
 
-	m_charsRemoved = charsRemoved;
-	m_charsAdded = charsAdded;
+	int linesInserted = 0;
+	int linesDeleted = 0;
+	QStringList lines;
+
+	QTextBlock block = document()->findBlock(position);
+	int lineNumber = block.blockNumber();
+	bool positionAtLineBegin = position == block.position();
+
+	QTextCursor cursor = textCursor();
+	int linesModified = cursor.blockNumber() - lineNumber;
+	int newLineCount = document()->blockCount();
+	int netLineCount = newLineCount - m_lineCount;
+
+	// TODO may need to handle if m_lineModType == LineInserted here
+
+	if (linesModified != 0 || netLineCount != 0)  // multiple lines affected?
+	{
+		if (linesModified == netLineCount && positionAtLineBegin)
+		{
+			// single line changed and at begin of line
+			linesInserted = netLineCount;
+			linesModified = 0;
+		}
+		else
+		{
+			// multiple lines changed
+			// or not at begin of line or not at end of line
+
+			// check if last line is new before linesModified is changed
+			if (linesModified == netLineCount && !positionAtLineBegin
+				|| cursor.atBlockEnd())
+			{
+				m_lineModType = LineInserted;
+			}
+
+			if (netLineCount <= 0)  // lines deleted from document?
+			{
+				// check if result is a single line and was not at begin of line
+				if (linesModified == 0 && !positionAtLineBegin)
+				{
+					lineNumber++;  // first line deleted if after current line
+				}
+				linesDeleted = -netLineCount;
+			}
+			else  // lines were added to document
+			{
+				// adjust number of lines changed
+				linesModified -= netLineCount;
+				linesInserted = netLineCount;
+				if (m_lineModType == LineInserted)
+				{
+					// adjust lines changed/inserted if last line is new
+					linesModified++;
+					linesInserted--;
+				}
+			}
+		}
+		if (linesModified + linesInserted > 0)
+		{
+			// get list of lines changed and inserted
+			for (int i = 0; i < linesModified + linesInserted; i++)
+			{
+				lines << document()->findBlockByNumber(lineNumber + i).text();
+			}
+		}
+		emit linesChanged(lineNumber, linesDeleted, linesInserted, lines);
+		m_lineCount = newLineCount;
+	}
+	m_lineModified = cursor.blockNumber();
+	m_lineModCount = 0;
 }
 
 
@@ -388,7 +418,7 @@ void EditBox::undo(void)
 	// if no modified line or undo active, indicate to ignore next change
 	if (m_lineModified == -1 || m_undoActive)
 	{
-		m_ignoreChange = true;
+		// FIXME m_ignoreChange = true;
 	}
 	int line = textCursor().blockNumber();
 	QPlainTextEdit::undo();
@@ -429,7 +459,7 @@ void EditBox::redo(void)
 {
 	if (m_lineModified == -1)
 	{
-		m_ignoreChange = true;
+		// FIXME m_ignoreChange = true;
 	}
 	QPlainTextEdit::redo();
 	m_ignoreChange = false;  // reset flag if still set
@@ -464,6 +494,7 @@ void EditBox::redo(void)
 //   - else mark current line as being modified since it is being split
 //   - after new line inserted, mark new line as modified and inserted
 
+// FIMXE this function may longer be necessary
 void EditBox::insertText(const QString &text)
 {
 	// gather info before text is inserted
@@ -516,7 +547,7 @@ void EditBox::insertText(const QString &text)
 	}
 	if (!lines.isEmpty())
 	{
-		emit linesInserted(initialLine + firstInsertedLineOffset, lines);
+		// emit linesInserted(initialLine + firstInsertedLineOffset, lines);
 	}
 
 	// determine status of last line
@@ -549,59 +580,13 @@ void EditBox::captureModifiedLine(void)
 {
 	if (m_lineModified >= 0)
 	{
-		QString line = document()->findBlockByNumber(m_lineModified).text();
-		if (m_lineModType == LineChanged)
-		{
-			emit lineChanged(m_lineModified, line);
-		}
-		else
-		{
-			emit linesInserted(m_lineModified, QStringList() << line);
-		}
+		emit linesChanged(m_lineModified, 0,
+			m_lineModType == LineChanged ? 0 : 1, QStringList()
+			<< document()->findBlockByNumber(m_lineModified).text());
 
 		m_lineModified = -1;  // line processed, reset modified line number
 		m_lineModType = LineChanged;
 	}
-}
-
-
-// function to check for modified lines when there is a selection
-
-void EditBox::captureDeletedLines(void)
-{
-	if (!m_beforeSelection.isEmpty() && m_charsRemoved > 0)
-	{
-		if (m_beforeSelection.newLines() > 0)
-		{
-			int firstLine = m_beforeSelection.startLine();
-
-			// if start is not at begin of line
-			// or start is at end of line and end is not at begin of line
-			// then don't report first line as deleted
-			if (!m_beforeSelection.startAtLineBegin()
-				|| m_beforeSelection.startAtLineEnd()
-				&& !m_beforeSelection.endAtLineBegin())
-			{
-				firstLine++;
-			}
-
-			// if start and end are at begin of line
-			// or start and end are at end of line
-			// then current line after deltion should not be set as modified
-			if (m_charsAdded == 0 && (m_beforeSelection.startAtLineBegin()
-				&& m_beforeSelection.endAtLineBegin()
-				|| m_beforeSelection.startAtLineEnd()
-				&& m_beforeSelection.endAtLineEnd()))
-			{
-				m_lineModified = -1;
-			}
-
-			emit linesDeleted(firstLine, m_beforeSelection.newLines());
-		}
-	}
-	// reset charaters removed and added variables
-	m_charsRemoved = 0;
-	m_charsAdded = 0;
 }
 
 

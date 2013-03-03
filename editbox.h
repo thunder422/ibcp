@@ -123,12 +123,10 @@ protected:
 	void resizeEvent(QResizeEvent *event);
 
 signals:
-	void lineChanged(int number, QString line);
-	void linesInserted(int number, QStringList lines);
-	void linesDeleted(int number, int count);
+	void linesChanged(int lineNumber, int linesDeleted, int linesInserted,
+		QStringList lines);
 
 public slots:
-	void documentChanged(void);
 	void documentChanged(int position, int charsRemoved, int charsAdded);
 	void cursorMoved(void);
 	void undo(void);
@@ -144,12 +142,10 @@ private:
 	bool pasteSelection(const QPoint &pos = QPoint());
 	void insertText(const QString &text);
 	void captureModifiedLine(void);
-	void captureDeletedLines(void);
 
 	enum LineType {
 		LineChanged,
 		LineInserted,
-		LineDeleted,
 		sizeof_LineType
 	};
 	enum {
@@ -163,8 +159,7 @@ private:
 	bool m_ignoreChange;			// ignore next document change flag
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
 	Selection m_beforeSelection;	// selection info before edit operation
-	int m_charsRemoved;				// from most recent docuemnt change
-	int m_charsAdded;				// from most recent docuemnt change
+	int m_lineCount;				// total document line count
 };
 
 
