@@ -109,7 +109,6 @@ public:
 	explicit EditBox(QWidget *parent = 0);
 	void cut(void);
 	void remove(void);
-	void paste(void);
 	void selectAll(void);
 	void resetModified(void);
 	void setPlainText(const QString &text);
@@ -119,7 +118,6 @@ public:
 
 protected:
 	void keyPressEvent(QKeyEvent *event);
-	void mouseReleaseEvent(QMouseEvent *event);
 	void resizeEvent(QResizeEvent *event);
 
 signals:
@@ -140,7 +138,6 @@ private slots:
 private:
 	void backspace(QTextCursor &cursor);
 	bool pasteSelection(const QPoint &pos = QPoint());
-	void insertText(const QString &text);
 	void captureModifiedLine(void);
 
 	enum LineType {

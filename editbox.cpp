@@ -133,26 +133,9 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 			redo();  // do redo here
 			return;
 		}
-		if (event->matches(QKeySequence::Paste))  // this is only Control+V
-		{
-			paste();  // intercept paste
-			return;
-		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
 	m_ignoreChange = false;
-}
-
-
-// function to handle mouse release events
-
-void EditBox::mouseReleaseEvent(QMouseEvent *event)
-{
-	if (event->button() == Qt::MiddleButton && pasteSelection(event->pos()))
-	{
-		return;
-	}
-	QPlainTextEdit::mouseReleaseEvent(event);
 }
 
 
@@ -232,14 +215,6 @@ void EditBox::backspace(QTextCursor &cursor)
 }
 
 
-// function to paste the clipboard into the program
-
-void EditBox::paste(void)
-{
-	QPlainTextEdit::paste();
-}
-
-
 // function to paste the current selection if supported into the program
 //
 //   - return true on success, false if selection is not supported
@@ -253,7 +228,7 @@ bool EditBox::pasteSelection(const QPoint &pos)
 		{
 			setTextCursor(cursorForPosition(pos));
 		}
-		insertText(clipboard->text(QClipboard::Selection));
+		textCursor().insertText(clipboard->text(QClipboard::Selection));
 		return true;
 	}
 	return false;
@@ -484,92 +459,6 @@ void EditBox::redo(void)
 	else
 	{
 		m_lineModCount++;  // increment line change count if undo not active
-	}
-}
-
-
-// function to insert a new line and make sure lines are emitted as modified
-//
-//   - if cursor is at end of line, capture this line if it has been modified
-//   - else mark current line as being modified since it is being split
-//   - after new line inserted, mark new line as modified and inserted
-
-// FIMXE this function may longer be necessary
-void EditBox::insertText(const QString &text)
-{
-	// gather info before text is inserted
-	int initialLine = textCursor().blockNumber();
-	bool initialAtLineStart = textCursor().atBlockStart();
-	bool initialAtLineEnd = textCursor().atBlockEnd();
-
-	// set flag if initial line is modified or will be modified by text
-	// (at begin of line and text does not end with a new line)
-	bool initialLineModified = m_lineModified >= 0
-		|| initialAtLineStart && !text.endsWith('\n');
-
-	// check if current line will be modified by inserted text
-	if (!initialAtLineStart && (!initialAtLineEnd || !text.startsWith('\n'))
-		|| initialAtLineEnd && !text.startsWith('\n') && !text.endsWith('\n'))
-	{
-		// if in middle of line
-		// or not at begin of line and text does not start with a new line
-		// or at end of line and text does not start or end with a new line
-		// then current line will be modified by the inserted text
-		m_lineModified = initialLine;
-	}
-
-	// insert the text and ignore the document change signal
-	m_ignoreChange = true;
-	textCursor().insertText(text);
-	m_ignoreChange = false;
-
-	// check if inserted text does not contain new lines
-	int newLines = text.count('\n');  // count number of new lines in text
-	if (newLines == 0)
-	{
-		return;  // nothing further to do (no new lines will be inserted)
-	}
-
-	// capture the original cursor line if not initially at beginning of line
-	if (!initialAtLineStart)
-	{
-		captureModifiedLine();  // (resets m_lineModified to -1)
-	}
-
-	// capture any new lines inserted
-	QStringList lines;
-	int firstInsertedLineOffset = initialAtLineStart && (!initialAtLineEnd
-		|| !text.startsWith('\n') || initialLineModified) ? 0 : 1;
-	for (int i = firstInsertedLineOffset; i < newLines; i++)
-	{
-		QString line = document()->findBlockByNumber(initialLine + i).text();
-		lines.append(line);
-	}
-	if (!lines.isEmpty())
-	{
-		// emit linesInserted(initialLine + firstInsertedLineOffset, lines);
-	}
-
-	// determine status of last line
-	if (firstInsertedLineOffset == 0)  // inserting at begin of line?
-	{
-		// if this line was modified or the inserted text does not end
-		// with a new line, then mark the new cursor line as modified
-		if (initialLineModified || !text.endsWith('\n'))
-		{
-			m_lineModified = textCursor().blockNumber();
-		}
-		else  // current unmodifed line was just moved, clear modified line
-		{
-			m_lineModified = -1;
-		}
-	}
-	else  // new cursor line has not been inserted yet
-	{
-		// mark this new line as modified and to be inserted
-		m_lineModified = textCursor().blockNumber();
-		m_lineModCount = 0;
-		m_lineModType = LineInserted;
 	}
 }
 
