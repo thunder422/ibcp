@@ -136,7 +136,6 @@ private slots:
 	void updateLineNumberWidget(const QRect &rect, int dy);
 
 private:
-	void backspace(QTextCursor &cursor);
 	bool pasteSelection(const QPoint &pos = QPoint());
 	void captureModifiedLine(void);
 
