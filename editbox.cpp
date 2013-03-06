@@ -240,14 +240,11 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 			linesInserted = netLineCount;
 			linesModified = 0;
 		}
-		else
+		else  // changed multiple lines or single line and not at begin of line
 		{
-			// multiple lines changed
-			// or not at begin of line or not at end of line
-
 			// check if last line is new before linesModified is changed
 			if (linesModified == netLineCount && !positionAtLineBegin
-				|| cursor.atBlockEnd())
+				|| cursor.atBlockEnd() && charsAdded > 0)
 			{
 				m_lineModType = LineInserted;
 			}
