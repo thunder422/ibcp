@@ -36,7 +36,7 @@ EditBox::EditBox(QWidget *parent) :
 	QPlainTextEdit(parent),
 	m_lineModified(-1),
 	m_lineModCount(0),
-	m_lineModType(LineChanged),
+	m_lineModifiedIsNew(false),
 	m_undoActive(false),
 	m_ignoreChange(false)
 {
@@ -246,18 +246,18 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 			if (linesModified == netLineCount && !positionAtLineBegin
 				|| cursor.atBlockEnd() && charsAdded > 0)
 			{
-				m_lineModType = LineInserted;
+				m_lineModifiedIsNew = true;
 			}
 
 			if (netLineCount <= 0)  // lines deleted from document?
 			{
 				// check if current line is a newly inserted line
-				if (m_lineModType == LineInserted)
+				if (m_lineModifiedIsNew)
 				{
 					// (backspace at begin of new modified line
 					// or delete at end of new modified line)
 					// reset new line status, and no lines deleted
-					m_lineModType = LineChanged;
+					m_lineModifiedIsNew = false;
 					netLineCount = 0;
 					lineNumber = -1;  // prevent empty signal
 				}
@@ -273,7 +273,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 				// adjust number of lines changed
 				linesModified -= netLineCount;
 				linesInserted = netLineCount;
-				if (m_lineModType == LineInserted)
+				if (m_lineModifiedIsNew)
 				{
 					// adjust lines changed/inserted if last line is new
 					linesModified++;
@@ -418,12 +418,12 @@ void EditBox::captureModifiedLine(void)
 {
 	if (m_lineModified >= 0)
 	{
-		emit linesChanged(m_lineModified, 0,
-			m_lineModType == LineChanged ? 0 : 1, QStringList()
+		emit linesChanged(m_lineModified, 0, m_lineModifiedIsNew ? 1 : 0,
+			QStringList()
 			<< document()->findBlockByNumber(m_lineModified).text());
 
 		m_lineModified = -1;  // line processed, reset modified line number
-		m_lineModType = LineChanged;
+		m_lineModifiedIsNew = false;
 	}
 }
 

@@ -139,18 +139,13 @@ private:
 	bool pasteSelection(const QPoint &pos = QPoint());
 	void captureModifiedLine(void);
 
-	enum LineType {
-		LineChanged,
-		LineInserted,
-		sizeof_LineType
-	};
 	enum {
 		BaseLineNumber = 0			// number of first line
 	};
 
 	int m_lineModified;				// current line that has been modified
 	int m_lineModCount;				// number of modifications to line
-	LineType m_lineModType;			// lone modification type
+	bool m_lineModifiedIsNew;		// modified line is a new line flag
 	bool m_undoActive;				// line modified due to undo
 	bool m_ignoreChange;			// ignore next document change flag
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
