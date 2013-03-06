@@ -430,7 +430,7 @@ void MainWindow::programChanged(int lineNumber, int linesDeleted,
 	{
 		qDebug("Line #%d Changed: <%s>", lineNumber++, qPrintable(lines.at(i)));
 	}
-	for (; i < linesDeleted; i++)
+	while (--linesDeleted >= 0)
 	{
 		qDebug("Line #%d Deleted", lineNumber++);
 	}
