@@ -251,10 +251,20 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 			if (netLineCount <= 0)  // lines deleted from document?
 			{
-				// check if result is a single line and was not at begin of line
-				if (linesModified == 0 && !positionAtLineBegin)
+				// check if current line is a newly inserted line
+				if (m_lineModType == LineInserted)
 				{
-					lineNumber++;  // first line deleted if after current line
+					// (backspace at begin of new modified line
+					// or delete at end of new modified line)
+					// reset new line status, and no lines deleted
+					m_lineModType = LineChanged;
+					netLineCount = 0;
+					lineNumber = -1;  // prevent empty signal
+				}
+				// check if result is a single line and was not at begin of line
+				else if (linesModified == 0 && !positionAtLineBegin)
+				{
+					lineNumber++;  // first line deleted is after current line
 				}
 				linesDeleted = -netLineCount;
 			}
@@ -271,15 +281,19 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 				}
 			}
 		}
-		if (linesModified + linesInserted > 0)
+		if (lineNumber != -1)
 		{
-			// get list of lines changed and inserted
-			for (int i = 0; i < linesModified + linesInserted; i++)
+			if (linesModified + linesInserted > 0)
 			{
-				lines << document()->findBlockByNumber(lineNumber + i).text();
+				// get list of lines changed and inserted
+				for (int i = 0; i < linesModified + linesInserted; i++)
+				{
+					lines << document()->findBlockByNumber(lineNumber
+						+ i).text();
+				}
 			}
+			emit linesChanged(lineNumber, linesDeleted, linesInserted, lines);
 		}
-		emit linesChanged(lineNumber, linesDeleted, linesInserted, lines);
 		m_lineCount = newLineCount;
 	}
 	m_lineModified = cursor.blockNumber();
