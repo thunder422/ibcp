@@ -75,7 +75,6 @@ EditBox::EditBox(QWidget *parent) :
 void EditBox::keyPressEvent(QKeyEvent *event)
 {
 	QTextCursor cursor = textCursor();
-	m_beforeSelection.setFromCursor(cursor);
 
 	switch (event->key())
 	{
@@ -140,20 +139,10 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 }
 
 
-// function to cut the currently selected text to the clipboard
-
-void EditBox::cut(void)
-{
-	m_beforeSelection.setFromCursor(textCursor());
-	QPlainTextEdit::cut();
-}
-
-
 // function to delete the currently selected text (not to the clipboard)
 
 void EditBox::remove(void)
 {
-	m_beforeSelection.setFromCursor(textCursor());
 	textCursor().removeSelectedText();
 }
 
