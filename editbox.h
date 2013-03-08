@@ -55,9 +55,6 @@ signals:
 public slots:
 	void documentChanged(int position, int charsRemoved, int charsAdded);
 	void cursorMoved(void);
-	void undo(void);
-	void redo(void);
-	void undoAdded(void);
 
 private slots:
 	void updateLineNumberWidgetWidth(void);
@@ -72,9 +69,7 @@ private:
 	};
 
 	int m_lineModified;				// current line that has been modified
-	int m_lineModCount;				// number of modifications to line
 	bool m_lineModifiedIsNew;		// modified line is a new line flag
-	bool m_undoActive;				// line modified due to undo
 	bool m_ignoreChange;			// ignore next document change flag
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
 	int m_lineCount;				// total document line count

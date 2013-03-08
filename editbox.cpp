@@ -35,9 +35,7 @@
 EditBox::EditBox(QWidget *parent) :
 	QPlainTextEdit(parent),
 	m_lineModified(-1),
-	m_lineModCount(0),
 	m_lineModifiedIsNew(false),
-	m_undoActive(false),
 	m_ignoreChange(false)
 {
 	// set the edit box to a fixed width font
@@ -53,10 +51,6 @@ EditBox::EditBox(QWidget *parent) :
 
 	// connect to catch cursor position changes
 	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(cursorMoved()));
-
-	// connect to catch when undo commands are added
-	connect(document(), SIGNAL(undoCommandAdded()),
-		this, SLOT(undoAdded()));
 
 	// create line number area width and connect signal to update it
 	m_lineNumberWidget = new LineNumberWidget(this);
@@ -123,16 +117,6 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		break;
 
 	default:  // check for key sequences
-		if (event->matches(QKeySequence::Undo))
-		{
-			undo();  // do undo here
-			return;
-		}
-		if (event->matches(QKeySequence::Redo))
-		{
-			redo();  // do redo here
-			return;
-		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
 	m_ignoreChange = false;
@@ -215,20 +199,22 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 	int linesDeleted = 0;
 	QStringList lines;
 
-	QTextBlock block = document()->findBlock(position);
-	int lineNumber = block.blockNumber();
-	bool positionAtLineBegin = position == block.position();
-
+	// get information about position at start of change
 	QTextCursor cursor = textCursor();
-	int linesModified = cursor.blockNumber() - lineNumber;
+	cursor.setPosition(position);
+	int changeLine = cursor.blockNumber();
+	bool changeAtLineBegin = cursor.atBlockStart();
+
+	// move cursor to end of change and get information about end position
+	cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
+		charsAdded);
+	int linesModified = cursor.blockNumber() - changeLine;
 	int newLineCount = document()->blockCount();
 	int netLineCount = newLineCount - m_lineCount;
 
-	// TODO may need to handle if m_lineModType == LineInserted here
-
 	if (linesModified != 0 || netLineCount != 0)  // multiple lines affected?
 	{
-		if (linesModified == netLineCount && positionAtLineBegin)
+		if (linesModified == netLineCount && changeAtLineBegin)
 		{
 			// single line changed and at begin of line
 			linesInserted = netLineCount;
@@ -237,7 +223,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		else  // changed multiple lines or single line and not at begin of line
 		{
 			// check if last line is new before linesModified is changed
-			if (linesModified == netLineCount && !positionAtLineBegin
+			if (linesModified == netLineCount && !changeAtLineBegin
 				|| cursor.atBlockEnd() && charsAdded > 0)
 			{
 				m_lineModifiedIsNew = true;
@@ -253,12 +239,12 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 					// reset new line status, and no lines deleted
 					m_lineModifiedIsNew = false;
 					netLineCount = 0;
-					lineNumber = -1;  // prevent empty signal
+					changeLine = -1;  // prevent empty signal
 				}
 				// check if result is a single line and was not at begin of line
-				else if (linesModified == 0 && !positionAtLineBegin)
+				else if (linesModified == 0 && !changeAtLineBegin)
 				{
-					lineNumber++;  // first line deleted is after current line
+					changeLine++;  // first line deleted is after current line
 				}
 				linesDeleted = -netLineCount;
 			}
@@ -275,23 +261,22 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 				}
 			}
 		}
-		if (lineNumber != -1)
+		if (changeLine != -1)
 		{
 			if (linesModified + linesInserted > 0)
 			{
 				// get list of lines changed and inserted
 				for (int i = 0; i < linesModified + linesInserted; i++)
 				{
-					lines << document()->findBlockByNumber(lineNumber
+					lines << document()->findBlockByNumber(changeLine
 						+ i).text();
 				}
 			}
-			emit linesChanged(lineNumber, linesDeleted, linesInserted, lines);
+			emit linesChanged(changeLine, linesDeleted, linesInserted, lines);
 		}
 		m_lineCount = newLineCount;
 	}
 	m_lineModified = cursor.blockNumber();
-	m_lineModCount = 0;
 }
 
 
@@ -304,104 +289,6 @@ void EditBox::cursorMoved(void)
 	{
 		// there is a modified line and cursor moved from that line
 		captureModifiedLine();
-	}
-}
-
-
-// function to keep track of when undo commands are added
-
-void EditBox::undoAdded(void)
-{
-	// if modified line, then increment number of changes on line
-	if (m_lineModified >= 0)
-	{
-		m_lineModCount++;
-	}
-}
-
-
-// function to catch the undo action before passing it on to the base class
-//
-//   - if there is no modified line or undo is active then indicates that
-//     document changes from undo should be ignored (don't set modified line)
-//   - calls the base class undo to perform the undo
-//   - if the undo moved the cursor, then set the modified line and set
-//     to indicate that undo is active (count undos as line modifications)
-//   - if cursor didn't move and undo is active, increment line change count
-//   - else if line change count is zero, then reset the modified line
-//   - else decrement the line change count
-
-void EditBox::undo(void)
-{
-	// if no modified line or undo active, indicate to ignore next change
-	if (m_lineModified == -1 || m_undoActive)
-	{
-		// FIXME m_ignoreChange = true;
-	}
-	int line = textCursor().blockNumber();
-	QPlainTextEdit::undo();
-	m_ignoreChange = false;  // reset flag if still set
-
-	if (line != textCursor().blockNumber())
-	{
-		// set new modified line and indicate undo active if on a new line
-		m_lineModified = textCursor().blockNumber();
-		m_lineModCount = 0;
-		m_undoActive = true;
-	}
-	else if (m_undoActive)
-	{
-		m_lineModCount++;  // increment line change count if undo active
-	}
-	else if (m_lineModCount == 0)
-	{
-		m_lineModified = -1;  // if last change on line, reset modified line
-	}
-	else
-	{
-		m_lineModCount--;  // otherwise, decrement line change count
-	}
-}
-
-
-// function to catch the redo action before passing it on to the base class
-//
-//   - if there is no modified line then indicates that document changes
-//     from redo should be ignored (don't set the modified line)
-//   - if there is no modified line, then set the modified line
-//   - else if undo active, then if the line change count is zero, deactivates
-//     undo, otherwise decrements the line change count
-//   - else increments the line change count
-
-void EditBox::redo(void)
-{
-	if (m_lineModified == -1)
-	{
-		// FIXME m_ignoreChange = true;
-	}
-	QPlainTextEdit::redo();
-	m_ignoreChange = false;  // reset flag if still set
-
-	if (m_lineModified == -1)
-	{
-		// set the modified line if there was none
-		m_lineModified = textCursor().blockNumber();
-		m_lineModCount = 0;
-	}
-	else if (m_undoActive)
-	{
-		if (m_lineModCount == 0)
-		{
-			m_undoActive = false;  // if all undos use, then deactivate undo
-		}
-		else
-		{
-			m_lineModCount--;  // otherwise, decrement line change count
-		}
-	}
-	else
-	{
-		m_lineModCount++;  // increment line change count if undo not active
 	}
 }
 
