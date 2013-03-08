@@ -82,16 +82,21 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 	case Qt::Key_Return:
 	case Qt::Key_Enter:
 		// intercept Control+Return and change it to a Return event
-		if (event->modifiers() & Qt::ControlModifier
-			|| cursor.atBlockEnd() && !cursor.atBlockStart())
+		if (event->modifiers() & Qt::ControlModifier || cursor.atBlockEnd())
 		{
-			cursor.insertText("\n");
+			event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
+				Qt::NoModifier);
+			QPlainTextEdit::keyPressEvent(event);
+			delete event;
 			return;
 		}
 		else  // intercept Return when cursor is not at the end of a line
 		{
-			moveCursor(QTextCursor::NextBlock);
-			return;
+			if (!cursor.hasSelection())
+			{
+				moveCursor(QTextCursor::NextBlock);
+				return;
+			}
 		}
 		break;
 
