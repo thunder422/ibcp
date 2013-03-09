@@ -56,11 +56,11 @@ EditBox::EditBox(QWidget *parent) :
 	m_lineNumberWidget = new LineNumberWidget(this);
 
 	connect(this, SIGNAL(blockCountChanged(int)),
-		this, SLOT(updateLineNumberWidgetWidth()));
+		this, SLOT(lineNumberWidgetUpdateWidth()));
 	connect(this, SIGNAL(updateRequest(QRect, int)),
-		this, SLOT(updateLineNumberWidget(QRect, int)));
+		this, SLOT(lineNumberWidgetUpdate(QRect, int)));
 
-	updateLineNumberWidgetWidth();
+	lineNumberWidgetUpdateWidth();
 }
 
 
@@ -331,7 +331,7 @@ int EditBox::lineNumberWidgetWidth(void)
 
 // function to update the line number area width based on the maximum line
 
-void EditBox::updateLineNumberWidgetWidth(void)
+void EditBox::lineNumberWidgetUpdateWidth(void)
 {
 	setViewportMargins(lineNumberWidgetWidth(), 0, 0, 0);
 }
@@ -339,7 +339,7 @@ void EditBox::updateLineNumberWidgetWidth(void)
 
 // function to update the line number area when display update requested
 
-void EditBox::updateLineNumberWidget(const QRect &rect, int dy)
+void EditBox::lineNumberWidgetUpdate(const QRect &rect, int dy)
 {
 	if (dy)
 	{
@@ -353,7 +353,7 @@ void EditBox::updateLineNumberWidget(const QRect &rect, int dy)
 
 	if (rect.contains(viewport()->rect()))
 	{
-		updateLineNumberWidgetWidth();
+		lineNumberWidgetUpdateWidth();
 	}
 }
 
@@ -372,7 +372,7 @@ void EditBox::resizeEvent(QResizeEvent *event)
 
 // function to draw the line number area (from line number area paint event)
 
-void EditBox::paintLineNumberWidget(QPaintEvent *event)
+void EditBox::lineNumberWidgetPaint(QPaintEvent *event)
 {
 	QPainter painter(m_lineNumberWidget);
 	painter.fillRect(event->rect(), Qt::lightGray);

@@ -43,7 +43,7 @@ public:
 	void captureModifiedLine(void);
 
 	int lineNumberWidgetWidth(void);
-	void paintLineNumberWidget(QPaintEvent *event);
+	void lineNumberWidgetPaint(QPaintEvent *event);
 
 protected:
 	void keyPressEvent(QKeyEvent *event);
@@ -58,8 +58,8 @@ public slots:
 	void cursorMoved(void);
 
 private slots:
-	void updateLineNumberWidgetWidth(void);
-	void updateLineNumberWidget(const QRect &rect, int dy);
+	void lineNumberWidgetUpdateWidth(void);
+	void lineNumberWidgetUpdate(const QRect &rect, int dy);
 
 private:
 	bool pasteSelection(const QPoint &pos = QPoint());
@@ -91,7 +91,7 @@ public:
 protected:
 	void paintEvent(QPaintEvent *event)
 	{
-		m_editBox->paintLineNumberWidget(event);
+		m_editBox->lineNumberWidgetPaint(event);
 	}
 
 private:
