@@ -117,6 +117,11 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		break;
 
 	default:  // check for key sequences
+		if (event->matches(QKeySequence::SelectAll))
+		{
+			selectAll();
+			return;
+		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
 	m_ignoreChange = false;
