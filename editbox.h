@@ -39,7 +39,6 @@ public:
 	void remove(void);
 	void selectAll(void);
 	void resetModified(void);
-	void setPlainText(const QString &text);
 	void captureModifiedLine(void);
 
 	int lineNumberWidgetWidth(void);
@@ -70,7 +69,6 @@ private:
 
 	int m_lineModified;				// current line that has been modified
 	bool m_lineModifiedIsNew;		// modified line is a new line flag
-	bool m_ignoreChange;			// ignore next document change flag
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
 	int m_lineCount;				// total document line count
 };

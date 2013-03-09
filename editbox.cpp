@@ -36,7 +36,7 @@ EditBox::EditBox(QWidget *parent) :
 	QPlainTextEdit(parent),
 	m_lineModified(-1),
 	m_lineModifiedIsNew(false),
-	m_ignoreChange(false)
+	m_lineCount(0)
 {
 	// set the edit box to a fixed width font
 	QFont font = this->font();
@@ -124,7 +124,6 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
-	m_ignoreChange = false;  // TODO remove this
 }
 
 
@@ -175,18 +174,6 @@ void EditBox::resetModified(void)
 }
 
 
-// overloaded function  to catch when setting document text
-
-void EditBox::setPlainText(const QString &text)
-{
-	// ignore changes caused by setting document text
-	m_ignoreChange = true;
-	QPlainTextEdit::setPlainText(text);
-	m_lineCount = document()->blockCount();
-	m_ignoreChange = false;
-}
-
-
 // function to detect lines changed when the document was changed
 //
 //   - determines the number of lines that were modified
@@ -195,11 +182,6 @@ void EditBox::setPlainText(const QString &text)
 
 void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 {
-	if (m_ignoreChange)
-	{
-		return;
-	}
-
 	int linesInserted = 0;
 	int linesDeleted = 0;
 	QStringList lines;
@@ -211,14 +193,19 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 	bool changeAtLineBegin = cursor.atBlockStart();
 
 	// move cursor to end of change and get information about end position
-	cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
-		charsAdded);
+	bool cursorMoved = cursor.movePosition(QTextCursor::Right,
+		QTextCursor::MoveAnchor, charsAdded);
 	int linesModified = cursor.blockNumber() - changeLine;
 	int newLineCount = document()->blockCount();
 	int netLineCount = newLineCount - m_lineCount;
 
 	if (linesModified != 0 || netLineCount != 0)  // multiple lines affected?
 	{
+		if (document()->isEmpty() && !cursorMoved)
+		{
+			m_lineModified = -1;
+			return;
+		}
 		if (linesModified == netLineCount && changeAtLineBegin)
 		{
 			// single line changed and at begin of line
@@ -258,7 +245,10 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 			else  // lines were added to document
 			{
 				// adjust number of lines changed
-				linesModified -= netLineCount;
+				if (cursorMoved || linesModified >= netLineCount)
+				{
+					linesModified -= netLineCount;
+				}
 				linesInserted = netLineCount;
 				if (!changeLineIsNew && m_lineModifiedIsNew)
 				{
@@ -291,8 +281,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void EditBox::cursorMoved(void)
 {
-	if (!m_ignoreChange && m_lineModified >= 0
-		&& m_lineModified != textCursor().blockNumber())
+	if (m_lineModified >= 0 && m_lineModified != textCursor().blockNumber())
 	{
 		// there is a modified line and cursor moved from that line
 		captureModifiedLine();
