@@ -1,6 +1,6 @@
 Interactive BASIC Compiler Project
 File: rel_notes.txt - contains release notes for each version posted
-Copyright (C) 2009-2012  Thunder422
+Copyright (C) 2009-2013  Thunder422
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -41,6 +41,16 @@ Planned Roadmap (needs to redone):
 	longer be listed (there are too many files).  However, changes to the
 	major classes will be included.  Complete details of the changes can be
 	found in the git repository at https://github.com/thunder422/ibcp.
+
+
+Release 0.3.2 (2013-03-09)
+
+	Project developmental release - many edit box changes including
+	using a fixed font, special handling of the return key, adding a
+	context (right-click) menu, changed to the plain text edit
+	widget, capturing line changes (including insertion and
+	deletion) due to edit operations that change the document, and a
+	few other minor GUI tweaks.
 
 
 Release 0.3.1 (2013-01-21)

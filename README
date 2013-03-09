@@ -36,8 +36,9 @@ into a reverse polish notation format that will be used for fast
 execution of the BASIC program.  The GUI implementation has been started
 and now has the basic GUI elements including file, edit and help menus
 with basic operation menu items, the tool bar with several file and edit
-operations, an edit box for editing the program and a status bar.  For
-now the program only handles text files.
+operations, an edit box for editing the program (which emits line
+changes including lines inserted and deleted) and a status bar.  For now
+the program only handles text files.
 
 
 Building The Program

@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: editbox.h - edit box functions
-//	Copyright (C) 2012  Thunder422
+//	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		}
 	}
 	QPlainTextEdit::keyPressEvent(event);
-	m_ignoreChange = false;
+	m_ignoreChange = false;  // TODO remove this
 }
 
 

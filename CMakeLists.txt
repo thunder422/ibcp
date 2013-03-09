@@ -2,7 +2,7 @@
 #
 #  Interactive BASIC Compiler Project
 #  File: CMakeLists.txt - CMake lists file for generating make file
-#  Copyright (C) 2011-2012  Thunder422
+#  Copyright (C) 2011-2013  Thunder422
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ set(ibcp_COPYRIGHT_YEAR 2012)
 
 set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 3)
-set(ibcp_RELEASE_PATCH 1)
+set(ibcp_RELEASE_PATCH 2)
 
 set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
 if (ibcp_RELEASE_PATCH LESS 0)

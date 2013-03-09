@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: mainwinow.cpp - main window functions
-//	Copyright (C) 2012  Thunder422
+//	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	// TODO that will need to be restored, for now there is a single edit box
 
 	// create the starting program edit box
-	m_editBox = new EditBox;
+	m_editBox = new EditBox(this);
 	setCentralWidget(m_editBox);
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
@@ -426,7 +426,7 @@ bool MainWindow::programSave(const QString &programPath)
 // function to catch when lines of the program have been changed
 
 void MainWindow::programChanged(int lineNumber, int linesDeleted,
-		int linesInserted, QStringList lines)
+	int linesInserted, QStringList lines)
 {
 	// FIXME for now just echo to the console
 	int i;
@@ -480,7 +480,7 @@ void MainWindow::settingsSave(void)
 }
 
 
-MainWindow::~MainWindow()
+MainWindow::~MainWindow(void)
 {
 	delete ui;
 	delete m_commandLine;
