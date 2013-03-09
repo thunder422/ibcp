@@ -66,6 +66,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
+	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
+		ui->actionSave, SLOT(setEnabled(bool)));
 	connect(m_editBox, SIGNAL(linesChanged(int, int, int, QStringList)),
 		this, SLOT(programChanged(int, int, int, QStringList)));
 
