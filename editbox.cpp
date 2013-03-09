@@ -227,6 +227,8 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		}
 		else  // changed multiple lines or single line and not at begin of line
 		{
+			bool changeLineIsNew = m_lineModifiedIsNew;
+
 			// check if last line is new before linesModified is changed
 			if (linesModified == netLineCount && !changeAtLineBegin
 				|| cursor.atBlockEnd() && charsAdded > 0)
@@ -258,7 +260,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 				// adjust number of lines changed
 				linesModified -= netLineCount;
 				linesInserted = netLineCount;
-				if (m_lineModifiedIsNew)
+				if (!changeLineIsNew && m_lineModifiedIsNew)
 				{
 					// adjust lines changed/inserted if last line is new
 					linesModified++;
@@ -387,7 +389,13 @@ void EditBox::lineNumberWidgetPaint(QPaintEvent *event)
 	{
 		if (block.isVisible() && bottom >= event->rect().top())
 		{
-			QString number = QString("%1 ").arg(blockNumber + BaseLineNumber);
+			QChar lineStatus(' ');
+			if (blockNumber == m_lineModified)
+			{
+				lineStatus = m_lineModifiedIsNew ? '+' : '*';
+			}
+			QString number = QString("%1%2").arg(blockNumber + BaseLineNumber)
+				.arg(lineStatus);
 			painter.setPen(Qt::black);
 			painter.drawText(0, top, m_lineNumberWidget->width(),
 				fontMetrics().height(), Qt::AlignRight, number);
