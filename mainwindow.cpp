@@ -405,6 +405,9 @@ bool MainWindow::programSave(const QString &programPath)
 {
 	QFile file(programPath);
 
+	// make sure any current modified line is emitted from the edit box
+	m_editBox->captureModifiedLine();
+
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 	{
 		QMessageBox::warning(this, tr("IBCP"), tr("Failed to save file."));

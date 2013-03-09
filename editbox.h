@@ -40,6 +40,7 @@ public:
 	void selectAll(void);
 	void resetModified(void);
 	void setPlainText(const QString &text);
+	void captureModifiedLine(void);
 
 	int lineNumberWidgetWidth(void);
 	void paintLineNumberWidget(QPaintEvent *event);
@@ -62,7 +63,6 @@ private slots:
 
 private:
 	bool pasteSelection(const QPoint &pos = QPoint());
-	void captureModifiedLine(void);
 
 	enum {
 		BaseLineNumber = 0			// number of first line
