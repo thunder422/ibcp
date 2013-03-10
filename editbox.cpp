@@ -199,13 +199,30 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 	int newLineCount = document()->blockCount();
 	int netLineCount = newLineCount - m_lineCount;
 
+	if (document()->isEmpty())
+	{
+		if (!cursorMoved)
+		{
+			if (charsAdded == 1)
+			{
+				m_lineModified = -2;
+				return;
+			}
+			if (m_lineCount == 0)
+			{
+				return;
+			}
+		}
+		if (!cursorMoved || m_lineModified == -2)
+		{
+			netLineCount = -m_lineCount;
+			newLineCount = 0;
+			changeAtLineBegin = true;
+		}
+	}
+
 	if (linesModified != 0 || netLineCount != 0)  // multiple lines affected?
 	{
-		if (document()->isEmpty() && !cursorMoved)
-		{
-			m_lineModified = -1;
-			return;
-		}
 		if (linesModified == netLineCount && changeAtLineBegin)
 		{
 			// single line changed and at begin of line
@@ -273,7 +290,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		}
 		m_lineCount = newLineCount;
 	}
-	m_lineModified = cursor.blockNumber();
+	m_lineModified = m_lineModified == -2 ? -1 : cursor.blockNumber();
 }
 
 

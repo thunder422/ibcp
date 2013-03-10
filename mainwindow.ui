@@ -120,6 +120,9 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QListView" name="programView">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>

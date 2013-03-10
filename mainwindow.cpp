@@ -390,6 +390,8 @@ bool MainWindow::programLoad(const QString &programPath)
 
 	m_editBox->setPlainText(input.readAll());
 	m_editBox->resetModified();
+	// reset modified flag in case file loaded is empty and document wasn't
+	setWindowModified(false);
 
 	setCurProgram(programPath);
 	statusBar()->showMessage(tr("Program loaded"), 2000);
