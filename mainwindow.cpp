@@ -28,6 +28,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QSettings>
+#include <QStringListModel>
 #include <QTimer>
 
 #include "mainwindow.h"
@@ -61,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	// TODO that will need to be restored, for now there is a single edit box
 
 	// create the starting program edit box
+	m_programModel = new QStringListModel(this);
 	m_editBox = new EditBox(this);
 	setCentralWidget(m_editBox);
 
@@ -121,6 +123,7 @@ MainWindow::MainWindow(QWidget *parent) :
 		// TODO should an warning message be issued here?
 	}
 
+	ui->programView->setModel(m_programModel);
 	m_guiActive = true;
 }
 
@@ -433,16 +436,21 @@ void MainWindow::programChanged(int lineNumber, int linesDeleted,
 	int count = lines.count();
 	for (i = 0; i < count - linesInserted; i++)
 	{
-		qDebug("Line #%d Changed: <%s>", lineNumber++, qPrintable(lines.at(i)));
+		QModelIndex index = m_programModel->index(lineNumber++);
+		m_programModel->setData(index, lines.at(i));
 	}
-	while (--linesDeleted >= 0)
+	if (linesDeleted > 0)
 	{
-		qDebug("Line #%d Deleted", lineNumber++);
+		m_programModel->removeRows(lineNumber, linesDeleted);
 	}
-	while (i < count)
+	else if (linesInserted > 0)
 	{
-		qDebug("Line #%d Inserted <%s>", lineNumber++,
-			qPrintable(lines.at(i++)));
+		m_programModel->insertRows(lineNumber, linesInserted);
+		while (i < count)
+		{
+			QModelIndex index = m_programModel->index(lineNumber++);
+			m_programModel->setData(index, lines.at(i++));
+		}
 	}
 }
 

@@ -33,6 +33,7 @@ namespace Ui {
 class MainWindow;
 }
 
+class QStringListModel;
 class CommandLine;
 class RecentFiles;
 
@@ -94,6 +95,7 @@ private:
 	QString m_curProgram;
 	RecentFiles *m_recentPrograms;
 	QString m_curDirectory;
+	QStringListModel *m_programModel;
 };
 
 #endif // MAINWINDOW_H
