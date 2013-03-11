@@ -123,6 +123,8 @@ MainWindow::MainWindow(QWidget *parent) :
 		// TODO should an warning message be issued here?
 	}
 
+	m_programLineDelegate = new ProgramLineDelegate(this);
+	ui->programView->setItemDelegate(m_programLineDelegate);
 	ui->programView->setModel(m_programModel);
 	m_guiActive = true;
 }

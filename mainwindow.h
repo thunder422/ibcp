@@ -28,6 +28,7 @@
 #include <QMainWindow>
 
 #include "editbox.h"
+#include "programlinedelegate.h"
 
 namespace Ui {
 class MainWindow;
@@ -96,6 +97,8 @@ private:
 	RecentFiles *m_recentPrograms;
 	QString m_curDirectory;
 	QStringListModel *m_programModel;
+	ProgramLineDelegate *m_programLineDelegate;
+
 };
 
 #endif // MAINWINDOW_H
