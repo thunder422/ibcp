@@ -461,6 +461,7 @@ void MainWindow::programChanged(int lineNumber, int linesDeleted,
 
 // names of the settings for the program
 const char *geometrySettingsName = "geometry";
+const char *windowStateSettingsName = "windowState";
 const char *curProgramSettingsName = "curProgram";
 const char *curDirectorySettingsName = "curDirectory";
 
@@ -474,6 +475,7 @@ void MainWindow::settingsRestore(void)
 	QSettings settings("Thunder422", "IBCP");
 
 	restoreGeometry(settings.value(geometrySettingsName).toByteArray());
+	restoreState(settings.value(windowStateSettingsName).toByteArray());
 	m_recentPrograms->restore(settings);
 	m_curProgram = settings.value(curProgramSettingsName).toString();
 	m_curDirectory = settings.value(curDirectorySettingsName, ".").toString();
@@ -486,6 +488,7 @@ void MainWindow::settingsSave(void)
 	QSettings settings("Thunder422", "IBCP");
 
 	settings.setValue(geometrySettingsName, saveGeometry());
+	settings.setValue(windowStateSettingsName, saveState());
 	m_recentPrograms->save(settings);
 	settings.setValue(curProgramSettingsName, m_curProgram);
 	settings.setValue(curDirectorySettingsName, m_curDirectory);
