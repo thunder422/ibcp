@@ -126,6 +126,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_programLineDelegate = new ProgramLineDelegate(this);
 	ui->programView->setItemDelegate(m_programLineDelegate);
 	ui->programView->setModel(m_programModel);
+	ui->programView->setFont(m_editBox->font());
 	m_guiActive = true;
 }
 
