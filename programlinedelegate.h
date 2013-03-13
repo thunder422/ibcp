@@ -31,14 +31,21 @@ class ProgramLineDelegate : public QItemDelegate
 {
 	Q_OBJECT
 public:
-	explicit ProgramLineDelegate(QObject *parent = 0);
+	explicit ProgramLineDelegate(int baseLineNumber,
+		const QFontMetrics &fontMetrics, QObject *parent = 0);
+	void lineNumberWidthUpdate(int newLineCount);
 	void paint(QPainter *painter, const QStyleOptionViewItem &option,
 		const QModelIndex &index) const;
 
 signals:
+	void programViewUpdate(void);
 
 public slots:
 
+private:
+	int m_baseLineNumber;				// first line number
+	int m_digitWidth;					// pixel width of one digit
+	int m_lineNumberWidth;				// width of line number area
 };
 
 #endif // PROGRAMLINEDELEGATE_H

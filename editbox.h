@@ -44,6 +44,10 @@ public:
 	int lineNumberWidgetWidth(void);
 	void lineNumberWidgetPaint(QPaintEvent *event);
 
+	enum {
+		BaseLineNumber = 0			// number of first line
+	};
+
 protected:
 	void keyPressEvent(QKeyEvent *event);
 	void resizeEvent(QResizeEvent *event);
@@ -62,10 +66,6 @@ private slots:
 
 private:
 	bool pasteSelection(const QPoint &pos = QPoint());
-
-	enum {
-		BaseLineNumber = 0			// number of first line
-	};
 
 	int m_lineModified;				// current line that has been modified
 	bool m_lineModifiedIsNew;		// modified line is a new line flag

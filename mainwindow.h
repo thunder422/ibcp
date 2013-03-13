@@ -75,6 +75,7 @@ private slots:
 	void on_actionSelectAll_triggered(void);
 	void programChanged(int lineNumber, int linesDeleted, int linesInserted,
 		QStringList lines);
+	void programViewUpdate(void);
 
 private:
 	bool isOkToContinue(void);
@@ -98,6 +99,7 @@ private:
 	QString m_curDirectory;
 	QStringListModel *m_programModel;
 	ProgramLineDelegate *m_programLineDelegate;
+	int m_programLines;					// FIXME temporary
 
 };
 

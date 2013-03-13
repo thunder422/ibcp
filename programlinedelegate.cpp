@@ -26,15 +26,52 @@
 
 #include "programlinedelegate.h"
 
-ProgramLineDelegate::ProgramLineDelegate(QObject *parent) :
-	QItemDelegate(parent)
+ProgramLineDelegate::ProgramLineDelegate(int baseLineNumber,
+		const QFontMetrics &fontMetrics, QObject *parent) :
+	QItemDelegate(parent),
+    m_baseLineNumber(baseLineNumber),
+    m_digitWidth(fontMetrics.width(QLatin1Char('9'))),
+    m_lineNumberWidth(0)
 {
 }
+
+
+// function to update the width needed for the line number area
+
+void ProgramLineDelegate::lineNumberWidthUpdate(int newLineCount)
+{
+	int digits = 2;  // plus 2 * 0.5 spacing on either side
+	while (newLineCount > 10 - m_baseLineNumber)
+	{
+		newLineCount /= 10;
+		digits++;
+	}
+	int width = m_digitWidth * digits;
+	if (width != m_lineNumberWidth)
+	{
+		m_lineNumberWidth = width;
+		emit programViewUpdate();
+	}
+}
+
+
+// function that paints one program line to the program view list widget
 
 void ProgramLineDelegate::paint(QPainter *painter,
 	const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-	QString text = QString("%1: %2").arg(index.row())
-		.arg(index.model()->data(index, Qt::DisplayRole).toString());
-	painter->drawText(option.rect, text);
+	// draw line number with gray background
+	QRect rect = option.rect;
+	rect.setWidth(m_lineNumberWidth);
+	painter->fillRect(rect, Qt::lightGray);
+	rect.setLeft(rect.left() + m_digitWidth / 2);
+	rect.setWidth(m_lineNumberWidth - m_digitWidth);
+	QString text = QString("%1").arg(index.row() + m_baseLineNumber);
+	painter->drawText(rect, Qt::AlignRight, text);
+
+	// draw program line text
+	rect.setLeft(rect.left() + m_lineNumberWidth);
+	rect.setWidth(option.rect.width() - m_lineNumberWidth);
+	text = index.model()->data(index, Qt::DisplayRole).toString();
+	painter->drawText(rect, text);
 }

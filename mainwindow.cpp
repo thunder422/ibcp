@@ -101,6 +101,18 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_editBox->addActions(actions);
 	m_editBox->setContextMenuPolicy(Qt::ActionsContextMenu);
 
+	// setup program view and its program line delegate
+	m_programLineDelegate = new ProgramLineDelegate(EditBox::BaseLineNumber,
+		ui->programView->fontMetrics(), this);
+	ui->programView->setItemDelegate(m_programLineDelegate);
+	ui->programView->setModel(m_programModel);
+	ui->programView->setFont(m_editBox->font());
+	m_programLines = 0;  // FIXME temporary
+
+	// connect update requests to update program view
+	connect(m_programLineDelegate, SIGNAL(programViewUpdate()),
+		this, SLOT(programViewUpdate()));
+
 	// if a file name was specified on the command line
 	// then it overrides the restored program
 	if (!m_commandLine->fileName().isEmpty())
@@ -123,10 +135,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		// TODO should an warning message be issued here?
 	}
 
-	m_programLineDelegate = new ProgramLineDelegate(this);
-	ui->programView->setItemDelegate(m_programLineDelegate);
-	ui->programView->setModel(m_programModel);
-	ui->programView->setFont(m_editBox->font());
 	m_guiActive = true;
 }
 
@@ -436,7 +444,7 @@ bool MainWindow::programSave(const QString &programPath)
 void MainWindow::programChanged(int lineNumber, int linesDeleted,
 	int linesInserted, QStringList lines)
 {
-	// FIXME for now just echo to the console
+	// FIXME this is temporary until program model functionality is expanded
 	int i;
 	int count = lines.count();
 	for (i = 0; i < count - linesInserted; i++)
@@ -457,6 +465,20 @@ void MainWindow::programChanged(int lineNumber, int linesDeleted,
 			m_programModel->setData(index, lines.at(i++));
 		}
 	}
+	if (m_programModel->rowCount() != m_programLines)
+	{
+		m_programLines = m_programModel->rowCount();
+		m_programLineDelegate->lineNumberWidthUpdate(m_programLines);
+	}
+}
+
+
+// function to force update of program view
+
+void MainWindow::programViewUpdate(void)
+{
+	// FIXME expanded program model functionality should handle this
+	ui->programView->update(ui->programView->rect());
 }
 
 
