@@ -316,6 +316,14 @@ void EditBox::captureModifiedLine(void)
 			QStringList()
 			<< document()->findBlockByNumber(m_lineModified).text());
 
+		if (m_lineModifiedIsNew)  // was this a new line without a number?
+		{
+			// redraw line numbers to fill in previous blank line number
+			// and adjust the line numbers below the new line
+			m_lineNumberWidget->update(0, 0, m_lineNumberWidget->width(),
+				height());
+		}
+
 		m_lineModified = -1;  // line processed, reset modified line number
 		m_lineModifiedIsNew = false;
 	}
@@ -391,17 +399,22 @@ void EditBox::lineNumberWidgetPaint(QPaintEvent *event)
 		.top();
 	int bottom = top + (int)blockBoundingRect(block).height();
 
+	int offset = BaseLineNumber;
 	while (block.isValid() && top <= event->rect().bottom())
 	{
 		if (block.isVisible() && bottom >= event->rect().top())
 		{
-			QChar lineStatus(' ');
-			if (blockNumber == m_lineModified)
+			QString number;
+			if (blockNumber == m_lineModified && m_lineModifiedIsNew)
 			{
-				lineStatus = m_lineModifiedIsNew ? '+' : '*';
+				number = QString("+");	// draw '+' with no line number
+				offset--;				// offset rest of line numbers by 1
 			}
-			QString number = QString("%1%2").arg(blockNumber + BaseLineNumber)
-				.arg(lineStatus);
+			else  // draw line number with '*' if modified
+			{
+				number = QString("%1%2").arg(blockNumber + offset)
+					.arg(blockNumber == m_lineModified ? '*' : ' ');
+			}
 			painter.setPen(Qt::black);
 			painter.drawText(0, top, m_lineNumberWidget->width(),
 				fontMetrics().height(), Qt::AlignRight, number);
