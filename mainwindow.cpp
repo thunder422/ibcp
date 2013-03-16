@@ -35,6 +35,7 @@
 #include "ui_mainwindow.h"
 #include "commandline.h"
 #include "editbox.h"
+#include "programmodel.h"
 #include "recentfiles.h"
 
 
@@ -61,8 +62,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	// TODO settings will eventually have info about edit boxes that were open
 	// TODO that will need to be restored, for now there is a single edit box
 
+	//==================
+	//  SETUP EDIT BOX
+	//==================
+
 	// create the starting program edit box
-	m_programModel = new QStringListModel(this);
 	m_editBox = new EditBox(this);
 	setCentralWidget(m_editBox);
 
@@ -70,8 +74,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		this, SLOT(setWindowModified(bool)));
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		ui->actionSave, SLOT(setEnabled(bool)));
-	connect(m_editBox, SIGNAL(linesChanged(int, int, int, QStringList)),
-		this, SLOT(programChanged(int, int, int, QStringList)));
 
 	// connect available signals to the appropriate edit actions
 	connect(m_editBox, SIGNAL(undoAvailable(bool)),
@@ -101,17 +103,29 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_editBox->addActions(actions);
 	m_editBox->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-	// setup program view and its program line delegate
+	//==============================================
+	// SETUP PROGRAM MODEL, LINE DELEGATE AND VIEW
+	//==============================================
+
+	// setup program model (connect to edit box changes)
+	m_programModel = new ProgramModel(this);
+	connect(m_editBox, SIGNAL(linesChanged(int, int, int, QStringList)),
+		m_programModel, SLOT(update(int,int,int,QStringList)));
+
+	// setup program line delegate (connect to model line count changes)
 	m_programLineDelegate = new ProgramLineDelegate(EditBox::BaseLineNumber,
-		ui->programView->fontMetrics(), this);
+		ui->programView, this);
+	connect(m_programModel, SIGNAL(lineCountChanged(int)),
+		m_programLineDelegate, SLOT(lineNumberWidthUpdate(int)));
+
+	// setup program view
 	ui->programView->setItemDelegate(m_programLineDelegate);
 	ui->programView->setModel(m_programModel);
 	ui->programView->setFont(m_editBox->font());
-	m_programLines = 0;  // FIXME temporary
 
-	// connect update requests to update program view
-	connect(m_programLineDelegate, SIGNAL(programViewUpdate()),
-		this, SLOT(programViewUpdate()));
+	//=================
+	//  SETUP PROGRAM
+	//=================
 
 	// if a file name was specified on the command line
 	// then it overrides the restored program
@@ -436,49 +450,6 @@ bool MainWindow::programSave(const QString &programPath)
 	setCurProgram(programPath);
 	statusBar()->showMessage(tr("Program saved"), 2000);
 	return true;
-}
-
-
-// function to catch when lines of the program have been changed
-
-void MainWindow::programChanged(int lineNumber, int linesDeleted,
-	int linesInserted, QStringList lines)
-{
-	// FIXME this is temporary until program model functionality is expanded
-	int i;
-	int count = lines.count();
-	for (i = 0; i < count - linesInserted; i++)
-	{
-		QModelIndex index = m_programModel->index(lineNumber++);
-		m_programModel->setData(index, lines.at(i));
-	}
-	if (linesDeleted > 0)
-	{
-		m_programModel->removeRows(lineNumber, linesDeleted);
-	}
-	else if (linesInserted > 0)
-	{
-		m_programModel->insertRows(lineNumber, linesInserted);
-		while (i < count)
-		{
-			QModelIndex index = m_programModel->index(lineNumber++);
-			m_programModel->setData(index, lines.at(i++));
-		}
-	}
-	if (m_programModel->rowCount() != m_programLines)
-	{
-		m_programLines = m_programModel->rowCount();
-		m_programLineDelegate->lineNumberWidthUpdate(m_programLines);
-	}
-}
-
-
-// function to force update of program view
-
-void MainWindow::programViewUpdate(void)
-{
-	// FIXME expanded program model functionality should handle this
-	ui->programView->update(ui->programView->rect());
 }
 
 

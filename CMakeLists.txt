@@ -146,6 +146,7 @@ set(ibcp_SOURCES
 	mainwindow.cpp
 	parser.cpp
 	programlinedelegate.cpp
+	programmodel.cpp
 	recentfiles.cpp
 	table.cpp
 	token.cpp
@@ -159,6 +160,7 @@ set(ibcp_MOC_SOURCES
 	editbox.h
 	mainwindow.h
 	programlinedelegate.h
+	programmodel.h
 	recentfiles.h
 )
 qt4_wrap_cpp(ibcp_MOCS ${ibcp_MOC_SOURCES})

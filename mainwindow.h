@@ -34,7 +34,7 @@ namespace Ui {
 class MainWindow;
 }
 
-class QStringListModel;
+class ProgramModel;
 class CommandLine;
 class RecentFiles;
 
@@ -73,9 +73,6 @@ private slots:
 	void on_actionPaste_triggered(void);
 	void on_actionDelete_triggered(void);
 	void on_actionSelectAll_triggered(void);
-	void programChanged(int lineNumber, int linesDeleted, int linesInserted,
-		QStringList lines);
-	void programViewUpdate(void);
 
 private:
 	bool isOkToContinue(void);
@@ -97,9 +94,8 @@ private:
 	QString m_curProgram;
 	RecentFiles *m_recentPrograms;
 	QString m_curDirectory;
-	QStringListModel *m_programModel;
+	ProgramModel *m_programModel;
 	ProgramLineDelegate *m_programLineDelegate;
-	int m_programLines;					// FIXME temporary
 
 };
 

@@ -22,17 +22,19 @@
 //
 //	2013-03-10	initial version
 
+#include <QListView>
 #include <QPainter>
 
 #include "programlinedelegate.h"
 
 ProgramLineDelegate::ProgramLineDelegate(int baseLineNumber,
-		const QFontMetrics &fontMetrics, QObject *parent) :
-	QItemDelegate(parent),
-    m_baseLineNumber(baseLineNumber),
-    m_digitWidth(fontMetrics.width(QLatin1Char('9'))),
-    m_lineNumberWidth(0)
+	QListView *programView, QObject *parent) :
+	QStyledItemDelegate(parent),
+	m_programView(programView),
+	m_baseLineNumber(baseLineNumber),
+	m_lineNumberWidth(0)
 {
+	m_digitWidth = m_programView->fontMetrics().width(QLatin1Char('9'));
 }
 
 
@@ -50,7 +52,8 @@ void ProgramLineDelegate::lineNumberWidthUpdate(int newLineCount)
 	if (width != m_lineNumberWidth)
 	{
 		m_lineNumberWidth = width;
-		emit programViewUpdate();
+		// line number width changed so need to force program view to redraw
+		m_programView->update(m_programView->rect());
 	}
 }
 

@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: programlinedelegate.h - program line delegate header file functions
+//	File: programmodel.h - program model header file
 //	Copyright (C) 2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
@@ -20,34 +20,31 @@
 //
 //	Change History:
 //
-//	2013-03-10	initial version
+//	2013-03-15	initial version
 
-#ifndef PROGRAMLINEDELEGATE_H
-#define PROGRAMLINEDELEGATE_H
+#ifndef PROGRAMMODEL_H
+#define PROGRAMMODEL_H
 
-#include <QStyledItemDelegate>
+#include <QAbstractListModel>
+#include <QStringList>
 
-class QListView;
-
-class ProgramLineDelegate : public QStyledItemDelegate
+class ProgramModel : public QAbstractListModel
 {
 	Q_OBJECT
 public:
-	explicit ProgramLineDelegate(int baseLineNumber, QListView *programView,
-		QObject *parent = 0);
-	void paint(QPainter *painter, const QStyleOptionViewItem &option,
-		const QModelIndex &index) const;
+	explicit ProgramModel(QObject *parent = 0);
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
 signals:
+	void lineCountChanged(int newLineCount);
 
 public slots:
-	void lineNumberWidthUpdate(int newLineCount);
+	void update(int lineNumber, int linesDeleted, int linesInserted,
+		QStringList lines);
 
 private:
-	QListView *m_programView;			// pointer to program view widget
-	int m_baseLineNumber;				// first line number
-	int m_digitWidth;					// pixel width of one digit
-	int m_lineNumberWidth;				// width of line number area
+	QStringList m_lines;				// text of the program lines
 };
 
-#endif // PROGRAMLINEDELEGATE_H
+#endif // PROGRAMMODEL_H
