@@ -74,8 +74,14 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 	{
 	case Qt::Key_Return:
 	case Qt::Key_Enter:
+		if (event->modifiers() & Qt::ShiftModifier)
+		{
+			moveCursor(QTextCursor::NextBlock, QTextCursor::KeepAnchor);
+			return;
+		}
 		// intercept Control+Return and change it to a Return event
-		if (event->modifiers() & Qt::ControlModifier || cursor.atBlockEnd())
+		else if (event->modifiers() & Qt::ControlModifier
+			|| cursor.atBlockEnd())
 		{
 			event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
 				Qt::NoModifier);
