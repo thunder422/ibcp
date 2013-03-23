@@ -25,6 +25,7 @@
 #ifndef EDITBOX_H
 #define EDITBOX_H
 
+#include <QClipboard>
 #include <QPlainTextEdit>
 #include <QTextBlock>
 
@@ -37,6 +38,7 @@ class EditBox : public QPlainTextEdit
 public:
 	explicit EditBox(QWidget *parent = 0);
 	void remove(void);
+	void paste(QClipboard::Mode mode = QClipboard::Clipboard);
 	void selectAll(void);
 	void resetModified(void);
 	void captureModifiedLine(void);

@@ -141,6 +141,25 @@ void EditBox::remove(void)
 }
 
 
+// function to paste text from the clipboard (and correctly update the screen)
+
+void EditBox::paste(QClipboard::Mode mode)
+{
+	QClipboard *clipboard = QApplication::clipboard();
+	QTextCursor cursor = textCursor();
+
+	// clear any selection on screen first with a temporary cursor
+	if (cursor.hasSelection())
+	{
+		QTextCursor tmpCursor = cursor;
+		tmpCursor.clearSelection();
+		setTextCursor(tmpCursor);
+	}
+
+	cursor.insertText(clipboard->text(mode));
+}
+
+
 // function to paste the current selection if supported into the program
 //
 //   - return true on success, false if selection is not supported
@@ -154,7 +173,7 @@ bool EditBox::pasteSelection(const QPoint &pos)
 		{
 			setTextCursor(cursorForPosition(pos));
 		}
-		textCursor().insertText(clipboard->text(QClipboard::Selection));
+		paste(QClipboard::Selection);
 		return true;
 	}
 	return false;
