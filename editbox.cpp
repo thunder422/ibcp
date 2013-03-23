@@ -275,13 +275,25 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 					// or multiple line undo at a new modified line)
 					// reset new line status, and one less line deleted
 					m_lineModifiedIsNew = false;
-					if (++netLineCount == 0)  // no lines deleted?
+					netLineCount++;
+
+					if (linesModified == 0)  // no lines changed?
 					{
-						changeLine = -1;  // prevent empty signal
-					}
-					else  // (this is a multiple line undo)
-					{
-						changeLine++;  // first line deleted is next line
+						// check if multiple line undo
+						if (changeLine + 1 < m_lineModified)
+						{
+							// need to report one line (next line) as changed
+							linesModified = 1;
+							changeLine++;
+						}
+						else if (netLineCount == 0)  // no lines deleted?
+						{
+							changeLine = -1;  // prevent empty signal
+						}
+						else  // lines were deleted (multiple line undo)
+						{
+							changeLine++;  // first line deleted is next line
+						}
 					}
 				}
 				// check if result is a single line and was not at begin of line
