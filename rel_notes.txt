@@ -18,9 +18,18 @@ see <http://www.gnu.org/licenses/>.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-Planned Roadmap (needs to redone):
+Planned Roadmap (updated):
 
-	Implement GUI
+	Hook Translator (program text to RPN list) to Program Model
+	Initial Recreator (RPN list to program text) implementation
+	Hook Recreator to GUI (update Edit Box)
+	Initial Encoder (RPN list to internal code) implementation
+	Hook Encoder to Program Model
+	Initial Decoder (internal code to RPN list) implementation
+	Hook Decoder to Program Model and Recreator
+
+Planned Roadmap (outdated):
+
 	Translator - Colons (Parser issues, Token Status Enumeration)
 	Encoder - (for commands implemented so far)
 	Dictionary Definition (variables and arrays)
@@ -37,10 +46,23 @@ Planned Roadmap (needs to redone):
 	Command - Single line DEF FN
 	To be defined...
 
-	Note: For this release on, changes to individual source files will no
-	longer be listed (there are too many files).  However, changes to the
-	major classes will be included.  Complete details of the changes can be
-	found in the git repository at https://github.com/thunder422/ibcp.
+
+Release 0.3.3 (2013-03-23)
+
+	Project developmental release - the edit box now displays an '*'
+	on modified lines (though it may not actually be modified, but
+	will be reported once the cursor leaves the line) and a '+' with
+	no line number of a new line that has not yet been reported as
+	inserted, a data model was implemented to hold the program (just
+	the text of the program lines for now) along with a temporary
+	program view in a dock widget to monitor the internal program
+	during development, the position and size of the dock widget is
+	saved upon exit, many issues were corrected in the edit box with
+	detecting program lines, and some other minor issues were
+	corrected.  New Classes:
+
+		ProgramModel        - Holds internal program code
+		ProgramLineDelegate - Draws lines to ProgramView widget
 
 
 Release 0.3.2 (2013-03-09)

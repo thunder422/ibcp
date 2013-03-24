@@ -29,16 +29,23 @@ repository is hosted on GitHub at https://github.com/thunder422/ibcp.
 Project Status
 --------------
 Currently, the BASIC language parser is operational.  The parser
-converts text input into BASIC language tokens.  The translator is
-currently being developed and currently supports the translation of
-BASIC expressions along a few BASIC commands (LET, PRINT, and INPUT)
-into a reverse polish notation format that will be used for fast
-execution of the BASIC program.  The GUI implementation has been started
-and now has the basic GUI elements including file, edit and help menus
-with basic operation menu items, the tool bar with several file and edit
-operations, an edit box for editing the program (which emits line
-changes including lines inserted and deleted) and a status bar.  For now
-the program only handles text files.
+converts text input into BASIC language tokens.
+
+The translator is currently being developed and currently supports the
+translation of BASIC expressions along a few BASIC commands (LET, PRINT,
+and INPUT) into a reverse polish notation format that will be used for
+fast execution of the BASIC program.
+
+The GUI implementation has been started and now has the basic GUI
+elements including file, edit and help menus with basic operation menu
+items, the tool bar with several file and edit operations, an edit box
+for editing the program (which emits line changes including lines
+inserted and deleted) and a status bar.
+
+The ProgramModel holds the program an updates the program as lines are
+changed from the edit box.  For now the program only handles text files.
+There is a temporary program view dock widget used for monitoring the
+internal program during development.
 
 
 Building The Program

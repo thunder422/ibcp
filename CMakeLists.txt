@@ -45,11 +45,11 @@ if (NOT CMAKE_BUILD_TYPE)
 endif (NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-set(ibcp_COPYRIGHT_YEAR 2012)
+set(ibcp_COPYRIGHT_YEAR 2013)
 
 set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 3)
-set(ibcp_RELEASE_PATCH 2)
+set(ibcp_RELEASE_PATCH 3)
 
 set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
 if (ibcp_RELEASE_PATCH LESS 0)
