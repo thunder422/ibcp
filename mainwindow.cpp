@@ -241,12 +241,18 @@ bool MainWindow::on_actionSave_triggered(void)
 
 bool MainWindow::on_actionSaveAs_triggered(void)
 {
-	QString programPath = QFileDialog::getSaveFileName(this,
-		tr("Save Program"), ".", tr("Program files (*.*)"));
+	QString programPath = m_curProgram;
+	if (m_curProgram.isEmpty())
+	{
+		programPath = m_curDirectory;
+	}
+	programPath = QFileDialog::getSaveFileName(this, tr("Save Program"),
+		programPath, tr("Program files (*.*)"));
 	if (programPath.isEmpty())
 	{
 		return false;
 	}
+	m_curDirectory = QFileInfo(programPath).path();
 	return programSave(programPath);
 }
 
