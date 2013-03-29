@@ -55,7 +55,6 @@ class Tester
 	bool printToken(QTextStream &cout, Token *token, bool tab);
 	void printOutput(QTextStream &cout, const QString &header,
 		QList<RpnItem *> &output);
-	bool printSmallToken(QTextStream &cout, Token *token);
 	void printError(QTextStream &cout, Token *token, const QString &error);
 
 	QString m_programName;		// name of program

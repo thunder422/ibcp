@@ -265,6 +265,9 @@ public:
 		return this;
 	}
 
+	// recreate text for token
+	QString text(void);
+
 private:
 	// static members
 	static bool s_paren[sizeof_TokenType];

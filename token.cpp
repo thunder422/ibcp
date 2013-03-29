@@ -24,6 +24,7 @@
 
 #include "ibcp.h"
 #include "token.h"
+#include "table.h"
 
 
 // static token variables
@@ -144,6 +145,113 @@ void Token::setDataType(void)
 	{
 		m_dataType = TmpStr_DataType;
 	}
+}
+
+
+// function to recreate text (abbreviated contents) of token
+QString Token::text(void)
+{
+	Table &table = Table::instance();
+	QString string;
+
+	switch (m_type)
+	{
+	case Remark_TokenType:
+		// fall thru
+	case DefFuncN_TokenType:
+	case NoParen_TokenType:
+		string = m_string;
+		break;
+
+	case DefFuncP_TokenType:
+	case Paren_TokenType:
+		string = m_string + '(';
+		break;
+
+	case Constant_TokenType:
+		switch (m_dataType)
+		{
+		case Integer_DataType:
+		case Double_DataType:
+			string = m_string;
+			break;
+
+		case String_DataType:
+			string = '"' + m_string + '"';
+			break;
+
+		}
+		break;
+
+	case Operator_TokenType:
+		if (isCode(RemOp_Code))
+		{
+			string = table.name(m_code) + '|' + m_string + '|';
+		}
+		else
+		{
+			string = table.debugName(m_code);
+		}
+		break;
+
+	case IntFuncN_TokenType:
+	case IntFuncP_TokenType:
+		string = table.debugName(m_code);
+		break;
+
+	case Command_TokenType:
+		if (isCode(Rem_Code))
+		{
+			string = table.name(m_code) + '|' + m_string + '|';
+		}
+		else
+		{
+			string = table.name(m_code);
+			if (table.name2(m_code) != NULL)
+			{
+				string += '-' + table.name2(m_code);
+			}
+		}
+		break;
+
+	default:
+		// nothing more to output
+		break;
+	}
+	if (m_reference)
+	{
+		string += "<ref>";
+	}
+	if (isSubCode(~Used_SubCode))
+	{
+		string += '\'';
+		if (isSubCode(Paren_SubCode))
+		{
+			string += ')';
+		}
+		if (isSubCode(Let_SubCode))
+		{
+			string += "LET";
+		}
+		if (isSubCode(SemiColon_SubCode))
+		{
+			string += ';';
+		}
+		if (isSubCode(Keep_SubCode))
+		{
+			string += "Keep";
+		}
+		if (isSubCode(End_SubCode))
+		{
+			string += "End";
+		}
+		if (isSubCode(Question_SubCode))
+		{
+			string += "Question";
+		}
+		string += '\'';
+	}
+	return string;
 }
 
 

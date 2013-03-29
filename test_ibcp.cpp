@@ -368,14 +368,13 @@ void Tester::printOutput(QTextStream &cout, const QString &header,
 	cout << header << ": ";
 	foreach (RpnItem *rpnItem, rpnList)
 	{
-		printSmallToken(cout, rpnItem->token());
+		cout << rpnItem->token()->text();
 		if (rpnItem->nOperands() > 0)
 		{
 			QChar separator('[');
 			for (int i = 0; i < rpnItem->nOperands(); i++)
 			{
-				cout << separator;
-				printSmallToken(cout, rpnItem->operand(i)->token());
+				cout << separator << rpnItem->operand(i)->token()->text();
 				separator = ',';
 			}
 			cout << ']';
@@ -383,105 +382,6 @@ void Tester::printOutput(QTextStream &cout, const QString &header,
 		cout << ' ';
 	}
 	cout << endl;
-}
-
-
-// function to print the abbreviated contents of a token
-bool Tester::printSmallToken(QTextStream &cout, Token *token)
-{
-	Table &table = Table::instance();
-
-	switch (token->type())
-	{
-	case Remark_TokenType:
-		// fall thru
-	case DefFuncN_TokenType:
-	case NoParen_TokenType:
-		// TODO
-		cout << token->string();
-		break;
-	case DefFuncP_TokenType:
-	case Paren_TokenType:
-		cout << token->string() << '(';  // TODO
-		break;
-	case Constant_TokenType:
-		switch (token->dataType())
-		{
-		case Integer_DataType:
-		case Double_DataType:
-			cout << token->string();  // TODO
-			break;
-		case String_DataType:
-			cout << '"' << token->string() << '"';  // TODO
-			break;
-		}
-		break;
-	case Operator_TokenType:
-		if (token->isCode(RemOp_Code))
-		{
-			cout << table.name(token->code()) << '|' << token->string() << '|';
-		}
-		else
-		{
-			cout << table.debugName(token->code());
-		}
-		break;
-	case IntFuncN_TokenType:
-	case IntFuncP_TokenType:
-		cout << table.debugName(token->code());
-		break;
-	case Command_TokenType:
-		if (token->isCode(Rem_Code))
-		{
-			cout << table.name(token->code()) << '|' << token->string() << '|';
-		}
-		else
-		{
-			cout << table.name(token->code());
-			if (table.name2(token->code()) != NULL)
-			{
-				cout << '-' << table.name2(token->code());
-			}
-		}
-		break;
-	default:
-		// nothing more to output
-		break;
-	}
-	if (token->reference())
-	{
-		cout << "<ref>";
-	}
-	if (token->isSubCode(~Used_SubCode))
-	{
-		cout << '\'';
-		if (token->isSubCode(Paren_SubCode))
-		{
-			cout << ')';
-		}
-		if (token->isSubCode(Let_SubCode))
-		{
-			cout << "LET";
-		}
-		if (token->isSubCode(SemiColon_SubCode))
-		{
-			cout << ';';
-		}
-		if (token->isSubCode(Keep_SubCode))
-		{
-			cout << "Keep";
-		}
-		if (token->isSubCode(End_SubCode))
-		{
-			cout << "End";
-		}
-		if (token->isSubCode(Question_SubCode))
-		{
-			cout << "Question";
-		}
-		cout << '\'';
-	}
-	return true;
 }
 
 
