@@ -1,11 +1,4 @@
 
-ibcp  Copyright (C) 2010-2012  Thunder422
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to
-redistribute it under certain conditions.
-
-Table initialization successful.
-
 Input: MID$(MID$(A$+B$,2),(C+5)*D,4)
 Output: A$ B$ +$[A$,B$] 2 MID2$( C 5 +%2 D * CvtInt 4 MID3$( 
 

@@ -1,11 +1,4 @@
 
-ibcp  Copyright (C) 2010-2012  Thunder422
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to
-redistribute it under certain conditions.
-
-Table initialization successful.
-
 Input: LEFT$(A$,1) = B$
 Output: A$<ref> 1 LEFT$(<ref> B$ AssignSub$[B$] 
 

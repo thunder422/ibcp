@@ -155,23 +155,24 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 		qFatal("%s", qPrintable(tr("Program aborting!")));
 	}
 
-	cout << endl;
-
-	// don't use tr() here to get strings so output matches expected results
-	const char *copyright = commandLine->copyrightStatement();
-	QString line = QString(copyright).arg(commandLine->programName())
-		.arg(commandLine->copyrightYear());
-	cout << line << endl;
-
-	const char **warranty = commandLine->warrantyStatement();
-	for (int i = 0; warranty[i]; i++)
+	if (inputMode)
 	{
-		// don't use tr() here to get strings so output matches expected results
-		QString line = QString(warranty[i]);
-		cout << line << endl;
-	}
+		cout << endl;
 
-	cout << endl << "Table initialization successful." << endl;
+		const char *copyright = commandLine->copyrightStatement();
+		QString line = tr(copyright).arg(commandLine->programName())
+			.arg(commandLine->copyrightYear());
+		cout << line << endl;
+
+		const char **warranty = commandLine->warrantyStatement();
+		for (int i = 0; warranty[i]; i++)
+		{
+			QString line = tr(warranty[i]);
+			cout << line << endl;
+		}
+
+		cout << endl << tr("Table initialization successful.") << endl;
+	}
 
 	Translator translator(Table::instance());
 

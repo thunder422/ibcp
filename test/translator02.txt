@@ -1,11 +1,4 @@
 
-ibcp  Copyright (C) 2010-2012  Thunder422
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to
-redistribute it under certain conditions.
-
-Table initialization successful.
-
 Input: Z = not A < 5.0 = B > 2.0
 Output: Z<ref> A 5.0 < B 2.0 > =% NOT CvtDbl Assign 
 
