@@ -97,7 +97,7 @@ bool Translator::setInput(const QString &input, bool exprMode)
 	// (expression mode for testing)
 	m_mode = m_exprMode ? Expression_TokenMode : Command_TokenMode;
 
-	m_output = new QList<RpnItem *>;
+	m_output = new RpnList;
 	m_state = Initial_State;
 
 	do {
@@ -1357,7 +1357,7 @@ void Translator::doPendingParen(Token *token)
 			}
 			else
 			{
-				QList<RpnItem *>::iterator last = m_output->end() - 1;
+				RpnList::iterator last = m_output->end() - 1;
 				if (m_table.flags((*last)->token()) & Hidden_Flag)
 				{
 					// last token added is a hidden code

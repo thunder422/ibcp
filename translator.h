@@ -28,7 +28,7 @@
 #include <QList>
 #include <QStack>
 
-#include "token.h"
+#include "rpnlist.h"
 
 class Table;
 
@@ -64,74 +64,6 @@ struct CmdItem
 };
 
 
-// structure for holding RPN output list information
-class RpnItem
-{
-	Token *m_token;				// pointer to token
-	int m_nOperands;			// number of operands
-	RpnItem **m_operand;		// array of operand pointers
-
-public:
-	RpnItem(Token *token, int nOperands = 0, RpnItem **operand = NULL)
-	{
-		m_token = token;
-		m_nOperands = nOperands;
-		m_operand = operand;
-	}
-	~RpnItem()
-	{
-		delete m_token;
-		if (m_nOperands > 0)
-		{
-			delete[] m_operand;
-		}
-	}
-
-	// access functions
-	Token *token(void)
-	{
-		return m_token;
-	}
-	void setToken(Token *token)
-	{
-		m_token = token;
-	}
-
-	int nOperands(void)
-	{
-		return m_nOperands;
-	}
-	void setNOperands(int nOperands)
-	{
-		m_nOperands = nOperands;
-	}
-
-	RpnItem **operand(void)
-	{
-		return m_operand;
-	}
-	void setOperand(RpnItem **operand)
-	{
-		m_operand = operand;
-	}
-	RpnItem *operand(int index)
-	{
-		return m_operand[index];
-	}
-	void setOperand(int index, RpnItem *operand)
-	{
-		m_operand[index] = operand;
-	}
-
-	// function to set operands without allocating a new array
-	void set(int nOperands, RpnItem **operand)
-	{
-		m_nOperands = nOperands;
-		m_operand = operand;
-	}
-};
-
-
 class Translator
 {
 	struct HoldItem
@@ -163,7 +95,7 @@ class Translator
 	} m_state;						// current state of translator
 
 	Table &m_table;					// reference to the table instance
-	QList<RpnItem *> *m_output;		// pointer to RPN list output
+	RpnList *m_output;				// pointer to RPN list output
 	QStack<HoldItem> m_holdStack;	// operator/function holding stack
 	QStack<DoneItem> m_doneStack;	// items processed stack
 	Token *m_pendingParen;			// closing parentheses token is pending
@@ -187,9 +119,9 @@ public:
 	}
 
 	bool setInput(const QString &input, bool exprMode = false);
-	QList<RpnItem *> *output(void)	// only call when setInput() returns true
+	RpnList *output(void)	// only call when setInput() returns true
 	{
-		QList<RpnItem *> *list = m_output;
+		RpnList *list = m_output;
 		m_output = NULL;
 		return list;
 	}

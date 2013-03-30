@@ -131,6 +131,7 @@ set(ibcp_HEADERS
 	commandline.h
 	ibcp.h
 	parser.h
+	rpnlist.h
 	table.h
 	test_ibcp.h
 	token.h

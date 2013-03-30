@@ -261,7 +261,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 {
 	if (translator.setInput(testInput, exprMode))
 	{
-		QList<RpnItem *> *rpnList = translator.output();
+		RpnList *rpnList = translator.output();
 		printOutput(cout, "Output", *rpnList);
 		while (!rpnList->isEmpty())
 		{
@@ -363,7 +363,7 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 
 // function to print entire output rpn list
 void Tester::printOutput(QTextStream &cout, const QString &header,
-	QList<RpnItem *> &rpnList)
+	RpnList &rpnList)
 {
 	cout << header << ": ";
 	foreach (RpnItem *rpnItem, rpnList)
