@@ -1456,13 +1456,12 @@ void Translator::cleanUp(void)
 	{
 		m_countStack.resize(m_countStack.size() - 1);
 	}
-	while (!m_output->isEmpty())
-	{
-		// delete to free the token that was in the list
-		delete m_output->takeLast();
-	}
+
+	// clear the RPN output list of all items
+	m_output->clear();
 	delete m_output;
 	m_output = NULL;
+
 	// need to delete pending parentheses
 	if (m_pendingParen != NULL)
 	{

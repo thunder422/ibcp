@@ -263,10 +263,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 	{
 		RpnList *rpnList = translator.output();
 		printOutput(cout, "Output", *rpnList);
-		while (!rpnList->isEmpty())
-		{
-			delete rpnList->takeLast();
-		}
+		rpnList->clear();
 		delete rpnList;
 	}
 	else  // translate error occurred

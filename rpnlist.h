@@ -103,7 +103,8 @@ class RpnList : public QList<RpnItem *>
 {
 public:
 	RpnList(void) {}
-	~RpnList(void) {}
+	~RpnList(void);
+	void clear(void);
 };
 
 

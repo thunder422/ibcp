@@ -149,6 +149,7 @@ set(ibcp_SOURCES
 	programlinedelegate.cpp
 	programmodel.cpp
 	recentfiles.cpp
+	rpnlist.cpp
 	table.cpp
 	token.cpp
 	tokenhandlers.cpp
