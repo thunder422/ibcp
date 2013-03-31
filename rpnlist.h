@@ -103,10 +103,37 @@ public:
 class RpnList : public QList<RpnItem *>
 {
 public:
-	RpnList(void) {}
+	RpnList(void) : m_errorToken(NULL) {}
 	~RpnList(void);
 	void clear(void);
 	QString text(void);
+
+	void setErrorToken(Token *errorToken)
+	{
+		delete m_errorToken;
+		m_errorToken = errorToken;
+	}
+	Token *errorToken(void) const
+	{
+		return m_errorToken;
+	}
+	bool hasError(void) const
+	{
+		return m_errorToken != NULL;
+	}
+
+	void setErrorMessage(QString errorMessage)
+	{
+		m_errorMessage = errorMessage;
+	}
+	QString errorMessage(void) const
+	{
+		return m_errorMessage;
+	}
+
+private:
+	Token *m_errorToken;			// token when error occurred
+	QString m_errorMessage;			// message of error that occurred
 };
 
 

@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: translator.cpp - contains code for the translator class
-//	Copyright (C) 2010-2012  Thunder422
+//	Copyright (C) 2010-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 enum {
 	HighestPrecedence = 127
 	// this value was selected as the highest value because it is the highest
-	// one-byte signed value (in case the precedence member is changed to an
+	// one-byte signed value (in case the precedence member is changed to a
 	// char); all precedences in the table must be below this value
 };
 
@@ -84,7 +84,7 @@ static Code cvtCodeHaveNeed[numberof_DataType][numberof_DataType] = {
 //   - returns false if failed, use errorToken() and errorMessage()
 //     to get token error occurred at and the error message
 
-bool Translator::setInput(const QString &input, bool exprMode)
+RpnList *Translator::translate(const QString &input, bool exprMode)
 {
 	Token *token;
 	Token *parsedToken;
@@ -188,10 +188,12 @@ bool Translator::setInput(const QString &input, bool exprMode)
 					break;
 				}
 			}
-			m_errorMessage = status == Null_TokenStatus
-				?  token->string() : token->message(status);
+			m_output->setErrorMessage(status == Null_TokenStatus
+				? token->string() : token->message(status));
 			cleanUp();
-			return false;
+			RpnList *output = m_output;
+			m_output = NULL;
+			return output;
 		}
 		status = addToken(token);
 	}
@@ -212,12 +214,13 @@ bool Translator::setInput(const QString &input, bool exprMode)
 			// make a copy of the token to save
 			setErrorToken(new Token(*token));
 		}
-		m_errorMessage = token->message(status);
+		m_output->setErrorMessage(token->message(status));
 		cleanUp();
-		return false;
 	}
 	// TODO check if stacks are empty
-	return true;
+	RpnList *output = m_output;
+	m_output = NULL;
+	return output;
 }
 
 
@@ -1458,8 +1461,7 @@ void Translator::cleanUp(void)
 	}
 
 	// clear the RPN output list of all items
-	delete m_output;
-	m_output = NULL;
+	m_output->clear();
 
 	// need to delete pending parentheses
 	if (m_pendingParen != NULL)

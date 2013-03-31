@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_ibcp.cpp - contains code for testing
-//	Copyright (C) 2010-2012  Thunder422
+//	Copyright (C) 2010-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -259,21 +259,21 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 void Tester::translateInput(QTextStream &cout, Translator &translator,
 	const QString &testInput, bool exprMode)
 {
-	if (translator.setInput(testInput, exprMode))
+	RpnList *rpnList = translator.translate(testInput, exprMode);
+	if (!rpnList->hasError())
 	{
-		RpnList *rpnList = translator.output();
 		cout << "Output: " << rpnList->text() << ' ' << endl;
-		delete rpnList;
 	}
 	else  // translate error occurred
 	{
-		Token *token = translator.errorToken();
-		printError(cout, token, translator.errorMessage());
+		Token *token = rpnList->errorToken();
+		printError(cout, token, rpnList->errorMessage());
 		if (!token->isType(Error_TokenType))
 		{
 			cout << endl;  // FIXME not needed, here to match current results
 		}
 	}
+	delete rpnList;
 }
 
 

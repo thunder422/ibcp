@@ -46,6 +46,7 @@ QString RpnItem::text(void)
 RpnList::~RpnList(void)
 {
 	clear();
+	delete m_errorToken;
 }
 
 

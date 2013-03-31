@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: translator.h - translator class definitions file
-//	Copyright (C) 2012  Thunder422
+//	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -104,35 +104,13 @@ class Translator
 	TokenMode m_mode;				// current assignment mode
 	QStack<CmdItem> m_cmdStack;		// stack of commands waiting processing
 	bool m_exprMode;				// expression only mode active flag
-	Token *m_errorToken;			// token when error occurred
-	QString m_errorMessage;			// message of error that occurred
 
 public:
 	explicit Translator(Table &table): m_table(table), m_output(NULL),
-	    m_pendingParen(NULL), m_errorToken(NULL) {}
-	~Translator(void)
-	{
-		if (m_errorToken != NULL)
-		{
-			delete m_errorToken;
-		}
-	}
+	    m_pendingParen(NULL) {}
+	~Translator(void) {}
 
-	bool setInput(const QString &input, bool exprMode = false);
-	RpnList *output(void)	// only call when setInput() returns true
-	{
-		RpnList *list = m_output;
-		m_output = NULL;
-		return list;
-	}
-	Token *errorToken(void) const     // only call when setInput() returns false
-	{
-		return m_errorToken;
-	}
-	QString errorMessage(void) const  // only call when setInput() returns false
-	{
-		return m_errorMessage;
-	}
+	RpnList *translate(const QString &input, bool exprMode = false);
 
 private:
 	enum Match
@@ -185,11 +163,7 @@ private:
 	// set error token (deleting any previous error token first)
 	void setErrorToken(Token *errorToken)
 	{
-		if (m_errorToken != NULL)
-		{
-			delete m_errorToken;
-		}
-		m_errorToken = errorToken;
+		m_output->setErrorToken(errorToken);
     }
 
 public:
