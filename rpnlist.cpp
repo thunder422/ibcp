@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
-//	File: test_ibcp.cpp - contains code for testing
+//	File: rpnlist.cpp - contains reverse polish notation list code
 //	Copyright (C) 2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
@@ -45,6 +45,7 @@ QString RpnItem::text(void)
 
 RpnList::~RpnList(void)
 {
+	clear();
 }
 
 
@@ -63,19 +64,14 @@ void RpnList::clear(void)
 QString RpnList::text(void)
 {
 	QString string;
-	bool started = false;
 
-	foreach (RpnItem *rpnItem, *this)
+	for (int i = 0; i < count(); i++)
 	{
-		if (started)
+		if (i > 0)
 		{
 			string += ' ';
 		}
-		else
-		{
-			started = true;
-		}
-		string += rpnItem->text();
+		string += at(i)->text();
 	}
 	return string;
 }

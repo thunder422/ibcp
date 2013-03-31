@@ -263,7 +263,6 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 	{
 		RpnList *rpnList = translator.output();
 		cout << "Output: " << rpnList->text() << ' ' << endl;
-		rpnList->clear();
 		delete rpnList;
 	}
 	else  // translate error occurred

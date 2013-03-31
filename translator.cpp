@@ -1458,7 +1458,6 @@ void Translator::cleanUp(void)
 	}
 
 	// clear the RPN output list of all items
-	m_output->clear();
 	delete m_output;
 	m_output = NULL;
 
