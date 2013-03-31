@@ -88,6 +88,7 @@ public:
 	{
 		m_operand[index] = operand;
 	}
+	QString text(void);
 
 	// function to set operands without allocating a new array
 	void set(int nOperands, RpnItem **operand)
@@ -105,6 +106,7 @@ public:
 	RpnList(void) {}
 	~RpnList(void);
 	void clear(void);
+	QString text(void);
 };
 
 

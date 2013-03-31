@@ -54,7 +54,6 @@ class Tester
 	void translateInput(QTextStream &cout, Translator &translator,
 		const QString &testInput, bool exprMode);
 	bool printToken(QTextStream &cout, Token *token, bool tab);
-	void printOutput(QTextStream &cout, const QString &header, RpnList &output);
 	void printError(QTextStream &cout, Token *token, const QString &error);
 
 	QString m_programName;		// name of program

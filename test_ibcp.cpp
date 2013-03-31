@@ -262,7 +262,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 	if (translator.setInput(testInput, exprMode))
 	{
 		RpnList *rpnList = translator.output();
-		printOutput(cout, "Output", *rpnList);
+		cout << "Output: " << rpnList->text() << ' ' << endl;
 		rpnList->clear();
 		delete rpnList;
 	}
@@ -355,30 +355,6 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 	}
 	cout << endl;
 	return true;
-}
-
-
-// function to print entire output rpn list
-void Tester::printOutput(QTextStream &cout, const QString &header,
-	RpnList &rpnList)
-{
-	cout << header << ": ";
-	foreach (RpnItem *rpnItem, rpnList)
-	{
-		cout << rpnItem->token()->text();
-		if (rpnItem->nOperands() > 0)
-		{
-			QChar separator('[');
-			for (int i = 0; i < rpnItem->nOperands(); i++)
-			{
-				cout << separator << rpnItem->operand(i)->token()->text();
-				separator = ',';
-			}
-			cout << ']';
-		}
-		cout << ' ';
-	}
-	cout << endl;
 }
 
 
