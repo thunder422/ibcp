@@ -28,11 +28,15 @@
 #include <QAbstractListModel>
 #include <QStringList>
 
+class RpnList;
+class Translator;
+
 class ProgramModel : public QAbstractListModel
 {
 	Q_OBJECT
 public:
 	explicit ProgramModel(QObject *parent = 0);
+	~ProgramModel(void);
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
@@ -45,6 +49,8 @@ public slots:
 
 private:
 	QStringList m_lines;				// text of the program lines
+	Translator *m_translator;			// program line translator instance
+	QList<RpnList *>m_linesTranslated;	// rpn lists of the program lines
 };
 
 #endif // PROGRAMMODEL_H

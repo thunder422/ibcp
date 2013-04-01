@@ -23,12 +23,25 @@
 //	2013-03-15	initial version
 
 #include "programmodel.h"
+#include "rpnlist.h"
+#include "table.h"
+#include "translator.h"
+
 
 ProgramModel::ProgramModel(QObject *parent) :
-	QAbstractListModel(parent)
+	QAbstractListModel(parent),
+	m_translator(new Translator(Table::instance()))
 {
 }
 
+
+ProgramModel::~ProgramModel(void)
+{
+	delete m_translator;
+}
+
+
+// function to return data for a given program line
 
 QVariant ProgramModel::data(const QModelIndex &index, int role) const
 {
@@ -40,7 +53,17 @@ QVariant ProgramModel::data(const QModelIndex &index, int role) const
 		}
 		else if (role == Qt::DisplayRole)
 		{
-			return m_lines.at(index.row());
+			RpnList *rpnList = m_linesTranslated.at(index.row());
+			if (!rpnList->hasError())
+			{
+				return rpnList->text();
+			}
+			else  // translate error occurred
+			{
+				Token *token = rpnList->errorToken();
+				return QString("%1:%2 %3").arg(token->column())
+					.arg(token->length()).arg(rpnList->errorMessage());
+			}
 		}
 	}
 	return QVariant();
@@ -51,7 +74,7 @@ QVariant ProgramModel::data(const QModelIndex &index, int role) const
 
 int ProgramModel::rowCount(const QModelIndex &parent) const
 {
-	return m_lines.count();
+	return m_linesTranslated.count();
 }
 
 
@@ -61,14 +84,20 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	QStringList lines)
 {
 	int i;
-	int oldCount = m_lines.count();
+	int oldCount = m_linesTranslated.count();
 	int count = lines.count();
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
+		// TODO will need RPN list comparison here
 		if (lines.at(i) != m_lines.at(lineNumber))
 		{
 			m_lines[lineNumber] = lines.at(i);
+
+			// delete old list, translate line and store new list
+			delete m_linesTranslated[lineNumber];
+			m_linesTranslated[lineNumber]
+				= m_translator->translate(lines.at(i));
 
 			// need to emit signal that data changed
 			QModelIndex index = this->index(lineNumber);
@@ -84,6 +113,9 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		while (--linesDeleted >= 0)
 		{
 			m_lines.removeAt(lineNumber);
+			// delete rpn list and remove from list
+			delete m_linesTranslated[lineNumber];
+			m_linesTranslated.removeAt(lineNumber);
 		}
 		endRemoveRows();
 	}
@@ -94,14 +126,17 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 			- 1);
 		while (i < count)
 		{
-			m_lines.insert(lineNumber++, lines.at(i++));
+			m_lines.insert(lineNumber, lines.at(i));
+			// translate new line and insert into list
+            m_linesTranslated.insert(lineNumber++,
+				m_translator->translate(lines.at(i++)));
 		}
 		endInsertRows();
 	}
 
-	if (m_lines.count() != oldCount)
+	if (m_linesTranslated.count() != oldCount)
 	{
 		// emit new line count if changed
-		emit lineCountChanged(m_lines.count());
+		emit lineCountChanged(m_linesTranslated.count());
 	}
 }
