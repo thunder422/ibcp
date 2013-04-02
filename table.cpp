@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: table.cpp - contains operator/command/function table
-//	Copyright (C) 2010-2012  Thunder422
+//	Copyright (C) 2010-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -709,7 +709,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// Colon_Code
 		Operator_TokenType, OneChar_Multiple,
-		":", NULL, Null_Flag, 0, None_DataType
+		":", NULL, Null_Flag, 4, None_DataType
 	},
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
