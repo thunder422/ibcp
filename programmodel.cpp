@@ -89,15 +89,14 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
-		// TODO will need RPN list comparison here
-		if (lines.at(i) != m_lines.at(lineNumber))
+		RpnList *rpnList = m_translator->translate(lines.at(i));
+		if (*rpnList != *m_linesTranslated.at(lineNumber))
 		{
 			m_lines[lineNumber] = lines.at(i);
 
 			// delete old list, translate line and store new list
 			delete m_linesTranslated[lineNumber];
-			m_linesTranslated[lineNumber]
-				= m_translator->translate(lines.at(i));
+			m_linesTranslated[lineNumber] = rpnList;
 
 			// need to emit signal that data changed
 			QModelIndex index = this->index(lineNumber);

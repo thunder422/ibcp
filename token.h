@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: token.h - token class definitions file
-//	Copyright (C) 2012  Thunder422
+//	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -79,6 +79,12 @@ public:
 		*this = token;
 	}
 	~Token(void) {}
+
+	bool operator==(const Token &other) const;
+	bool operator!=(const Token &other) const
+	{
+		return !(*this == other);
+	}
 
 	// column and length access functions
 	int column(void) const

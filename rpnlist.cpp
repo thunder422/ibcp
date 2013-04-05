@@ -25,6 +25,13 @@
 #include "rpnlist.h"
 
 
+RpnList::~RpnList(void)
+{
+	clear();
+	delete m_errorToken;
+}
+
+
 // function to recreate text (abbreviated contents) of item
 QString RpnItem::text(void)
 {
@@ -43,10 +50,21 @@ QString RpnItem::text(void)
 }
 
 
-RpnList::~RpnList(void)
+// function to overload the comparison operator
+bool RpnItem::operator==(const RpnItem &other) const
 {
-	clear();
-	delete m_errorToken;
+	if (*m_token != *other.m_token || m_nOperands != other.m_nOperands)
+	{
+		return false;
+	}
+	for (int i = 0; i < m_nOperands; i++)
+	{
+		if (*m_operand[i]->token() != *other.m_operand[i]->token())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -75,6 +93,24 @@ QString RpnList::text(void)
 		string += at(i)->text();
 	}
 	return string;
+}
+
+
+// function to overload the comparison operator
+bool RpnList::operator==(const RpnList &other) const
+{
+	if (count() != other.count())
+	{
+		return false;
+	}
+	for (int i = 0; i < count(); i++)
+	{
+		if (*at(i) != *other.at(i))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 

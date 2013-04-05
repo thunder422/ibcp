@@ -89,6 +89,11 @@ public:
 		m_operand[index] = operand;
 	}
 	QString text(void);
+	bool operator==(const RpnItem &other) const;
+	bool operator!=(const RpnItem &other) const
+	{
+		return !(*this == other);
+	}
 
 	// function to set operands without allocating a new array
 	void set(int nOperands, RpnItem **operand)
@@ -107,6 +112,11 @@ public:
 	~RpnList(void);
 	void clear(void);
 	QString text(void);
+	bool operator==(const RpnList &other) const;
+	bool operator!=(const RpnList &other) const
+	{
+		return !(*this == other);
+	}
 
 	void setErrorToken(Token *errorToken)
 	{

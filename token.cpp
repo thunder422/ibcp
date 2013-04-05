@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: token.cpp - contains code for the token class
-//	Copyright (C) 2012  Thunder422
+//	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -254,5 +254,84 @@ QString Token::text(void)
 	return string;
 }
 
+
+// function to overload the comparison operator
+bool Token::operator==(const Token &other) const
+{
+	if (m_type != other.m_type)
+	{
+		return false;
+	}
+	switch (m_type)
+	{
+	case Constant_TokenType:
+		if (m_dataType != other.m_dataType)
+		{
+			return false;
+		}
+		// now fall thru to compare string of constant
+	case Remark_TokenType:
+	case DefFuncN_TokenType:
+	case NoParen_TokenType:
+	case DefFuncP_TokenType:
+	case Paren_TokenType:
+		if (m_string != other.m_string)
+		{
+			return false;
+		}
+		break;
+
+	case Operator_TokenType:
+		if (isCode(RemOp_Code))
+		{
+			if (m_string != other.m_string)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (m_code != other.m_code)
+			{
+				return false;
+			}
+		}
+		break;
+
+	case Command_TokenType:
+		if (isCode(Rem_Code))
+		{
+			if (m_string != other.m_string)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			if (m_code != other.m_code)
+			{
+				return false;
+			}
+		}
+		break;
+
+	case IntFuncN_TokenType:
+	case IntFuncP_TokenType:
+		if (m_code != other.m_code)
+		{
+			return false;
+		}
+		break;
+
+	default:
+		// nothing to compare
+		break;
+	}
+	if (m_reference != other.m_reference || m_subCode != other.m_subCode)
+	{
+		return false;
+	}
+	return true;
+}
 
 // end: token.cpp
