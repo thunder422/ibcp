@@ -48,7 +48,6 @@ public slots:
 		QStringList lines);
 
 private:
-	QStringList m_lines;				// text of the program lines
 	Translator *m_translator;			// program line translator instance
 	QList<RpnList *>m_linesTranslated;	// rpn lists of the program lines
 };

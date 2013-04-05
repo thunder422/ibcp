@@ -92,8 +92,6 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		RpnList *rpnList = m_translator->translate(lines.at(i));
 		if (*rpnList != *m_linesTranslated.at(lineNumber))
 		{
-			m_lines[lineNumber] = lines.at(i);
-
 			// delete old list, translate line and store new list
 			delete m_linesTranslated[lineNumber];
 			m_linesTranslated[lineNumber] = rpnList;
@@ -111,7 +109,6 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 			- 1);
 		while (--linesDeleted >= 0)
 		{
-			m_lines.removeAt(lineNumber);
 			// delete rpn list and remove from list
 			delete m_linesTranslated[lineNumber];
 			m_linesTranslated.removeAt(lineNumber);
@@ -125,7 +122,6 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 			- 1);
 		while (i < count)
 		{
-			m_lines.insert(lineNumber, lines.at(i));
 			// translate new line and insert into list
             m_linesTranslated.insert(lineNumber++,
 				m_translator->translate(lines.at(i++)));
