@@ -99,6 +99,16 @@ QString RpnList::text(void)
 // function to overload the comparison operator
 bool RpnList::operator==(const RpnList &other) const
 {
+	if (hasError() && !other.hasError() || !hasError() && other.hasError())
+	{
+		return false;  // one list has error and the other does not
+	}
+	if (hasError())
+	{
+		return m_errorToken->column() == other.m_errorToken->column()
+			&& m_errorToken->length() == other.m_errorToken->length()
+			&& m_errorMessage == other.m_errorMessage;
+	}
 	if (count() != other.count())
 	{
 		return false;
