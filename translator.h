@@ -174,6 +174,7 @@ public:
 	friend TokenStatus CloseParen_Handler(Translator &t, Token *&token);
 	friend TokenStatus EndOfLine_Handler(Translator &t, Token *&token);
 	friend TokenStatus SemiColon_Handler(Translator &t, Token *&token);
+	friend TokenStatus RemOp_Handler(Translator &t, Token *&token);
 
 	// command handler friend function definitions section
 	friend TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmdItem,

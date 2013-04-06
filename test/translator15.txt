@@ -11,3 +11,43 @@ Output: REM|+Same here|
 Input: REM'and here
 Output: REM|'and here| 
 
+Input: 'operator form of REM at beginning of line
+Output: '|operator form of REM at beginning of line| 
+
+Input: A=3'assign A
+Output: A<ref> 3 CvtDbl Assign '|assign A| 
+
+Input: A=3 'assign A
+Output: A<ref> 3 CvtDbl Assign '|assign A| 
+
+Input: A=3 ' assign A
+Output: A<ref> 3 CvtDbl Assign '| assign A| 
+
+Input: PRINT A 'output value
+Output: A PrintDbl PRINT '|output value| 
+
+Input: PRINT A+3 'comment
+Output: A 3 +%2 PrintDbl PRINT '|comment| 
+
+Input: PRINT A+3;'comment
+Output: A 3 +%2 PrintDbl '|comment| 
+
+Input: INPUT A'get value from user
+Output: InputBegin InputParse'End' A<ref> InputAssign INPUT '|get value from user| 
+
+Input: A'bad comment
+        ^-- expected equal or comma for assignment
+
+
+Input: A='bad comment
+         ^-- expected numeric expression
+
+
+Input: A=3+'bad comment
+           ^-- expected numeric expression
+
+
+Input: INPUT'bad input
+            ^-- expected variable
+
+

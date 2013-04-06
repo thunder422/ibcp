@@ -36,6 +36,7 @@ extern TokenStatus Comma_Handler(Translator &t, Token *&token);
 extern TokenStatus CloseParen_Handler(Translator &t, Token *&token);
 extern TokenStatus EndOfLine_Handler(Translator &t, Token *&token);
 extern TokenStatus SemiColon_Handler(Translator &t, Token *&token);
+extern TokenStatus RemOp_Handler(Translator &t, Token *&token);
 
 
 #endif  // TOKENHANDLERS_H

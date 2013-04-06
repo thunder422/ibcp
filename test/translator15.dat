@@ -6,3 +6,18 @@ REM This is a comment
 REM"Space not required if followed by non-alpha numeric"
 REM+Same here
 REM'and here
+
+'operator form of REM at beginning of line
+A=3'assign A
+A=3 'assign A
+A=3 ' assign A
+PRINT A 'output value
+PRINT A+3 'comment
+PRINT A+3;'comment
+INPUT A'get value from user
+
+# some error tests
+A'bad comment
+A='bad comment
+A=3+'bad comment
+INPUT'bad input

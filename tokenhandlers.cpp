@@ -479,4 +479,32 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 }
 
 
+//**************************************
+//**    REM OPERATOR TOKEN HANDLER    **
+//**************************************
+
+TokenStatus RemOp_Handler(Translator &t, Token *&token)
+{
+	if (!t.m_cmdStack.empty() || t.m_mode != Command_TokenMode)
+	{
+		// rem operator is not at the beginning of the line
+
+		// this is like the end of the line, so call EOL token handler
+		// with a new EOL token to consume if needed by command
+		// (otherwise, EOL token handler deletes it unless an error occurs)
+		Token *eolToken = t.m_table.newToken(EOL_Code);
+		TokenStatus status = EndOfLine_Handler(t, eolToken);
+		if (status != Done_TokenStatus)
+		{
+			delete eolToken;
+			return status;
+		}
+	}
+
+	// add rem operator token with remark string to output
+	t.m_output->append(new RpnItem(token));
+	return Done_TokenStatus;
+}
+
+
 // end: tokenhandlers.cpp

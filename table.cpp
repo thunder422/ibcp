@@ -714,7 +714,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
-		"'", NULL, Null_Flag, 0, None_DataType
+		"'", NULL, EndExpr_Flag | EndStmt_Flag, 2, None_DataType, NULL,
+		RemOp_Handler
 	},
 	//*****************
 	//   END SYMBOLS
