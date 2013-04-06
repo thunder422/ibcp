@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
-//	File: test_ibcp.cpp - contains code for testing
+//	File: test_ibcp.cpp - tester class source file
 //	Copyright (C) 2010-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

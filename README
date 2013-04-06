@@ -42,10 +42,14 @@ items, the tool bar with several file and edit operations, an edit box
 for editing the program (which emits line changes including lines
 inserted and deleted) and a status bar.
 
-The ProgramModel holds the program an updates the program as lines are
-changed from the edit box.  For now the program only handles text files.
-There is a temporary program view dock widget used for monitoring the
-internal program during development.
+The ProgramModel holds the program an updates the program as reverse polish
+notation (RPN) lists, an intermediate format on its way to being compiled, as
+lines are changed from the edit box.  The program now handles the BASIC
+commands so far implemented in the translator (LET, PRINT and INPUT).  There is
+a temporary program view dock widget used for monitoring the internal program
+during development that is currently showing the translated program lines as
+RPN lists.  Error messages with column and length values are show for lines
+with errors.
 
 
 Building The Program

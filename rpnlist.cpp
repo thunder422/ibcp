@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
-//	File: rpnlist.cpp - contains reverse polish notation list code
+//	File: rpnlist.cpp - reverse polish notation classes source file
 //	Copyright (C) 2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

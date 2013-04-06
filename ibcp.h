@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: ibcp.h - main definitions file
+//	File: ibcp.h - main header file
 //	Copyright (C) 2010-2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

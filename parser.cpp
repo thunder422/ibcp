@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
-//	File: parser.cpp - contains code for the parser class
+//	File: parser.cpp - parser class source file
 //	Copyright (C) 2010-2011  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

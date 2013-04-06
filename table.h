@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: table.h - table class definitions file
+//	File: table.h - table class header file
 //	Copyright (C) 2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

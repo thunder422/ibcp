@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: commandline.n - command line functions source file
-//	Copyright (C) 2012  Thunder422
+//	File: commandline.n - command line class source file
+//	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by

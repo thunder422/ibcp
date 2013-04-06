@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
-//	File: table.cpp - contains operator/command/function table
+//	File: table.cpp - operator/command/function table source file
 //	Copyright (C) 2010-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

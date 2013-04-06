@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: mainwinow.cpp - main window functions
+//	File: mainwinow.cpp - main window class source file
 //	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

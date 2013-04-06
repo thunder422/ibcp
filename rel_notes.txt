@@ -18,33 +18,40 @@ see <http://www.gnu.org/licenses/>.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-Planned Roadmap (updated):
+Planned Roadmap (updated 2013-04-05):
 
-	Hook Translator (program text to RPN list) to Program Model
-	Initial Recreator (RPN list to program text) implementation
-	Hook Recreator to GUI (update Edit Box)
-	Initial Encoder (RPN list to internal code) implementation
-	Hook Encoder to Program Model
-	Initial Decoder (internal code to RPN list) implementation
-	Hook Decoder to Program Model and Recreator
-
-Planned Roadmap (outdated):
-
-	Translator - Colons (Parser issues, Token Status Enumeration)
-	Encoder - (for commands implemented so far)
-	Dictionary Definition (variables and arrays)
-	Dim command (translation and encoding)
-	Recreator (for command implemented so far)
-	Internal Language Definition
-	Translator - Line Numbers
-	Translator - Immediate Commands
-	Program (maintainer and simple line editor)
-	Run-time module (for command implemented so far)
-	Command - IF
-	Command - FOR-NEXT
-	Command - DO-LOOP
-	Command - Single line DEF FN
+	(current) Translator/Program Model/GUI Integration
+	Implement initial Recreator (RPN list to program text)
+	Integrate Recreator to GUI (update Edit Box)
+	Implement initial Encoder (RPN list to internal code)
+	Implement Variable Dictionary (needed for Encoder)
+	Implement initial Decoder (internal code to RPN list)
+	Integrate Decoder/Recreator/GUI
+	Implement initial Run-time Module (for LET, PRINT and INPUT)
+	Implement Colon
+	Implement DIM command and arrays
+	Implement IF command
+	Implement FOR-NEXT commands
+	Implement DEF FN command
+	Implement DO-WHILE-UNTIL-LOOP commands
 	To be defined...
+
+
+Release 0.3.4 (2013-03-23)
+
+	Project developmental release - the program model has been
+	integrated with the translator and now stores the translated RPN
+	(reverse polish notation) lists, which may contain an error, and
+	the program view displays the text representation of the RPN
+	list.  Other major changes:
+	
+	  - New RpnList class the holds list of RPN items or an error
+	  - Corrected the precedence of the Colon operator (not yet
+	    implemented) to resolve an issue that occurred in lines with
+	    a colon.
+	  - Removed copyright and table initialization error from test
+	    output so that the expected results files do not need to be
+	    changed when the copyright year changes.
 
 
 Release 0.3.3 (2013-03-23)

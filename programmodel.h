@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: programmodel.h - program model header file
+//	File: programmodel.h - program model class header file
 //	Copyright (C) 2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

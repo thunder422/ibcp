@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: parser.h - parser class definitions file
+//	File: parser.h - parser class header file
 //	Copyright (C) 2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

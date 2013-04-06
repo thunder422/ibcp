@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: token.cpp - contains code for the token class
+//	File: token.cpp - token class source file
 //	Copyright (C) 2012-2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify

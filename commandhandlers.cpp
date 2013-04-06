@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 
 //	Interactive BASIC Compiler Project
-//	File: commandhandlers.cpp - contains code for translator command handlers
+//	File: commandhandlers.cpp - translator command handlers source file
 //	Copyright (C) 2012  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
