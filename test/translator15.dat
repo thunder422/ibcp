@@ -1,0 +1,8 @@
+###############################################
+#  Translator Test #15: REMARKS (2013-04-05)  #
+###############################################
+
+REM This is a comment
+REM"Space not required if followed by non-alpha numeric"
+REM+Same here
+REM'and here

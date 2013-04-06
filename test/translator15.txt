@@ -1,0 +1,13 @@
+
+Input: REM This is a comment
+Output: REM| This is a comment| 
+
+Input: REM"Space not required if followed by non-alpha numeric"
+Output: REM|"Space not required if followed by non-alpha numeric"| 
+
+Input: REM+Same here
+Output: REM|+Same here| 
+
+Input: REM'and here
+Output: REM|'and here| 
+

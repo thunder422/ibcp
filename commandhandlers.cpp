@@ -362,4 +362,16 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem, Token *token)
 }
 
 
+//*******************************
+//**    REM COMMAND HANDLER    **
+//*******************************
+
+TokenStatus Rem_CmdHandler(Translator &t, CmdItem *cmdItem, Token *token)
+{
+	// just add rem command token with remark string to output
+	t.m_output->append(new RpnItem(cmdItem->token));
+	return Good_TokenStatus;
+}
+
+
 // end: commandhandlers.cpp

@@ -184,6 +184,8 @@ public:
 		Token *token);
 	friend TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem,
 		Token *token);
+	friend TokenStatus Rem_CmdHandler(Translator &t, CmdItem *cmdItem,
+		Token *token);
 };
 
 

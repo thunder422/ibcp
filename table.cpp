@@ -335,7 +335,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// Rem_Code
 		Command_TokenType, OneWord_Multiple,
-		"REM", NULL, Null_Flag, 4, None_DataType
+		"REM", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
+		Command_TokenMode, Rem_CmdHandler
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,

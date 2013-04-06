@@ -39,6 +39,8 @@ extern TokenStatus Let_CmdHandler(Translator &t, CmdItem *cmdItem,
 	Token *token);
 extern TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem,
 	Token *token);
+extern TokenStatus Rem_CmdHandler(Translator &t, CmdItem *cmdItem,
+	Token *token);
 
 
 #endif  // COMMANDHANDLER_H
