@@ -49,7 +49,12 @@ public slots:
 
 private:
 	Translator *m_translator;			// program line translator instance
-	QList<RpnList *>m_linesTranslated;	// rpn lists of the program lines
+	struct LineInfo
+	{
+		RpnList *rpnList;				// pointer to rpn list
+		int errorIndex;					// index to error list
+	};
+	QList<LineInfo> m_lineInfo;			// program line information list
 };
 
 #endif // PROGRAMMODEL_H
