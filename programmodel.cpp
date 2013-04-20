@@ -78,7 +78,7 @@ int ProgramModel::rowCount(const QModelIndex &parent) const
 }
 
 
-// slot function to received program updates
+// slot function to receive program updates
 
 void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	QStringList lines)
@@ -89,13 +89,8 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
-		RpnList *rpnList = m_translator->translate(lines.at(i));
-		if (*rpnList != *m_lineInfo.at(lineNumber).rpnList)
+		if (updateLine(Change, lineNumber, lines.at(i)))
 		{
-			// delete old list, translate line and store new list
-			delete m_lineInfo.at(lineNumber).rpnList;
-			m_lineInfo[lineNumber].rpnList = rpnList;
-
 			// need to emit signal that data changed
 			QModelIndex index = this->index(lineNumber);
 			emit dataChanged(index, index);
@@ -105,27 +100,22 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	if (linesDeleted > 0)
 	{
 		// delete lines from the program
-		beginRemoveRows(QModelIndex(), lineNumber, lineNumber + linesDeleted
-			- 1);
+		int lastLineNumber = lineNumber + linesDeleted - 1;
+		beginRemoveRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (--linesDeleted >= 0)
 		{
-			// delete rpn list and remove from list
-			delete m_lineInfo.at(lineNumber).rpnList;
-			m_lineInfo.removeAt(lineNumber);
+			updateLine(Delete, lineNumber);
 		}
 		endRemoveRows();
 	}
 	else if (linesInserted > 0)
 	{
 		// insert new lines into the program
-		beginInsertRows(QModelIndex(), lineNumber, lineNumber + linesInserted
-			- 1);
+		int lastLineNumber = lineNumber + linesInserted - 1;
+		beginInsertRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (i < count)
 		{
-			// translate new line and insert into list
-			LineInfo lineInfo;
-			lineInfo.rpnList = m_translator->translate(lines.at(i++));
-			m_lineInfo.insert(lineNumber++, lineInfo);
+			updateLine(Insert, lineNumber++, lines.at(i++));
 		}
 		endInsertRows();
 	}
@@ -136,3 +126,151 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		emit lineCountChanged(m_lineInfo.count());
 	}
 }
+
+
+bool ProgramModel::updateLine(ModifyMode mode, int lineNumber,
+	const QString &line)
+{
+	RpnList *rpnList;
+
+	if (mode != Delete)
+	{
+		// compile line (for now just translate)
+		rpnList = m_translator->translate(line);
+	}
+
+	if (mode == Change)
+	{
+		LineInfo &lineInfo = m_lineInfo[lineNumber];
+		if (*rpnList == *lineInfo.rpnList)
+		{
+			return false;  // line not changed; nothing more to do here
+		}
+
+		// replace the list with the new line
+		delete lineInfo.rpnList;
+		lineInfo.rpnList = rpnList;
+
+		setError(lineNumber, lineInfo, false);
+	}
+	else if (mode == Insert)
+	{
+		LineInfo lineInfo;
+		lineInfo.rpnList = rpnList;
+		lineInfo.errIndex = -1;
+
+		setError(lineNumber, lineInfo, true);
+
+		m_lineInfo.insert(lineNumber, lineInfo);
+	}
+	else if (mode == Delete)
+	{
+		LineInfo &lineInfo = m_lineInfo[lineNumber];
+
+		removeError(lineNumber, lineInfo, true);
+
+		// delete rpn list and remove from list
+		delete lineInfo.rpnList;
+		m_lineInfo.removeAt(lineNumber);
+	}
+	return true;
+}
+
+
+// function to insert error into list if line has an error
+void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
+	bool lineInserted)
+{
+	bool hasError = lineInfo.rpnList->hasError();
+	if (!hasError)
+	{
+		removeError(lineNumber, lineInfo, false);
+	}
+	else if (lineInfo.errIndex != -1)
+	{
+		// replace current error
+		m_errors[lineInfo.errIndex] = ErrorItem(ErrorItem::Translator,
+			lineNumber, lineInfo.rpnList->errorToken(),
+			lineInfo.rpnList->errorMessage());
+	}
+
+	// find location in error list for line number
+	int errIndex = m_errors.find(lineNumber);
+
+	if (hasError)
+	{
+		// insert new error into error list
+		m_errors.insert(errIndex, ErrorItem(ErrorItem::Translator,
+			lineNumber, lineInfo.rpnList->errorToken(),
+			lineInfo.rpnList->errorMessage()));
+
+		lineInfo.errIndex = errIndex++;
+	}
+	else if (!lineInserted)
+	{
+		return;  // nothing else to do
+	}
+
+	// loop thru rest of errors in list
+	for (; errIndex < m_errors.count(); errIndex++)
+	{
+		if (hasError)
+		{
+			// adjust error index for inserted error
+			m_lineInfo[m_errors[errIndex].lineNumber()].errIndex++;
+		}
+		if (lineInserted)
+		{
+			// adjust error line number for inserted line
+			m_errors[errIndex].incrementLineNumber();
+		}
+	}
+}
+
+
+// function to remove an error from the list if line had an error
+void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
+	bool lineDeleted)
+{
+	int errIndex;
+	bool hadError;
+
+	if (lineInfo.errIndex != -1)
+	{
+		errIndex = lineInfo.errIndex;
+
+		// remove error (for changed line with no error or deleted line)
+		m_errors.removeAt(errIndex);
+
+		lineInfo.errIndex = -1;
+		hadError = true;
+	}
+	else if (lineDeleted)
+	{
+		// find location in error list for line number
+		errIndex = m_errors.find(lineNumber);
+		hadError = false;
+	}
+	else
+	{
+		return;  // nothing else to do
+	}
+
+	// loop thru rest of errors in list
+	for (; errIndex < m_errors.count(); errIndex++)
+	{
+		if (hadError)
+		{
+			// adjust error index for removed error
+			m_lineInfo[m_errors[errIndex].lineNumber()].errIndex--;
+		}
+		if (lineDeleted)
+		{
+			// adjust error line number for deleted line
+			m_errors[errIndex].decrementLineNumber();
+		}
+	}
+}
+
+
+// end: programmodel.cpp

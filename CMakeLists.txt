@@ -129,6 +129,7 @@ add_custom_command(OUTPUT test_names.h
 # list the header files
 set(ibcp_HEADERS
 	commandline.h
+	errorlist.h
 	ibcp.h
 	parser.h
 	rpnlist.h
@@ -142,6 +143,7 @@ set(ibcp_HEADERS
 set(ibcp_SOURCES
 	commandhandlers.cpp
 	commandline.cpp
+	errorlist.cpp
 	editbox.cpp
 	main.cpp
 	mainwindow.cpp

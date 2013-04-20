@@ -28,6 +28,8 @@
 #include <QAbstractListModel>
 #include <QStringList>
 
+#include "errorlist.h"
+
 class RpnList;
 class Translator;
 
@@ -48,13 +50,26 @@ public slots:
 		QStringList lines);
 
 private:
-	Translator *m_translator;			// program line translator instance
+	enum ModifyMode
+	{
+		Insert,
+		Change,
+		Delete
+	};
 	struct LineInfo
 	{
 		RpnList *rpnList;				// pointer to rpn list
-		int errorIndex;					// index to error list
+		int errIndex;					// index to error list
 	};
+	bool updateLine(ModifyMode mode, int lineNumber,
+		const QString &line = QString());
+	void setError(int lineNumber,
+		LineInfo &lineInfo, bool lineInserted);
+	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
+
+	Translator *m_translator;			// program line translator instance
 	QList<LineInfo> m_lineInfo;			// program line information list
+	ErrorList m_errors;				// list of program errors
 };
 
 #endif // PROGRAMMODEL_H
