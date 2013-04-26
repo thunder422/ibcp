@@ -34,8 +34,8 @@
 
 EditBox::EditBox(QWidget *parent) :
 	QPlainTextEdit(parent),
-	m_lineModified(-1),
-	m_lineModifiedIsNew(false),
+	m_modifiedLine(-1),
+	m_modifiedLineIsNew(false),
 	m_lineCount(0)
 {
 	// set the edit box to a fixed width font
@@ -195,7 +195,7 @@ void EditBox::selectAll(void)
 void EditBox::resetModified(void)
 {
 	document()->setModified(false);
-	m_lineModified = -1;
+	m_modifiedLine = -1;
 }
 
 
@@ -230,7 +230,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		{
 			if (charsAdded == 1)
 			{
-				m_lineModified = -2;
+				m_modifiedLine = -2;
 				return;
 			}
 			if (m_lineCount == 0)
@@ -238,12 +238,19 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 				return;
 			}
 		}
-		if (!cursorMoved || m_lineModified == -2)
+		if (!cursorMoved || m_modifiedLine == -2)
 		{
 			netLineCount = -m_lineCount;
 			newLineCount = 0;
 			changeAtLineBegin = true;
 		}
+	}
+
+	// capture modified line if it is not related to change (undo/redo)
+	if (m_modifiedLine >= 0 && m_modifiedLine != changeLine)
+	{
+		// adjust if modified line is after change line
+		captureModifiedLine(m_modifiedLine > changeLine ? netLineCount: 0);
 	}
 
 	if (linesModified != 0 || netLineCount != 0)  // multiple lines affected?
@@ -256,31 +263,31 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		}
 		else  // changed multiple lines or single line and not at begin of line
 		{
-			bool changeLineIsNew = m_lineModifiedIsNew;
+			bool changeLineIsNew = m_modifiedLineIsNew;
 
 			// check if last line is new before linesModified is changed
 			if (linesModified == netLineCount && !changeAtLineBegin
 				|| cursor.atBlockEnd() && netLineCount > 0)
 			{
-				m_lineModifiedIsNew = true;
+				m_modifiedLineIsNew = true;
 			}
 
 			if (netLineCount <= 0)  // lines deleted from document?
 			{
 				// check if current line is a newly inserted line
-				if (m_lineModifiedIsNew)
+				if (m_modifiedLineIsNew)
 				{
 					// (backspace at begin of new modified line
 					// or delete at end of new modified line
 					// or multiple line undo at a new modified line)
 					// reset new line status, and one less line deleted
-					m_lineModifiedIsNew = false;
+					m_modifiedLineIsNew = false;
 					netLineCount++;
 
 					if (linesModified == 0)  // no lines changed?
 					{
 						// check if multiple line undo
-						if (changeLine + 1 < m_lineModified)
+						if (changeLine + 1 < m_modifiedLine)
 						{
 							// need to report one line (next line) as changed
 							linesModified = 1;
@@ -311,7 +318,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 					linesModified -= netLineCount;
 				}
 				linesInserted = netLineCount;
-				if (!changeLineIsNew && m_lineModifiedIsNew)
+				if (!changeLineIsNew && m_modifiedLineIsNew)
 				{
 					// adjust lines changed/inserted if last line is new
 					linesModified++;
@@ -334,7 +341,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		}
 		m_lineCount = newLineCount;
 	}
-	m_lineModified = m_lineModified == -2 ? -1 : cursor.blockNumber();
+	m_modifiedLine = m_modifiedLine == -2 ? -1 : cursor.blockNumber();
 }
 
 
@@ -342,7 +349,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void EditBox::cursorMoved(void)
 {
-	if (m_lineModified >= 0 && m_lineModified != textCursor().blockNumber())
+	if (m_modifiedLine >= 0 && m_modifiedLine != textCursor().blockNumber())
 	{
 		// there is a modified line and cursor moved from that line
 		captureModifiedLine();
@@ -352,15 +359,15 @@ void EditBox::cursorMoved(void)
 
 // function to check if current line was modified and to process it
 
-void EditBox::captureModifiedLine(void)
+void EditBox::captureModifiedLine(int offset)
 {
-	if (m_lineModified >= 0)
+	if (m_modifiedLine >= 0)
 	{
-		emit linesChanged(m_lineModified, 0, m_lineModifiedIsNew ? 1 : 0,
-			QStringList()
-			<< document()->findBlockByNumber(m_lineModified).text());
+		emit linesChanged(m_modifiedLine, 0, m_modifiedLineIsNew ? 1 : 0,
+			QStringList() << document()->findBlockByNumber(m_modifiedLine
+			+ offset).text());
 
-		if (m_lineModifiedIsNew)  // was this a new line without a number?
+		if (m_modifiedLineIsNew)  // was this a new line without a number?
 		{
 			// redraw line numbers to fill in previous blank line number
 			// and adjust the line numbers below the new line
@@ -368,8 +375,8 @@ void EditBox::captureModifiedLine(void)
 				height());
 		}
 
-		m_lineModified = -1;  // line processed, reset modified line number
-		m_lineModifiedIsNew = false;
+		m_modifiedLine = -1;  // line processed, reset modified line number
+		m_modifiedLineIsNew = false;
 	}
 }
 
@@ -449,7 +456,7 @@ void EditBox::lineNumberWidgetPaint(QPaintEvent *event)
 		if (block.isVisible() && bottom >= event->rect().top())
 		{
 			QString number;
-			if (blockNumber == m_lineModified && m_lineModifiedIsNew)
+			if (blockNumber == m_modifiedLine && m_modifiedLineIsNew)
 			{
 				number = QString("+");	// draw '+' with no line number
 				offset--;				// offset rest of line numbers by 1
@@ -457,7 +464,7 @@ void EditBox::lineNumberWidgetPaint(QPaintEvent *event)
 			else  // draw line number with '*' if modified
 			{
 				number = QString("%1%2").arg(blockNumber + offset)
-					.arg(blockNumber == m_lineModified ? '*' : ' ');
+					.arg(blockNumber == m_modifiedLine ? '*' : ' ');
 			}
 			painter.setPen(Qt::black);
 			painter.drawText(0, top, m_lineNumberWidget->width(),

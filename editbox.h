@@ -41,7 +41,7 @@ public:
 	void paste(QClipboard::Mode mode = QClipboard::Clipboard);
 	void selectAll(void);
 	void resetModified(void);
-	void captureModifiedLine(void);
+	void captureModifiedLine(int offset = 0);
 
 	int lineNumberWidgetWidth(void);
 	void lineNumberWidgetPaint(QPaintEvent *event);
@@ -69,8 +69,9 @@ private slots:
 private:
 	bool pasteSelection(const QPoint &pos = QPoint());
 
-	int m_lineModified;				// current line that has been modified
-	bool m_lineModifiedIsNew;		// modified line is a new line flag
+	int m_modifiedLine;				// current line that has been modified
+	bool m_modifiedLineIsNew;		// modified line is a new line flag
+	int m_modifiedLineOffset;		// compensate for lines inserted/deleted
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
 	int m_lineCount;				// total document line count
 };
