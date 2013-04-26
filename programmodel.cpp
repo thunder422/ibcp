@@ -61,7 +61,7 @@ QVariant ProgramModel::data(const QModelIndex &index, int role) const
 			else  // translate error occurred
 			{
 				Token *token = rpnList->errorToken();
-				return QString("%1:%2 %3").arg(token->column())
+				return QString("ERROR %1:%2 %3").arg(token->column())
 					.arg(token->length()).arg(rpnList->errorMessage());
 			}
 		}
@@ -86,6 +86,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	int i;
 	int oldCount = m_lineInfo.count();
 	int count = lines.count();
+	m_errors.resetChange();
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
@@ -124,6 +125,12 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	{
 		// emit new line count if changed
 		emit lineCountChanged(m_lineInfo.count());
+	}
+
+	if (m_errors.hasChanged())
+	{
+		// emit error list if changed
+		emit errorListChanged(m_errors);
 	}
 }
 
@@ -189,9 +196,9 @@ void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
 	else if (lineInfo.errIndex != -1)
 	{
 		// replace current error
-		m_errors[lineInfo.errIndex] = ErrorItem(ErrorItem::Translator,
+		m_errors.replace(lineInfo.errIndex, ErrorItem(ErrorItem::Translator,
 			lineNumber, lineInfo.rpnList->errorToken(),
-			lineInfo.rpnList->errorMessage());
+			lineInfo.rpnList->errorMessage()));
 	}
 
 	// find location in error list for line number
@@ -222,7 +229,7 @@ void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
 		if (lineInserted)
 		{
 			// adjust error line number for inserted line
-			m_errors[errIndex].incrementLineNumber();
+			m_errors.incrementLineNumber(errIndex);
 		}
 	}
 }
@@ -267,7 +274,7 @@ void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 		if (lineDeleted)
 		{
 			// adjust error line number for deleted line
-			m_errors[errIndex].decrementLineNumber();
+			m_errors.decrementLineNumber(errIndex);
 		}
 	}
 }

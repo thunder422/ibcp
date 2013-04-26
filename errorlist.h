@@ -72,6 +72,34 @@ class ErrorList : public QList<ErrorItem>
 public:
 	ErrorList(void);
 	int find(int lineNumber) const;
+	void insert(int index, const ErrorItem &value);
+	void removeAt(int index);
+	void replace(int index, const ErrorItem &value);
+	void incrementLineNumber(int index);
+	void decrementLineNumber(int index);
+
+	void resetChange(void)
+	{
+		m_changeIndexStart = m_changeIndexEnd = -1;
+	}
+	bool hasChanged(void) const
+	{
+		return m_changeIndexStart != -1;
+	}
+	int changeIndexStart(void) const
+	{
+		return m_changeIndexStart;
+	}
+	int changeIndexEnd(void) const
+	{
+		return m_changeIndexEnd;
+	}
+
+private:
+	void setChangeIndex(int index);
+
+	int m_changeIndexStart;				// index of first change
+	int m_changeIndexEnd;				// index of last change
 };
 
 #endif // ERRORLIST_H

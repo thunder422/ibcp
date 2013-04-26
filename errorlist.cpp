@@ -77,4 +77,62 @@ int ErrorList::find(int lineNumber) const
 }
 
 
+// overloaded function for inserting an error into the list
+void ErrorList::insert(int index, const ErrorItem &value)
+{
+	QList<ErrorItem>::insert(index, value);
+	setChangeIndex(index);
+}
+
+
+// overloaded function for removing an error from the list
+void ErrorList::removeAt(int index)
+{
+	QList<ErrorItem>::removeAt(index);
+	setChangeIndex(index);
+}
+
+
+// overloaded function for replacing an error in the list
+void ErrorList::replace(int index, const ErrorItem &value)
+{
+	QList<ErrorItem>::replace(index, value);
+	setChangeIndex(index);
+}
+
+
+// function to increment line number of an error in the list
+void ErrorList::incrementLineNumber(int index)
+{
+	(*this)[index].incrementLineNumber();
+	setChangeIndex(index);
+}
+
+
+// function to decrement line number of an error in the list
+void ErrorList::decrementLineNumber(int index)
+{
+	(*this)[index].decrementLineNumber();
+	setChangeIndex(index);
+}
+
+
+// function to the change index if not already set
+void ErrorList::setChangeIndex(int index)
+{
+	if (m_changeIndexStart == -1)
+	{
+		m_changeIndexStart = m_changeIndexEnd = index;
+	}
+	else if (m_changeIndexStart > index)
+	{
+		m_changeIndexStart = index;
+	}
+	else if (m_changeIndexEnd < index)
+	{
+		m_changeIndexEnd = index;
+	}
+}
+
+
 // end: errorlist.cpp

@@ -111,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_programModel = new ProgramModel(this);
 	connect(m_editBox, SIGNAL(linesChanged(int, int, int, QStringList)),
 		m_programModel, SLOT(update(int,int,int,QStringList)));
+	connect(m_programModel, SIGNAL(errorListChanged(ErrorList)),
+		m_editBox, SLOT(updateErrors(ErrorList)));
 
 	// setup program line delegate (connect to model line count changes)
 	m_programLineDelegate = new ProgramLineDelegate(EditBox::BaseLineNumber,

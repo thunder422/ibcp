@@ -30,6 +30,7 @@
 #include <QTextBlock>
 
 #include "editbox.h"
+#include "errorlist.h"
 
 
 EditBox::EditBox(QWidget *parent) :
@@ -377,6 +378,21 @@ void EditBox::captureModifiedLine(int offset)
 
 		m_modifiedLine = -1;  // line processed, reset modified line number
 		m_modifiedLineIsNew = false;
+	}
+}
+
+
+// function to update errors when program error list changes
+void EditBox::updateErrors(const ErrorList &errors)
+{
+	int start = errors.changeIndexStart();
+	int end = errors.changeIndexEnd();
+	qDebug("Update: [%d-%d]", start, end);
+	for (int i = 0; i < errors.count(); i++)
+	{
+		qDebug("%d%s [%d]: %s", errors.at(i).lineNumber(),
+			i < start || i > end ? "" : "*", i,
+			qPrintable(errors.at(i).message()));
 	}
 }
 

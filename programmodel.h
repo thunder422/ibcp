@@ -44,6 +44,7 @@ public:
 
 signals:
 	void lineCountChanged(int newLineCount);
+	void errorListChanged(const ErrorList &errorList);
 
 public slots:
 	void update(int lineNumber, int linesDeleted, int linesInserted,
@@ -63,8 +64,7 @@ private:
 	};
 	bool updateLine(ModifyMode mode, int lineNumber,
 		const QString &line = QString());
-	void setError(int lineNumber,
-		LineInfo &lineInfo, bool lineInserted);
+	void setError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
 
 	Translator *m_translator;			// program line translator instance

@@ -30,6 +30,7 @@
 #include <QTextBlock>
 
 class QEvent;
+class ErrorList;
 
 
 class EditBox : public QPlainTextEdit
@@ -61,6 +62,7 @@ signals:
 public slots:
 	void documentChanged(int position, int charsRemoved, int charsAdded);
 	void cursorMoved(void);
+	void updateErrors(const ErrorList &errors);
 
 private slots:
 	void lineNumberWidgetUpdateWidth(void);
