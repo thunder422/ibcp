@@ -23,7 +23,6 @@ Output: A%<ref> B%<ref> C%<ref> 0 AssignList%'LET'
 Input: LET A$=B$=C$=""
                     ^^-- expected numeric expression
 
-
 Input: LET A$,B$,C$=""
 Output: A$<ref> B$<ref> C$<ref> "" AssignList$'LET'[""] 
 
@@ -42,10 +41,8 @@ Output: A$<ref> B$<ref> 1 LEFT$(<ref> C$ AssignListMix$'LET'[C$]
 Input: LET LET A=0
            ^^^-- expected item for assignment
 
-
 Input: A = 0 LET 5
              ^^^-- expected operator or end-of-statement
-
 
 Input: PRINT
 Output: PRINT 

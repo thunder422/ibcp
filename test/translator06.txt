@@ -59,92 +59,69 @@ Output: ,
 Input: PRINT C(A,,B)
                  ^-- expected expression
 
-
 Input: PRINT C(A;B)
                 ^-- expected operator, comma or closing parentheses
-
 
 Input: A=SPC(10)
          ^^^^-- expected numeric expression
 
-
 Input: A=TAB(10)
          ^^^^-- expected numeric expression
-
 
 Input: PRINT (A,,B)
                ^-- expected operator or closing parentheses
 
-
 Input: PRINT A+;
                ^-- expected numeric expression
-
 
 Input: PRINT A+,
                ^-- expected numeric expression
 
-
 Input: PRINT A+
                ^-- expected numeric expression
-
 
 Input: PRINT INT(A+;
                    ^-- expected numeric expression
 
-
 Input: PRINT INT(A+,
                    ^-- expected numeric expression
-
 
 Input: PRINT INT(A+
                    ^-- expected numeric expression
 
-
 Input: PRINT INT(B,,C)
                   ^-- expected operator or closing parentheses
-
 
 Input: PRINT (A+B
                  ^-- expected operator or closing parentheses
 
-
 Input: PRINT (A+B,
                  ^-- expected operator or closing parentheses
-
 
 Input: PRINT MID$(A$+B$
                        ^-- expected operator or comma
 
-
 Input: PRINT (TAB(10)
               ^^^^-- expected expression
-
 
 Input: PRINT INT(TAB(10))
                  ^^^^-- expected numeric expression
 
-
 Input: PRINT VAL(TAB(10))
                  ^^^^-- expected string expression
-
 
 Input: PRINT A(TAB(10))
                ^^^^-- expected expression
 
-
 Input: PRINT A+TAB(10)
                ^^^^-- expected numeric expression
-
 
 Input: PRINT A%+TAB(10)
                 ^^^^-- expected numeric expression
 
-
 Input: PRINT A$+TAB(10)
                 ^^^^-- expected string expression
 
-
 Input: PRINT TAB(10)+A
                     ^-- expected semicolon, comma or end-of-statement
-
 

@@ -163,7 +163,8 @@ private:
 	// set error token (deleting any previous error token first)
 	void setErrorToken(Token *errorToken)
 	{
-		m_output->setErrorToken(errorToken);
+		m_output->setError(errorToken);
+		delete errorToken;
     }
 
 public:

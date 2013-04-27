@@ -54,7 +54,8 @@ class Tester
 	void translateInput(QTextStream &cout, Translator &translator,
 		const QString &testInput, bool exprMode);
 	bool printToken(QTextStream &cout, Token *token, bool tab);
-	void printError(QTextStream &cout, Token *token, const QString &error);
+	void printError(QTextStream &cout, int column, int length,
+		const QString &error);
 
 	QString m_programName;		// name of program
 	int m_option;				// option bit masks

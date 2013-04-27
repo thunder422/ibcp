@@ -29,80 +29,60 @@ Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$["Test"]
 Input: A$ = B$ = C$ = "Test"
                       ^^^^^^-- expected numeric expression
 
-
 Input: Z, Y = A$ + B%
                    ^^-- expected string expression
-
 
 Input: Z, Y = A$ + B$
               ^^^^^^^-- expected numeric expression
 
-
 Input: A,B%,C = 1.0
          ^^-- expected double variable
-
 
 Input: A,B,C% = 1.0
            ^^-- expected double variable
 
-
 Input: A%,B,C = 1.0
           ^-- expected integer variable
-
 
 Input: A,"T",B = 1
          ^^^-- expected double variable
 
-
 Input: A = "T" = B = 1
                  ^-- expected string expression
-
 
 Input: A,B,C = STR$(1)
                ^^^^^^^-- expected numeric expression
 
-
 Input: A,B,C$ = STR$(1)
            ^^-- expected double variable
-
 
 Input: A,B,C$ = 1
            ^^-- expected double variable
 
-
 Input: A,B$,C = 1
          ^^-- expected double variable
-
 
 Input: A,B,1 = 1
            ^-- expected double variable
 
-
 Input: A,B%,1 = 1
          ^^-- expected double variable
-
 
 Input: 1,A,B% = 1
        ^-- expected item for assignment
 
-
 Input: A%,B,C% = 1
           ^-- expected integer variable
-
 
 Input: A%,B$,C% = 1
           ^^-- expected integer variable
 
-
 Input: A$,B$,C% = 1
              ^^-- expected string item for assignment
-
 
 Input: A$,B$,C$ = 1
                   ^-- expected string expression
 
-
 Input: Z = A$ + B * C
                 ^^^^^-- expected string expression
-
 

@@ -32,30 +32,23 @@ Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$[B$,C$] 1 RIGHT$( AssignSub$T
 Input: RIGHT$(A$,2) = B
                       ^-- expected string expression
 
-
 Input: RIGHT$(A$,2) = B%
                       ^^-- expected string expression
-
 
 Input: RIGHT$(A,2) = B$
               ^-- expected string variable
 
-
 Input: RIGHT$(A%,2) = B$
               ^^-- expected string variable
-
 
 Input: RIGHT$(A$+B$,2) = C$
                 ^-- expected comma
 
-
 Input: RIGHT$(LEFT$(A$,1),2) = B$
               ^^^^^^-- expected string variable
 
-
 Input: RIGHT$(LEFT$(A$+B$,1),2) = C$
               ^^^^^^-- expected string variable
-
 
 Input: LEFT$(A$,1),RIGHT$(B$,1) = C$
 Output: A$<ref> 1 LEFT$(<ref> B$<ref> 1 RIGHT$(<ref> C$ AssignListMix$[C$] 

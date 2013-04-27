@@ -28,7 +28,7 @@
 #include <QList>
 #include <QString>
 
-class Token;
+class RpnList;
 
 // class for holding details for an error of a program line
 class ErrorItem
@@ -39,7 +39,7 @@ public:
 		Translator,
 		Encoder
 	};
-	ErrorItem(Type type, int lineNumber, Token *token, const QString &message);
+	ErrorItem(Type type, int lineNumber, RpnList *rpnList);
 	int lineNumber(void) const
 	{
 		return m_lineNumber;

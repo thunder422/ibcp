@@ -23,18 +23,17 @@
 //	2013-04-10	initial version
 
 #include "errorlist.h"
-#include "token.h"
+#include "rpnlist.h"
 
 
 // constructor function to set error item
-ErrorItem::ErrorItem(Type type, int lineNumber, Token *token,
-	const QString &message)
+ErrorItem::ErrorItem(Type type, int lineNumber, RpnList *rpnList)
 {
 	m_type = type;
 	m_lineNumber = lineNumber;
-	m_column = token->column();
-	m_length = token->length();
-	m_message = message;
+	m_column = rpnList->errorColumn();
+	m_length = rpnList->errorLength();
+	m_message = rpnList->errorMessage();
 }
 
 

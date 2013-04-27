@@ -107,7 +107,6 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 		token = parsedToken = parser.token();
 		if (token->isType(Error_TokenType))
 		{
-			setErrorToken(token);
 			if (m_mode == Command_TokenMode)
 			{
 				token->setLength(1);  // just point to first character
@@ -190,6 +189,7 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 			}
 			m_output->setErrorMessage(status == Null_TokenStatus
 				? token->string() : token->message(status));
+			setErrorToken(token);
 			cleanUp();
 			RpnList *output = m_output;
 			m_output = NULL;
@@ -255,7 +255,7 @@ TokenStatus Translator::addToken(Token *&token)
 		m_state = OperandOrEnd_State;
 	}
 
-	// added check for command token
+	// check for command token
 	if (token->isType(Command_TokenType))
 	{
 		if (m_mode == Command_TokenMode)

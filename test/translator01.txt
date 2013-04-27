@@ -53,40 +53,30 @@ Output: B<ref> C<ref> A(<ref>[B<ref>,C<ref>] E<ref> D(<ref>[E<ref>] F INT( G<ref
 Input: A=B,C=4
           ^-- expected operator or end-of-statement
 
-
 Input: A=B+C,4
             ^-- expected operator or end-of-statement
-
 
 Input: A(B+C,(D,E)=F
                ^-- expected operator or closing parentheses
 
-
 Input: A(B+C,(D=E)=(F,G)
                      ^-- expected operator or closing parentheses
-
 
 Input: A,B+C
           ^-- expected equal or comma for assignment
 
-
 Input: 3=A
        ^-- expected item for assignment
-
 
 Input: A,3,B=4
          ^-- expected double variable
 
-
 Input: (A=B)
        ^-- expected command
-
 
 Input: A,B,(C)=4
            ^-- expected double variable
 
-
 Input: A+B
         ^-- expected equal or comma for assignment
-
 

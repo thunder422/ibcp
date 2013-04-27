@@ -266,12 +266,8 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 	}
 	else  // translate error occurred
 	{
-		Token *token = rpnList->errorToken();
-		printError(cout, token, rpnList->errorMessage());
-		if (!token->isType(Error_TokenType))
-		{
-			cout << endl;  // FIXME not needed, here to match current results
-		}
+		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
+			rpnList->errorMessage());
 	}
 	delete rpnList;
 }
@@ -285,7 +281,7 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 
 	if (token->isType(Error_TokenType))
 	{
-		printError(cout, token, token->string());
+		printError(cout, token->column(), token->length(), token->string());
 		return false;
 	}
 	QString info("  ");
@@ -358,16 +354,15 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 
 
 // function to print a token with an error
-void Tester::printError(QTextStream &cout, Token *token, const QString &error)
+void Tester::printError(QTextStream &cout, int column, int length,
+	const QString &error)
 {
-	int col = token->column();
-	int len = token->length();
-	if (len < 0)  // alternate column?
+	if (length < 0)  // alternate column?
 	{
-		col = -len;
-		len = 1;
+		column = -length;
+		length	= 1;
 	}
-	cout << QString(" ").repeated(7 + col) << QString("^").repeated(len)
+	cout << QString(" ").repeated(7 + column) << QString("^").repeated(length)
 		<< "-- " << error << endl;
 }
 

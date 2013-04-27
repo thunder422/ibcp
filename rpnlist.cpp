@@ -28,7 +28,6 @@
 RpnList::~RpnList(void)
 {
 	clear();
-	delete m_errorToken;
 }
 
 
@@ -105,8 +104,8 @@ bool RpnList::operator==(const RpnList &other) const
 	}
 	if (hasError())
 	{
-		return m_errorToken->column() == other.m_errorToken->column()
-			&& m_errorToken->length() == other.m_errorToken->length()
+		return m_errorColumn == other.m_errorColumn
+			&& m_errorLength == other.m_errorLength
 			&& m_errorMessage == other.m_errorMessage;
 	}
 	if (count() != other.count())
@@ -124,4 +123,4 @@ bool RpnList::operator==(const RpnList &other) const
 }
 
 
-// end: rpn_list.cpp
+// end: rpnlist.cpp

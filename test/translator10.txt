@@ -2,124 +2,93 @@
 Input: Z=(,
           ^-- expected numeric expression
 
-
 Input: Z=-,
           ^-- expected numeric expression
-
 
 Input: Z=A+,
            ^-- expected numeric expression
 
-
 Input: Z=(-,
            ^-- expected numeric expression
-
 
 Input: Z=(A+,
             ^-- expected numeric expression
 
-
 Input: Z=INT(,
              ^-- expected numeric expression
-
 
 Input: Z=INT(-,
               ^-- expected numeric expression
 
-
 Input: Z=INT(A+,
                ^-- expected numeric expression
-
 
 Input: Z=INT((,
               ^-- expected numeric expression
 
-
 Input: Z=INT((-,
                ^-- expected numeric expression
-
 
 Input: Z=INT((A+,
                 ^-- expected numeric expression
 
-
 Input: Z=A(,
            ^-- expected expression
-
 
 Input: Z=A(-,
             ^-- expected numeric expression
 
-
 Input: Z=A(B+,
              ^-- expected numeric expression
-
 
 Input: Z=A((,
             ^-- expected expression
 
-
 Input: Z=A((-,
              ^-- expected numeric expression
-
 
 Input: Z=A((B+,
               ^-- expected numeric expression
 
-
 Input: Z=A(INT(,
                ^-- expected numeric expression
-
 
 Input: Z=A(INT(-,
                 ^-- expected numeric expression
 
-
 Input: Z=A(INT(A+,
                  ^-- expected numeric expression
-
 
 Input: Z=A(B(,
              ^-- expected expression
 
-
 Input: Z=A(B(-,
               ^-- expected numeric expression
-
 
 Input: Z=A(B(C+,
                ^-- expected numeric expression
 
-
 Input: Z = -
             ^-- expected numeric expression
-
 
 Input: Z% = A%+
                ^-- expected numeric expression
 
-
 Input: Z$ = A$+
                ^-- expected string expression
-
 
 Input: Z = A(B+
                ^-- expected numeric expression
 
-
 Input: Z$ = A$ + -B
                  ^^-- expected string expression
-
 
 Input: Z$ = A$ + -(B+C)
                  ^^^^^^-- expected string expression
 
-
 Input: Z$ = A$ + INT(B+C)
                  ^^^^^^^^-- expected string expression
 
-
 Input: Z$ = A$ + Array(B+C)
                  ^^^^^^^^^^-- expected string expression
-
 

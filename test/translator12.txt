@@ -29,68 +29,51 @@ Output: I%<ref> P$([I%<ref>] InputBeginStr'Question'[P$(] InputParseStr'End' I%<
 Input: INPUT
             ^-- expected variable
 
-
 Input: INPUT,
             ^-- expected variable
-
 
 Input: INPUT;
             ^-- expected variable
 
-
 Input: INPUT; -A
             ^-- expected variable
-
 
 Input: INPUT (A)
              ^-- expected variable
 
-
 Input: INPUT INT(A)
              ^^^^-- expected variable
-
 
 Input: INPUT LEFT$(A$,1)
              ^^^^^^-- expected variable
 
-
 Input: INPUT FNA
              ^^^-- expected variable
-
 
 Input: INPUT FNA(X)
              ^^^-- expected variable
 
-
 Input: INPUT A B
                ^-- expected semicolon, comma or end-of-statement
-
 
 Input: INPUT A+B
               ^-- expected semicolon, comma or end-of-statement
 
-
 Input: INPUT A,
                ^-- expected variable
-
 
 Input: INPUT PROMPT
                    ^-- expected string expression
 
-
 Input: INPUT PROMPT A+B*C
                     ^^^^^-- expected string expression
-
 
 Input: INPUT PROMPT A$
                       ^-- expected operator, semicolon or comma
 
-
 Input: INPUT PROMPT A$+
                        ^-- expected string expression
 
-
 Input: INPUT PROMPT A$;
                        ^-- expected variable
-
 

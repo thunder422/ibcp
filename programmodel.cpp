@@ -60,9 +60,8 @@ QVariant ProgramModel::data(const QModelIndex &index, int role) const
 			}
 			else  // translate error occurred
 			{
-				Token *token = rpnList->errorToken();
-				return QString("ERROR %1:%2 %3").arg(token->column())
-					.arg(token->length()).arg(rpnList->errorMessage());
+				return QString("ERROR %1:%2 %3").arg(rpnList->errorColumn())
+					.arg(rpnList->errorLength()).arg(rpnList->errorMessage());
 			}
 		}
 	}
@@ -197,8 +196,7 @@ void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
 	{
 		// replace current error
 		m_errors.replace(lineInfo.errIndex, ErrorItem(ErrorItem::Translator,
-			lineNumber, lineInfo.rpnList->errorToken(),
-			lineInfo.rpnList->errorMessage()));
+			lineNumber, lineInfo.rpnList));
 	}
 
 	// find location in error list for line number
@@ -208,8 +206,7 @@ void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
 	{
 		// insert new error into error list
 		m_errors.insert(errIndex, ErrorItem(ErrorItem::Translator,
-			lineNumber, lineInfo.rpnList->errorToken(),
-			lineInfo.rpnList->errorMessage()));
+			lineNumber, lineInfo.rpnList));
 
 		lineInfo.errIndex = errIndex++;
 	}

@@ -20,24 +20,18 @@ Output: A 1.23 STR$( VAL([STR$(] =
 Input: MID$(A$)
               ^-- expected operator or comma
 
-
 Input: MID$(A$,1,2,3)
                   ^-- expected operator or closing parentheses
-
 
 Input: INSTR(A$)
                ^-- expected operator or comma
 
-
 Input: INSTR(A$,B$,C,D)
                     ^-- expected operator or closing parentheses
-
 
 Input: ASC(A$,B,C)
                ^-- expected operator or closing parentheses
 
-
 Input: INT(1.23,A)
                ^-- expected operator or closing parentheses
-
 

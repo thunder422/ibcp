@@ -38,16 +38,12 @@ Output: InputBegin InputParse'End' A<ref> InputAssign INPUT '|get value from use
 Input: A'bad comment
         ^-- expected equal or comma for assignment
 
-
 Input: A='bad comment
          ^-- expected numeric expression
-
 
 Input: A=3+'bad comment
            ^-- expected numeric expression
 
-
 Input: INPUT'bad input
             ^-- expected variable
-
 
