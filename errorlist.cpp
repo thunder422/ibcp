@@ -80,7 +80,7 @@ int ErrorList::find(int lineNumber) const
 void ErrorList::insert(int index, const ErrorItem &value)
 {
 	QList<ErrorItem>::insert(index, value);
-	setChangeIndex(index);
+	setChangeIndex(index, Insert_Operation);
 }
 
 
@@ -88,7 +88,7 @@ void ErrorList::insert(int index, const ErrorItem &value)
 void ErrorList::removeAt(int index)
 {
 	QList<ErrorItem>::removeAt(index);
-	setChangeIndex(index);
+	setChangeIndex(index, Remove_Operation);
 }
 
 
@@ -96,7 +96,7 @@ void ErrorList::removeAt(int index)
 void ErrorList::replace(int index, const ErrorItem &value)
 {
 	QList<ErrorItem>::replace(index, value);
-	setChangeIndex(index);
+	setChangeIndex(index, Change_Operation);
 }
 
 
@@ -104,7 +104,7 @@ void ErrorList::replace(int index, const ErrorItem &value)
 void ErrorList::incrementLineNumber(int index)
 {
 	(*this)[index].incrementLineNumber();
-	setChangeIndex(index);
+	setChangeIndex(index, Change_Operation);
 }
 
 
@@ -112,25 +112,18 @@ void ErrorList::incrementLineNumber(int index)
 void ErrorList::decrementLineNumber(int index)
 {
 	(*this)[index].decrementLineNumber();
-	setChangeIndex(index);
+	setChangeIndex(index, Change_Operation);
 }
 
 
 // function to the change index if not already set
-void ErrorList::setChangeIndex(int index)
+void ErrorList::setChangeIndex(int index, Operation operation)
 {
-	if (m_changeIndexStart == -1)
+	if (m_changeIndex == -1)
 	{
-		m_changeIndexStart = m_changeIndexEnd = index;
+		m_changeIndex = index;
 	}
-	else if (m_changeIndexStart > index)
-	{
-		m_changeIndexStart = index;
-	}
-	else if (m_changeIndexEnd < index)
-	{
-		m_changeIndexEnd = index;
-	}
+	m_changeList.append(operation);
 }
 
 

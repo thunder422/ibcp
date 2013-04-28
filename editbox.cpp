@@ -385,8 +385,27 @@ void EditBox::captureModifiedLine(int offset)
 // function to update errors when program error list changes
 void EditBox::updateErrors(const ErrorList &errors)
 {
-	int start = errors.changeIndexStart();
-	int end = errors.changeIndexEnd();
+	int start = errors.changeIndex();
+	int end;
+	int i = start;
+	foreach (Operation operation, errors.changeList())
+	{
+		end = i;
+		switch (operation)
+		{
+		case Change_Operation:
+			// TODO replace errors[i] at i
+			i++;
+			break;
+		case Insert_Operation:
+			// TODO insert errors[i] at i
+			i++;
+			break;
+		case Remove_Operation:
+			// TODO delete at i
+			break;
+		}
+	}
 	qDebug("Update: [%d-%d]", start, end);
 	for (int i = 0; i < errors.count(); i++)
 	{

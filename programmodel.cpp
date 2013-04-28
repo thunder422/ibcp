@@ -89,7 +89,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
-		if (updateLine(Change, lineNumber, lines.at(i)))
+		if (updateLine(Change_Operation, lineNumber, lines.at(i)))
 		{
 			// need to emit signal that data changed
 			QModelIndex index = this->index(lineNumber);
@@ -104,7 +104,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		beginRemoveRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (--linesDeleted >= 0)
 		{
-			updateLine(Delete, lineNumber);
+			updateLine(Remove_Operation, lineNumber);
 		}
 		endRemoveRows();
 	}
@@ -115,7 +115,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		beginInsertRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (i < count)
 		{
-			updateLine(Insert, lineNumber++, lines.at(i++));
+			updateLine(Insert_Operation, lineNumber++, lines.at(i++));
 		}
 		endInsertRows();
 	}
@@ -134,18 +134,18 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 }
 
 
-bool ProgramModel::updateLine(ModifyMode mode, int lineNumber,
+bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	const QString &line)
 {
 	RpnList *rpnList;
 
-	if (mode != Delete)
+	if (operation != Remove_Operation)
 	{
 		// compile line (for now just translate)
 		rpnList = m_translator->translate(line);
 	}
 
-	if (mode == Change)
+	if (operation == Change_Operation)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 		if (*rpnList == *lineInfo.rpnList)
@@ -159,7 +159,7 @@ bool ProgramModel::updateLine(ModifyMode mode, int lineNumber,
 
 		setError(lineNumber, lineInfo, false);
 	}
-	else if (mode == Insert)
+	else if (operation == Insert_Operation)
 	{
 		LineInfo lineInfo;
 		lineInfo.rpnList = rpnList;
@@ -169,7 +169,7 @@ bool ProgramModel::updateLine(ModifyMode mode, int lineNumber,
 
 		m_lineInfo.insert(lineNumber, lineInfo);
 	}
-	else if (mode == Delete)
+	else if (operation == Remove_Operation)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 

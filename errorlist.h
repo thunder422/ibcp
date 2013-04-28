@@ -30,6 +30,13 @@
 
 class RpnList;
 
+enum Operation
+{
+	Insert_Operation,
+	Change_Operation,
+	Remove_Operation
+};
+
 // class for holding details for an error of a program line
 class ErrorItem
 {
@@ -80,26 +87,27 @@ public:
 
 	void resetChange(void)
 	{
-		m_changeIndexStart = m_changeIndexEnd = -1;
+		m_changeIndex = -1;
+		m_changeList.clear();
 	}
 	bool hasChanged(void) const
 	{
-		return m_changeIndexStart != -1;
+		return m_changeIndex != -1;
 	}
-	int changeIndexStart(void) const
+	int changeIndex(void) const
 	{
-		return m_changeIndexStart;
+		return m_changeIndex;
 	}
-	int changeIndexEnd(void) const
+	const QList<Operation> changeList(void) const
 	{
-		return m_changeIndexEnd;
+		return m_changeList;
 	}
 
 private:
-	void setChangeIndex(int index);
+	void setChangeIndex(int index, Operation operation);
 
-	int m_changeIndexStart;				// index of first change
-	int m_changeIndexEnd;				// index of last change
+	int m_changeIndex;					// index of first change
+	QList<Operation> m_changeList;		// list of changes
 };
 
 #endif // ERRORLIST_H
