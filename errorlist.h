@@ -87,26 +87,26 @@ public:
 
 	void resetChange(void)
 	{
-		m_changeIndex = -1;
-		m_changeList.clear();
+		m_changeIndexStart = m_changeIndexEnd = -1;
 	}
 	bool hasChanged(void) const
 	{
-		return m_changeIndex != -1;
+		return m_changeIndexStart != -1;
 	}
-	int changeIndex(void) const
+	int changeIndexStart(void) const
 	{
-		return m_changeIndex;
+		return m_changeIndexStart;
 	}
-	const QList<Operation> changeList(void) const
+	int changeIndexEnd(void) const
 	{
-		return m_changeList;
+		return m_changeIndexEnd;
 	}
 
 private:
 	void setChangeIndex(int index, Operation operation);
 
-	int m_changeIndex;					// index of first change
+	int m_changeIndexStart;				// start index of change
+	int m_changeIndexEnd;				// end index of change
 	QList<Operation> m_changeList;		// list of changes
 };
 

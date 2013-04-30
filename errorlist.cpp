@@ -119,11 +119,18 @@ void ErrorList::decrementLineNumber(int index)
 // function to the change index if not already set
 void ErrorList::setChangeIndex(int index, Operation operation)
 {
-	if (m_changeIndex == -1)
+	if (m_changeIndexStart == -1)
 	{
-		m_changeIndex = index;
+		m_changeIndexStart = index;
 	}
-	m_changeList.append(operation);
+	if (operation == Remove_Operation)
+	{
+		index--;
+	}
+	if (m_changeIndexEnd == -1 || m_changeIndexEnd < index)
+	{
+		m_changeIndexEnd = index;
+	}
 }
 
 
