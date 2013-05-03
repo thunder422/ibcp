@@ -37,7 +37,8 @@ EditBox::EditBox(QWidget *parent) :
 	QPlainTextEdit(parent),
 	m_modifiedLine(-1),
 	m_modifiedLineIsNew(false),
-	m_lineCount(0)
+	m_lineCount(0),
+	m_cursorValid(false)
 {
 	// set the edit box to a fixed width font
 	QFont font = this->font();
@@ -350,6 +351,11 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void EditBox::cursorMoved(void)
 {
+	if (!m_cursorValid)
+	{
+		m_cursorValid = true;
+		updateErrors(m_errors);
+	}
 	if (m_modifiedLine >= 0 && m_modifiedLine != textCursor().blockNumber())
 	{
 		// there is a modified line and cursor moved from that line
@@ -385,6 +391,12 @@ void EditBox::captureModifiedLine(int offset)
 // function to update errors when program error list changes
 void EditBox::updateErrors(const ErrorList &errors)
 {
+	m_errors = errors;
+	if (!m_cursorValid)
+	{
+		return;  // wait until cursor is valid
+	}
+
 	int inserted = errors.size() - m_extraSelections.size();
 	int removed;
 	if (inserted > 0)

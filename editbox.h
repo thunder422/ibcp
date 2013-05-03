@@ -29,9 +29,9 @@
 #include <QPlainTextEdit>
 #include <QTextBlock>
 
+#include "errorlist.h"
+
 class QEvent;
-class ErrorItem;
-class ErrorList;
 
 
 class EditBox : public QPlainTextEdit
@@ -80,6 +80,8 @@ private:
 	int m_lineCount;				// total document line count
 	QList<QTextEdit::ExtraSelection>
 		m_extraSelections;			// error highlight extra selections
+	bool m_cursorValid;				// flag for when text cursor is valid
+	ErrorList m_errors;				// list of errors from the program model
 };
 
 
