@@ -385,25 +385,64 @@ void EditBox::captureModifiedLine(int offset)
 // function to update errors when program error list changes
 void EditBox::updateErrors(const ErrorList &errors)
 {
-	int start = errors.changeIndexStart();
-	int end = errors.changeIndexEnd();
-	bool removedLast;
-	if (end < start)
+	int inserted = errors.size() - m_extraSelections.size();
+	int removed;
+	if (inserted > 0)
 	{
-		end = start;  // FIXME for the purpose of the debug ouutput below
-		removedLast = true;
+		removed = 0;
 	}
 	else
 	{
-		removedLast = false;
+		removed = -inserted;
+		inserted = 0;
 	}
-	qDebug("Update: [%d-%d]", start, end);
-	for (int i = 0; i < errors.count(); i++)
+	int start = errors.changeIndexStart();
+	int end = errors.changeIndexEnd();
+	int changed = end - start + 1 - inserted;
+
+	int i;
+	for (i = start; --changed >= 0; i++)
 	{
-		qDebug("%d%c [%d]: %s", errors.at(i).lineNumber(),
-			i < start || i > end ? ' ' : i == end && removedLast ? '-' : '*', i,
-			qPrintable(errors.at(i).message()));
+		m_extraSelections.replace(i, extraSelection(errors.at(i)));
 	}
+	while (--inserted >= 0)
+	{
+		m_extraSelections.insert(i, extraSelection(errors.at(i)));
+		i++;
+	}
+	while (--removed >= 0)
+	{
+		m_extraSelections.removeAt(i);
+	}
+	setExtraSelections(m_extraSelections);
+}
+
+
+// function to convert an error item to an extra selection
+const QTextEdit::ExtraSelection
+	EditBox::extraSelection(const ErrorItem &errorItem)
+{
+	QTextEdit::ExtraSelection selection;
+	QColor lineColor;
+	QTextBlock block;
+
+	int column = errorItem.column();
+	int length = errorItem.length();
+	if (length < 0)  // alternate column?
+	{
+		column = -length;
+		length = 1;
+	}
+	lineColor = QColor(Qt::red).lighter(80);
+	selection.format.setBackground(lineColor);
+
+	block = document()->findBlockByLineNumber(errorItem.lineNumber());
+	selection.cursor = textCursor();
+	selection.cursor.setPosition(block.position() + column);
+	selection.cursor.movePosition(QTextCursor::NextCharacter,
+		QTextCursor::KeepAnchor, length);
+
+	return selection;
 }
 
 

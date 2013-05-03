@@ -30,6 +30,7 @@
 #include <QTextBlock>
 
 class QEvent;
+class ErrorItem;
 class ErrorList;
 
 
@@ -70,12 +71,15 @@ private slots:
 
 private:
 	bool pasteSelection(const QPoint &pos = QPoint());
+	const QTextEdit::ExtraSelection extraSelection(const ErrorItem &errorItem);
 
 	int m_modifiedLine;				// current line that has been modified
 	bool m_modifiedLineIsNew;		// modified line is a new line flag
 	int m_modifiedLineOffset;		// compensate for lines inserted/deleted
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
 	int m_lineCount;				// total document line count
+	QList<QTextEdit::ExtraSelection>
+		m_extraSelections;			// error highlight extra selections
 };
 
 

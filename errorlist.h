@@ -47,6 +47,10 @@ public:
 		Encoder
 	};
 	ErrorItem(Type type, int lineNumber, RpnList *rpnList);
+	enum Type type(void) const
+	{
+		return m_type;
+	}
 	int lineNumber(void) const
 	{
 		return m_lineNumber;
@@ -58,6 +62,14 @@ public:
 	void decrementLineNumber(void)
 	{
 		m_lineNumber--;
+	}
+	int column(void) const
+	{
+		return m_column;
+	}
+	int length(void) const
+	{
+		return m_length;
 	}
 	QString message(void) const
 	{
