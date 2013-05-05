@@ -188,15 +188,20 @@ void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
 	bool lineInserted)
 {
 	bool hasError = lineInfo.rpnList->hasError();
-	if (!hasError)
+	if (!lineInserted)
 	{
-		removeError(lineNumber, lineInfo, false);
-	}
-	else if (lineInfo.errIndex != -1)
-	{
-		// replace current error
-		m_errors.replace(lineInfo.errIndex, ErrorItem(ErrorItem::Translator,
-			lineNumber, lineInfo.rpnList));
+		if (!hasError)
+		{
+			removeError(lineNumber, lineInfo, false);
+			return;  // nothing more to do
+		}
+		else if (lineInfo.errIndex != -1)  // had error?
+		{
+			// replace current error
+			m_errors.replace(lineInfo.errIndex, ErrorItem(ErrorItem::Translator,
+				lineNumber, lineInfo.rpnList));
+			return;  // nothing more to do
+		}
 	}
 
 	// find location in error list for line number
@@ -209,10 +214,6 @@ void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
 			lineNumber, lineInfo.rpnList));
 
 		lineInfo.errIndex = errIndex++;
-	}
-	else if (!lineInserted)
-	{
-		return;  // nothing else to do
 	}
 
 	// loop thru rest of errors in list
@@ -254,10 +255,6 @@ void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 		// find location in error list for line number
 		errIndex = m_errors.find(lineNumber);
 		hadError = false;
-	}
-	else
-	{
-		return;  // nothing else to do
 	}
 
 	// loop thru rest of errors in list
