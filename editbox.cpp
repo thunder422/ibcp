@@ -411,6 +411,10 @@ void EditBox::updateErrors(const ErrorList &errors)
 	int start = errors.changeIndexStart();
 	int end = errors.changeIndexEnd();
 	int changed = end - start + 1 - inserted;
+	if (changed >= errors.size())
+	{
+		changed = errors.size() - 1;
+	}
 
 	int i;
 	for (i = start; --changed >= 0; i++)
