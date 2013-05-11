@@ -364,6 +364,16 @@ void EditBox::cursorMoved(void)
 }
 
 
+// overloaded function to set plain text of the document
+
+void EditBox::setPlainText(const QString &text)
+{
+	// invalidate cursor until text is set
+	m_cursorValid = false;
+	QPlainTextEdit::setPlainText(text);
+}
+
+
 // function to check if current line was modified and to process it
 
 void EditBox::captureModifiedLine(int offset)

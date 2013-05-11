@@ -64,6 +64,7 @@ public slots:
 	void documentChanged(int position, int charsRemoved, int charsAdded);
 	void cursorMoved(void);
 	void updateErrors(const ErrorList &errors);
+	void setPlainText(const QString &text);
 
 private slots:
 	void lineNumberWidgetUpdateWidth(void);
