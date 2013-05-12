@@ -361,6 +361,24 @@ void EditBox::cursorMoved(void)
 		// there is a modified line and cursor moved from that line
 		captureModifiedLine();
 	}
+	emit cursorChanged();
+}
+
+
+// function to get error message for current line
+//
+//   - default to no message if current line does not have error
+
+const QString EditBox::message(void) const
+{
+	// look for an error message for current line
+	int errIndex = m_errors.findIndex(lineNumber());
+	QString message;
+	if (errIndex != -1)
+	{
+		message = m_errors.at(errIndex).message();
+	}
+	return message;
 }
 
 

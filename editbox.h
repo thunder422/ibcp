@@ -44,6 +44,15 @@ public:
 	void selectAll(void);
 	void resetModified(void);
 	void captureModifiedLine(int offset = 0);
+	int lineNumber(void) const
+	{
+		return textCursor().blockNumber();
+	}
+	int column(void) const
+	{
+		return textCursor().positionInBlock() + 1;
+	}
+	const QString message(void) const;
 
 	int lineNumberWidgetWidth(void);
 	void lineNumberWidgetPaint(QPaintEvent *event);
@@ -59,6 +68,7 @@ protected:
 signals:
 	void linesChanged(int lineNumber, int linesDeleted, int linesInserted,
 		QStringList lines);
+	void cursorChanged(void);
 
 public slots:
 	void documentChanged(int position, int charsRemoved, int charsAdded);

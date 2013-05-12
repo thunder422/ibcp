@@ -91,6 +91,7 @@ class ErrorList : public QList<ErrorItem>
 public:
 	ErrorList(void);
 	int find(int lineNumber) const;
+	int findIndex(int lineNumber) const;
 	void insert(int index, const ErrorItem &value);
 	void removeAt(int index);
 	void replace(int index, const ErrorItem &value);

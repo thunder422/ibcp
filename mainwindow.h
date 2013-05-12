@@ -25,6 +25,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QLabel>
 #include <QMainWindow>
 
 #include "editbox.h"
@@ -58,6 +59,7 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
+	void statusBarUpdate(void);
 	void on_actionNew_triggered(void);
 	void on_actionOpen_triggered(void);
 	void on_actionClearRecent_triggered(void);
@@ -75,6 +77,8 @@ private slots:
 	void on_actionSelectAll_triggered(void);
 
 private:
+	void statusBarCreate(void);
+
 	bool isOkToContinue(void);
 	void setCurProgram(const QString &programPath);
 
@@ -96,7 +100,9 @@ private:
 	QString m_curDirectory;
 	ProgramModel *m_programModel;
 	ProgramLineDelegate *m_programLineDelegate;
-
+	bool m_statusReady;
+	QLabel *m_statusPositionLabel;
+	QLabel *m_statusMessageLabel;
 };
 
 #endif // MAINWINDOW_H

@@ -76,6 +76,19 @@ int ErrorList::find(int lineNumber) const
 }
 
 
+// function to find the index of the error for a line number
+//
+//   - returns index of error in list for line number
+//   - returns -1 if the line number does not have an error
+
+int ErrorList::findIndex(int lineNumber) const
+{
+	int errIndex = find(lineNumber);
+	return errIndex < size() && lineNumber == at(errIndex).lineNumber()
+		? errIndex : -1;
+}
+
+
 // overloaded function for inserting an error into the list
 void ErrorList::insert(int index, const ErrorItem &value)
 {

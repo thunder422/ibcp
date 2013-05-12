@@ -69,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	// create the starting program edit box
 	m_editBox = new EditBox(this);
 	setCentralWidget(m_editBox);
+	m_statusReady = false;
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
@@ -150,8 +151,10 @@ MainWindow::MainWindow(QWidget *parent) :
 		setCurProgram("");  // clear program path that was restored/set
 		// TODO should an warning message be issued here?
 	}
+	statusBarCreate();
 
 	m_guiActive = true;
+	statusBarUpdate();
 }
 
 
@@ -171,6 +174,41 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	{
 		event->ignore();
 	}
+}
+
+
+// function to create widgets on status bar and make connections
+
+void MainWindow::statusBarCreate(void)
+{
+	m_statusPositionLabel = new QLabel(this);
+	m_statusPositionLabel->setAlignment(Qt::AlignHCenter);
+	m_statusPositionLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	m_statusPositionLabel->setLineWidth(1);
+
+	m_statusMessageLabel = new QLabel(this);
+	m_statusMessageLabel->setAlignment(Qt::AlignLeft);
+	m_statusMessageLabel->setIndent(3);
+	m_statusMessageLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	m_statusMessageLabel->setLineWidth(1);
+
+	statusBar()->addWidget(m_statusPositionLabel);
+	statusBar()->addWidget(m_statusMessageLabel, 1);
+
+	connect(m_editBox, SIGNAL(cursorChanged()),
+		this, SLOT(statusBarUpdate()));
+
+	m_statusReady = true;
+}
+
+
+// function to update the status bar
+
+void MainWindow::statusBarUpdate(void)
+{
+	m_statusPositionLabel->setText(QString(" %1:%2 ")
+		.arg(m_editBox->lineNumber()).arg(m_editBox->column()));
+	m_statusMessageLabel->setText(m_editBox->message());
 }
 
 
@@ -427,7 +465,10 @@ bool MainWindow::programLoad(const QString &programPath)
 	setWindowModified(false);
 
 	setCurProgram(programPath);
-	statusBar()->showMessage(tr("Program loaded"), 2000);
+	if (m_statusReady)
+	{
+		statusBar()->showMessage(tr("Program loaded"), 2000);
+	}
 	return true;
 }
 
