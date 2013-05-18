@@ -207,7 +207,7 @@ void MainWindow::statusBarCreate(void)
 void MainWindow::statusBarUpdate(void)
 {
 	m_statusPositionLabel->setText(QString(" %1:%2 ")
-		.arg(m_editBox->lineNumber()).arg(m_editBox->column()));
+		.arg(m_editBox->lineNumber()).arg(m_editBox->column() + 1));
 	m_statusMessageLabel->setText(m_editBox->message());
 }
 
@@ -350,6 +350,22 @@ void MainWindow::on_actionDelete_triggered(void)
 void MainWindow::on_actionSelectAll_triggered(void)
 {
 	m_editBox->selectAll();
+}
+
+
+// function called when move to next error has been requested
+
+void MainWindow::on_actionGoNextError_triggered(void)
+{
+	m_editBox->goNextError();
+}
+
+
+// function called when move to previous has been requested
+
+void MainWindow::on_actionGoPrevError_triggered(void)
+{
+	m_editBox->goPrevError();
 }
 
 

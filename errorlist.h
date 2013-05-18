@@ -65,11 +65,11 @@ public:
 	}
 	int column(void) const
 	{
-		return m_column;
+		return m_length >= 0 ? m_column : -m_length;
 	}
 	int length(void) const
 	{
-		return m_length;
+		return m_length >= 0 ? m_length : 1;
 	}
 	QString message(void) const
 	{

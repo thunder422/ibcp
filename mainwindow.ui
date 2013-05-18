@@ -75,6 +75,9 @@
     <addaction name="actionDelete"/>
     <addaction name="separator"/>
     <addaction name="actionSelectAll"/>
+    <addaction name="separator"/>
+    <addaction name="actionGoNextError"/>
+    <addaction name="actionGoPrevError"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -101,6 +104,9 @@
    <addaction name="separator"/>
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
+   <addaction name="separator"/>
+   <addaction name="actionGoPrevError"/>
+   <addaction name="actionGoNextError"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="programViewDockWidget">
@@ -372,6 +378,36 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionGoNextError">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/go-next-error.png</normaloff>:/images/go-next-error.png</iconset>
+   </property>
+   <property name="text">
+    <string>Go to Next Error</string>
+   </property>
+   <property name="toolTip">
+    <string>Move cursor to next error</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+.</string>
+   </property>
+  </action>
+  <action name="actionGoPrevError">
+   <property name="icon">
+    <iconset resource="ibcp.qrc">
+     <normaloff>:/images/go-prev-error.png</normaloff>:/images/go-prev-error.png</iconset>
+   </property>
+   <property name="text">
+    <string>Go to Previous Error</string>
+   </property>
+   <property name="toolTip">
+    <string>Move cursor to previous error</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
    </property>
   </action>
  </widget>

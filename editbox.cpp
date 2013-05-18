@@ -26,6 +26,7 @@
 #include <QClipboard>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QMessageBox>
 #include <QPainter>
 #include <QTextBlock>
 
@@ -189,6 +190,81 @@ void EditBox::selectAll(void)
 	QTextCursor cursor = textCursor();
 	cursor.select(QTextCursor::Document);
 	setTextCursor(cursor);
+}
+
+
+// function to move cursor to the next error
+
+void EditBox::goNextError(void)
+{
+	int errIndex = m_errors.find(lineNumber());
+	if (errIndex >= m_errors.count()
+		|| lineNumber() > m_errors.at(errIndex).lineNumber()
+		|| lineNumber() == m_errors.at(errIndex).lineNumber()
+		&& column() >= m_errors.at(errIndex).column())
+	{
+		// past current error, go to next error
+		errIndex++;
+	}
+	if (errIndex >= m_errors.count())  // past last error?
+    {
+        errIndex = 0;
+		if (m_errors.count() == 1 && lineNumber() == m_errors.at(0).lineNumber()
+			&& column() >= m_errors.at(0).column()
+			&& column() < m_errors.at(0).column() + m_errors.at(0).length()
+			|| QMessageBox::question(this, "Next Error",
+			"No more errors in program,\nmove to first error?",
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
+			!= QMessageBox::Yes)
+		{
+			return;
+		}
+    }
+	moveCursorToError(errIndex);
+}
+
+
+// function to move cursor to the previous error
+
+void EditBox::goPrevError(void)
+{
+	int errIndex = m_errors.find(lineNumber());
+	if (errIndex >= m_errors.count()
+		|| lineNumber() < m_errors.at(errIndex).lineNumber()
+		|| lineNumber() == m_errors.at(errIndex).lineNumber()
+		&& column() < m_errors.at(errIndex).column()
+		+ m_errors.at(errIndex).length())
+	{
+		// before current error, go to previous error
+		errIndex--;
+	}
+	if (errIndex < 0)
+    {
+        errIndex = m_errors.count() - 1;
+		if (m_errors.count() == 1
+			&& lineNumber() == m_errors.at(errIndex).lineNumber()
+			&& column() == m_errors.at(errIndex).column()
+			|| QMessageBox::question(this, "Previous Error",
+			"No more errors in program,\nmove to last error?",
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
+			!= QMessageBox::Yes)
+		{
+			return;
+		}
+    }
+	moveCursorToError(errIndex);
+}
+
+
+// function to move cursor to an error
+
+void EditBox::moveCursorToError(int errIndex)
+{
+    ErrorItem error = m_errors.at(errIndex);
+    QTextBlock block = document()->findBlockByLineNumber(error.lineNumber());
+    QTextCursor cursor = textCursor();
+    cursor.setPosition(block.position() + error.column());
+    setTextCursor(cursor);
 }
 
 
@@ -472,12 +548,7 @@ const QTextEdit::ExtraSelection
 
 	int column = errorItem.column();
 	int length = errorItem.length();
-	if (length < 0)  // alternate column?
-	{
-		column = -length;
-		length = 1;
-	}
-	lineColor = QColor(Qt::red).lighter(80);
+	lineColor = QColor(Qt::red).lighter(150);
 	selection.format.setBackground(lineColor);
 
 	block = document()->findBlockByLineNumber(errorItem.lineNumber());

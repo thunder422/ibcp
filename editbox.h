@@ -42,6 +42,8 @@ public:
 	void remove(void);
 	void paste(QClipboard::Mode mode = QClipboard::Clipboard);
 	void selectAll(void);
+	void goNextError(void);
+	void goPrevError(void);
 	void resetModified(void);
 	void captureModifiedLine(int offset = 0);
 	int lineNumber(void) const
@@ -50,7 +52,7 @@ public:
 	}
 	int column(void) const
 	{
-		return textCursor().positionInBlock() + 1;
+		return textCursor().positionInBlock();
 	}
 	const QString message(void) const;
 
@@ -82,6 +84,7 @@ private slots:
 
 private:
 	bool pasteSelection(const QPoint &pos = QPoint());
+	void moveCursorToError(int errIndex);
 	const QTextEdit::ExtraSelection extraSelection(const ErrorItem &errorItem);
 
 	int m_modifiedLine;				// current line that has been modified

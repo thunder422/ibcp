@@ -75,6 +75,8 @@ private slots:
 	void on_actionPaste_triggered(void);
 	void on_actionDelete_triggered(void);
 	void on_actionSelectAll_triggered(void);
+	void on_actionGoNextError_triggered(void);
+	void on_actionGoPrevError_triggered(void);
 
 private:
 	void statusBarCreate(void);
