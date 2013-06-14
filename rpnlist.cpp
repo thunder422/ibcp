@@ -98,19 +98,13 @@ QString RpnList::text(void)
 // function to overload the comparison operator
 bool RpnList::operator==(const RpnList &other) const
 {
-	if (hasError() && !other.hasError() || !hasError() && other.hasError())
+	if (hasError() || other.hasError())
 	{
-		return false;  // one list has error and the other does not
-	}
-	if (hasError())
-	{
-		return m_errorColumn == other.m_errorColumn
-			&& m_errorLength == other.m_errorLength
-			&& m_errorMessage == other.m_errorMessage;
+		return false;  // miscompare if either list has an error
 	}
 	if (count() != other.count())
 	{
-		return false;
+		return false;  // miscompare if lists are different sizes
 	}
 	for (int i = 0; i < count(); i++)
 	{
