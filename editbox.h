@@ -71,6 +71,7 @@ signals:
 	void linesChanged(int lineNumber, int linesDeleted, int linesInserted,
 		QStringList lines);
 	void cursorChanged(void);
+	void errorsAvailable(bool available);
 
 public slots:
 	void documentChanged(int position, int charsRemoved, int charsAdded);

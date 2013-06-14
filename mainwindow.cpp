@@ -87,6 +87,10 @@ MainWindow::MainWindow(QWidget *parent) :
 		ui->actionCopy, SLOT(setEnabled(bool)));
 	connect(m_editBox, SIGNAL(copyAvailable(bool)),
 		ui->actionDelete, SLOT(setEnabled(bool)));
+	connect(m_editBox, SIGNAL(errorsAvailable(bool)),
+		ui->actionGoNextError, SLOT(setEnabled(bool)));
+	connect(m_editBox, SIGNAL(errorsAvailable(bool)),
+		ui->actionGoPrevError, SLOT(setEnabled(bool)));
 
 	// create actions for edit box context menu
 	QList<QAction *> actions;

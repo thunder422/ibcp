@@ -381,6 +381,9 @@
    </property>
   </action>
   <action name="actionGoNextError">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="ibcp.qrc">
      <normaloff>:/images/go-next-error.png</normaloff>:/images/go-next-error.png</iconset>
@@ -396,6 +399,9 @@
    </property>
   </action>
   <action name="actionGoPrevError">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="ibcp.qrc">
      <normaloff>:/images/go-prev-error.png</normaloff>:/images/go-prev-error.png</iconset>

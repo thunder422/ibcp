@@ -125,6 +125,20 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		}
 		break;
 
+	case Qt::Key_Period:
+		if (event->modifiers() & Qt::ControlModifier)
+		{
+			return;  // intercept next error key shortcut
+		}
+		break;
+
+	case Qt::Key_Comma:
+		if (event->modifiers() & Qt::ControlModifier)
+		{
+			return;  // intercept next error key shortcut
+		}
+		break;
+
 	default:  // check for key sequences
 		if (event->matches(QKeySequence::SelectAll))
 		{
@@ -495,14 +509,22 @@ void EditBox::captureModifiedLine(int offset)
 // function to update errors when program error list changes
 void EditBox::updateErrors(const ErrorList &errors)
 {
+	bool wasEmpty;
+	int inserted;
+	int removed;
+	int changed;
+	int start;
+	int end;
+	int i;
+
 	m_errors = errors;
 	if (!m_cursorValid)
 	{
 		return;  // wait until cursor is valid
 	}
 
-	int inserted = errors.size() - m_extraSelections.size();
-	int removed;
+	wasEmpty = m_extraSelections.isEmpty();
+	inserted = errors.size() - m_extraSelections.size();
 	if (inserted > 0)
 	{
 		removed = 0;
@@ -512,15 +534,24 @@ void EditBox::updateErrors(const ErrorList &errors)
 		removed = -inserted;
 		inserted = 0;
 	}
-	int start = errors.changeIndexStart();
-	int end = errors.changeIndexEnd();
-	int changed = end - start + 1 - inserted;
-	if (changed >= errors.size())
+
+	if (errors.size() == 0)
 	{
-		changed = errors.size() - 1;
+		start = 0;
+		end = 0;
+		changed = 0;
+	}
+	else
+	{
+		start = errors.changeIndexStart();
+		end = errors.changeIndexEnd();
+		changed = end - start + 1 - inserted;
+		if (start + changed > errors.size())
+		{
+			changed = errors.size() - start;
+		}
 	}
 
-	int i;
 	for (i = start; --changed >= 0; i++)
 	{
 		m_extraSelections.replace(i, extraSelection(errors.at(i)));
@@ -535,6 +566,11 @@ void EditBox::updateErrors(const ErrorList &errors)
 		m_extraSelections.removeAt(i);
 	}
 	setExtraSelections(m_extraSelections);
+
+	if (wasEmpty != m_extraSelections.isEmpty())
+	{
+		emit errorsAvailable(!m_extraSelections.isEmpty());
+	}
 }
 
 
