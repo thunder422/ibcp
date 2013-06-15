@@ -147,4 +147,12 @@ void ErrorList::setChangeIndex(int index, Operation operation)
 }
 
 
+// function to move the error due to inserted or deleted characters
+void ErrorList::moveColumn(int index, int chars)
+{
+	(*this)[index].moveColumn(chars);
+	setChangeIndex(index, Change_Operation);
+}
+
+
 // end: errorlist.cpp

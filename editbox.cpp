@@ -433,6 +433,36 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		}
 		m_lineCount = newLineCount;
 	}
+	else  // single line modified, reset error if line has an error
+	{
+		int errIndex = m_errors.findIndex(changeLine);
+		if (errIndex != -1)
+		{
+			int errCol = m_errors.at(errIndex).column();
+			int errLen = m_errors.at(errIndex).length();
+			int col = cursor.positionInBlock();
+			if (col - charsAdded <= errCol + errLen)
+			{
+				// cursor is within or before error
+				if (cursor.atBlockEnd() && col + charsRemoved >= errCol
+					|| col - charsAdded + charsRemoved > errCol)
+				{
+					// cursor and error at end of line or cursor is within error
+					// remove error
+					m_errors.resetChange();
+					m_errors.removeAt(errIndex);
+				}
+				else  // cursor is before error, update error
+				{
+					m_errors.resetChange();
+					m_errors.moveColumn(errIndex, charsAdded - charsRemoved);
+				}
+				updateErrors(m_errors);
+				// cause error message to be removed from status line
+				emit cursorChanged();
+			}
+		}
+	}
 	m_modifiedLine = m_modifiedLine == -2 ? -1 : cursor.blockNumber();
 }
 

@@ -63,6 +63,10 @@ public:
 	{
 		m_lineNumber--;
 	}
+	int moveColumn(int chars)
+	{
+		m_column += chars;
+	}
 	int column(void) const
 	{
 		return m_length >= 0 ? m_column : -m_length;
@@ -97,6 +101,7 @@ public:
 	void replace(int index, const ErrorItem &value);
 	void incrementLineNumber(int index);
 	void decrementLineNumber(int index);
+	void moveColumn(int index, int chars);
 
 	void resetChange(void)
 	{
