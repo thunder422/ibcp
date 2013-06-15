@@ -36,20 +36,23 @@ translation of BASIC expressions along a few BASIC commands (LET, PRINT,
 and INPUT) into a reverse polish notation format that will be used for
 fast execution of the BASIC program.
 
-The GUI implementation has been started and now has the basic GUI
-elements including file, edit and help menus with basic operation menu
-items, the tool bar with several file and edit operations, an edit box
-for editing the program (which emits line changes including lines
-inserted and deleted) and a status bar.
+A basic GUI has been implemented including file, edit and help menus
+with basic operation menu items, the tool bar with several file and edit
+operations, an edit box for editing the program and a status bar.  The
+program model implementation has been started for holding the internal
+code of the program entered into the edit box.  For now the translator
+has been integrated with the program model where lines entered from the
+edit box are translated and stored in the program model.
 
-The ProgramModel holds the program an updates the program as reverse polish
-notation (RPN) lists, an intermediate format on its way to being compiled, as
-lines are changed from the edit box.  The program now handles the BASIC
-commands so far implemented in the translator (LET, PRINT and INPUT).  There is
-a temporary program view dock widget used for monitoring the internal program
-during development that is currently showing the translated program lines as
-RPN lists.  Error messages with column and length values are show for lines
-with errors.
+There is a temporary program view dock widget used for monitoring the
+internal program during development that is currently showing the
+translated program lines as RPN lists.  Error messages with column and
+length values are show for lines with errors.  This information is used
+to highlight the errors in the edit box.  When the cursor is on the line
+with an error, the error message is shown on the status bar (which also
+now includes the current line number and column).  There are actions
+(via menu, tool bar and key shortcuts) for moving the cursor to the next
+or previous error.
 
 
 Building The Program
@@ -67,6 +70,16 @@ zip or tar file, the project is build with a few short commands:
     cmake ..                        (Linux)
     cmake -G "MSYS Makefiles" ..    (Windows)
     make
+
+Note: The naming convention of tags in the repository has been changed
+as of version 0.3.5, which may prevent older tagged versions from
+building (cmake will return an error indicating the versions do not
+match).  Versions prior to the 0.2 series are unaffected.
+For versions 0.2.0 to 0.3.4, the commit with the corrections can be
+applied using the command "git cherry-pick fa89" where fa89 is the
+commit ID with the changes.  For versions 0.2-1 to 0.2-6, cmake will not
+complain, however, the version string will not be output correctly.  The
+corrections would need to be applied manually.
 
 
 Running Regression Tests

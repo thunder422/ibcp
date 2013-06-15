@@ -118,7 +118,7 @@ void Token::initialize(void)
 	s_prec[Command_TokenType] = -1;  // use table precedence if -1
 	s_prec[Operator_TokenType] = -1;
 	s_prec[IntFuncP_TokenType] = -1;
-	s_prec[DefFuncP_TokenType] = 2;  // same as open parentheses (Paren_TokenType)
+	s_prec[DefFuncP_TokenType] = 2;  // same as Paren_TokenType
 	s_prec[Paren_TokenType] = 2;
 
 	// set token type has a table entry flags

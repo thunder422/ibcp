@@ -20,12 +20,13 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap (updated 2013-04-05):
 
-	(current) Translator/Program Model/GUI Integration
-	Implement initial Recreator (RPN list to program text)
-	Integrate Recreator to GUI (update Edit Box)
+	Implement new translator scheme
+	Define internal program format
 	Implement initial Encoder (RPN list to internal code)
 	Implement Variable Dictionary (needed for Encoder)
 	Implement initial Decoder (internal code to RPN list)
+	Implement initial Recreator (RPN list to program text)
+	Integrate Recreator to GUI (update Edit Box)
 	Integrate Decoder/Recreator/GUI
 	Implement initial Run-time Module (for LET, PRINT and INPUT)
 	Implement Colon
@@ -35,6 +36,22 @@ Planned Roadmap (updated 2013-04-05):
 	Implement DEF FN command
 	Implement DO-WHILE-UNTIL-LOOP commands
 	To be defined...
+
+
+Release 0.3.5 (2013-06-15)
+
+	Project developmental release - the program model and translator
+	have now been integrated into the edit box, which will highlight
+	errors. Major changes include:
+
+	  - Implemented REM command and operator with additional tests
+	  - Program view now displays translater RPN list
+	  - New ErrorList class for holding errors
+	  - Corrected an undo/redo issue
+	  - Edit box will highlight errors with message on status bar
+	  - New go to next or previous error actions
+	  - Line and column numbers now display on status bar
+	  - Changed git naming convention
 
 
 Release 0.3.4 (2013-03-23)

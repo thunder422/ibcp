@@ -78,3 +78,6 @@ void ProgramLineDelegate::paint(QPainter *painter,
 	text = index.model()->data(index, Qt::DisplayRole).toString();
 	painter->drawText(rect, text);
 }
+
+
+// end: programlinedelegate.cpp
