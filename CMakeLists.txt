@@ -51,7 +51,7 @@ set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 3)
 set(ibcp_RELEASE_PATCH 4)
 
-set(ibcp_RELEASE_STRING release${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
+set(ibcp_RELEASE_STRING v${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
 if (ibcp_RELEASE_PATCH LESS 0)
 	set(ibcp_RELEASE_STRING ${ibcp_RELEASE_STRING}${ibcp_RELEASE_PATCH})
 else (ibcp_RELEASE_PATCH LESS 0)

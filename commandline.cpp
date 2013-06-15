@@ -164,7 +164,9 @@ int CommandLine::copyrightYear(void) const
 // function to return the version number string
 QString CommandLine::version(void) const
 {
-	return QString(ibcp_RELEASE_STRING + 7);
+	QString versionString(ibcp_RELEASE_STRING);
+	int start = versionString.indexOf(QRegExp("\\d"));
+	return versionString.mid(start);
 }
 
 
