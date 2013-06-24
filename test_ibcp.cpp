@@ -302,9 +302,6 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 		<< qSetFieldWidth(0) << info;
 	switch (token->type())
 	{
-	case Remark_TokenType:
-		cout << ' ' << code_name[token->code()];
-		// fall thru
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
 		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]

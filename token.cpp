@@ -126,7 +126,6 @@ void Token::initialize(void)
 	s_table[Operator_TokenType] = true;
 	s_table[IntFuncN_TokenType] = true;
 	s_table[IntFuncP_TokenType] = true;
-	// FIXME should Remark_TokenType also have table entry flag set?
 }
 
 
@@ -156,8 +155,6 @@ QString Token::text(void)
 
 	switch (m_type)
 	{
-	case Remark_TokenType:
-		// fall thru
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
 		string = m_string;
@@ -270,7 +267,6 @@ bool Token::operator==(const Token &other) const
 			return false;
 		}
 		// now fall thru to compare string of constant
-	case Remark_TokenType:
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
 	case DefFuncP_TokenType:

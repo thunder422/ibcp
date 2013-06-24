@@ -38,7 +38,6 @@ enum TokenType
 	Operator_TokenType,
 	IntFuncN_TokenType,
 	IntFuncP_TokenType,
-	Remark_TokenType,
 	Constant_TokenType,
 	DefFuncN_TokenType,
 	DefFuncP_TokenType,
