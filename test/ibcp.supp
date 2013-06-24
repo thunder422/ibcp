@@ -94,6 +94,35 @@
 }
 {
    <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:inflateReset2
+   fun:inflateInit2_
+   fun:png_create_read_struct_2
+   fun:png_create_read_struct
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   fun:_ZN12QImageReader4readEP6QImage
+   fun:_ZN12QImageReader4readEv
+   fun:_ZN6QImage8fromDataEPKhiPKc
+   fun:_ZN6QImage12loadFromDataEPKhiPKc
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:_Znwm
+   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
+   fun:_ZN8QLibraryC1ERK7QStringiP7QObject
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
+   fun:_ZN12QApplicationC1ERiPPci
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
    obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
@@ -166,19 +195,6 @@
    Memcheck:Leak
    fun:_Znwm
    obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
-   fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
-   fun:_ZN8QLibraryC1ERK7QStringiP7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
-   fun:_ZN12QApplicationC1ERiPPci
-   fun:main
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringS2_
    fun:_ZN8QLibraryC1ERK7QStringS2_P7QObject
    obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
@@ -210,13 +226,29 @@
    fun:__nss_database_lookup
    obj:*
    fun:getpwuid_r@@GLIBC_2.2.5
+   fun:getpwuid
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   fun:_ZN13QStyleFactory6createERK7QString
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:_Znwm
+   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   fun:_ZN14QFactoryLoader9updateDirERK7QStringR9QSettings
+   fun:_ZN14QFactoryLoader6updateEv
+   fun:_ZN14QFactoryLoaderC1EPKcRK7QStringN2Qt15CaseSensitivityE
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   fun:_ZN13QStyleFactory6createERK7QString
+   fun:_ZN12QApplication5styleEv
    obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
    obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   fun:_SmcProcessMessage
-   fun:IceProcessMessages
-   fun:_ZN11QMetaObject8activateEP7QObjectPKS_iPPv
-   fun:_ZN15QSocketNotifier9activatedEi
-   fun:_ZN15QSocketNotifier5eventEP6QEvent
+   fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
+   fun:_ZN12QApplicationC1ERiPPci
 }
 {
    <insert_a_suppression_name_here>
@@ -297,4 +329,20 @@
    fun:XrmGetStringDatabase
    obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
    fun:XGetDefault
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:_Znwm
+   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   fun:_ZN14QFactoryLoader9updateDirERK7QStringR9QSettings
+   fun:_ZN14QFactoryLoader6updateEv
+   fun:_ZN14QFactoryLoaderC1EPKcRK7QStringN2Qt15CaseSensitivityE
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   fun:_ZN12QImageReader4readEP6QImage
+   fun:_ZN12QImageReader4readEv
+   fun:_ZN6QImage8fromDataEPKhiPKc
+   fun:_ZN6QImage12loadFromDataEPKhiPKc
 }
