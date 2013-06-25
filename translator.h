@@ -31,6 +31,7 @@
 #include "rpnlist.h"
 
 class Table;
+class Parser;
 
 
 // command stack item flag values
@@ -95,6 +96,7 @@ class Translator
 	} m_state;						// current state of translator
 
 	Table &m_table;					// reference to the table instance
+	Parser *m_parser;				// pointer to parser instance
 	RpnList *m_output;				// pointer to RPN list output
 	QStack<HoldItem> m_holdStack;	// operator/function holding stack
 	QStack<DoneItem> m_doneStack;	// items processed stack
@@ -106,9 +108,8 @@ class Translator
 	bool m_exprMode;				// expression only mode active flag
 
 public:
-	explicit Translator(Table &table): m_table(table), m_output(NULL),
-	    m_pendingParen(NULL) {}
-	~Translator(void) {}
+	explicit Translator(Table &table);
+	~Translator(void);
 
 	RpnList *translate(const QString &input, bool exprMode = false);
 

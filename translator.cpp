@@ -78,6 +78,19 @@ static Code cvtCodeHaveNeed[numberof_DataType][numberof_DataType] = {
 };
 
 
+Translator::Translator(Table &table): m_table(table),
+    m_parser(new Parser(table)), m_output(NULL), m_pendingParen(NULL)
+{
+
+}
+
+
+Translator::~Translator(void)
+{
+	delete m_parser;
+}
+
+
 // function to parse and translate an input line to an RPN output list
 //
 //   - returns true if successful, use output() to get RPN output list
@@ -90,8 +103,7 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 	Token *parsedToken;
 	TokenStatus status;
 
-	Parser parser(m_table);
-	parser.setInput(input);
+	m_parser->setInput(input);
 
 	m_exprMode = exprMode;  // save flag
 	// (expression mode for testing)
@@ -102,9 +114,9 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 
 	do {
 		// set parser operand state from translator
-		parser.setOperandState(m_state == Operand_State
+		m_parser->setOperandState(m_state == Operand_State
 			|| m_state == OperandOrEnd_State);
-		token = parsedToken = parser.token();
+		token = parsedToken = m_parser->token();
 		if (token->isType(Error_TokenType))
 		{
 			if (m_mode == Command_TokenMode)
