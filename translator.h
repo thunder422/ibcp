@@ -95,6 +95,19 @@ class Translator
 		Token *first;				// operator token's first operand pointer
 		Token *last;				// operator token's last operand pointer
 	};
+	class DoneStack : public QStack<DoneItem>
+	{
+	public:
+		// push new item with rpn item, first and last tokens
+		void push(RpnItem *rpnItem, Token *first = NULL, Token *last = NULL)
+		{
+			resize(size() + 1);
+			top().rpnItem = rpnItem;
+			top().first = first;
+			top().last = last;
+		}
+	};
+
 	struct CountItem
 	{
 		char nOperands;				// number of operands seen
@@ -116,7 +129,7 @@ class Translator
 	Parser *m_parser;				// pointer to parser instance
 	RpnList *m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack
-	QStack<DoneItem> m_doneStack;	// items processed stack
+	DoneStack m_doneStack;			// items processed stack
 	Token *m_pendingParen;			// closing parentheses token is pending
 	int m_lastPrecedence;			// precedence of last op added during paren
 	QStack<CountItem> m_countStack;	// number of operands counter stack

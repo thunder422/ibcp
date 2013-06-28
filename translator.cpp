@@ -468,9 +468,7 @@ TokenStatus Translator::processOperand(Token *&token)
 		// and push element pointer on done stack
 		RpnItem *rpnItem = new RpnItem(token);
         m_output->append(rpnItem);
-		m_doneStack.resize(m_doneStack.size() + 1);
-		m_doneStack.top().rpnItem = rpnItem;
-		m_doneStack.top().first = m_doneStack.top().last = NULL;
+		m_doneStack.push(rpnItem);
 		// in reference mode, if have variable, set end expression state
 		// otherwise next token must be a binary operator
 		m_state = m_mode == Reference_TokenMode && m_countStack.isEmpty()
@@ -863,10 +861,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 	if (donePush)
 	{
 		// push index of rpm item about to be added to output list
-		m_doneStack.resize(m_doneStack.size() + 1);
-		m_doneStack.top().rpnItem = rpnItem;
-		m_doneStack.top().first = first;
-		m_doneStack.top().last = last;
+		m_doneStack.push(rpnItem, first, last);
 	}
 
 	return Good_TokenStatus;
