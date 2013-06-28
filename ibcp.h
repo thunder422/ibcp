@@ -54,7 +54,6 @@ enum DataType
 	Double_DataType,
 	Integer_DataType,
 	String_DataType,
-	TmpStr_DataType,
 	SubStr_DataType,
 	// end of the actual execution data types
 	numberof_DataType,	// number of actual execution data types

@@ -15,16 +15,16 @@ Input: INPUT A(I%),B%(I%);
 Output: InputBegin InputParse InputParseInt'End' I%<ref> A(<ref>[I%<ref>] InputAssign I%<ref> B%(<ref>[I%<ref>] InputAssignInt INPUT'Keep' 
 
 Input: INPUT PROMPT "Enter Number: "; N%
-Output: "Enter Number: " InputBeginStr["Enter Number: "] InputParseInt'End' N%<ref> InputAssignInt INPUT-PROMPT 
+Output: "Enter Number: " InputBeginStr InputParseInt'End' N%<ref> InputAssignInt INPUT-PROMPT 
 
 Input: INPUT PROMPT A$+":"; A
-Output: A$ ":" +$[A$,":"] InputBeginTmp InputParse'End' A<ref> InputAssign INPUT-PROMPT 
+Output: A$ ":" +$ InputBeginStr InputParse'End' A<ref> InputAssign INPUT-PROMPT 
 
 Input: INPUT PROMPT "Two Values", A, B;
-Output: "Two Values" InputBeginStr'Question'["Two Values"] InputParse InputParse'End' A<ref> InputAssign B<ref> InputAssign INPUT-PROMPT'Keep' 
+Output: "Two Values" InputBeginStr'Question' InputParse InputParse'End' A<ref> InputAssign B<ref> InputAssign INPUT-PROMPT'Keep' 
 
 Input: INPUT PROMPT P$(I%), S$(I%)
-Output: I%<ref> P$([I%<ref>] InputBeginStr'Question'[P$(] InputParseStr'End' I%<ref> S$(<ref>[I%<ref>] InputAssignStr INPUT-PROMPT 
+Output: I%<ref> P$([I%<ref>] InputBeginStr'Question' InputParseStr'End' I%<ref> S$(<ref>[I%<ref>] InputAssignStr INPUT-PROMPT 
 
 Input: INPUT
             ^-- expected variable

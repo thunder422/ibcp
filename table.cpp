@@ -48,7 +48,6 @@ struct ExprInfo
 	short m_nOperands;				// number of operands (operators/functions)
 	short m_nAssocCodes;			// number of associated codes
 	short m_assoc2Index;			// second operand assoc codes start index
-	short m_nStrings;				// number of string arguments
 	DataType *m_operandDataType;	// data type of each operand
 	Code *m_assocCode;				// associated codes
 
@@ -57,8 +56,7 @@ struct ExprInfo
 		short assoc2Index = 0, Code *assocCode = NULL) :
 		m_unaryCode(unaryCode), m_nOperands(nOperands),
 		m_operandDataType(operandDataType), m_nAssocCodes(nAssocCodes),
-		m_assoc2Index(assoc2Index), m_assocCode(assocCode), m_nStrings(0)
-		// default for m_nStrings; will be filled in later
+		m_assoc2Index(assoc2Index), m_assocCode(assocCode)
 	{
 	}
 };
@@ -132,14 +130,8 @@ static DataType StrIntInt_OperandArray[] = {
 static DataType StrStr_OperandArray[] = {
 	String_DataType, String_DataType
 };
-static DataType StrTmp_OperandArray[] = {
-	String_DataType, TmpStr_DataType
-};
 static DataType StrStrInt_OperandArray[] = {
 	String_DataType, String_DataType, Integer_DataType
-};
-static DataType StrTmpInt_OperandArray[] = {
-	String_DataType, TmpStr_DataType, Integer_DataType
 };
 static DataType Sub_OperandArray[] = {
 	SubStr_DataType
@@ -147,116 +139,66 @@ static DataType Sub_OperandArray[] = {
 static DataType SubStr_OperandArray[] = {
 	SubStr_DataType, String_DataType
 };
-static DataType SubTmp_OperandArray[] = {
-	SubStr_DataType, TmpStr_DataType
-};
-
-static DataType Tmp_OperandArray[] = {
-	TmpStr_DataType
-};
-static DataType TmpInt_OperandArray[] = {
-	TmpStr_DataType, Integer_DataType
-};
-static DataType TmpStr_OperandArray[] = {
-	TmpStr_DataType, String_DataType
-};
-static DataType TmpStrInt_OperandArray[] = {
-	TmpStr_DataType, String_DataType, Integer_DataType
-};
-static DataType TmpTmp_OperandArray[] = {
-	TmpStr_DataType, TmpStr_DataType
-};
-static DataType TmpTmpInt_OperandArray[] = {
-	TmpStr_DataType, TmpStr_DataType, Integer_DataType
-};
 
 
 // associated code data type arrays
 static Code Abs_AssocCode[]				= {AbsInt_Code};
 static Code Add_AssocCode[]				= {
-	AddI1_Code, CatStr_Code, CatStrT1_Code, AddI2_Code
+	AddI1_Code, CatStr_Code, AddI2_Code
 };
 static Code AddI1_AssocCode[]			= {AddInt_Code};
-static Code Asc_AssocCode[]				= {AscTmp_Code};
-static Code Asc2_AssocCode[]			= {Asc2Tmp_Code};
 static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignSubStr_Code
 };
-static Code AssignStr_AssocCode[]		= {AssignTmp_Code};
-static Code AssignSubStr_AssocCode[]	= {AssignSubTmp_Code};
 static Code AssignList_AssocCode[]		= {
 	AssignListInt_Code, AssignListStr_Code, AssignListMix_Code
 };
-static Code AssignListStr_AssocCode[]	= {AssignListTmp_Code};
-static Code AssignListMix_AssocCode[]	= {AssignListMixTmp_Code};
-static Code CatStr_AssocCode[]			= {CatStrT2_Code};
-static Code CatStrT1_AssocCode[]		= {CatStrTT_Code};
 static Code Div_AssocCode[]				= {DivI1_Code, DivI2_Code};
 static Code DivI1_AssocCode[]			= {DivInt_Code};
 static Code Eq_AssocCode[]				= {
-	EqI1_Code, EqStr_Code, EqStrT1_Code, EqI2_Code
+	EqI1_Code, EqStr_Code, EqI2_Code
 };
 static Code EqI1_AssocCode[]			= {EqInt_Code};
-static Code EqStr_AssocCode[]			= {EqStrT2_Code};
-static Code EqStrT1_AssocCode[]			= {EqStrTT_Code};
 static Code Gt_AssocCode[]				= {
-	GtI1_Code, GtStr_Code, GtStrT1_Code, GtI2_Code
+	GtI1_Code, GtStr_Code, GtI2_Code
 };
 static Code GtI1_AssocCode[]			= {GtInt_Code};
-static Code GtStr_AssocCode[]			= {GtStrT2_Code};
-static Code GtStrT1_AssocCode[]			= {GtStrTT_Code};
 static Code GtEq_AssocCode[]			= {
-	GtEqI1_Code, GtEqStr_Code, GtEqStrT1_Code, GtEqI2_Code
+	GtEqI1_Code, GtEqStr_Code, GtEqI2_Code
 };
 static Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
-static Code GtEqStr_AssocCode[]			= {GtEqStrT2_Code};
-static Code GtEqStrT1_AssocCode[]		= {GtEqStrTT_Code};
-static Code InputBeginStr_AssocCode[]	= {InputBeginTmp_Code};
 static Code InputAssign_AssocCode[]		= {
 	InputAssignInt_Code, InputAssignStr_Code, InputParse_Code
 };
 static Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
 static Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
-static Code Instr2_AssocCode[]			= {Instr2T1_Code, Instr2T2_Code};
-static Code Instr2T1_AssocCode[]		= {Instr2TT_Code};
-static Code Instr3_AssocCode[]			= {Instr3T1_Code, Instr3T2_Code};
-static Code Instr3T1_AssocCode[]		= {Instr3TT_Code};
-static Code Len_AssocCode[]				= {LenTmp_Code};
 static Code Lt_AssocCode[]				= {
-	LtI1_Code, LtStr_Code, LtStrT1_Code, LtI2_Code
+	LtI1_Code, LtStr_Code, LtI2_Code
 };
 static Code LtI1_AssocCode[]			= {LtInt_Code};
-static Code LtStr_AssocCode[]			= {LtStrT2_Code};
-static Code LtStrT1_AssocCode[]			= {LtStrTT_Code};
 static Code LtEq_AssocCode[]			= {
-	LtEqI1_Code, LtEqStr_Code, LtEqStrT1_Code, LtEqI2_Code
+	LtEqI1_Code, LtEqStr_Code, LtEqI2_Code
 };
 static Code LtEqI1_AssocCode[]			= {LtEqInt_Code};
-static Code LtEqStr_AssocCode[]			= {LtEqStrT2_Code};
-static Code LtEqStrT1_AssocCode[]		= {LtEqStrTT_Code};
 static Code Mod_AssocCode[]				= {ModI1_Code, ModI2_Code};
 static Code ModI1_AssocCode[]			= {ModInt_Code};
 static Code Mul_AssocCode[]				= {MulI1_Code, MulI2_Code};
 static Code MulI1_AssocCode[]			= {MulInt_Code};
 static Code Neg_AssocCode[]				= {NegInt_Code};
 static Code NotEq_AssocCode[]			= {
-	NotEqI1_Code, NotEqStr_Code, NotEqStrT1_Code, NotEqI2_Code
+	NotEqI1_Code, NotEqStr_Code, NotEqI2_Code
 };
 static Code NotEqI1_AssocCode[] 		= {NotEqInt_Code};
-static Code NotEqStr_AssocCode[]		= {NotEqStrT2_Code};
-static Code NotEqStrT1_AssocCode[]		= {NotEqStrTT_Code};
 static Code Power_AssocCode[]			= {PowerI1_Code, PowerMul_Code};
 static Code PowerI1_AssocCode[]			= {PowerInt_Code};
 static Code Print_AssocCode[]			= {
-	PrintInt_Code, PrintStr_Code, PrintTmp_Code
+	PrintInt_Code, PrintStr_Code
 };
-static Code Repeat_AssocCode[]			= {RepeatTmp_Code};
 static Code RndArgs_AssocCode[]			= {RndArgInt_Code};
 static Code Sgn_AssocCode[]				= {SgnInt_Code};
 static Code Str_AssocCode[]				= {StrInt_Code};
 static Code Sub_AssocCode[]				= {SubI1_Code, SubI2_Code};
 static Code SubI1_AssocCode[]			= {SubInt_Code};
-static Code Val_AssocCode[]				= {ValTmp_Code};
 
 
 // standard expression information structures
@@ -271,17 +213,6 @@ static ExprInfo Str_ExprInfo(Null_Code, Operands(Str));
 static ExprInfo StrInt_ExprInfo(Null_Code, Operands(StrInt));
 static ExprInfo StrStr_ExprInfo(Null_Code, Operands(StrStr));  //?
 static ExprInfo StrStrInt_ExprInfo(Null_Code, Operands(StrStrInt));
-static ExprInfo StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
-static ExprInfo Assign_StrTmp_ExprInfo(Null_Code, Operands(StrTmp));
-static ExprInfo StrTmpInt_ExprInfo(Null_Code, Operands(StrTmpInt));
-static ExprInfo Assign_SubTmp_ExprInfo(Null_Code, Operands(SubTmp));
-
-static ExprInfo Tmp_ExprInfo(Null_Code, Operands(Tmp));
-static ExprInfo TmpInt_ExprInfo(Null_Code, Operands(TmpInt));
-static ExprInfo TmpStr_ExprInfo(Null_Code, Operands(TmpStr));
-static ExprInfo TmpStrInt_ExprInfo(Null_Code, Operands(TmpStrInt));
-static ExprInfo TmpTmp_ExprInfo(Null_Code, Operands(TmpTmp));
-static ExprInfo TmpTmpInt_ExprInfo(Null_Code, Operands(TmpTmpInt));
 
 static ExprInfo StrIntInt_ExprInfo(Null_Code, Operands(StrIntInt));
 static ExprInfo Sub_ExprInfo(Null_Code, Operands(Sub));
@@ -537,26 +468,26 @@ static TableEntry tableEntries[] =
 	{	// Asc_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ASC(", NULL, Multiple_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(Str), AssocCode(Asc))
+		new ExprInfo(Null_Code, Operands(Str))
 	},
 	{	// Asc2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ASC(", "ASC2(", Null_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrInt), AssocCode(Asc2))
+		new ExprInfo(Null_Code, Operands(StrInt))
 	},
 	{	// Chr_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"CHR$(", NULL, Null_Flag, 2, TmpStr_DataType, &Int_ExprInfo
+		"CHR$(", NULL, Null_Flag, 2, String_DataType, &Int_ExprInfo
 	},
 	{	// Instr2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"INSTR(", "INSTR2(", Multiple_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(Instr2, 1))
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// Instr3_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"INSTR(", "INSTR3(", Null_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStrInt), AssocCode2(Instr3, 1))
+		new ExprInfo(Null_Code, Operands(StrStrInt))
 	},
 	{	// Left_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -565,7 +496,7 @@ static TableEntry tableEntries[] =
 	{	// Len_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"LEN(", NULL, Null_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(Str), AssocCode(Len))
+		new ExprInfo(Null_Code, Operands(Str))
 	},
 	{	// Mid2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -577,8 +508,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// Repeat_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"REPEAT$(", NULL, Null_Flag, 2, TmpStr_DataType,
-		new ExprInfo(Null_Code, Operands(StrInt), AssocCode(Repeat))
+		"REPEAT$(", NULL, Null_Flag, 2, String_DataType,
+		new ExprInfo(Null_Code, Operands(StrInt))
 	},
 	{	// Right_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -586,11 +517,11 @@ static TableEntry tableEntries[] =
 	},
 	{	// Space_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"SPACE$(", NULL, Null_Flag, 2, TmpStr_DataType, &Int_ExprInfo
+		"SPACE$(", NULL, Null_Flag, 2, String_DataType, &Int_ExprInfo
 	},
 	{	// Str_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"STR$(", NULL, Null_Flag, 2, TmpStr_DataType,
+		"STR$(", NULL, Null_Flag, 2, String_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Str))
 	},
 	{	// Val_Code
@@ -629,7 +560,7 @@ static TableEntry tableEntries[] =
 	{	// Add_Code
 		Operator_TokenType, OneChar_Multiple,
 		"+", NULL, Null_Flag, 40, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Add, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Add, 2))
 	},
 	{	// Sub_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -658,33 +589,33 @@ static TableEntry tableEntries[] =
 	{	// Eq_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", NULL, Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 3)),
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 2)),
 		Equal_Handler
 	},
 	{	// Gt_Code
 		Operator_TokenType, TwoChar_Multiple,
 		">", NULL, Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Gt, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Gt, 2))
 	},
 	{	// GtEq_Code
 		Operator_TokenType, TwoChar_Multiple,
 		">=", NULL, Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(GtEq, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(GtEq, 2))
 	},
 	{	// Lt_Code
 		Operator_TokenType, TwoChar_Multiple,
 		"<", NULL, Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Lt, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Lt, 2))
 	},
 	{	// LtEq_Code
 		Operator_TokenType, TwoChar_Multiple,
 		"<=", NULL, Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(LtEq, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(LtEq, 2))
 	},
 	{	// NotEq_Code
 		Operator_TokenType, TwoChar_Multiple,
 		"<>", NULL, Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(NotEq, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(NotEq, 2))
 	},
 	{	// OpenParen_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -746,24 +677,14 @@ static TableEntry tableEntries[] =
 	{	// AssignStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignStr)),
+		new ExprInfo(Null_Code, Operands(StrStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
-	},
-	{	// AssignTmp_Code
-		Operator_TokenType, OneWord_Multiple,
-		"=", "Assign$T", Reference_Flag, 4, TmpStr_DataType,
-		&Assign_StrTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignSubStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignSub$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(SubStr), AssocCode(AssignSubStr)),
+		new ExprInfo(Null_Code, Operands(SubStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
-	},
-	{	// AssignSubTmp_Code
-		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignSub$T", Reference_Flag, 4, TmpStr_DataType,
-		&Assign_SubTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignList_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -779,80 +700,19 @@ static TableEntry tableEntries[] =
 	{	// AssignListStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignListStr)),
+		new ExprInfo(Null_Code, Operands(StrStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
-	},
-	{	// AssignListTmp_Code
-		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList$T", Reference_Flag, 4, TmpStr_DataType,
-		&Assign_StrTmp_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignListMix_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignListMix$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(SubStr), AssocCode(AssignListMix)),
+		new ExprInfo(Null_Code, Operands(SubStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
-	},
-	{	// AssignListMixTmp_Code
-		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignListMix$T", Reference_Flag, 4,
-		TmpStr_DataType, &Assign_SubTmp_ExprInfo, NULL, Null_TokenMode,
-		Assign_CmdHandler
 	},
 	{	// EOL_Code
 		Operator_TokenType, OneWord_Multiple,
 		NULL, NULL, EndExpr_Flag | EndStmt_Flag, 4, None_DataType, NULL,
 		EndOfLine_Handler
-	},
-	{	// AscTmp_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", "ASCT(", Multiple_Flag, 2, Integer_DataType, &Tmp_ExprInfo
-	},
-	{	// Asc2Tmp_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"ASC(", "ASC2T(", Null_Flag, 2, Integer_DataType, &TmpInt_ExprInfo
-	},
-	{	// Instr2T1_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR2T1(", Multiple_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(Instr2T1))
-	},
-	{	// Instr3T1_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR3T1(", Null_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStrInt), AssocCode(Instr3T1))
-	},
-	{	// Instr2T2_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR2T2(", Multiple_Flag, 2, Integer_DataType,
-		&StrTmp_ExprInfo
-	},
-	{	// Instr3T2_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR3T2(", Null_Flag, 2, Integer_DataType,
-		&StrTmpInt_ExprInfo
-	},
-	{	// Instr2TT_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR2TT(", Multiple_Flag, 2, Integer_DataType,
-		&TmpTmp_ExprInfo
-	},
-	{	// Instr3TT_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"INSTR(", "INSTR3TT(", Null_Flag, 2, Integer_DataType,
-		&TmpTmpInt_ExprInfo
-	},
-	{	// LenTmp_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"LEN(", "LENT(", Null_Flag, 2, Integer_DataType, &Tmp_ExprInfo
-	},
-	{	// RepeatTmp_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"REPEAT$(", "REPEAT$T(", Null_Flag, 2, TmpStr_DataType, &TmpInt_ExprInfo
-	},
-	{	// ValTmp_Code
-		IntFuncP_TokenType, OneWord_Multiple,
-		"VAL(", "VALT(", Null_Flag, 2, Double_DataType, &Str_ExprInfo
 	},
 	{	// AddI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -869,21 +729,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// CatStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		"+", "+$", Null_Flag, 40, TmpStr_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(CatStr))
-	},
-	{	// CatStrT1_Code
-		Operator_TokenType, OneChar_Multiple,
-		"+", "+$1", Null_Flag, 40, TmpStr_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(CatStrT1))
-	},
-	{	// CatStrT2_Code
-		Operator_TokenType, OneChar_Multiple,
-		"+", "+$2", Null_Flag, 40, TmpStr_DataType, &StrTmp_ExprInfo
-	},
-	{	// CatStrTT_Code
-		Operator_TokenType, OneChar_Multiple,
-		"+", "+$T", Null_Flag, 40, TmpStr_DataType, &TmpTmp_ExprInfo
+		"+", "+$", Null_Flag, 40, String_DataType,
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// SubI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -971,20 +818,7 @@ static TableEntry tableEntries[] =
 	{	// EqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", "=$", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(EqStr))
-	},
-	{	// EqStrT1_Code
-		Operator_TokenType, OneChar_Multiple,
-		"=", "=$1", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(EqStrT1))
-	},
-	{	// EqStrT2_Code
-		Operator_TokenType, OneChar_Multiple,
-		"=", "=$2", Null_Flag, 30, Integer_DataType, &StrTmp_ExprInfo
-	},
-	{	// EqStrTT_Code
-		Operator_TokenType, OneChar_Multiple,
-		"=", "=$T", Null_Flag, 30, Integer_DataType, &TmpTmp_ExprInfo
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// GtI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1002,20 +836,7 @@ static TableEntry tableEntries[] =
 	{	// GtStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		">", ">$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(GtStr))
-	},
-	{	// GtStrT1_Code
-		Operator_TokenType, OneChar_Multiple,
-		">", ">$1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(GtStrT1))
-	},
-	{	// GtStrT2_Code
-		Operator_TokenType, OneChar_Multiple,
-		">", ">$2", Null_Flag, 32, Integer_DataType, &StrTmp_ExprInfo
-	},
-	{	// GtStrTT_Code
-		Operator_TokenType, OneChar_Multiple,
-		">", ">$T", Null_Flag, 32, Integer_DataType, &TmpTmp_ExprInfo
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// GtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1033,20 +854,7 @@ static TableEntry tableEntries[] =
 	{	// GtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		">=", ">=$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(GtEqStr))
-	},
-	{	// GtEqStrT1_Code
-		Operator_TokenType, OneChar_Multiple,
-		">=", ">=$1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(GtEqStrT1))
-	},
-	{	// GtEqStrT2_Code
-		Operator_TokenType, OneChar_Multiple,
-		">=", ">=$2", Null_Flag, 32, Integer_DataType, &StrTmp_ExprInfo
-	},
-	{	// GtEqStrTT_Code
-		Operator_TokenType, OneChar_Multiple,
-		">=", ">=$T", Null_Flag, 32, Integer_DataType, &TmpTmp_ExprInfo
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// LtI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1064,20 +872,7 @@ static TableEntry tableEntries[] =
 	{	// LtStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<", "<$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(LtStr))
-	},
-	{	// LtStrT1_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<", "<$1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(LtStrT1))
-	},
-	{	// LtStrT2_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<", "<$2", Null_Flag, 32, Integer_DataType, &StrTmp_ExprInfo
-	},
-	{	// LtStrTT_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<", "<$T", Null_Flag, 32, Integer_DataType, &TmpTmp_ExprInfo
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// LtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1095,20 +890,7 @@ static TableEntry tableEntries[] =
 	{	// LtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<=", "<=$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(LtEqStr))
-	},
-	{	// LtEqStrT1_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<=", "<=$1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(LtEqStrT1))
-	},
-	{	// LtEqStrT2_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<=", "<=$2", Null_Flag, 32, Integer_DataType, &StrTmp_ExprInfo
-	},
-	{	// LtEqStrTT_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<=", "<=$T", Null_Flag, 32, Integer_DataType, &TmpTmp_ExprInfo
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// NotEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1126,20 +908,7 @@ static TableEntry tableEntries[] =
 	{	// NotEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<>", "<>$", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(NotEqStr))
-	},
-	{	// NotEqStrT1_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<>", "<>$1", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(TmpStr), AssocCode(NotEqStrT1))
-	},
-	{	// NotEqStrT2_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<>", "<>$2", Null_Flag, 30, Integer_DataType, &StrTmp_ExprInfo
-	},
-	{	// NotEqStrTT_Code
-		Operator_TokenType, OneChar_Multiple,
-		"<>", "<>$T", Null_Flag, 30, Integer_DataType, &TmpTmp_ExprInfo
+		new ExprInfo(Null_Code, Operands(StrStr))
 	},
 	{	// AbsInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -1163,7 +932,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// StrInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"STR$(", "STR%$(", Null_Flag, 2, TmpStr_DataType, &Int_ExprInfo
+		"STR$(", "STR%$(", Null_Flag, 2, String_DataType, &Int_ExprInfo
 	},
 	{	// PrintDbl_Code
 		IntFuncN_TokenType, OneWord_Multiple,
@@ -1178,10 +947,6 @@ static TableEntry tableEntries[] =
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "PrintStr", Print_Flag, 2, None_DataType, &Str_ExprInfo
 	},
-	{	// PrintTmp_Code
-		IntFuncN_TokenType, OneWord_Multiple,
-		"", "PrintTmp", Print_Flag, 2, None_DataType, &Tmp_ExprInfo
-	},
 	{	// InputBegin_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "InputBegin", Null_Flag, 2, None_DataType
@@ -1189,12 +954,7 @@ static TableEntry tableEntries[] =
 	{	// InputBeginStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "InputBeginStr", Null_Flag, 2, None_DataType,
-		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputBeginStr))
-	},
-	{	// InputBeginTmp_Code
-		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputBeginTmp", Null_Flag, 2, None_DataType,
-		&Tmp_ExprInfo
+		new ExprInfo(Null_Code, Operands(Str))
 	},
 	{	// InputAssign_Code
 		IntFuncN_TokenType, OneWord_Multiple,
@@ -1336,24 +1096,6 @@ QStringList Table::setupAndCheck(void)
 				errorList.append(QString("Entry:%1 Assoc2Index=%2 too large, "
 					"maximum is %3").arg(i).arg(exprInfo->m_assoc2Index)
 					.arg(exprInfo->m_nAssocCodes));
-			}
-
-			// generate number of string arguments value
-			exprInfo->m_nStrings = 0;
-			for (int j = 0; j < exprInfo->m_nOperands; j++)
-			{
-				// don't count temporary strings
-				// don't count first string of assignment operators
-				if (exprInfo->m_operandDataType[j] == String_DataType
-					&& (j > 0 || !(m_entry[i].flags & Reference_Flag)))
-				{
-					exprInfo->m_nStrings++;
-				}
-			}
-			// set String_Flag in entries automatically
-			if (exprInfo->m_nStrings > 0)
-			{
-				m_entry[i].flags |= String_Flag;
 			}
 
 			// validate multiple entries
@@ -1548,12 +1290,6 @@ int Table::assoc2Index(Code code) const
 Code Table::assoc2Code(Code code, int index) const
 {
 	return m_entry[code].exprInfo->m_assocCode[assoc2Index(code) + index];
-}
-
-// returns the number of string operands for code
-int Table::nStrings(Code code) const
-{
-	return m_entry[code].exprInfo->m_nStrings;
 }
 
 // returns whether the code is a unary operator code

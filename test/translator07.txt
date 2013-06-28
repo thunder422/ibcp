@@ -318,5 +318,5 @@ Input: A(INT(B+C))=4
 Output: B C + INT( A(<ref>[INT(] 4 CvtDbl Assign 
 
 Input: MID$(A$,LEFT$(B$,1)<C$)=D$
-Output: A$<ref> B$ 1 LEFT$( C$ <$[B$,C$] MID2$(<ref> D$ AssignSub$[D$] 
+Output: A$<ref> B$ 1 LEFT$( C$ <$ MID2$(<ref> D$ AssignSub$ 
 

@@ -44,7 +44,7 @@ Input: LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
 	14: Command   Op Then
 	19: Operator  Op Integer Xor
 	23: IntFuncP  () Double  Abs
-	27: IntFuncP  () TmpStr  Chr
+	27: IntFuncP  () String  Chr
 	32: IntFuncP  () Double  Val
 	37: Command   Op EndIf
 	44: NoParen      String  |left$|

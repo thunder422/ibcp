@@ -41,7 +41,6 @@ enum TableFlag
 	// note: value 0x00000004 is available
 	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
 	Print_Flag			= 0x00000010,  // print-only function
-	String_Flag			= 0x00000020,  // code has string operands
 	EndExpr_Flag		= 0x00000040,  // end expression
 	EndStmt_Flag		= 0x00000080   // end statement
 };
@@ -129,7 +128,6 @@ public:
 	Code assocCode(Code code, int index) const;
 	int assoc2Index(Code code) const;
 	Code assoc2Code(Code code, int index = 0) const;
-	int nStrings(Code code) const;
 	bool isUnaryOperator(Code code) const;
 	TokenHandler tokenHandler(Code code) const;
 	CommandHandler commandHandler(Code code) const;

@@ -138,12 +138,6 @@ void Token::setDataType(void)
 		// TODO for now just set default to double
 		m_dataType = Double_DataType;
 	}
-	// change string DefFuncN/P to TmpStr
-	else if ((m_type == DefFuncN_TokenType || m_type == DefFuncP_TokenType)
-		&& m_dataType == String_DataType)
-	{
-		m_dataType = TmpStr_DataType;
-	}
 }
 
 

@@ -1,136 +1,136 @@
 
 Input: Z$ = A$ + B$
-Output: Z$<ref> A$ B$ +$[A$,B$] Assign$T 
+Output: Z$<ref> A$ B$ +$ Assign$ 
 
 Input: Z$ = REPEAT$(A$,4) + B$
-Output: Z$<ref> A$ 4 REPEAT$([A$] B$ +$1[B$] Assign$T 
+Output: Z$<ref> A$ 4 REPEAT$( B$ +$ Assign$ 
 
 Input: Z$ = A$ + REPEAT$(B$+C$,3)
-Output: Z$<ref> A$ B$ C$ +$[B$,C$] 3 REPEAT$T( +$2[A$] Assign$T 
+Output: Z$<ref> A$ B$ C$ +$ 3 REPEAT$( +$ Assign$ 
 
 Input: Z$ = STR$(A) + LEFT$(B$+C$,5)
-Output: Z$<ref> A STR$( B$ C$ +$[B$,C$] 5 LEFT$( +$T Assign$T 
+Output: Z$<ref> A STR$( B$ C$ +$ 5 LEFT$( +$ Assign$ 
 
 Input: Z% = A$ = B$
-Output: Z%<ref> A$ B$ =$[A$,B$] Assign% 
+Output: Z%<ref> A$ B$ =$ Assign% 
 
 Input: Z% = A$ + B$ = C$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ =$1[C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ =$ Assign% 
 
 Input: Z% = A$ = B$ + C$
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] =$2[A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ =$ Assign% 
 
 Input: Z% = A$ + B$ = C$ + D$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] =$T Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ =$ Assign% 
 
 Input: Z% = A$ < B$
-Output: Z%<ref> A$ B$ <$[A$,B$] Assign% 
+Output: Z%<ref> A$ B$ <$ Assign% 
 
 Input: Z% = A$ + B$ < C$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ <$1[C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <$ Assign% 
 
 Input: Z% = A$ < B$ + C$
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] <$2[A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <$ Assign% 
 
 Input: Z% = A$ + B$ < C$ + D$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <$T Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <$ Assign% 
 
 Input: Z% = A$ <= B$
-Output: Z%<ref> A$ B$ <=$[A$,B$] Assign% 
+Output: Z%<ref> A$ B$ <=$ Assign% 
 
 Input: Z% = A$ + B$ <= C$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ <=$1[C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <=$ Assign% 
 
 Input: Z% = A$ <= B$ + C$
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] <=$2[A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <=$ Assign% 
 
 Input: Z% = A$ + B$ <= C$ + D$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <=$T Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <=$ Assign% 
 
 Input: Z% = A$ > B$
-Output: Z%<ref> A$ B$ >$[A$,B$] Assign% 
+Output: Z%<ref> A$ B$ >$ Assign% 
 
 Input: Z% = A$ + B$ > C$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ >$1[C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ >$ Assign% 
 
 Input: Z% = A$ > B$ + C$
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] >$2[A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ >$ Assign% 
 
 Input: Z% = A$ + B$ > C$ + D$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] >$T Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ >$ Assign% 
 
 Input: Z% = A$ <= B$
-Output: Z%<ref> A$ B$ <=$[A$,B$] Assign% 
+Output: Z%<ref> A$ B$ <=$ Assign% 
 
 Input: Z% = A$ + B$ <= C$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ <=$1[C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <=$ Assign% 
 
 Input: Z% = A$ <= B$ + C$
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] <=$2[A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <=$ Assign% 
 
 Input: Z% = A$ + B$ <= C$ + D$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <=$T Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <=$ Assign% 
 
 Input: Z% = A$ <> B$
-Output: Z%<ref> A$ B$ <>$[A$,B$] Assign% 
+Output: Z%<ref> A$ B$ <>$ Assign% 
 
 Input: Z% = A$ + B$ <> C$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ <>$1[C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <>$ Assign% 
 
 Input: Z% = A$ <> B$ + C$
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] <>$2[A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <>$ Assign% 
 
 Input: Z% = A$ + B$ <> C$ + D$
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] <>$T Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <>$ Assign% 
 
 Input: Z$ = A$ + B$
-Output: Z$<ref> A$ B$ +$[A$,B$] Assign$T 
+Output: Z$<ref> A$ B$ +$ Assign$ 
 
 Input: Z$,Y$ = A$ + B$
-Output: Z$<ref> Y$<ref> A$ B$ +$[A$,B$] AssignList$T 
+Output: Z$<ref> Y$<ref> A$ B$ +$ AssignList$ 
 
 Input: LEFT$(Z$,1) = A$ + B$
-Output: Z$<ref> 1 LEFT$(<ref> A$ B$ +$[A$,B$] AssignSub$T 
+Output: Z$<ref> 1 LEFT$(<ref> A$ B$ +$ AssignSub$ 
 
 Input: LEFT$(Z$,1),Y$,RIGHT$(X$,1) = A$ + B$
-Output: Z$<ref> 1 LEFT$(<ref> Y$<ref> X$<ref> 1 RIGHT$(<ref> A$ B$ +$[A$,B$] AssignListMix$T 
+Output: Z$<ref> 1 LEFT$(<ref> Y$<ref> X$<ref> 1 RIGHT$(<ref> A$ B$ +$ AssignListMix$ 
 
 Input: Z% = ASC(A$) + ASC(B$+C$)
-Output: Z%<ref> A$ ASC([A$] B$ C$ +$[B$,C$] ASCT( +% Assign% 
+Output: Z%<ref> A$ ASC( B$ C$ +$ ASC( +% Assign% 
 
 Input: Z% = ASC(A$,4) + ASC(B$+C$,4)
-Output: Z%<ref> A$ 4 ASC2([A$] B$ C$ +$[B$,C$] 4 ASC2T( +% Assign% 
+Output: Z%<ref> A$ 4 ASC2( B$ C$ +$ 4 ASC2( +% Assign% 
 
 Input: Z% = INSTR(A$,B$)
-Output: Z%<ref> A$ B$ INSTR2([A$,B$] Assign% 
+Output: Z%<ref> A$ B$ INSTR2( Assign% 
 
 Input: Z% = INSTR(A$+B$,C$)
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ INSTR2T1([C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ INSTR2( Assign% 
 
 Input: Z% = INSTR(A$,B$+C$)
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] INSTR2T2([A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ INSTR2( Assign% 
 
 Input: Z% = INSTR(A$+B$,C$+D$)
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] INSTR2TT( Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ INSTR2( Assign% 
 
 Input: Z% = INSTR(A$,B$,4)
-Output: Z%<ref> A$ B$ 4 INSTR3([A$,B$] Assign% 
+Output: Z%<ref> A$ B$ 4 INSTR3( Assign% 
 
 Input: Z% = INSTR(A$+B$,C$,4)
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ 4 INSTR3T1([C$] Assign% 
+Output: Z%<ref> A$ B$ +$ C$ 4 INSTR3( Assign% 
 
 Input: Z% = INSTR(A$,B$+C$,4)
-Output: Z%<ref> A$ B$ C$ +$[B$,C$] 4 INSTR3T2([A$] Assign% 
+Output: Z%<ref> A$ B$ C$ +$ 4 INSTR3( Assign% 
 
 Input: Z% = INSTR(A$+B$,C$+D$,4)
-Output: Z%<ref> A$ B$ +$[A$,B$] C$ D$ +$[C$,D$] 4 INSTR3TT( Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ 4 INSTR3( Assign% 
 
 Input: Z% = LEN(A$) + LEN(B$+C$)
-Output: Z%<ref> A$ LEN([A$] B$ C$ +$[B$,C$] LENT( +% Assign% 
+Output: Z%<ref> A$ LEN( B$ C$ +$ LEN( +% Assign% 
 
 Input: Z = VAL(A$) + VAL(B$+C$)
-Output: Z<ref> A$ VAL([A$] B$ C$ +$[B$,C$] VAL([+$] + Assign 
+Output: Z<ref> A$ VAL( B$ C$ +$ VAL( + Assign 
 
 Input: PRINT A$;B$+C$
-Output: A$ PrintStr[A$] B$ C$ +$[B$,C$] PrintTmp PRINT 
+Output: A$ PrintStr B$ C$ +$ PrintStr PRINT 
 

@@ -24,7 +24,7 @@ Input: A% = B% = C% + D%
 Output: A%<ref> B% C% D% +% =% Assign% 
 
 Input: A$,B$,C$ = "Test"
-Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$["Test"] 
+Output: A$<ref> B$<ref> C$<ref> "Test" AssignList$ 
 
 Input: A$ = B$ = C$ = "Test"
                       ^^^^^^-- expected numeric expression

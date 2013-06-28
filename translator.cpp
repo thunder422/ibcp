@@ -44,35 +44,24 @@ static Code cvtCodeHaveNeed[numberof_DataType][numberof_DataType] = {
 		Null_Code,		// Double
 		CvtInt_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code,	// TmpStr
 		Invalid_Code	// SubStr
 	},
 	{	// have Integer,   need:
 		CvtDbl_Code,	// Double
 		Null_Code,		// Integer
 		Invalid_Code,	// String
-		Invalid_Code,	// TmpStr
 		Invalid_Code	// SubStr
 	},
 	{	// have String,    need:
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Null_Code,		// String
-		Null_Code,		// TmpStr
-		Null_Code		// SubStr
-	},
-	{	// have TmpStr,    need:
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Null_Code,		// String
-		Null_Code,		// TmpStr
 		Null_Code		// SubStr
 	},
 	{	// have SubStr,    need:
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Null_Code,		// String
-		Null_Code,		// TmpStr
 		Null_Code		// SubStr
 	}
 };
@@ -786,9 +775,6 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 			// for assignment operators, nothing gets pushed to the done stack
 			donePush = false;
 
-			// get number of strings for this assignment operator
-			nOperands = m_table.nStrings(token->code());
-
 			// no longer need the first and last operands
 			deleteOpenParen(first);
 			deleteCloseParen(last);
@@ -796,12 +782,8 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		// save string operands only
 		// get number of strings for non-sub-string codes
 		// include sub-string reference, which are put on done stack
-		else if ((!token->isDataType(SubStr_DataType) || token->reference()))
+		else
 		{
-			// no operands for sub-string references
-			nOperands = token->reference()
-				? 0 : m_table.nStrings(token->code());
-
 			// set first and last operands
 			deleteOpenParen(first);
 			if (token->isOperator())
@@ -817,16 +799,11 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 				deleteCloseParen(last);
 				last = token2;  // last operand is CloseParen token
 			}
-		}
-		// don't push non-reference sub-string function
-		else
-		{
-			donePush = false;  // don't push sub-string function on done stack
-			// set first/last operands of operand on done stack
-			deleteOpenParen(m_doneStack.top().first);
-			m_doneStack.top().first = token;  // set to sub-str function token
-			deleteCloseParen(m_doneStack.top().last);
-			m_doneStack.top().last = token2;  // set to CloseParen token
+			if (token->isDataType(SubStr_DataType) && !token->reference())
+			{
+				// change non-reference sub-string function data type to string
+				token->setDataType(String_DataType);
+			}
 		}
 
 		// process print-only internal functions
@@ -865,7 +842,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 	}
 
 	RpnItem **operand;
-	if (nOperands == 0)  // no string operands to save?
+	if (nOperands == 0)  // no operands to save?
 	{
 		operand = NULL;
 	}
@@ -1090,14 +1067,11 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 		operandIndex);
 	if (dataType == operandDataType)  // exact match?
 	{
-		// pop all references (for assignments) from stack
-		if (operandDataType != String_DataType || token->reference())
-		{
-			// pop non-string from done stack
-			deleteOpenParen(m_doneStack.top().first);
-			// check if operand's last token was CloseParen
-			deleteCloseParen(m_doneStack.pop().last);
-		}
+		// pop non-string from done stack
+		deleteOpenParen(m_doneStack.top().first);
+		// check if operand's last token was CloseParen
+		deleteCloseParen(m_doneStack.pop().last);
+
 		return Good_TokenStatus;
 	}
 	Code cvt_code = cvtCodeHaveNeed[dataType][operandDataType];
@@ -1121,14 +1095,11 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 			// change token's code and data type to associated code
 			m_table.setToken(token, assoc_code);
 
-			// pop all references (for assignments) from stack
-			if (operandDatatype2 != String_DataType || token->reference())
-			{
-				// pop non-string from done stack
-				deleteOpenParen(m_doneStack.top().first);
-				// check if operand's last token was CloseParen
-				deleteCloseParen(m_doneStack.pop().last);
-			}
+			// pop non-string from done stack
+			deleteOpenParen(m_doneStack.top().first);
+			// check if operand's last token was CloseParen
+			deleteCloseParen(m_doneStack.pop().last);
+
 			return Good_TokenStatus;
 		}
 		Code cvt_code2 = cvtCodeHaveNeed[dataType][operandDatatype2];
@@ -1608,7 +1579,6 @@ DataType Translator::equivalentDataType(DataType dataType)
 		Double_DataType,	// Double
 		Integer_DataType,	// Integer
 		String_DataType,	// String
-		String_DataType,	// TmpStr
 		String_DataType		// SubStr
 	};
 
@@ -1623,7 +1593,6 @@ TokenStatus Translator::expectedErrStatus(DataType dataType)
 		ExpNumExpr_TokenStatus,		// Double
 		ExpNumExpr_TokenStatus,		// Integer
 		ExpStrExpr_TokenStatus,		// String
-		ExpStrExpr_TokenStatus,		// TmpStr
 		ExpStrExpr_TokenStatus,		// SubStr
 		BUG_InvalidDataType,		// numberof
 		ExpExpr_TokenStatus			// None
@@ -1640,7 +1609,6 @@ TokenStatus Translator::actualErrStatus(DataType dataType)
 		ExpStrExpr_TokenStatus,		// Double
 		ExpStrExpr_TokenStatus,		// Integer
 		ExpNumExpr_TokenStatus,		// String
-		ExpNumExpr_TokenStatus,		// TmpStr
 		ExpNumExpr_TokenStatus,		// SubStr
 		BUG_InvalidDataType,		// numberof
 		BUG_InvalidDataType			// None
@@ -1657,7 +1625,6 @@ TokenStatus Translator::variableErrStatus(DataType dataType)
 		ExpDblVar_TokenStatus,		// Double
 		ExpIntVar_TokenStatus,		// Integer
 		ExpStrItem_TokenStatus,		// String
-		BUG_InvalidDataType,		// TmpStr
 		BUG_InvalidDataType,		// SubStr
 		BUG_InvalidDataType,		// numberof
 		ExpAssignItem_TokenStatus	// None
