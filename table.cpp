@@ -35,10 +35,10 @@ const int MaxOperands = 3;
 	// (arguments) for any operator or internal function (there are currently
 	// no internal function with more than 3 arguments)
 
-const int MaxAssocCodes = 4;
+const int MaxAssocCodes = 3;
 	// this value contains the maximum number of associated codes,
 	// codes in additional to the main code for different possible data types
-	// for the code (no code currently has more the 4 total codes)
+	// for the code (no code currently has more the 3 total codes)
 
 
 // expression information for operators and internal functions
@@ -1125,14 +1125,14 @@ QStringList Table::setupAndCheck(void)
 	}
 
 	// check maximums found against constants
-	if (maxOperands > MaxOperands)
+	if (maxOperands != MaxOperands)
 	{
-		errorList.append(QString("Max_Operands=%1 too small, actual is %2")
+		errorList.append(QString("Max_Operands=%1 incorrect, actual is %2")
 			.arg(MaxOperands).arg(maxOperands));
 	}
-	if (maxAssocCodes > MaxAssocCodes)
+	if (maxAssocCodes != MaxAssocCodes)
 	{
-		errorList.append(QString("Max_Assoc_Codes=%1 too small, actual is %2")
+		errorList.append(QString("Max_Assoc_Codes=%1 incorrect, actual is %2")
 			.arg(MaxAssocCodes).arg(maxAssocCodes));
 	}
 
