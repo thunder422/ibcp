@@ -249,9 +249,7 @@ TokenStatus Translator::addToken(Token *&token)
 
 		// push null token to be last operator on stack
 		// to prevent from popping past bottom of stack
-		m_holdStack.resize(m_holdStack.size() + 1);
-		m_holdStack.top().token = m_table.newToken(Null_Code);
-		m_holdStack.top().first = NULL;
+		m_holdStack.push(m_table.newToken(Null_Code));
 
 		m_state = OperandOrEnd_State;
 	}
@@ -445,9 +443,7 @@ TokenStatus Translator::processOperand(Token *&token)
 			m_countStack.top().nExpected = 0;
 		}
 
-		m_holdStack.resize(m_holdStack.size() + 1);
-		m_holdStack.top().token = token;
-		m_holdStack.top().first = NULL;
+		m_holdStack.push(token);
 		// leave state == Operand
 		m_state = Operand_State;  // make sure not OperandOrEnd
 	}
@@ -552,9 +548,7 @@ bool Translator::processUnaryOperator(Token *&token, TokenStatus &status)
 		}
 		token->setDataType(dataType);
 		// push open parentheses right on stack and return
-		m_holdStack.resize(m_holdStack.size() + 1);
-		m_holdStack.top().token = token;
-		m_holdStack.top().first = NULL;
+		m_holdStack.push(token);
 		m_state = Operand_State;
 
 		// add a null counter to prevent commas
@@ -672,7 +666,7 @@ TokenStatus Translator::processOperator(Token *&token)
 		// it will be reset upon next open parentheses)
 		m_lastPrecedence = m_table.precedence(topToken->code());
 
-		m_holdStack.resize(m_holdStack.size() - 1);
+		m_holdStack.drop();
 	}
 
 	// check for special token processing
@@ -720,10 +714,8 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 		}
 	}
 
-	// push it onto the holding stack
-	m_holdStack.resize(m_holdStack.size() + 1);
-	m_holdStack.top().token = token;
-	m_holdStack.top().first = first;  // attach first operand
+	// push it onto the holding stack and attach first operand
+	m_holdStack.push(token, first);
 
 	// expecting another operand next
 	m_state = Translator::Operand_State;

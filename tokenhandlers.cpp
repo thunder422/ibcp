@@ -378,7 +378,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 			// if topToken was not changed, pop it now
 			if (topToken == t.m_holdStack.top().token)
 			{
-				t.m_holdStack.resize(t.m_holdStack.size() - 1);
+				t.m_holdStack.drop();
 			}
 			delete token;		// delete close paren token
 			token = topToken;  // set token with error
@@ -387,7 +387,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 	}
 
 	// now pop the top token
-	t.m_holdStack.resize(t.m_holdStack.size() - 1);
+	t.m_holdStack.drop();
 
 	return Good_TokenStatus;
 }
