@@ -9,7 +9,7 @@ Input: .A
        ^-- expected digits in floating point constant
 
 Input: .e
-       ^-- expected digits in mantissa in floating point constant
+       ^-- expected digits in mantissa of floating point constant
 
 Input: ..01
        ^^-- expected digits or single decimal point in floating point constant

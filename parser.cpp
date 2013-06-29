@@ -268,7 +268,7 @@ bool Parser::getNumber(void)
 		"numeric constant"));
 	QString ExpDigitsOrSngDP_ErrMsg(tr("expected digits or single decimal "
 		"point in floating point constant"));
-	QString ExpManDigits_ErrMsg(tr("expected digits in mantissa in floating "
+	QString ExpManDigits_ErrMsg(tr("expected digits in mantissa of floating "
 		"point constant"));
 	QString ExpExpDigits_ErrMsg(tr("expected sign or digits for exponent in "
 		"floating point constant"));
@@ -326,6 +326,12 @@ bool Parser::getNumber(void)
 		{
 			if (!digits)
 			{
+				if (sign && !decimal)
+				{
+					// if there is a '-E' then not a number
+					// (need to interprete '-' as unary operator)
+					return false;
+				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
 				m_token->setError(ExpManDigits_ErrMsg);

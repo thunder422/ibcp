@@ -15,7 +15,7 @@ Input: A(?
          ^-- expected numeric expression
 
 Input: A(.e
-         ^-- expected digits in mantissa in floating point constant
+         ^-- expected digits in mantissa of floating point constant
 
 Input: A(1?
           ^-- expected operator, comma or closing parentheses
@@ -51,7 +51,7 @@ Input: A=?
          ^-- expected numeric expression
 
 Input: A=.e
-         ^-- expected digits in mantissa in floating point constant
+         ^-- expected digits in mantissa of floating point constant
 
 Input: A=1?
           ^-- expected operator or end-of-statement
