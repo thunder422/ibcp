@@ -128,6 +128,7 @@ public:
 	Code assocCode(Code code, int index) const;
 	int assoc2Index(Code code) const;
 	Code assoc2Code(Code code, int index = 0) const;
+	DataType expectedDataType(Code code) const;
 	bool isUnaryOperator(Code code) const;
 	TokenHandler tokenHandler(Code code) const;
 	CommandHandler commandHandler(Code code) const;
@@ -135,6 +136,7 @@ public:
 	// TOKEN RELATED TABLE FUNCTIONS
 	int precedence(Token *token) const;
 	int flags(Token *token) const;
+	DataType expectedDataType(Token *token) const;
 	void setToken(Token *token, Code code);
 	Token *newToken(Code code);
 

@@ -50,13 +50,16 @@ struct ExprInfo
 	short m_assoc2Index;			// second operand assoc codes start index
 	DataType *m_operandDataType;	// data type of each operand
 	Code *m_assocCode;				// associated codes
+	DataType m_expectedDataType;	// expected data type of next operand
 
 	ExprInfo(Code unaryCode = Null_Code, short nOperands = 0,
 		DataType *operandDataType = NULL, short nAssocCodes = 0,
-		short assoc2Index = 0, Code *assocCode = NULL) :
+		short assoc2Index = 0, Code *assocCode = NULL,
+		DataType expectedDataType = None_DataType) :
 		m_unaryCode(unaryCode), m_nOperands(nOperands),
 		m_operandDataType(operandDataType), m_nAssocCodes(nAssocCodes),
-		m_assoc2Index(assoc2Index), m_assocCode(assocCode)
+		m_assoc2Index(assoc2Index), m_assocCode(assocCode),
+		m_expectedDataType(expectedDataType)
 	{
 	}
 };
@@ -215,7 +218,6 @@ static ExprInfo StrStr_ExprInfo(Null_Code, Operands(StrStr));  //?
 static ExprInfo StrStrInt_ExprInfo(Null_Code, Operands(StrStrInt));
 
 static ExprInfo StrIntInt_ExprInfo(Null_Code, Operands(StrIntInt));
-static ExprInfo Sub_ExprInfo(Null_Code, Operands(Sub));
 
 // code enumeration names in comments after opening brace
 // (code enumeration generated from these by enums.awk)
@@ -1121,6 +1123,48 @@ QStringList Table::setupAndCheck(void)
 						.arg(exprInfo2->m_nOperands));
 				}
 			}
+
+			enum {
+				Dbl_BitMask = 0x01,
+				Int_BitMask = 0x02,
+				Str_BitMask = 0x04,
+				Num_BitMask = Dbl_BitMask | Int_BitMask,
+				Any_BitMask = Num_BitMask | Str_BitMask
+			};
+			int bitMaskDataType[numberof_DataType] = {
+				Dbl_BitMask,	// Double
+				Int_BitMask,	// Integer
+				Str_BitMask		// String
+			};
+
+			// set expected data type (start with data type of last operand)
+			if (exprInfo->m_nOperands > 0)
+			{
+				exprInfo->m_expectedDataType
+					= exprInfo->m_operandDataType[exprInfo->m_nOperands - 1];
+				// check each secondary associated code
+				if (exprInfo->m_nAssocCodes > 0)
+				{
+					int bitMask = bitMaskDataType[exprInfo->m_expectedDataType];
+					int index = exprInfo->m_assoc2Index;
+					for (; index < exprInfo->m_nAssocCodes; index++)
+					{
+						Code assocCode = exprInfo->m_assocCode[index];
+						ExprInfo *exprInfo2 = m_entry[assocCode].exprInfo;
+						if (exprInfo2 != NULL)  // FIXME - remove this
+						bitMask |= bitMaskDataType[exprInfo2
+							->m_operandDataType[exprInfo2->m_nOperands - 1]];
+					}
+					if (bitMask == Num_BitMask)
+					{
+						exprInfo->m_expectedDataType = Number_DataType;
+					}
+					else if (bitMask == Any_BitMask)
+					{
+						exprInfo->m_expectedDataType = Any_DataType;
+					}
+				}
+			}
 		}
 	}
 
@@ -1292,6 +1336,12 @@ Code Table::assoc2Code(Code code, int index) const
 	return m_entry[code].exprInfo->m_assocCode[assoc2Index(code) + index];
 }
 
+// returns the expected data type for last operand for operator code
+DataType Table::expectedDataType(Code code) const
+{
+	return m_entry[code].exprInfo->m_expectedDataType;
+}
+
 // returns whether the code is a unary operator code
 // (convenience function to avoid confusion)
 bool Table::isUnaryOperator(Code code) const
@@ -1333,6 +1383,12 @@ int Table::flags(Token *token) const
 {
 	// (non-table entry token types have no flags)
 	return token->hasTableEntry() ? flags(token->code()) : Null_Flag;
+}
+
+// returns the expected data type for last operand for operator token
+DataType Table::expectedDataType(Token *token) const
+{
+	return expectedDataType(token->code());
 }
 
 // function to set a token for a code (code, token type and data type)
