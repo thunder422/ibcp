@@ -1833,34 +1833,39 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 		return status;
 	}
 
-	Code unaryCode;
-	if (token->isOperator()
-		&& (unaryCode = m_table.unaryCode(token->code())) != Null_Code)
+	forever
 	{
-		token->setCode(unaryCode);  // change token to unary operator
-	}
-	// get operand and next token
-	else if ((status = getOperand(token, dataType)) != Good_TokenStatus
-		|| (status = getToken(token)) != Good_TokenStatus)
-	{
-		return status;
-	}
+		Code unaryCode;
+		if (token->isOperator()
+			&& (unaryCode = m_table.unaryCode(token->code())) != Null_Code)
+		{
+			token->setCode(unaryCode);  // change token to unary operator
+		}
+		// get operand and next token
+		else if ((status = getOperand(token, dataType)) != Good_TokenStatus
+			|| (status = getToken(token)) != Good_TokenStatus)
+		{
+			return status;
+		}
 
-	// check for and process operator (unary or binary)
-	if ((status = processOperator2(token)) == Done_TokenStatus)
-	{
-		// TODO check expression data type (level == 0 only?)
-		return status;
-	}
-	else if (status != Good_TokenStatus)
-	{
-		return status;
-	}
+		// check for and process operator (unary or binary)
+		if ((status = processOperator2(token)) == Done_TokenStatus)
+		{
+			// TODO check expression data type (level == 0 only?)
+			return status;
+		}
+		else if (status != Good_TokenStatus)
+		{
+			return status;
+		}
 
-	// get expression after operator
-	dataType = m_table.expectedDataType(token);
-	token = NULL;
-	return getExpression(token, dataType);
+		// get operator's expected data type and get next token
+		dataType = m_table.expectedDataType(token);
+		if ((status = getToken(token, true)) != Good_TokenStatus)
+		{
+			return status;
+		}
+	}
 }
 
 
