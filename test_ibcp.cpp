@@ -49,11 +49,14 @@ Tester::Tester(const QStringList &args)
 
 	// scan arguments for test options (ignore others)
 	m_option = OptNone;
+	m_newTrans = false;
 	switch (args.count())
 	{
 	case 2:
 		if (isOption(args.at(1), "-tp", OptParser, name[OptParser])
 			|| isOption(args.at(1), "-te", OptExpression, name[OptExpression])
+			|| isOption(args.at(1), "-ne", OptNewExpr, name[OptExpression],
+				true)
 			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator]))
 		{
 			break;
@@ -94,6 +97,37 @@ Tester::Tester(const QStringList &args)
 				}
 			}
 		}
+		else if (args.at(1) == "-n")  // FIXME temporary
+		{
+			m_newTrans = true;
+			if (args.count() == 2)
+			{
+				m_option = OptError;
+				m_errorMessage = tr("%1: missing test file name")
+					.arg(m_programName);
+			}
+			else
+			{
+				// find start of file name less path
+				m_testFileName = args.at(2);
+				QString baseName = QFileInfo(m_testFileName).baseName();
+
+				// check beginning of file name
+				if (baseName.startsWith(name[OptExpression],
+					Qt::CaseInsensitive))
+				{
+					m_option = OptNewExpr;
+					m_testName = name[OptExpression];
+				}
+				else  // no matching names?
+				{
+					m_option = OptError;
+					m_errorMessage = QString("%1: %2 -n %3[xx]")
+						.arg(tr("usage")).arg(m_programName)
+						.arg(name[OptExpression]);
+				}
+			}
+		}
 	}
 	// ignore non-test or invalid test options
 }
@@ -101,12 +135,13 @@ Tester::Tester(const QStringList &args)
 
 // function to see if argument is expected option
 bool Tester::isOption(const QString &arg, const QString &exp,
-	enum Option option, QString name)
+	enum Option option, QString name, bool newTrans)
 {
 	if (arg == exp)
 	{
 		m_option = option;
 		m_testName = name;
+		m_newTrans = newTrans;  // FIXME temporary
 		return true;
 	}
 	return false;
@@ -117,7 +152,7 @@ bool Tester::isOption(const QString &arg, const QString &exp,
 QStringList Tester::options(void)
 {
 	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
-		<< "-te" << "-tt";
+		<< "-te" << "-tt" << QString("-n <%1>").arg(tr("test_file")) << "-ne";
 }
 
 
@@ -213,6 +248,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			parseInput(cout, inputLine);
 			break;
 		case OptExpression:
+		case OptNewExpr:  // FIXME temporary
 			translateInput(cout, translator, inputLine, true);
 			break;
 		case OptTranslator:
@@ -259,7 +295,8 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 void Tester::translateInput(QTextStream &cout, Translator &translator,
 	const QString &testInput, bool exprMode)
 {
-	RpnList *rpnList = translator.translate(testInput, exprMode);
+	RpnList *rpnList = m_newTrans ? translator.translate2(testInput, exprMode)
+		: translator.translate(testInput, exprMode);
 	if (!rpnList->hasError())
 	{
 		cout << "Output: " << rpnList->text() << ' ' << endl;

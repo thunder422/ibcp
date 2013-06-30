@@ -45,11 +45,12 @@ class Tester
 		OptExpression,
 		OptTranslator,
 		OptSizeOf,
+		OptNewExpr,		// FIXME temporary
 		OptError = OptSizeOf
 	};
 
 	bool isOption(const QString &arg, const QString &exp,
-		enum Option option, QString name);
+		enum Option option, QString name, bool newTrans = false);
 	void parseInput(QTextStream &cout, const QString &testInput);
 	void translateInput(QTextStream &cout, Translator &translator,
 		const QString &testInput, bool exprMode);
@@ -59,6 +60,7 @@ class Tester
 
 	QString m_programName;		// name of program
 	int m_option;				// option bit masks
+	bool m_newTrans;			// use new translator flag FIXME temporary
 	QString m_testName;			// name of test
 	QString m_testFileName;		// name of test file (OptFile only)
 	QString m_errorMessage;		// message if error occurred

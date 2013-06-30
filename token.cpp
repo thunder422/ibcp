@@ -41,6 +41,7 @@ const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	tr("Null_TokenStatus (BUG)"),							// Null
 	tr("Good_TokenStatus (BUG)"),							// Good
 	tr("Done_TokenStatus (BUG)"),							// Done
+	tr("Parser_TokenStatus (BUG)"),							// Parser
 	tr("expected command"),									// ExpCmd
 	tr("expected expression"),								// ExpExpr
 	tr("expected expression or end-of-statement"),			// ExpExprOrEnd

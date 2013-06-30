@@ -142,6 +142,7 @@ public:
 	~Translator(void);
 
 	RpnList *translate(const QString &input, bool exprMode = false);
+	RpnList *translate2(const QString &input, bool exprMode);
 
 private:
 	enum Match
@@ -151,6 +152,12 @@ private:
 		Cvt_Match,
 		sizeof_Match
 	};
+
+	// New Translator Functions
+	TokenStatus getExpression(Token *&token, DataType dataType);
+	TokenStatus processOperator2(Token *&token);
+	TokenStatus getOperand(Token *&token, DataType dataType);
+	TokenStatus getToken(Token *&token, bool operand = false);
 
 	// Main Processing Functions
 	TokenStatus addToken(Token *&token);

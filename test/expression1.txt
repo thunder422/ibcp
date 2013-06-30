@@ -38,3 +38,66 @@ Output: A B 2 ^* *
 Input: a$ = "this" + "test"
 Output: a$ "this" "test" +$ =$ 
 
+Input: -E
+Output: E Neg 
+
+Input: -45 + A
+Output: -45 A +%1 
+
+Input: -A + B
+Output: A Neg B + 
+
+Input: -A + --B
+Output: A Neg B Neg Neg + 
+
+Input: A% + B
+Output: A% B +%1 
+
+Input: A + B%
+Output: A B% +%2 
+
+Input: A% + B%
+Output: A% B% +% 
+
+Input: A% + B% + C
+Output: A% B% +% C +%1 
+
+Input: A% - B
+Output: A% B -%1 
+
+Input: A - B%
+Output: A B% -%2 
+
+Input: A% - B%
+Output: A% B% -% 
+
+Input: A% - B% * C
+Output: A% B% C *%1 -%1 
+
+Input: A% + B * C ^ D
+Output: A% B C D ^ * +%1 
+
+Input: A$ + B$
+Output: A$ B$ +$ 
+
+Input: A$ < B$ = 0
+Output: A$ B$ <$ 0 =% 
+
+Input: A$ + B
+            ^-- expected string expression
+
+Input: A$ + B%
+            ^^-- expected string expression
+
+Input: A + B$
+           ^^-- expected numeric expression
+
+Input: A% + B$
+            ^^-- expected numeric expression
+
+Input: A$ - B$
+       ^^-- expected numeric expression
+
+Input: -A$
+        ^^-- expected numeric expression
+
