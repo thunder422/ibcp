@@ -1772,7 +1772,7 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 
 	if (status == Done_TokenStatus)
 	{
-		if (token->isCode(EOL_Code))
+		if (token->hasTableEntry() && token->isCode(EOL_Code))
 		{
 			delete token;  // delete EOL token
 
@@ -1800,6 +1800,7 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 		}
 		else
 		{
+			token->setSubCodeMask(UnUsed_SubCode);
 			status = ExpOpOrEnd_TokenStatus;
 		}
 	}
@@ -1808,6 +1809,10 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 	{
 		// error token is in the output list - don't delete it
 		m_output->setError(token);
+		if (token->isSubCode(UnUsed_SubCode))
+		{
+			delete token;  // token not in output list, needs to be deleted
+		}
 		m_output->setErrorMessage(token->message(status));
 		cleanUp();
 	}
@@ -1959,6 +1964,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 	{
 	case Command_TokenType:
 	case Operator_TokenType:
+		token->setSubCodeMask(UnUsed_SubCode);
 		return expectedErrStatus(dataType);
 
 	case Constant_TokenType:

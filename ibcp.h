@@ -76,7 +76,8 @@ enum SubCode
 	Question_SubCode   = 0x00000010,	// add "? " to input prompt
 	Used_SubCode       = 0x00000020,	// parentheses used in output
 	Last_SubCode       = 0x00000040,	// parentheses used as last token
-	End_SubCode        = 0x00000080		// end of INPUT parsing codes
+	End_SubCode        = 0x00000080,	// end of INPUT parsing codes
+	UnUsed_SubCode     = 0x00000100		// token not in output (for errors)
 };
 
 
