@@ -134,6 +134,7 @@ public:
 	CommandHandler commandHandler(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
+	bool isUnaryOperator(Token *token) const;
 	int precedence(Token *token) const;
 	int flags(Token *token) const;
 	DataType expectedDataType(Token *token) const;

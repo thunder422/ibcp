@@ -15,10 +15,10 @@ A * B / C \ D MOD E
 A mod B \ C / D * E
 A * B ^ 2
 a$ = "this" + "test"
-# 2013-06-29: more tests
+# more tests
 -E
 -45 + A
-# 2013-06-30: data type tests
+# data type tests
 -A + B
 -A + --B
 A% + B
@@ -32,10 +32,19 @@ A% - B% * C
 A% + B * C ^ D
 A$ + B$
 A$ < B$ = 0
-# 2013-06-30: error tests
+# mixed data type error tests
 A$ + B
 A$ + B%
 A + B$
 A% + B$
 A$ - B$
 -A$
+# unexpected token type error tests
+else
+- else
+- +
++
+a print
+a a
+a + else
+a + +

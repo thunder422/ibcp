@@ -1366,6 +1366,13 @@ CommandHandler Table::commandHandler(Code code) const
 //  TOKEN RELATED TABLE FUNCTIONS
 //=================================
 
+// returns whether the token contains a unary operator code
+// (convenience function to avoid confusion)
+bool Table::isUnaryOperator(Token *token) const
+{
+	return token->hasTableEntry() ? isUnaryOperator(token->code()) : false;
+}
+
 // returns the precedence of the code contained in a token
 //
 //   - the precedence is obtained from the token

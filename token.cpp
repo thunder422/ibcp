@@ -118,8 +118,13 @@ void Token::initialize(void)
 	// set precedence for non-table token types
 	s_prec[Command_TokenType] = -1;  // use table precedence if -1
 	s_prec[Operator_TokenType] = -1;
+	s_prec[IntFuncN_TokenType] = -1;
 	s_prec[IntFuncP_TokenType] = -1;
-	s_prec[DefFuncP_TokenType] = 2;  // same as Paren_TokenType
+	// these tokens need to be lowest precedence but above Null_Code
+	s_prec[Constant_TokenType] = 2;
+	s_prec[DefFuncN_TokenType] = 2;
+	s_prec[DefFuncP_TokenType] = 2;
+	s_prec[NoParen_TokenType] = 2;
 	s_prec[Paren_TokenType] = 2;
 
 	// set token type has a table entry flags

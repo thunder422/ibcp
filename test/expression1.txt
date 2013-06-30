@@ -101,3 +101,27 @@ Input: A$ - B$
 Input: -A$
         ^^-- expected numeric expression
 
+Input: else
+       ^^^^-- expected expression
+
+Input: - else
+         ^^^^-- expected numeric expression
+
+Input: - +
+         ^-- expected numeric expression
+
+Input: +
+       ^-- expected expression
+
+Input: a print
+         ^^^^^-- expected operator or end-of-statement
+
+Input: a a
+         ^-- expected operator or end-of-statement
+
+Input: a + else
+           ^^^^-- expected numeric expression
+
+Input: a + +
+           ^-- expected numeric expression
+

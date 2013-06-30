@@ -1583,7 +1583,9 @@ TokenStatus Translator::expectedErrStatus(DataType dataType)
 		ExpStrExpr_TokenStatus,		// String
 		ExpStrExpr_TokenStatus,		// SubStr
 		BUG_InvalidDataType,		// numberof
-		ExpExpr_TokenStatus			// None
+		ExpExpr_TokenStatus,		// None
+		ExpNumExpr_TokenStatus,		// Number
+		ExpExpr_TokenStatus			// Any
 	};
 
 	return tokenStatus[dataType];
@@ -1888,8 +1890,7 @@ TokenStatus Translator::processOperator2(Token *&token)
 {
 	// unary operators don't force other tokens from hold stack
 	while (m_table.precedence(m_holdStack.top().token)
-		>= m_table.precedence(token->code())
-		&& !m_table.isUnaryOperator(token->code()))
+		>= m_table.precedence(token) && !m_table.isUnaryOperator(token))
 	{
 		// pop operator on top of stack and add it to the output
 		Token *topToken = m_holdStack.top().token;
@@ -1918,7 +1919,8 @@ TokenStatus Translator::processOperator2(Token *&token)
 	}
 
 	// check for end of expression
-	if (!token->isOperator() || m_table.flags(token) & EndExpr_Flag)
+	if (!token->isType(Operator_TokenType)
+		|| m_table.flags(token) & EndExpr_Flag)
 	{
 		return Done_TokenStatus;
 	}
@@ -1955,9 +1957,9 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 
 	switch (token->type())
 	{
-	//case Command_TokenType:
-	//case Operator_TokenType:
-		// TODO return expected X expresssion here from dataType
+	case Command_TokenType:
+	case Operator_TokenType:
+		return expectedErrStatus(dataType);
 
 	case Constant_TokenType:
 		// fall thru
