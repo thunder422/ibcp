@@ -38,6 +38,23 @@ Planned Roadmap (updated 2013-04-05):
 	To be defined...
 
 
+Release 0.4.0 (2013-06-30)
+
+	Project developmental release - implementation of the new
+	translator scheme has started with the processing of simple
+	expressions containing simple operands (constants and
+	identifiers with no parentheses), unary and binary operators.
+
+	  - new temporary command line -n and -ne options added
+	  - additional tests added to expression test #1
+	  - temporary strings data type removed
+	  - updated valgrind suppress errors file (was not complete)
+
+	Note: Expression test #1 currently fails due to new expression
+	errors tests that were added.  The new translator works
+	correctly with the test only.
+
+
 Release 0.3.5 (2013-06-15)
 
 	Project developmental release - the program model and translator

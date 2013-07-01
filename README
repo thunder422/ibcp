@@ -31,10 +31,13 @@ Project Status
 Currently, the BASIC language parser is operational.  The parser
 converts text input into BASIC language tokens.
 
-The translator is currently being developed and currently supports the
-translation of BASIC expressions along a few BASIC commands (LET, PRINT,
-and INPUT) into a reverse polish notation format that will be used for
-fast execution of the BASIC program.
+The translator is currently being developed with a new scheme that wil
+make translation of commands simple to implement.  The old translator
+routines have been left in place until the new routines fully support
+the same feature, which include the translation of BASIC expressions
+along a few BASIC commands (LET, PRINT, and INPUT) into a reverse polish
+notation format that will be used for fast execution of the BASIC
+program.
 
 A basic GUI has been implemented including file, edit and help menus
 with basic operation menu items, the tool bar with several file and edit
@@ -105,10 +108,11 @@ from the parser are the resulting tokens.  The output from the
 translator are the resulting reverse polish notation format of the
 tokens.  The program is run interactively with this command:
 
-    ibcp -tp|-te|-tt
+    ibcp -tp|-te|-tt|-ne
 
-The first character represents 'test' mode and the second stands for
-parser, expression and translator.
+The first 't' character represents 'test' mode and the second stands for
+parser, expression and translator.  The 'n' character activates the new
+translator (only simple expressions supported so far).
 
 
 Running In Batch
@@ -117,10 +121,12 @@ The ibcp program can run in batch by taking a text input file and
 process it through the parser, expression translator, or command
 translator.  The program is run in batch with this command:
 
-    ibcp -t <file>
+    ibcp -t|-n <file>
 
 The beginning of the name of the file (parser, expression, or
-translator) determines how the file will be processed.
+translator) determines how the file will be processed.  The 'n' option
+uses the new translator routines (only expression files are currently
+supported).
 
 
 Test Programs
