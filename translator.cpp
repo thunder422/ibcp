@@ -1860,6 +1860,13 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 			status = ExpOpOrEnd_TokenStatus;
 			break;
 		}
+		// check for unary operator (token should be a binary operator)
+		else if (m_table.isUnaryOperator(token))
+		{
+			// (this error needs to be changed appropriately by caller)
+			token->setSubCodeMask(UnUsed_SubCode);
+			return ExpBinOpOrEnd_TokenStatus;
+		}
 
 		// check for and process operator (unary or binary)
 		if ((status = processOperator2(token)) == Done_TokenStatus)

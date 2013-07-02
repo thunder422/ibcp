@@ -48,6 +48,7 @@ a print
 a a
 a + else
 a + +
+a not
 # parser error tests
 ..
 A ..

@@ -125,6 +125,9 @@ Input: a + else
 Input: a + +
            ^-- expected numeric expression
 
+Input: a not
+         ^^^-- expected binary operator or end-of-statement
+
 Input: ..
        ^^-- expected digits or single decimal point in floating point constant
 
