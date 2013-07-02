@@ -115,7 +115,7 @@ add_custom_command(OUTPUT autoenums.h
 	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/enums.awk
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY enums.awk
-	DEPENDS table.cpp token.h
+	DEPENDS table.cpp token.cpp
 )
 
 # custom target
