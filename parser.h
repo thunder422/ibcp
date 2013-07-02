@@ -61,11 +61,7 @@ public:
 		m_pos = 0;
 		m_operandState = false;
 	}
-	Token *token(void);
-	void setOperandState(bool operandState)
-	{
-		m_operandState = operandState;
-	}
+	Token *token(bool operandState = false);
 };
 
 

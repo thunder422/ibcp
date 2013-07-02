@@ -48,3 +48,12 @@ a print
 a a
 a + else
 a + +
+# parser error tests
+..
+A ..
+A + ..
+A + B ..
+%
+A %
+A$ + %
+A + B %

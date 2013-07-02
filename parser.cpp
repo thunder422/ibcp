@@ -32,8 +32,9 @@
 //     - the token must be deallocated when it is no longer needed
 //     - the token may contain an error message if an error was found
 
-Token *Parser::token(void)
+Token *Parser::token(bool operandState)
 {
+	m_operandState = operandState;
 	skipWhitespace();
 	m_token = new Token(m_pos);  // allocate new token to return
 	if (m_input[m_pos].isNull())

@@ -125,3 +125,27 @@ Input: a + else
 Input: a + +
            ^-- expected numeric expression
 
+Input: ..
+       ^^-- expected digits or single decimal point in floating point constant
+
+Input: A ..
+         ^-- expected operator or end-of-statement
+
+Input: A + ..
+           ^^-- expected digits or single decimal point in floating point constant
+
+Input: A + B ..
+             ^-- expected operator or end-of-statement
+
+Input: %
+       ^-- expected expression
+
+Input: A %
+         ^-- expected operator or end-of-statement
+
+Input: A$ + %
+            ^-- expected string expression
+
+Input: A + B %
+             ^-- expected operator or end-of-statement
+

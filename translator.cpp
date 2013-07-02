@@ -103,10 +103,9 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 
 	do {
 		// set parser operand state from translator
-		m_parser->setOperandState(m_state == Operand_State
+		token = parsedToken = m_parser->token(m_state == Operand_State
 			|| m_state == OperandOrEnd_State
 			|| m_state == Initial_State && m_exprMode);
-		token = parsedToken = m_parser->token();
 		if (token->isType(Error_TokenType))
 		{
 			if (m_mode == Command_TokenMode)
@@ -1809,11 +1808,12 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 	{
 		// error token is in the output list - don't delete it
 		m_output->setError(token);
+		m_output->setErrorMessage(status == Parser_TokenStatus
+			? token->string() : token->message(status));
 		if (token->isSubCode(UnUsed_SubCode))
 		{
 			delete token;  // token not in output list, needs to be deleted
 		}
-		m_output->setErrorMessage(token->message(status));
 		cleanUp();
 	}
 	RpnList *output = m_output;
@@ -1824,24 +1824,24 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 
 // function to get an expression from the input line
 //
+//   - takes an already obtained token (gets a token if none)
 //   - takes a data type argument for the desired data type of the expression
 //   - returns Done_TokenStatus upon success
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the expression
-//   - will recursively call itself for processing sub-parts of the expression
 
 TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 {
-	// get a token if no token was passed in
 	TokenStatus status;
-
-	if (token == NULL && (status = getToken(token, true)) != Good_TokenStatus)
-	{
-		return status;
-	}
 
 	forever
 	{
+		if (token == NULL
+			&& (status = getToken(token, dataType)) != Good_TokenStatus)
+		{
+			break;
+		}
+
 		Code unaryCode;
 		if (token->isOperator()
 			&& (unaryCode = m_table.unaryCode(token->code())) != Null_Code)
@@ -1849,30 +1849,34 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 			token->setCode(unaryCode);  // change token to unary operator
 		}
 		// get operand and next token
-		else if ((status = getOperand(token, dataType)) != Good_TokenStatus
-			|| (status = getToken(token)) != Good_TokenStatus)
+		else if ((status = getOperand(token, dataType)) != Good_TokenStatus)
 		{
-			return status;
+			break;
+		}
+		else if ((status = getToken(token)) != Good_TokenStatus)
+		{
+			// if parser error then expected binary operator or end
+			// (this error needs to be changed appropriately by caller)
+			status = ExpOpOrEnd_TokenStatus;
+			break;
 		}
 
 		// check for and process operator (unary or binary)
 		if ((status = processOperator2(token)) == Done_TokenStatus)
 		{
 			// TODO check expression data type (level == 0 only?)
-			return status;
+			break;
 		}
 		else if (status != Good_TokenStatus)
 		{
-			return status;
+			break;
 		}
 
-		// get operator's expected data type and get next token
+		// get operator's expected data type, reset token and loop back
 		dataType = m_table.expectedDataType(token);
-		if ((status = getToken(token, true)) != Good_TokenStatus)
-		{
-			return status;
-		}
+		token = NULL;
 	}
+	return status;
 }
 
 
@@ -1950,7 +1954,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 
 	if (token == NULL)
 	{
-		status = getToken(token, true);  // get a token if none was passed in
+		status = getToken(token, dataType);  // get token if none was passed
 		if (status != Good_TokenStatus)
 		{
 			return status;
@@ -1989,19 +1993,33 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 
 // function to get a token from the parser
 //
+//   - data type argument determines if token to get is an operand
 //   - returns Parser_TokenStatus if the parser returned an error
 
-TokenStatus Translator::getToken(Token *&token, bool operand)
+TokenStatus Translator::getToken(Token *&token, DataType dataType)
 {
-	// set parser operand state from translator
-	m_parser->setOperandState(operand);
-	token = m_parser->token();
+	// if data type is not none, then getting an operand token
+	bool operand = dataType != None_DataType;
+	token = m_parser->token(operand);
 	if (token->isType(Error_TokenType))
 	{
-		// TODO only do this for non-number errors
-		token->setLength(1);  // just point to first character
-		// TODO how to differentiate between parser errors and number errors?
-		return Parser_TokenStatus;
+		token->setSubCodeMask(UnUsed_SubCode);
+
+		if (!operand && token->dataType() == Double_DataType)
+		{
+			// only do this for non-operand number constant errors
+			token->setLength(1);  // just point to first character
+		}
+		if (operand && token->dataType() != Double_DataType)
+		{
+			// non-number constant error, return expected expression error
+			return expectedErrStatus(dataType);
+		}
+		else
+		{
+			// caller needs to convert this error to the appropriate error
+			return Parser_TokenStatus;
+		}
 	}
 	return Good_TokenStatus;
 }

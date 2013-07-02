@@ -157,7 +157,7 @@ private:
 	TokenStatus getExpression(Token *&token, DataType dataType);
 	TokenStatus processOperator2(Token *&token);
 	TokenStatus getOperand(Token *&token, DataType dataType);
-	TokenStatus getToken(Token *&token, bool operand = false);
+	TokenStatus getToken(Token *&token, DataType dataType = None_DataType);
 
 	// Main Processing Functions
 	TokenStatus addToken(Token *&token);
