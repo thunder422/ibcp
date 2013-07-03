@@ -158,6 +158,7 @@ private:
 	TokenStatus processOperator2(Token *&token);
 	TokenStatus getOperand(Token *&token, DataType dataType);
 	TokenStatus getToken(Token *&token, DataType dataType = None_DataType);
+	void checkPendingParen(Token *token, bool popped);
 
 	// Main Processing Functions
 	TokenStatus addToken(Token *&token);

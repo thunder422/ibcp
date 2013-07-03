@@ -626,7 +626,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// CloseParen_Code
 		Operator_TokenType, OneChar_Multiple,
-		")", NULL, Null_Flag, 4, None_DataType, NULL,
+		")", NULL, EndExpr_Flag, 4, None_DataType, NULL,
 		CloseParen_Handler
 	},
 	{	// Comma_Code

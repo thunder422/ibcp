@@ -52,7 +52,6 @@ const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	tr("expected item for assignment"),						// ExpAssignItem
 	tr("expected operator or comma"),						// ExpOpOrComma
 	tr("expected operator, comma or closing parentheses"),	// ExpOpCommaOrParen
-	tr("expected operator or end-of-expression"),			// NoOpenParen
 	tr("expected operator or closing parentheses"),			// ExpOpOrParen
 	tr("expected double expression"),						// ExpDouble
 	tr("expected integer expression"),						// ExpInteger

@@ -309,7 +309,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 
 	if (t.m_countStack.isEmpty())
 	{
-		return NoOpenParen_TokenStatus;
+		return ExpOpOrEnd_TokenStatus;
 	}
 	nOperands = t.m_countStack.pop().nOperands;
 	if (nOperands == 0)

@@ -1369,7 +1369,7 @@ void Translator::deleteOpenParen(Token *token)
 	if (token != NULL && token->hasTableEntry()
 		&& token->isCode(OpenParen_Code))
 	{
-		delete token;  // delete CloseParen token of operand
+		delete token;  // delete OpenParen token of operand
 	}
 }
 
@@ -1790,7 +1790,9 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 			}
 			else
 			{
-				m_doneStack.pop();
+				// pop result and delete any paren tokens in first/last operands
+				deleteOpenParen(m_doneStack.top().first);
+				deleteCloseParen(m_doneStack.pop().last);
 			}
 			if (!m_doneStack.isEmpty())
 			{
@@ -1842,30 +1844,89 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 			break;
 		}
 
-		Code unaryCode;
-		if (token->isOperator()
-			&& (unaryCode = m_table.unaryCode(token->code())) != Null_Code)
+		if (token->isType(Operator_TokenType) && token->isCode(OpenParen_Code))
 		{
-			token->setCode(unaryCode);  // change token to unary operator
+			// push open parentheses onto hold stack to block waiting tokens
+			// during the processing of the expression inside the parentheses
+			m_holdStack.push(token);
+
+			// get an expression and terminating token
+			token = NULL;
+			if ((status = getExpression(token, dataType)) == Done_TokenStatus)
+			{
+				// check terminating token
+				if (token->code() != CloseParen_Code)
+				{
+					token->setSubCodeMask(UnUsed_SubCode);
+					status = ExpOpOrParen_TokenStatus;
+					break;
+				}
+
+				// make sure holding stack contains the open parentheses
+				Token *topToken = m_holdStack.pop().token;
+				if (!topToken->isCode(OpenParen_Code))
+				{
+					// oops, no open parentheses (this should not happen)
+					return BUG_UnexpectedCloseParen;
+				}
+
+				// replace first and last operands of token on done stack
+				deleteOpenParen(m_doneStack.top().first);
+				m_doneStack.top().first = topToken;
+				deleteCloseParen(m_doneStack.top().last);
+				m_doneStack.top().last = token;
+
+				// mark close paren as used for last operand and pending paren
+				// (so it doesn't get deleted until it's not used anymore)
+				token->setSubCodeMask(Last_SubCode + Used_SubCode);
+
+				// set highest precedence if not an operator on done stack top
+				// (no operators in the parentheses)
+				topToken = m_doneStack.top().rpnItem->token();
+				m_lastPrecedence = topToken->isType(Operator_TokenType)
+					? m_table.precedence(topToken) : HighestPrecedence;
+
+				// set pending parentheses token pointer
+				m_pendingParen = token;
+			}
+			token = NULL;  // get another token
 		}
-		// get operand and next token
-		else if ((status = getOperand(token, dataType)) != Good_TokenStatus)
+		else
 		{
-			break;
+			Code unaryCode;
+			if (token->isOperator()
+				&& (unaryCode = m_table.unaryCode(token->code())) != Null_Code)
+			{
+				token->setCode(unaryCode);  // change token to unary operator
+			}
+			// get operand
+			else if ((status = getOperand(token, dataType)) != Good_TokenStatus)
+			{
+				break;
+			}
+			else
+			{
+				token = NULL;  // get another token
+			}
 		}
-		else if ((status = getToken(token)) != Good_TokenStatus)
+		if (token == NULL)
 		{
-			// if parser error then expected binary operator or end
-			// (this error needs to be changed appropriately by caller)
-			status = ExpOpOrEnd_TokenStatus;
-			break;
-		}
-		// check for unary operator (token should be a binary operator)
-		else if (m_table.isUnaryOperator(token))
-		{
-			// (this error needs to be changed appropriately by caller)
-			token->setSubCodeMask(UnUsed_SubCode);
-			return ExpBinOpOrEnd_TokenStatus;
+			// get binary operator or end-of-expression token
+			if ((status = getToken(token)) != Good_TokenStatus)
+			{
+				// if parser error then expected binary operator or end
+				// (this error needs to be changed appropriately by caller)
+				status = ExpOpOrEnd_TokenStatus;
+				break;
+			}
+			// check for unary operator (token should be a binary operator)
+			if (m_table.isUnaryOperator(token))
+			{
+				// (this error needs to be changed appropriately by caller)
+				token->setSubCodeMask(UnUsed_SubCode);
+				status = ExpBinOpOrEnd_TokenStatus;
+				break;
+			}
 		}
 
 		// check for and process operator (unary or binary)
@@ -1908,11 +1969,11 @@ TokenStatus Translator::processOperator2(Token *&token)
 	while (m_table.precedence(m_holdStack.top().token)
 		>= m_table.precedence(token) && !m_table.isUnaryOperator(token))
 	{
-		// pop operator on top of stack and add it to the output
+		// get operator on top of stack and add it to the output
 		Token *topToken = m_holdStack.top().token;
 		// (don't pop token here in case error occurs)
 
-		// TODO doPendingParen(topToken);  ???
+		checkPendingParen(topToken, true);
 
 		// change token operator code or insert conversion codes as needed
 		TokenStatus status = processFinalOperand(topToken,
@@ -1933,6 +1994,8 @@ TokenStatus Translator::processOperator2(Token *&token)
 
 		m_holdStack.drop();
 	}
+
+	checkPendingParen(token, false);
 
 	// check for end of expression
 	if (!token->isType(Operator_TokenType)
@@ -1955,9 +2018,6 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 {
 	// FROM processOperand()
 	TokenStatus status;
-
-	// check for and add dummy token if necessary
-	//--doPendingParen(m_holdStack.top().token);
 
 	if (token == NULL)
 	{
@@ -2029,6 +2089,55 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 		}
 	}
 	return Good_TokenStatus;
+}
+
+
+// function to check if there is a pending parentheses token and if there is,
+// check to see if it should be added to the output as a dummy token so that
+// the unnecessary set of parentheses, but entered by the user, will be
+// recreated
+//
+//   - token argument is token of operator to check against
+//   - popped argument indicates if token will be popped from the hold stack
+
+void Translator::checkPendingParen(Token *token, bool popped)
+{
+	if (m_pendingParen != NULL)  // is a closing parentheses token pending?
+	{
+		// may need to add a dummy token if the precedence of the last
+		// operator added within the last parentheses sub-expression
+		// is higher than or same as (popped tokens only) the operator
+		int precedence = m_table.precedence(token);
+		if (m_lastPrecedence > precedence
+			|| !popped && m_lastPrecedence == precedence)
+		{
+			Token *lastToken = m_doneStack.top().rpnItem->token();
+			if (!lastToken->isSubCode(Paren_SubCode))
+			{
+				// mark last code for unnecessary parentheses
+				lastToken->setSubCodeMask(Paren_SubCode);
+			}
+			else   // already has parentheses sub-code set
+			{
+				// add dummy token
+				m_output->append(new RpnItem(m_pendingParen));
+				// reset pending token and return (don't delete token)
+				m_pendingParen = NULL;
+				return;
+			}
+		}
+		// check if being used as last operand before deleting
+		if (m_pendingParen->isSubCode(Last_SubCode))
+		{
+			// still used as last operand token, just clear used flag
+			m_pendingParen->clearSubCodeMask(Used_SubCode);
+		}
+		else  // don't need pending token
+		{
+			delete m_pendingParen;  // release it's memory
+		}
+		m_pendingParen = NULL;  // reset pending token
+	}
 }
 
 
