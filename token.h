@@ -165,7 +165,7 @@ public:
 	}
 	bool isCode(Code code) const
 	{
-		return code == m_code;
+		return hasTableEntry() && code == m_code;
 	}
 
 	// reference access functions

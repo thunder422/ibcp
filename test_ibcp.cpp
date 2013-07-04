@@ -279,8 +279,7 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 	do {
 		token = parser.token();
 		more = printToken(cout, token, true);
-		if (more && token->isType(Operator_TokenType)
-			&& token->isCode(EOL_Code))
+		if (more && token->isCode(EOL_Code))
 		{
 			more = false;
 		}

@@ -1099,7 +1099,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 
 	if (new_code != Null_Code)  // found a convertible code?
 	{
-		if (!token->isCode(new_code))  // not the main code?
+		if (!token->code() == new_code)  // not the main code?
 		{
 			// change token's code and data type to associated code
 			m_table.setToken(token, new_code);
@@ -1366,8 +1366,7 @@ void Translator::doPendingParen(Token *token)
 
 void Translator::deleteOpenParen(Token *token)
 {
-	if (token != NULL && token->hasTableEntry()
-		&& token->isCode(OpenParen_Code))
+	if (token != NULL && token->isCode(OpenParen_Code))
 	{
 		delete token;  // delete OpenParen token of operand
 	}
@@ -1387,8 +1386,7 @@ void Translator::deleteOpenParen(Token *token)
 
 void Translator::deleteCloseParen(Token *token)
 {
-	if (token != NULL && token->hasTableEntry()
-		&& token->isCode(CloseParen_Code))
+	if (token != NULL && token->isCode(CloseParen_Code))
 	{
 		// check if parentheses token is still being used
 		if (token->isSubCode(Used_SubCode))
@@ -1771,7 +1769,7 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 
 	if (status == Done_TokenStatus)
 	{
-		if (token->hasTableEntry() && token->isCode(EOL_Code))
+		if (token->isCode(EOL_Code))
 		{
 			delete token;  // delete EOL token
 
@@ -1844,7 +1842,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 			break;
 		}
 
-		if (token->isType(Operator_TokenType) && token->isCode(OpenParen_Code))
+		if (token->isCode(OpenParen_Code))
 		{
 			// push open parentheses onto hold stack to block waiting tokens
 			// during the processing of the expression inside the parentheses
@@ -1855,7 +1853,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 			if ((status = getExpression(token, dataType)) == Done_TokenStatus)
 			{
 				// check terminating token
-				if (token->code() != CloseParen_Code)
+				if (!token->isCode(CloseParen_Code))
 				{
 					token->setSubCodeMask(UnUsed_SubCode);
 					status = ExpOpOrParen_TokenStatus;
@@ -1864,7 +1862,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 
 				// make sure holding stack contains the open parentheses
 				Token *topToken = m_holdStack.pop().token;
-				if (!topToken->isCode(OpenParen_Code))
+				if (!topToken->code() == OpenParen_Code)
 				{
 					// oops, no open parentheses (this should not happen)
 					return BUG_UnexpectedCloseParen;

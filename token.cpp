@@ -277,7 +277,7 @@ bool Token::operator==(const Token &other) const
 		break;
 
 	case Operator_TokenType:
-		if (isCode(RemOp_Code))
+		if (m_code == RemOp_Code)
 		{
 			if (m_string != other.m_string)
 			{
@@ -294,7 +294,7 @@ bool Token::operator==(const Token &other) const
 		break;
 
 	case Command_TokenType:
-		if (isCode(Rem_Code))
+		if (m_code == Rem_Code)
 		{
 			if (m_string != other.m_string)
 			{
