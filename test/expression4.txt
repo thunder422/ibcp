@@ -35,3 +35,6 @@ Input: ASC(A$,B,C)
 Input: INT(1.23,A)
                ^-- expected operator or closing parentheses
 
+Input: A+RND*6.0
+Output: A RND 6.0 * + 
+

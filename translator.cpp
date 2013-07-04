@@ -1103,13 +1103,11 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 		{
 			// change token's code and data type to associated code
 			m_table.setToken(token, new_code);
-			token->setDataType(m_table.dataType(token->code()));
 		}
 
 		// is there an actual conversion code to insert?
 		if (cvt_code != Null_Code)
 		{
-			// a conversion code implies a non-string on done stack
 			// pop non-string from done stack
 			deleteOpenParen(m_doneStack.top().first);
 			// check if operand's last token was CloseParen
@@ -1928,14 +1926,9 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 		}
 
 		// check for and process operator (unary or binary)
-		if ((status = processOperator2(token)) == Done_TokenStatus)
+		if ((status = processOperator2(token)) != Good_TokenStatus)
 		{
-			// TODO check expression data type (level == 0 only?)
-			break;
-		}
-		else if (status != Good_TokenStatus)
-		{
-			break;
+			break;  // could be Done_TokenStatus
 		}
 
 		// get operator's expected data type, reset token and loop back
@@ -2017,13 +2010,11 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 	// FROM processOperand()
 	TokenStatus status;
 
-	if (token == NULL)
+	// get token if none was passed
+	if (token == NULL
+		&& (status = getToken(token, dataType)) != Good_TokenStatus)
 	{
-		status = getToken(token, dataType);  // get token if none was passed
-		if (status != Good_TokenStatus)
-		{
-			return status;
-		}
+		return status;
 	}
 
 	// set default data type for token if it has none
@@ -2038,21 +2029,123 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 
 	case Constant_TokenType:
 		// fall thru
+	case IntFuncN_TokenType:
+		// fall thru
 	case NoParen_TokenType:
-		// add token directly output list
-		// and push element pointer on done stack
-		RpnItem *rpnItem = new RpnItem(token);
-		m_output->append(rpnItem);
-		m_doneStack.push(rpnItem);
-		break;
-	//case IntFuncN_TokenType:
-	//case IntFuncP_TokenType:
+		break;  // go add token to output and push to done stack
+
+	case IntFuncP_TokenType:
+		if ((status = getInternalFunction(token)) != Good_TokenStatus)
+		{
+			// drop and delete function token since it was not used
+			Token *topToken = m_holdStack.pop().token;
+			delete topToken;
+		}
+		return status;
+
 	//case DefFuncN_TokenType:
 	//case DefFuncP_TokenType:
 	//case Paren_TokenType:
+	default:
+		token->setSubCodeMask(UnUsed_SubCode);
+		return BUG_NotYetImplemented;
 	}
 
+	// add token directly output list
+	// and push element pointer on done stack
+	RpnItem *rpnItem = new RpnItem(token);
+	m_output->append(rpnItem);
+	m_doneStack.push(rpnItem);
+
 	return Good_TokenStatus;
+}
+
+
+// function to get an internal function
+//
+//   - the token argument contains the internal function token
+
+TokenStatus Translator::getInternalFunction(Token *&token)
+{
+	TokenStatus status;
+
+	// push internal function token onto hold stack to block waiting tokens
+	// during the processing of the expressions of each argument
+	m_holdStack.push(token);
+	Token *topToken = token;
+
+	Code code = token->code();
+	int lastOperand = m_table.nOperands(code) - 1;
+	for (int i = 0; ; i++)
+	{
+		token = NULL;
+		status = getExpression(token, m_table.operandDataType(code, i));
+		if (status != Done_TokenStatus)
+		{
+			return status;
+		}
+
+		// check terminating token
+		if (token->isCode(Comma_Code))
+		{
+			if (i == lastOperand)
+			{
+				if ((m_table.flags(code) & Multiple_Flag) == 0)
+				{
+					// function doesn't have multiple entries
+					status = ExpOpOrParen_TokenStatus;
+					break;
+				}
+				// move to next code; update code and last operand index
+				code = topToken->nextCode();
+				lastOperand = m_table.nOperands(code) - 1;
+			}
+			delete token;  // delete comma token, it's not needed
+			// check argument, change code and insert conversion as needed
+			if ((status = findCode(topToken, i)) != Good_TokenStatus)
+			{
+				token = topToken;  // return token with error
+				return status;
+			}
+		}
+		else if (token->isCode(CloseParen_Code))
+		{
+			if (i < lastOperand)
+			{
+				status = ExpOpOrComma_TokenStatus;
+				break;
+			}
+			status = processFinalOperand(topToken, token, i, 0);
+			if (status != Good_TokenStatus)
+			{
+				delete token;      // delete close paren token
+				token = topToken;  // set to token with error
+				return status;
+			}
+			m_holdStack.drop();
+			return status;
+		}
+		// unexpected token, determine appropriate error
+		else
+		{
+			if (i < lastOperand)
+			{
+				status = ExpOpOrComma_TokenStatus;
+			}
+			else if ((m_table.flags(code) & Multiple_Flag) == 0)
+			{
+				// function doesn't have multiple entries
+				status = ExpOpOrParen_TokenStatus;
+			}
+			else
+			{
+				status = ExpOpCommaOrParen_TokenStatus;
+			}
+			break;
+		}
+	}
+	token->setSubCodeMask(UnUsed_SubCode);
+	return status;
 }
 
 

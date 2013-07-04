@@ -15,3 +15,4 @@ INSTR(A$)
 INSTR(A$,B$,C,D)
 ASC(A$,B,C)
 INT(1.23,A)
+A+RND*6.0
