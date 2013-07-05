@@ -350,7 +350,10 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		// (DefFuncP should not have reference set)
 		if (topToken->isType(Paren_TokenType))
 		{
-			topToken->setReference();
+			if (t.m_mode != Expression_TokenMode)
+			{
+				topToken->setReference();
+			}
 			operand_index = 0;  // not applicable
 		}
 		else if (topToken->isType(DefFuncP_TokenType))

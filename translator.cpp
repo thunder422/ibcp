@@ -458,10 +458,21 @@ TokenStatus Translator::processOperand(Token *&token)
 
 		// token is a variable or a function with no arguments
 		// set reference flag for variable or function
-		if (token->isType(NoParen_TokenType)
-			|| token->isType(DefFuncN_TokenType))
+		if (token->isType(NoParen_TokenType))
 		{
-			token->setReference();
+			if (m_mode != Expression_TokenMode
+				|| !m_holdStack.isEmpty()
+				&& m_holdStack.top().token->isType(Paren_TokenType))
+			{
+				token->setReference();
+			}
+		}
+		else if (token->isType(DefFuncN_TokenType))
+		{
+			if (m_mode != Expression_TokenMode)
+			{
+				token->setReference();
+			}
 		}
 
 		// add token directly output list
@@ -1757,6 +1768,7 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 	m_parser->setInput(input);
 
 	m_exprMode = exprMode;  // save flag
+	m_mode = Null_TokenMode;  // FIXME remove; keep processFinalOperand() happy
 
 	m_output = new RpnList;
 
@@ -2030,6 +2042,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 	case Constant_TokenType:
 		// fall thru
 	case IntFuncN_TokenType:
+	case DefFuncN_TokenType:
 		// fall thru
 	case NoParen_TokenType:
 		break;  // go add token to output and push to done stack
@@ -2043,9 +2056,16 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 		}
 		return status;
 
-	//case DefFuncN_TokenType:
-	//case DefFuncP_TokenType:
-	//case Paren_TokenType:
+	case DefFuncP_TokenType:
+	case Paren_TokenType:
+		if ((status = getParenToken(token)) != Good_TokenStatus)
+		{
+			// drop and delete parentheses token since it was not used
+			Token *topToken = m_holdStack.pop().token;
+			delete topToken;
+		}
+		return status;
+
 	default:
 		token->setSubCodeMask(UnUsed_SubCode);
 		return BUG_NotYetImplemented;
@@ -2061,9 +2081,10 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 }
 
 
-// function to get an internal function
+// function to get and process an internal function's arguments
 //
 //   - the token argument contains the internal function token
+//   - the token argument contains the token when an error is detected
 
 TokenStatus Translator::getInternalFunction(Token *&token)
 {
@@ -2146,6 +2167,66 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 	}
 	token->setSubCodeMask(UnUsed_SubCode);
 	return status;
+}
+
+
+// function to get and process a parentheses token's arguments
+//
+//   - the token argument contains the token with parentheses
+//   - the token argument contains the token when an error is detected
+
+TokenStatus Translator::getParenToken(Token *&token)
+{
+	TokenStatus status;
+
+	// push parentheses token onto hold stack to block waiting tokens
+	// during the processing of the expressions of each operand
+	m_holdStack.push(token);
+	Token *topToken = token;
+
+	for (int nOperands = 1; ; nOperands++)
+	{
+		token = NULL;
+		if ((status = getExpression(token, Any_DataType)) != Done_TokenStatus)
+		{
+			return status;
+		}
+
+		// set reference for appropriate token types
+		if (topToken->isType(Paren_TokenType))
+		{
+			Token *operandToken = m_doneStack.top().rpnItem->token();
+			if (operandToken->isType(NoParen_TokenType)
+				|| operandToken->isType(Paren_TokenType))
+			{
+				operandToken->setReference();
+			}
+		}
+
+		// check terminating token
+		if (token->isCode(Comma_Code))
+		{
+			delete token;  // delete comma token, it's not needed
+		}
+		else if (token->isCode(CloseParen_Code))
+		{
+			status = processFinalOperand(topToken, token, 0, nOperands);
+			if (status != Good_TokenStatus)
+			{
+				delete token;      // delete close paren token
+				token = topToken;  // set to token with error
+				return status;
+			}
+			m_holdStack.drop();
+			return status;
+		}
+		else  // unexpected token
+		{
+			status = ExpOpCommaOrParen_TokenStatus;
+			token->setSubCodeMask(UnUsed_SubCode);
+			return status;
+		}
+	}
 }
 
 
