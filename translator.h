@@ -154,6 +154,7 @@ private:
 	};
 
 	// New Translator Functions
+	TokenStatus getCommand(Token *&token);
 	TokenStatus getExpression(Token *&token, DataType dataType);
 	TokenStatus processOperator2(Token *&token);
 	TokenStatus getOperand(Token *&token, DataType dataType);

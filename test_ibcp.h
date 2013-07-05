@@ -46,6 +46,7 @@ class Tester
 		OptTranslator,
 		OptSizeOf,
 		OptNewExpr,		// FIXME temporary
+		OptNewTrans,	// FIXME temporary
 		OptError = OptSizeOf
 	};
 

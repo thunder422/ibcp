@@ -57,7 +57,9 @@ Tester::Tester(const QStringList &args)
 			|| isOption(args.at(1), "-te", OptExpression, name[OptExpression])
 			|| isOption(args.at(1), "-ne", OptNewExpr, name[OptExpression],
 				true)
-			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator]))
+			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator])
+			|| isOption(args.at(1), "-nt", OptNewTrans, name[OptTranslator],
+				true))
 		{
 			break;
 		}
@@ -119,6 +121,12 @@ Tester::Tester(const QStringList &args)
 					m_option = OptNewExpr;
 					m_testName = name[OptExpression];
 				}
+				else if (baseName.startsWith(name[OptTranslator],
+					Qt::CaseInsensitive))
+				{
+					m_option = OptNewTrans;
+					m_testName = name[OptTranslator];
+				}
 				else  // no matching names?
 				{
 					m_option = OptError;
@@ -152,7 +160,8 @@ bool Tester::isOption(const QString &arg, const QString &exp,
 QStringList Tester::options(void)
 {
 	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
-		<< "-te" << "-tt" << QString("-n <%1>").arg(tr("test_file")) << "-ne";
+		<< "-te" << "-tt" << QString("-n <%1>").arg(tr("test_file")) << "-ne"
+		<< "-nt";
 }
 
 
@@ -252,6 +261,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			translateInput(cout, translator, inputLine, true);
 			break;
 		case OptTranslator:
+		case OptNewTrans:  // FIXME temporary
 			translateInput(cout, translator, inputLine, false);
 			break;
 		}

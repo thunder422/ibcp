@@ -78,6 +78,7 @@ struct TableEntry
 	TokenHandler tokenHandler;		// translator token handler pointer
 	TokenMode tokenMode;			// next token mode for command
 	CommandHandler commandHandler;	// translator command handler pointer
+	TranslateFunction translate;	// pointer to translate function
 };
 
 
@@ -1359,6 +1360,12 @@ TokenHandler Table::tokenHandler(Code code) const
 CommandHandler Table::commandHandler(Code code) const
 {
 	return m_entry[code].commandHandler;
+}
+
+// returns the pointer to the translate function (if any) for code
+TranslateFunction Table::translateFunction(Code code) const
+{
+	return m_entry[code].translate;
 }
 
 

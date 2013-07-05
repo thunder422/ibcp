@@ -78,6 +78,8 @@ struct CmdItem;
 typedef TokenStatus (*TokenHandler)(Translator &t, Token *&token);
 typedef TokenStatus (*CommandHandler)(Translator &t, CmdItem *cmdItem,
 	Token *token);
+typedef TokenStatus (*TranslateFunction)(Translator &t, Token *commandToken,
+	Token *&token);
 
 
 // 2011-02-26: removed index_code[], index(), and code(); changed index to code
@@ -132,6 +134,7 @@ public:
 	bool isUnaryOperator(Code code) const;
 	TokenHandler tokenHandler(Code code) const;
 	CommandHandler commandHandler(Code code) const;
+	TranslateFunction translateFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
 	bool isUnaryOperator(Token *token) const;

@@ -1767,15 +1767,21 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 
 	m_parser->setInput(input);
 
-	m_exprMode = exprMode;  // save flag
 	m_mode = Null_TokenMode;  // FIXME remove; keep processFinalOperand() happy
 
 	m_output = new RpnList;
 
 	m_holdStack.push(m_table.newToken(Null_Code));
 
-	token = NULL;
-	status = getExpression(token, Any_DataType);
+	if (exprMode)
+	{
+		token = NULL;
+		status = getExpression(token, Any_DataType);
+	}
+	else
+	{
+		status = getCommand(token);
+	}
 
 	if (status == Done_TokenStatus)
 	{
@@ -1829,6 +1835,47 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 	RpnList *output = m_output;
 	m_output = NULL;
 	return output;
+}
+
+
+// function to get a command from the input line
+//
+//   - returns Done_TokenStatus upon success
+//   - returns an error status if an error was detected
+//   - returns the token that terminated the command
+
+TokenStatus Translator::getCommand(Token *&token)
+{
+	TokenStatus status;
+	TranslateFunction translate;
+	Token *commandToken;
+
+	if ((status = getToken(token, None_DataType)) != Good_TokenStatus)
+	{
+		return ExpCmd_TokenStatus;
+	}
+	if (token->isType(Command_TokenType))
+	{
+		translate = m_table.translateFunction(token->code());
+		commandToken = token;
+		token = NULL;  // force translate function to get a token
+	}
+	else  // assume an assignment statement
+	{
+		translate = m_table.translateFunction(Let_Code);
+		commandToken = NULL;
+		// pass token onto let translate function
+	}
+	if (translate == NULL)
+	{
+		if (token == NULL)
+		{
+			token = commandToken;
+		}
+		token->setSubCodeMask(UnUsed_SubCode);
+		return BUG_NotYetImplemented;
+	}
+	return (*translate)(*this, commandToken, token);
 }
 
 
