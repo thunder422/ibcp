@@ -38,6 +38,23 @@ Planned Roadmap (updated 2013-04-05):
 	To be defined...
 
 
+Release 0.4.1 (2013-07-05)
+
+	Project developmental release - implementation of the new
+	translator scheme continues with the processing of expressions
+	containing parentheses (open/close parentheses, internal functions,
+	and arrays/function).
+
+	  - corrected a dependency cmake issue with autoenums.h
+	  - corrected an issue with unary operators
+	  - changed how token codes are checked
+	  - corrected minor issues in old translator routines
+
+	Note: Expression test #1 currently fails due to new expression
+	errors tests that were added.  The new translator works
+	correctly with all four expression tests.
+
+
 Release 0.4.0 (2013-06-30)
 
 	Project developmental release - implementation of the new

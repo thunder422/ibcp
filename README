@@ -34,7 +34,7 @@ converts text input into BASIC language tokens.
 The translator is currently being developed with a new scheme that wil
 make translation of commands simple to implement.  The old translator
 routines have been left in place until the new routines fully support
-the same feature, which include the translation of BASIC expressions
+the same features, which include the translation of BASIC expressions
 along a few BASIC commands (LET, PRINT, and INPUT) into a reverse polish
 notation format that will be used for fast execution of the BASIC
 program.
