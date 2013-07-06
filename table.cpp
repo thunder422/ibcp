@@ -28,6 +28,7 @@
 #include "table.h"
 #include "commandhandlers.h"
 #include "tokenhandlers.h"
+#include "basic/commands.h"
 
 
 const int MaxOperands = 3;
@@ -240,7 +241,7 @@ static TableEntry tableEntries[] =
 	{	// Let_Code
 		Command_TokenType, OneWord_Multiple,
 		"LET", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Assignment_TokenMode, Let_CmdHandler
+		Assignment_TokenMode, Let_CmdHandler, letTranslate
 	},
 	{	// Print_Code
 		Command_TokenType, OneWord_Multiple,

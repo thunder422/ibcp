@@ -107,7 +107,10 @@ endif (NOT WIN32)
 
 # add the binary tree to the search path for include files
 # so that ibcp_config.h, autoenums.h, test_names.h can be found
-include_directories("${PROJECT_BINARY_DIR}")
+include_directories(
+	${PROJECT_SOURCE_DIR}
+	${PROJECT_BINARY_DIR}
+)
 
 
 # custom target
@@ -126,21 +129,9 @@ add_custom_command(OUTPUT test_names.h
 	DEPENDS table.cpp token.h ibcp.h
 )
 
-# list the header files
-set(ibcp_HEADERS
-	commandline.h
-	errorlist.h
-	ibcp.h
-	parser.h
-	rpnlist.h
-	table.h
-	test_ibcp.h
-	token.h
-	translator.h
-)
-
 # list the main program sources
 set(ibcp_SOURCES
+	basic/let.cpp
 	commandhandlers.cpp
 	commandline.cpp
 	errorlist.cpp
@@ -185,7 +176,6 @@ qt4_add_resources(ibcp_RCC_SOURCES ${ibcp_RESOURCES})
 add_executable(ibcp
 	autoenums.h
 	test_names.h
-	${ibcp_HEADERS}
 	${ibcp_SOURCES}
 	${ibcp_MOCS}
 	${ibcp_UI_HEADERS}
