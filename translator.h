@@ -98,6 +98,11 @@ class Translator
 	class DoneStack : public QStack<DoneItem>
 	{
 	public:
+		// drop the top item on stask (pop with no return)
+		void drop(void)
+		{
+			resize(size() - 1);
+		}
 		// push new item with rpn item, first and last tokens
 		void push(RpnItem *rpnItem, Token *first = NULL, Token *last = NULL)
 		{
@@ -141,8 +146,49 @@ public:
 	explicit Translator(Table &table);
 	~Translator(void);
 
+	enum Reference {
+		None_Reference,
+		Variable_Reference,
+		sizeof_Reference
+	};
+
 	RpnList *translate(const QString &input, bool exprMode = false);
+	// New Translator Functions
 	RpnList *translate2(const QString &input, bool exprMode);
+	TokenStatus getExpression(Token *&token, DataType dataType);
+	TokenStatus getOperand(Token *&token, DataType dataType,
+		Reference reference = None_Reference);
+	TokenStatus getInternalFunction(Token *&token);
+	TokenStatus getParenToken(Token *&token);
+	TokenStatus getToken(Token *&token, DataType dataType = None_DataType);
+
+	// Main Processing Functions
+	TokenStatus processFinalOperand(Token *&token, Token *token2,
+		int operandIndex, int nOperands = 0);
+
+	// Support Functions
+	TokenStatus findCode(Token *&token, int operandIndex,
+		Token **first = NULL, Token **last = NULL);
+
+	// Determine Error Funtions (By DataType)
+	static DataType equivalentDataType(DataType dataType);
+
+	// Access Functions
+	Table &table(void) const
+	{
+		return m_table;
+	}
+	Token *doneStackPopToken(void)
+	{
+		m_doneStack.pop().rpnItem->token();
+	}
+	Token *outputLastToken(void) const
+	{
+		m_output->last()->token();
+	}
+
+	// Determine Error Funtions (By DataType)
+	static TokenStatus variableErrStatus(DataType dataType);
 
 private:
 	enum Match
@@ -155,12 +201,7 @@ private:
 
 	// New Translator Functions
 	TokenStatus getCommand(Token *&token);
-	TokenStatus getExpression(Token *&token, DataType dataType);
 	TokenStatus processOperator2(Token *&token);
-	TokenStatus getOperand(Token *&token, DataType dataType);
-	TokenStatus getInternalFunction(Token *&token);
-	TokenStatus getParenToken(Token *&token);
-	TokenStatus getToken(Token *&token, DataType dataType = None_DataType);
 	void checkPendingParen(Token *token, bool popped);
 
 	// Main Processing Functions
@@ -170,14 +211,10 @@ private:
     TokenStatus processBinaryOperator(Token *&token);
 	TokenStatus processOperator(Token *&token);
 	TokenStatus processFirstOperand(Token *&token);
-	TokenStatus processFinalOperand(Token *&token, Token *token2,
-		int operandIndex, int nOperands = 0);
 	TokenStatus expressionEnd(void);
 
 	// Support Functions
 	TokenStatus callCommandHandler(Token *&token);
-	TokenStatus findCode(Token *&token, int operandIndex,
-		Token **first = NULL, Token **last = NULL);
 	TokenStatus getExprDataType(DataType &dataType) const;
 	TokenStatus parenStatus(void) const;
 	void doPendingParen(Token *token);
@@ -190,11 +227,9 @@ private:
 	TokenStatus checkAssignListToken(Token *&token);
 	TokenStatus setAssignCommand(Token *&token, Code assign_code);
 
-	// Determin Error Funtions (By DataType)
+	// Determine Error Funtions (By DataType)
 	static TokenStatus expectedErrStatus(DataType dataType);
 	static TokenStatus actualErrStatus(DataType dataType);
-	static TokenStatus variableErrStatus(DataType dataType);
-	static DataType equivalentDataType(DataType dataType);
 
 	// Determine Error Functions (By Current State)
 	TokenStatus operatorError(void) const;

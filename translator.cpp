@@ -1153,6 +1153,10 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	}
 	// report entire expression
 	token = workFirst->setThrough(workLast);
+	if (token->isCode(OpenParen_Code))
+	{
+		token->setSubCodeMask(UnUsed_SubCode);
+	}
 
 	// delete last token if close paren
 	deleteCloseParen(workLast);
@@ -1623,7 +1627,9 @@ TokenStatus Translator::variableErrStatus(DataType dataType)
 		ExpStrItem_TokenStatus,		// String
 		BUG_InvalidDataType,		// SubStr
 		BUG_InvalidDataType,		// numberof
-		ExpAssignItem_TokenStatus	// None
+		ExpAssignItem_TokenStatus,	// None
+		BUG_InvalidDataType,		// Number
+		ExpAssignItem_TokenStatus	// Any
 	};
 
 	return tokenStatus[dataType];
@@ -1777,6 +1783,21 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 	{
 		token = NULL;
 		status = getExpression(token, Any_DataType);
+
+		if (status == Done_TokenStatus)
+		{
+			// pop final result off of done stack
+			if (m_doneStack.isEmpty())
+			{
+				status = BUG_DoneStackEmpty;
+			}
+			else
+			{
+				// pop result and delete any paren tokens in first/last operands
+				deleteOpenParen(m_doneStack.top().first);
+				deleteCloseParen(m_doneStack.pop().last);
+			}
+		}
 	}
 	else
 	{
@@ -1797,17 +1818,6 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 				status = BUG_HoldStackNotEmpty;
 			}
 
-			// pop final result off of done stack
-			if (m_doneStack.isEmpty())
-			{
-				status = BUG_DoneStackEmpty;
-			}
-			else
-			{
-				// pop result and delete any paren tokens in first/last operands
-				deleteOpenParen(m_doneStack.top().first);
-				deleteCloseParen(m_doneStack.pop().last);
-			}
 			if (!m_doneStack.isEmpty())
 			{
 				status = BUG_DoneStackNotEmpty;
@@ -2064,7 +2074,8 @@ TokenStatus Translator::processOperator2(Token *&token)
 //   - the data type argument is used for reporting the correct error when
 //     the token is not a valid operand token
 
-TokenStatus Translator::getOperand(Token *&token, DataType dataType)
+TokenStatus Translator::getOperand(Token *&token, DataType dataType,
+		Reference reference)
 {
 	// FROM processOperand()
 	TokenStatus status;
@@ -2073,7 +2084,8 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 	if (token == NULL
 		&& (status = getToken(token, dataType)) != Good_TokenStatus)
 	{
-		return status;
+		return reference == None_Reference
+			? status : variableErrStatus(dataType);
 	}
 
 	// set default data type for token if it has none
@@ -2084,14 +2096,24 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 	case Command_TokenType:
 	case Operator_TokenType:
 		token->setSubCodeMask(UnUsed_SubCode);
-		return expectedErrStatus(dataType);
+		return reference == None_Reference
+			? expectedErrStatus(dataType) : dataType == Any_DataType
+			? ExpCmd_TokenStatus : variableErrStatus(dataType);
 
 	case Constant_TokenType:
 		// fall thru
 	case IntFuncN_TokenType:
+		if (reference != None_Reference)
+		{
+			return variableErrStatus(dataType);
+		}
 	case DefFuncN_TokenType:
 		// fall thru
 	case NoParen_TokenType:
+		if (reference != None_Reference)
+		{
+			token->setReference();
+		}
 		break;  // go add token to output and push to done stack
 
 	case IntFuncP_TokenType:
@@ -2104,12 +2126,20 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType)
 		return status;
 
 	case DefFuncP_TokenType:
+		if (reference != None_Reference)
+		{
+			return variableErrStatus(dataType);
+		}
 	case Paren_TokenType:
 		if ((status = getParenToken(token)) != Good_TokenStatus)
 		{
 			// drop and delete parentheses token since it was not used
 			Token *topToken = m_holdStack.pop().token;
 			delete topToken;
+		}
+		if (reference != None_Reference)
+		{
+			m_doneStack.top().rpnItem->token()->setReference();
 		}
 		return status;
 
@@ -2243,8 +2273,9 @@ TokenStatus Translator::getParenToken(Token *&token)
 		if (topToken->isType(Paren_TokenType))
 		{
 			Token *operandToken = m_doneStack.top().rpnItem->token();
-			if (operandToken->isType(NoParen_TokenType)
+			if ((operandToken->isType(NoParen_TokenType)
 				|| operandToken->isType(Paren_TokenType))
+				&& !operandToken->isSubCode(Paren_SubCode))
 			{
 				operandToken->setReference();
 			}

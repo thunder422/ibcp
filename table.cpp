@@ -36,7 +36,7 @@ const int MaxOperands = 3;
 	// (arguments) for any operator or internal function (there are currently
 	// no internal function with more than 3 arguments)
 
-const int MaxAssocCodes = 3;
+const int MaxAssocCodes = 4;
 	// this value contains the maximum number of associated codes,
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
@@ -153,11 +153,13 @@ static Code Add_AssocCode[]				= {
 };
 static Code AddI1_AssocCode[]			= {AddInt_Code};
 static Code Assign_AssocCode[]			= {
-	AssignInt_Code, AssignStr_Code, AssignSubStr_Code
+	AssignInt_Code, AssignStr_Code, AssignSubStr_Code, AssignList_Code
 };
 static Code AssignList_AssocCode[]		= {
 	AssignListInt_Code, AssignListStr_Code, AssignListMix_Code
 };
+static Code AssignInt_AssocCode[]		= {AssignListInt_Code};
+static Code AssignStr_AssocCode[]		= {AssignListStr_Code};
 static Code Div_AssocCode[]				= {DivI1_Code, DivI2_Code};
 static Code DivI1_AssocCode[]			= {DivInt_Code};
 static Code Eq_AssocCode[]				= {
@@ -675,13 +677,14 @@ static TableEntry tableEntries[] =
 	},
 	{	// AssignInt_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "Assign%", Reference_Flag, 4, Integer_DataType, &IntInt_ExprInfo,
+		"=", "Assign%", Reference_Flag, 4, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AssignInt)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr)),
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignSubStr_Code

@@ -26,6 +26,7 @@
 #define TOKEN_H
 
 #include <QCoreApplication>
+#include <QStack>
 #include <QString>
 
 #include "ibcp.h"
@@ -287,6 +288,21 @@ public:
 	static const QString message(TokenStatus status)
 	{
 		return s_messageArray[status];
+	}
+};
+
+
+// stack to hold tokens
+class TokenStack : public QStack<Token *>
+{
+public:
+	~TokenStack(void)
+	{
+		// delete any tokens left in stack when stack goes out of scope
+		while (!isEmpty())
+		{
+			delete pop();
+		}
 	}
 };
 

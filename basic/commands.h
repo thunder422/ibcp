@@ -31,7 +31,8 @@ class Translator;
 class Token;
 
 
-TokenStatus letTranslate(Translator &t, Token *commandToken, Token *&token);
+TokenStatus letTranslate(Translator &translator, Token *commandToken,
+	Token *&token);
 
 
 #endif // COMMANDS_H
