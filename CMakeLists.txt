@@ -103,6 +103,11 @@ if (NOT WIN32)
 		"${PROJECT_SOURCE_DIR}/memtest.in"
 		"${PROJECT_BINARY_DIR}/memtest" @ONLY
 	)
+	# TEMPORARY
+	configure_file(
+		"${PROJECT_SOURCE_DIR}/memtestn.in"
+		"${PROJECT_BINARY_DIR}/memtestn" @ONLY
+	)
 endif (NOT WIN32)
 
 # add the binary tree to the search path for include files
