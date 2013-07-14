@@ -184,7 +184,7 @@ public:
 	}
 	Token *outputLastToken(void) const
 	{
-		m_output->last()->token();
+		return m_output->last()->token();
 	}
 
 	// Determine Error Funtions (By DataType)
