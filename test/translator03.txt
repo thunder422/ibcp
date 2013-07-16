@@ -86,3 +86,9 @@ Input: A$,B$,C$ = 1
 Input: Z = A$ + B * C
                 ^^^^^-- expected string expression
 
+Input: A = TAB(4)
+           ^^^^^^-- expected numeric expression
+
+Input: A = B + SPC(4)
+               ^^^^^^-- expected numeric expression
+

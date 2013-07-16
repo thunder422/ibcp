@@ -39,7 +39,7 @@ enum {
 
 
 // array of conversion codes [have data type] [need data type]
-static Code cvtCodeHaveNeed[numberof_DataType][numberof_DataType] = {
+static Code cvtCodeHaveNeed[sizeof_DataType][numberof_DataType] = {
 	{	// have Double,    need:
 		Null_Code,		// Double
 		CvtInt_Code,	// Integer
@@ -58,11 +58,35 @@ static Code cvtCodeHaveNeed[numberof_DataType][numberof_DataType] = {
 		Null_Code,		// String
 		Null_Code		// SubStr
 	},
-	{	// have SubStr,    need:
+	{	// have SubStr,    need:  (FIXME this data will be removed)
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Null_Code,		// String
 		Null_Code		// SubStr
+	},
+	{	// have numberof,  need:  (will not have any of this data type)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code	// SubStr
+	},
+	{	// have None,      need:  (print functions have this data type)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code	// SubStr
+	},
+	{	// have Number,    need:  (will not have any of this data type)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code	// SubStr
+	},
+	{	// have Any,       need:  (will not have any of this data type)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code	// SubStr
 	}
 };
 
@@ -809,7 +833,9 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 
 		// process print-only internal functions
 		// (check for function with no return value)
-		if (token->isDataType(None_DataType))
+		// FIXME hack: check if command stack empty (for new translator)
+		// FIXME this section needs to be removed
+		if (token->isDataType(None_DataType) && !m_cmdStack.isEmpty())
 		{
 			if (m_table.flags(token->code()) & Print_Flag)
 			{

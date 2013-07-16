@@ -33,3 +33,5 @@ A%,B$,C% = 1
 A$,B$,C% = 1
 A$,B$,C$ = 1
 Z = A$ + B * C
+A = TAB(4)
+A = B + SPC(4)
