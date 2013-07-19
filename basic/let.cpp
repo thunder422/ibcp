@@ -32,6 +32,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	Token *&token)
 {
 	TokenStatus status;
+	int column;
 	bool hidden;
 	DataType dataType;
 	bool done;
@@ -40,10 +41,12 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 
 	if (commandToken == NULL)
 	{
+		column = token->column();
 		hidden = true;
 	}
 	else  // delete unneeded command token and get another token
 	{
+		column = commandToken->column();
 		delete commandToken;
 		hidden = false;
 	}
@@ -53,7 +56,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		if ((status = translator.getOperand(token, dataType,
 			Translator::All_Reference)) != Good_TokenStatus)
 		{
-			if (token->column() > 0)
+			if (token->column() > column)
 			{
 				return status;
 			}
