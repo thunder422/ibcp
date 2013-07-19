@@ -38,7 +38,7 @@ enum TableFlag
 	// table entry flags (each must have unique bit set)
 	Multiple_Flag		= 0x00000001,  // function has multiple forms
 	Reference_Flag		= 0x00000002,  // code requires a reference
-	// note: value 0x00000004 is available
+	SubStr_Flag			= 0x00000004,  // code supports sub-string assignments
 	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
 	Print_Flag			= 0x00000010,  // print-only function
 	EndExpr_Flag		= 0x00000040,  // end expression
@@ -125,7 +125,7 @@ public:
 	int nOperands(Code code) const;
 	DataType operandDataType(Code code, int operand) const;
 	int nAssocCodes(Code code) const;
-	Code assocCode(Code code, int index) const;
+	Code assocCode(Code code, int index = 0) const;
 	int assoc2Index(Code code) const;
 	Code assoc2Code(Code code, int index = 0) const;
 	DataType expectedDataType(Code code) const;

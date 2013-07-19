@@ -1,33 +1,33 @@
 
 Input: LEFT$(A$,1) = B$
-Output: A$<ref> 1 B$ AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$ AssignSub$ 
 
 Input: LEFT$(A$,1) = B$ + C$
-Output: A$<ref> 1 B$ C$ +$ AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$ AssignSub$ 
 
 Input: MID$(A$,2) = B$
-Output: A$<ref> 2 B$ AssignMid2 
+Output: A$<ref> 2 MID2$(<ref> B$ AssignSub$ 
 
 Input: MID$(A$,2) = B$ + C$
-Output: A$<ref> 2 B$ C$ +$ AssignMid2 
+Output: A$<ref> 2 MID2$(<ref> B$ C$ +$ AssignSub$ 
 
 Input: MID$(A$,2,3) = B$
-Output: A$<ref> 2 3 B$ AssignMid3 
+Output: A$<ref> 2 3 MID3$(<ref> B$ AssignSub$ 
 
 Input: MID$(A$,2,3) = B$ + C$
-Output: A$<ref> 2 3 B$ C$ +$ AssignMid3 
+Output: A$<ref> 2 3 MID3$(<ref> B$ C$ +$ AssignSub$ 
 
 Input: RIGHT$(A$,2) = B$
-Output: A$<ref> 2 B$ AssignRight 
+Output: A$<ref> 2 RIGHT$(<ref> B$ AssignSub$ 
 
 Input: RIGHT$(A$,2) = B$ + C$
-Output: A$<ref> 2 B$ C$ +$ AssignRight 
+Output: A$<ref> 2 RIGHT$(<ref> B$ C$ +$ AssignSub$ 
 
 Input: LEFT$(A$,1) = RIGHT$(B$,1)
-Output: A$<ref> 1 B$ 1 RIGHT$( AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$ 1 RIGHT$( AssignSub$ 
 
 Input: LEFT$(A$,1) = RIGHT$(B$+C$,1)
-Output: A$<ref> 1 B$ C$ +$ 1 RIGHT$( AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$ 1 RIGHT$( AssignSub$ 
 
 Input: RIGHT$(A$,2) = B
                       ^-- expected string expression
@@ -51,31 +51,31 @@ Input: RIGHT$(LEFT$(A$+B$,1),2) = C$
               ^^^^^^-- expected string variable
 
 Input: LEFT$(A$,1),RIGHT$(B$,1) = C$
-Output: A$<ref> 1 B$<ref> 1 C$ AssignKeepRight AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$<ref> 1 RIGHT$(<ref> C$ AssignListMix$ 
 
 Input: LEFT$(A$,1),MID$(B$,2,1),RIGHT$(C$,1) = D$
-Output: A$<ref> 1 B$<ref> 2 1 C$<ref> 1 D$ AssignKeepRight AssignKeepMid3 AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$<ref> 2 1 MID3$(<ref> C$<ref> 1 RIGHT$(<ref> D$ AssignListMix$ 
 
 Input: LEFT$(A$,1),B$ = C$
-Output: A$<ref> 1 B$<ref> C$ AssignKeep$ AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$<ref> C$ AssignListMix$ 
 
 Input: LEFT$(A$,1),B$,C$ = D$
-Output: A$<ref> 1 B$<ref> C$<ref> D$ AssignKeep$ AssignKeep$ AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$<ref> C$<ref> D$ AssignListMix$ 
 
 Input: A$,LEFT$(B$,1) = C$
-Output: A$<ref> B$<ref> 1 C$ AssignKeepLeft Assign$ 
+Output: A$<ref> B$<ref> 1 LEFT$(<ref> C$ AssignListMix$ 
 
 Input: A$,LEFT$(B$,1),C$ = D$
-Output: A$<ref> B$<ref> 1 C$<ref> D$ AssignKeep$ AssignKeepLeft Assign$ 
+Output: A$<ref> B$<ref> 1 LEFT$(<ref> C$<ref> D$ AssignListMix$ 
 
 Input: A$,B$,C$ = D$
 Output: A$<ref> B$<ref> C$<ref> D$ AssignList$ 
 
 Input: A$,B$,LEFT$(C$,1) = D$
-Output: A$<ref> B$<ref> C$<ref> 1 D$ AssignKeepLeft AssignKeep$ Assign$ 
+Output: A$<ref> B$<ref> C$<ref> 1 LEFT$(<ref> D$ AssignListMix$ 
 
 Input: LEFT$(A$,1),B$,RIGHT$(C$,1) = D$
-Output: A$<ref> 1 B$<ref> C$<ref> 1 D$ AssignKeepRight AssignKeep$ AssignLeft 
+Output: A$<ref> 1 LEFT$(<ref> B$<ref> C$<ref> 1 RIGHT$(<ref> D$ AssignListMix$ 
 
 Input: A(int(B))=C
 Output: B INT( A(<ref>[INT(] C Assign 

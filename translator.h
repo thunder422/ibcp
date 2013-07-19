@@ -127,6 +127,7 @@ class Translator
 		OperandOrEnd_State,			// expecting operand or end (2010-06-10)
 		EndExpr_State,				// expecting end of expression (2011-03-05)
         EndStmt_State,				// expecting end of statement (2011-03-19)
+		UnSet_State,				// FIXME used to indicate new translator
 		sizeof_State
 	} m_state;						// current state of translator
 
@@ -149,6 +150,7 @@ public:
 	enum Reference {
 		None_Reference,
 		Variable_Reference,
+		All_Reference,
 		sizeof_Reference
 	};
 
@@ -178,13 +180,18 @@ public:
 	{
 		return m_table;
 	}
-	Token *doneStackPopToken(void)
+	Token *doneStackPopToken(void);
+	Token *doneStackTopToken(void) const
 	{
-		m_doneStack.pop().rpnItem->token();
+		return m_doneStack.top().rpnItem->token();
 	}
 	Token *outputLastToken(void) const
 	{
 		return m_output->last()->token();
+	}
+	void outputAppend(Token *token)
+	{
+		m_output->append(new RpnItem(token));
 	}
 
 	// Determine Error Funtions (By DataType)

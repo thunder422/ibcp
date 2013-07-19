@@ -155,11 +155,17 @@ static Code AddI1_AssocCode[]			= {AddInt_Code};
 static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignSubStr_Code, AssignList_Code
 };
+static Code AssignLeft_AssocCode[]		= {AssignKeepLeft_Code};
 static Code AssignList_AssocCode[]		= {
 	AssignListInt_Code, AssignListStr_Code, AssignListMix_Code
 };
 static Code AssignInt_AssocCode[]		= {AssignListInt_Code};
-static Code AssignStr_AssocCode[]		= {AssignListStr_Code};
+static Code AssignMid2_AssocCode[]		= {AssignKeepMid2_Code};
+static Code AssignMid3_AssocCode[]		= {AssignKeepMid3_Code};
+static Code AssignRight_AssocCode[]		= {AssignKeepRight_Code};
+static Code AssignStr_AssocCode[]		= {
+	AssignKeepStr_Code, AssignListStr_Code
+};
 static Code Div_AssocCode[]				= {DivI1_Code, DivI2_Code};
 static Code DivI1_AssocCode[]			= {DivInt_Code};
 static Code Eq_AssocCode[]				= {
@@ -179,6 +185,7 @@ static Code InputAssign_AssocCode[]		= {
 };
 static Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
 static Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
+static Code Left_AssocCode[]			= {AssignLeft_Code};
 static Code Lt_AssocCode[]				= {
 	LtI1_Code, LtStr_Code, LtI2_Code
 };
@@ -187,6 +194,8 @@ static Code LtEq_AssocCode[]			= {
 	LtEqI1_Code, LtEqStr_Code, LtEqI2_Code
 };
 static Code LtEqI1_AssocCode[]			= {LtEqInt_Code};
+static Code Mid2_AssocCode[]			= {AssignMid2_Code};
+static Code Mid3_AssocCode[]			= {AssignMid3_Code};
 static Code Mod_AssocCode[]				= {ModI1_Code, ModI2_Code};
 static Code ModI1_AssocCode[]			= {ModInt_Code};
 static Code Mul_AssocCode[]				= {MulI1_Code, MulI2_Code};
@@ -201,6 +210,7 @@ static Code PowerI1_AssocCode[]			= {PowerInt_Code};
 static Code Print_AssocCode[]			= {
 	PrintInt_Code, PrintStr_Code
 };
+static Code Right_AssocCode[]			= {AssignRight_Code};
 static Code RndArgs_AssocCode[]			= {RndArgInt_Code};
 static Code Sgn_AssocCode[]				= {SgnInt_Code};
 static Code Str_AssocCode[]				= {StrInt_Code};
@@ -497,7 +507,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// Left_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"LEFT$(", NULL, Null_Flag, 2, SubStr_DataType, &StrInt_ExprInfo
+		"LEFT$(", NULL, SubStr_Flag, 2, SubStr_DataType,
+		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Left, -1))
 	},
 	{	// Len_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -506,11 +517,13 @@ static TableEntry tableEntries[] =
 	},
 	{	// Mid2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID2$(", Multiple_Flag, 2, SubStr_DataType, &StrInt_ExprInfo
+		"MID$(", "MID2$(", Multiple_Flag | SubStr_Flag, 2, SubStr_DataType,
+		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Mid2, -1))
 	},
 	{	// Mid3_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID3$(", Null_Flag, 2, SubStr_DataType, &StrIntInt_ExprInfo
+		"MID$(", "MID3$(", SubStr_Flag, 2, SubStr_DataType,
+		new ExprInfo(Null_Code, Operands(StrIntInt), AssocCode2(Mid3, -1))
 	},
 	{	// Repeat_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -519,7 +532,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// Right_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"RIGHT$(", NULL, Null_Flag, 2, SubStr_DataType, &StrInt_ExprInfo
+		"RIGHT$(", NULL, SubStr_Flag, 2, SubStr_DataType,
+		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Right, -1))
 	},
 	{	// Space_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -684,7 +698,7 @@ static TableEntry tableEntries[] =
 	{	// AssignStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignStr)),
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignStr, 1)),
 		NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignSubStr_Code
@@ -692,6 +706,26 @@ static TableEntry tableEntries[] =
 		"=", "AssignSub$", Reference_Flag, 4, String_DataType,
 		new ExprInfo(Null_Code, Operands(SubStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
+	},
+	{	// AssignLeft_Code
+		Operator_TokenType, OneWord_Multiple,
+		"LEFT$(", "AssignLeft", Reference_Flag, 4, String_DataType,
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignLeft))
+	},
+	{	// AssignMid2_Code
+		Operator_TokenType, OneWord_Multiple,
+		"MID$(", "AssignMid2", Reference_Flag, 4, String_DataType,
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignMid2))
+	},
+	{	// AssignMid3_Code
+		Operator_TokenType, OneWord_Multiple,
+		"MID$(", "AssignMid3", Reference_Flag, 4, String_DataType,
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignMid3))
+	},
+	{	// AssignRight_Code
+		Operator_TokenType, OneWord_Multiple,
+		"MID$(", "AssignRight", Reference_Flag, 4, String_DataType,
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignRight))
 	},
 	{	// AssignList_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -715,6 +749,30 @@ static TableEntry tableEntries[] =
 		"=", "AssignListMix$", Reference_Flag, 4, String_DataType,
 		new ExprInfo(Null_Code, Operands(SubStr)),
 		NULL, Null_TokenMode, Assign_CmdHandler
+	},
+	{	// AssignKeepStr_Code
+		Operator_TokenType, OneWord_Multiple,
+		"=", "AssignKeep$", Reference_Flag, 4, String_DataType, &StrStr_ExprInfo
+	},
+	{	// AssignKeepLeft_Code
+		Operator_TokenType, OneWord_Multiple,
+		"LEFT$(", "AssignKeepLeft", Reference_Flag, 4, String_DataType,
+		&StrStr_ExprInfo
+	},
+	{	// AssignKeepMid2_Code
+		Operator_TokenType, OneWord_Multiple,
+		"MID$(", "AssignKeepMid2", Reference_Flag, 4, String_DataType,
+		&StrStr_ExprInfo
+	},
+	{	// AssignKeepMid3_Code
+		Operator_TokenType, OneWord_Multiple,
+		"MID$(", "AssignKeepMid3", Reference_Flag, 4, String_DataType,
+		&StrStr_ExprInfo
+	},
+	{	// AssignKeepRight_Code
+		Operator_TokenType, OneWord_Multiple,
+		"RIGHT$(", "AssignKeepRight", Reference_Flag, 4, String_DataType,
+		&StrStr_ExprInfo
 	},
 	{	// EOL_Code
 		Operator_TokenType, OneWord_Multiple,

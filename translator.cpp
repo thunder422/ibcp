@@ -751,7 +751,11 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 	m_holdStack.push(token, first);
 
 	// expecting another operand next
-	m_state = Translator::Operand_State;
+	// FIXME removed this for new translator
+	if (m_state != UnSet_State)
+	{
+		m_state = Translator::Operand_State;
+	}
 
 	return Good_TokenStatus;
 }
@@ -783,6 +787,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 	int operandIndex, int nOperands)
 {
 	bool donePush = true;	// for print-only functions
+	bool doneAppend = true;	// for sub-string assignments
 	Token *first;			// first operand token
 	Token *last;			// last operand token
 
@@ -829,13 +834,17 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 				// change non-reference sub-string function data type to string
 				token->setDataType(String_DataType);
 			}
+			// FIXME remove check for state for new transator
+			if (token->reference() && m_state == UnSet_State)
+			{
+				doneAppend = false;  // don't append sub-string assignment
+			}
 		}
 
 		// process print-only internal functions
 		// (check for function with no return value)
-		// FIXME hack: check if command stack empty (for new translator)
-		// FIXME this section needs to be removed
-		if (token->isDataType(None_DataType) && !m_cmdStack.isEmpty())
+		// FIXME remove this section for new translator
+		if (token->isDataType(None_DataType) && m_state != UnSet_State)
 		{
 			if (m_table.flags(token->code()) & Print_Flag)
 			{
@@ -893,7 +902,11 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 
 	// add token to output list and push element pointer on done stack
 	RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
-	m_output->append(rpnItem);
+	// check if item should be appended to output (sub-string assignments don't)
+	if (doneAppend)
+	{
+		m_output->append(rpnItem);
+	}
 	// check if output item is to be pushed on done stack
 	if (donePush)
 	{
@@ -1102,35 +1115,39 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	Code new_code = cvt_code == Invalid_Code ? Null_Code : token->code();
 
 	// see if any associated code's data types match
-	int start = operandIndex != 1 ? 0 : m_table.assoc2Index(token->code());
-	int end = m_table.nAssocCodes(token->code());
-	if (operandIndex == 0 && m_table.assoc2Index(token->code()) != 0)
+	int assoc2Index = m_table.assoc2Index(token->code());
+	if (assoc2Index >= 0)  // if second index -1, then skip associated codes
 	{
-		// for first operand, end at begin of second group of associated codes
-		end = m_table.assoc2Index(token->code());
-	}
-	for (int i = start; i < end; i++)
-	{
-		Code assoc_code = m_table.assocCode(token->code(), i);
-		DataType operandDatatype2 = m_table.operandDataType(assoc_code,
-			operandIndex);
-		if (dataType == operandDatatype2)  // exact match?
+		int start = operandIndex != 1 ? 0 : assoc2Index;
+		int end = m_table.nAssocCodes(token->code());
+		if (operandIndex == 0 && assoc2Index != 0)
 		{
-			// change token's code and data type to associated code
-			m_table.setToken(token, assoc_code);
-
-			// pop non-string from done stack
-			deleteOpenParen(m_doneStack.top().first);
-			// check if operand's last token was CloseParen
-			deleteCloseParen(m_doneStack.pop().last);
-
-			return Good_TokenStatus;
+			// for first operand, end at begin of second associated codes group
+			end = assoc2Index;
 		}
-		Code cvt_code2 = cvtCodeHaveNeed[dataType][operandDatatype2];
-		if (cvt_code2 != Invalid_Code && new_code == Null_Code)
+		for (int i = start; i < end; i++)
 		{
-			new_code = assoc_code;
-			cvt_code = cvt_code2;
+			Code assoc_code = m_table.assocCode(token->code(), i);
+			DataType operandDatatype2 = m_table.operandDataType(assoc_code,
+				operandIndex);
+			if (dataType == operandDatatype2)  // exact match?
+			{
+				// change token's code and data type to associated code
+				m_table.setToken(token, assoc_code);
+
+				// pop non-string from done stack
+				deleteOpenParen(m_doneStack.top().first);
+				// check if operand's last token was CloseParen
+				deleteCloseParen(m_doneStack.pop().last);
+
+				return Good_TokenStatus;
+			}
+			Code cvt_code2 = cvtCodeHaveNeed[dataType][operandDatatype2];
+			if (cvt_code2 != Invalid_Code && new_code == Null_Code)
+			{
+				new_code = assoc_code;
+				cvt_code = cvt_code2;
+			}
 		}
 	}
 
@@ -1800,6 +1817,7 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 	m_parser->setInput(input);
 
 	m_mode = Null_TokenMode;  // FIXME remove; keep processFinalOperand() happy
+	m_state = UnSet_State;   // FIXME remove; indicate new translator
 
 	m_output = new RpnList;
 
@@ -2123,14 +2141,14 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	case Operator_TokenType:
 		token->setSubCodeMask(UnUsed_SubCode);
 		return reference == None_Reference
-			? expectedErrStatus(dataType) : dataType == Any_DataType
-			? ExpCmd_TokenStatus : variableErrStatus(dataType);
+			? expectedErrStatus(dataType) : variableErrStatus(dataType);
 
 	case Constant_TokenType:
 		// fall thru
 	case IntFuncN_TokenType:
 		if (reference != None_Reference)
 		{
+			token->setSubCodeMask(UnUsed_SubCode);
 			return variableErrStatus(dataType);
 		}
 	case DefFuncN_TokenType:
@@ -2143,6 +2161,19 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		break;  // go add token to output and push to done stack
 
 	case IntFuncP_TokenType:
+		if (reference != None_Reference)
+		{
+			if (reference == All_Reference
+				&& m_table.flags(token) & SubStr_Flag)
+			{
+				token->setReference();
+			}
+			else
+			{
+				token->setSubCodeMask(UnUsed_SubCode);
+				return ExpStrVar_TokenStatus;
+			}
+		}
 		if ((status = getInternalFunction(token)) != Good_TokenStatus)
 		{
 			// drop and delete function token since it was not used
@@ -2154,6 +2185,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	case DefFuncP_TokenType:
 		if (reference != None_Reference)
 		{
+			token->setSubCodeMask(UnUsed_SubCode);
 			return variableErrStatus(dataType);
 		}
 	case Paren_TokenType:
@@ -2203,7 +2235,26 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 	for (int i = 0; ; i++)
 	{
 		token = NULL;
-		status = getExpression(token, m_table.operandDataType(code, i));
+		if (i == 0 && topToken->reference())
+		{
+			// sub-string assignment, look for reference operand
+			status = getOperand(token, String_DataType, Variable_Reference);
+			if (status == Good_TokenStatus)
+			{
+				if ((status = getToken(token)) == Good_TokenStatus)
+				{
+					status = Done_TokenStatus;
+				}
+				else
+				{
+					status = ExpComma_TokenStatus;
+				}
+			}
+		}
+		else
+		{
+			status = getExpression(token, m_table.operandDataType(code, i));
+		}
 		if (status != Done_TokenStatus)
 		{
 			return status;
@@ -2217,6 +2268,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 				if ((m_table.flags(code) & Multiple_Flag) == 0)
 				{
 					// function doesn't have multiple entries
+					token->setSubCodeMask(UnUsed_SubCode);
 					status = ExpOpOrParen_TokenStatus;
 					break;
 				}
@@ -2236,6 +2288,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		{
 			if (i < lastOperand)
 			{
+				token->setSubCodeMask(UnUsed_SubCode);
 				status = ExpOpOrComma_TokenStatus;
 				break;
 			}
@@ -2252,7 +2305,12 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		// unexpected token, determine appropriate error
 		else
 		{
-			if (i < lastOperand)
+			token->setSubCodeMask(UnUsed_SubCode);
+			if (i == 0 && topToken->reference())
+			{
+				status = ExpComma_TokenStatus;
+			}
+			else if (i < lastOperand)
 			{
 				status = ExpOpOrComma_TokenStatus;
 			}
@@ -2414,6 +2472,18 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		}
 		m_pendingParen = NULL;  // reset pending token
 	}
+}
+
+
+// function to pop the top of the done stack, delete it and return its token
+Token *Translator::doneStackPopToken(void)
+{
+	deleteCloseParen(m_doneStack.top().last);
+	RpnItem *rpnItem = m_doneStack.pop().rpnItem;
+	Token *token = rpnItem->token();
+	rpnItem->setToken(NULL);	// prevent delete of token
+	delete rpnItem;				// delete rpnItem
+	return token;
 }
 
 

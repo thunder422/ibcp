@@ -27,16 +27,16 @@ Input: LET A$,B$,C$=""
 Output: A$<ref> B$<ref> C$<ref> "" AssignList$'LET' 
 
 Input: LET LEFT$(A$,1) = B$
-Output: A$<ref> 1 B$ AssignLeft'LET' 
+Output: A$<ref> 1 LEFT$(<ref> B$ AssignSub$'LET' 
 
 Input: LET LEFT$(A$,1) = B$ + C$
-Output: A$<ref> 1 B$ C$ +$ AssignLeft'LET' 
+Output: A$<ref> 1 LEFT$(<ref> B$ C$ +$ AssignSub$'LET' 
 
 Input: LET LEFT$(A$,1),RIGHT$(B$,1) = C$
-Output: A$<ref> 1 B$<ref> 1 C$ AssignKeepRight AssignLeft'LET' 
+Output: A$<ref> 1 LEFT$(<ref> B$<ref> 1 RIGHT$(<ref> C$ AssignListMix$'LET' 
 
 Input: LET A$,LEFT$(B$,1) = C$
-Output: A$<ref> B$<ref> 1 C$ AssignKeepLeft Assign$'LET' 
+Output: A$<ref> B$<ref> 1 LEFT$(<ref> C$ AssignListMix$'LET' 
 
 Input: LET LET A=0
            ^^^-- expected item for assignment

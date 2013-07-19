@@ -36,6 +36,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	DataType dataType;
 	bool done;
 	TokenStack letStack;
+	bool haveSubStr = false;
 
 	if (commandToken == NULL)
 	{
@@ -50,9 +51,8 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	do
 	{
 		if ((status = translator.getOperand(token, dataType,
-			Translator::Variable_Reference)) != Good_TokenStatus)
+			Translator::All_Reference)) != Good_TokenStatus)
 		{
-			token->setSubCodeMask(UnUsed_SubCode);
 			if (token->column() > 0)
 			{
 				return status;
@@ -95,12 +95,32 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 			return ExpEqualOrComma_TokenStatus;
 		}
 
-		// change token to appropriate LET code and add to list
-		translator.table().setToken(token, Assign_Code);
-		token->setReference();
-		if ((status = translator.findCode(token, 0)) != Good_TokenStatus)
+		// check if this is a sub-string assignment
+		if (translator.table().flags(translator.doneStackTopToken())
+			& SubStr_Flag)
 		{
-			return status;
+			// delete comma/equal token, use sub-string function token
+			delete token;
+
+			// get sub-string function token from rpn item on top of stack
+			// (delete rpn item since it was not appended to output)
+			token = translator.doneStackPopToken();
+
+			// change to assign sub-string code (first associated code)
+			translator.table().setToken(token,
+				translator.table().assocCode(token->code()));
+
+			haveSubStr = true;
+		}
+		else  // use comma/equal token
+		{
+			// change token to appropriate assign code
+			translator.table().setToken(token, Assign_Code);
+			token->setReference();
+			if ((status = translator.findCode(token, 0)) != Good_TokenStatus)
+			{
+				return status;
+			}
 		}
 		// reset reference, no longer needed, and save token
 		token->setReference(false);
@@ -131,9 +151,26 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	Token *letToken = letStack.pop();
 	if (!letStack.isEmpty())
 	{
-		// have a multiple assigment, change to list code
-		translator.table().setToken(letToken,
-			translator.table().assoc2Code(letToken->code()));
+		if (haveSubStr)
+		{
+			// add each token saved in let stack except the last
+			do
+			{
+				// change to keep code (second associated code)
+				translator.table().setToken(letToken,
+					translator.table().assocCode(letToken->code()));
+
+				// append to output and pop next token from let stack
+				translator.outputAppend(letToken);
+				letToken = letStack.pop();
+			}
+			while (!letStack.isEmpty());  // continue until last token
+		}
+		else  // have a multiple assignment, change to list code
+		{
+			translator.table().setToken(letToken,
+				translator.table().assoc2Code(letToken->code()));
+		}
 	}
 
 	// check end process expression, inserting conversion codes as needed
