@@ -189,9 +189,13 @@ public:
 	{
 		return m_output->last()->token();
 	}
-	void outputAppend(Token *token)
+	RpnItem *outputAppend(Token *token, int nOperands = 0,
+		RpnItem **operand = NULL)
 	{
-		m_output->append(new RpnItem(token));
+		token->clearSubCodeMask(UnUsed_SubCode);  // mark as used
+		RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
+		m_output->append(rpnItem);
+		return rpnItem;
 	}
 
 	// Determine Error Funtions (By DataType)

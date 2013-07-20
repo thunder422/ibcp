@@ -901,11 +901,15 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 	}
 
 	// add token to output list and push element pointer on done stack
-	RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
+	RpnItem *rpnItem;
 	// check if item should be appended to output (sub-string assignments don't)
 	if (doneAppend)
 	{
-		m_output->append(rpnItem);
+		rpnItem = outputAppend(token, nOperands, operand);
+	}
+	else
+	{
+		rpnItem = new RpnItem(token, nOperands, operand);
 	}
 	// check if output item is to be pushed on done stack
 	if (donePush)
@@ -1170,7 +1174,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
 			// append token to end of output list (after operand)
-			m_output->append(new RpnItem(m_table.newToken(cvt_code)));
+			outputAppend(m_table.newToken(cvt_code));
 		}
 
 		return Good_TokenStatus;
@@ -1198,7 +1202,6 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	token = workFirst->setThrough(workLast);
 	if (token->isCode(OpenParen_Code))
 	{
-		token->setSubCodeMask(UnUsed_SubCode);
 	}
 
 	// delete last token if close paren
@@ -1869,7 +1872,6 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 		}
 		else
 		{
-			token->setSubCodeMask(UnUsed_SubCode);
 			status = ExpOpOrEnd_TokenStatus;
 		}
 	}
@@ -1926,7 +1928,6 @@ TokenStatus Translator::getCommand(Token *&token)
 		{
 			token = commandToken;
 		}
-		token->setSubCodeMask(UnUsed_SubCode);
 		return BUG_NotYetImplemented;
 	}
 	return (*translate)(*this, commandToken, token);
@@ -1966,7 +1967,6 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 				// check terminating token
 				if (!token->isCode(CloseParen_Code))
 				{
-					token->setSubCodeMask(UnUsed_SubCode);
 					status = ExpOpOrParen_TokenStatus;
 					break;
 				}
@@ -2032,7 +2032,6 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 			if (m_table.isUnaryOperator(token))
 			{
 				// (this error needs to be changed appropriately by caller)
-				token->setSubCodeMask(UnUsed_SubCode);
 				status = ExpBinOpOrEnd_TokenStatus;
 				break;
 			}
@@ -2139,7 +2138,6 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	{
 	case Command_TokenType:
 	case Operator_TokenType:
-		token->setSubCodeMask(UnUsed_SubCode);
 		return reference == None_Reference
 			? expectedErrStatus(dataType) : variableErrStatus(dataType);
 
@@ -2148,7 +2146,6 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	case IntFuncN_TokenType:
 		if (reference != None_Reference)
 		{
-			token->setSubCodeMask(UnUsed_SubCode);
 			return variableErrStatus(dataType);
 		}
 	case DefFuncN_TokenType:
@@ -2170,7 +2167,6 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			}
 			else
 			{
-				token->setSubCodeMask(UnUsed_SubCode);
 				return ExpStrVar_TokenStatus;
 			}
 		}
@@ -2185,7 +2181,6 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	case DefFuncP_TokenType:
 		if (reference != None_Reference)
 		{
-			token->setSubCodeMask(UnUsed_SubCode);
 			return variableErrStatus(dataType);
 		}
 	case Paren_TokenType:
@@ -2202,15 +2197,12 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		return status;
 
 	default:
-		token->setSubCodeMask(UnUsed_SubCode);
 		return BUG_NotYetImplemented;
 	}
 
 	// add token directly output list
 	// and push element pointer on done stack
-	RpnItem *rpnItem = new RpnItem(token);
-	m_output->append(rpnItem);
-	m_doneStack.push(rpnItem);
+	m_doneStack.push(outputAppend(token));
 
 	return Good_TokenStatus;
 }
@@ -2268,7 +2260,6 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 				if (!m_table.hasFlag(code, Multiple_Flag))
 				{
 					// function doesn't have multiple entries
-					token->setSubCodeMask(UnUsed_SubCode);
 					status = ExpOpOrParen_TokenStatus;
 					break;
 				}
@@ -2288,7 +2279,6 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		{
 			if (i < lastOperand)
 			{
-				token->setSubCodeMask(UnUsed_SubCode);
 				status = ExpOpOrComma_TokenStatus;
 				break;
 			}
@@ -2305,7 +2295,6 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		// unexpected token, determine appropriate error
 		else
 		{
-			token->setSubCodeMask(UnUsed_SubCode);
 			if (i == 0 && topToken->reference())
 			{
 				status = ExpComma_TokenStatus;
@@ -2326,7 +2315,6 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 			break;
 		}
 	}
-	token->setSubCodeMask(UnUsed_SubCode);
 	return status;
 }
 
@@ -2385,7 +2373,6 @@ TokenStatus Translator::getParenToken(Token *&token)
 		else  // unexpected token
 		{
 			status = ExpOpCommaOrParen_TokenStatus;
-			token->setSubCodeMask(UnUsed_SubCode);
 			return status;
 		}
 	}
@@ -2402,10 +2389,9 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 	// if data type is not none, then getting an operand token
 	bool operand = dataType != None_DataType;
 	token = m_parser->token(operand);
+	token->setSubCodeMask(UnUsed_SubCode);
 	if (token->isType(Error_TokenType))
 	{
-		token->setSubCodeMask(UnUsed_SubCode);
-
 		if (!operand && token->dataType() == Double_DataType)
 		{
 			// only do this for non-operand number constant errors
@@ -2454,7 +2440,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 			else   // already has parentheses sub-code set
 			{
 				// add dummy token
-				m_output->append(new RpnItem(m_pendingParen));
+				outputAppend(m_pendingParen);
 				// reset pending token and return (don't delete token)
 				m_pendingParen = NULL;
 				return;

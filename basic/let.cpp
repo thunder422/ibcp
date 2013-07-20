@@ -81,7 +81,6 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		// get and check next token for comma or equal
 		if ((status = translator.getToken(token)) != Good_TokenStatus)
 		{
-			token->setSubCodeMask(UnUsed_SubCode);
 			return ExpEqualOrComma_TokenStatus;
 		}
 		if (token->isCode(Comma_Code))
@@ -94,7 +93,6 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		}
 		else
 		{
-			token->setSubCodeMask(UnUsed_SubCode);
 			return ExpEqualOrComma_TokenStatus;
 		}
 
@@ -197,7 +195,6 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	// check terminating token for end-of-statement
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
-		token->setSubCodeMask(UnUsed_SubCode);
 		return ExpOpOrEnd_TokenStatus;
 	}
 
