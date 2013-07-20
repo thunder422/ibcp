@@ -1339,9 +1339,9 @@ const QString Table::debugName(Code code) const
 }
 
 // returns the flags for code
-int Table::flags(Code code) const
+int Table::hasFlag(Code code, int flag) const
 {
-	return m_entry[code].flags;
+	return m_entry[code].flags & flag;
 }
 
 // returns the token mode to set after command for code
@@ -1455,10 +1455,10 @@ int Table::precedence(Token *token) const
 // returns the flags of the code contained in a token
 //
 //   - returns Null_Flag is the token does not contain a code
-int Table::flags(Token *token) const
+int Table::hasFlag(Token *token, int flag) const
 {
 	// (non-table entry token types have no flags)
-	return token->hasTableEntry() ? flags(token->code()) : Null_Flag;
+	return token->hasTableEntry() ? hasFlag(token->code(), flag) : 0;
 }
 
 // returns the expected data type for last operand for operator token

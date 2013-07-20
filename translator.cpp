@@ -302,7 +302,7 @@ TokenStatus Translator::addToken(Token *&token)
 	}
 
 	// check for end statement
-	if (m_state == EndStmt_State && !(m_table.flags(token) & EndStmt_Flag))
+	if (m_state == EndStmt_State && !m_table.hasFlag(token, EndStmt_Flag))
 	{
 		return ExpEndStmt_TokenStatus;
 	}
@@ -315,7 +315,7 @@ TokenStatus Translator::addToken(Token *&token)
 			return processOperand(token);
 		}
 		// end-of-statement code acceptable instead of operand
-		else if (m_table.flags(token) & EndExpr_Flag)
+		else if (m_table.hasFlag(token, EndExpr_Flag))
 		{
 			if (m_state != OperandOrEnd_State)
 			{
@@ -376,7 +376,7 @@ TokenStatus Translator::processOperand(Token *&token)
 		if (token->isType(IntFuncP_TokenType))
 		{
 			// detect invalid print-only function
-			if ((m_table.flags(token->code()) & Print_Flag)
+			if (m_table.hasFlag(token, Print_Flag)
 				&& (!m_cmdStack.isEmpty()
 				&& !m_cmdStack.top().token->isCode(Print_Code)
 				|| !m_holdStack.top().token->isNull()))
@@ -620,7 +620,7 @@ TokenStatus Translator::processBinaryOperator(Token *&token)
 		return ExpComma_TokenStatus;
 	}
 	// end of expression token expected check
-	if (m_state == EndExpr_State && !(m_table.flags(token) & EndExpr_Flag))
+	if (m_state == EndExpr_State && !m_table.hasFlag(token, EndExpr_Flag))
 	{
 		// TODO currently only occurs after print function
 		// TODO add correct error based on current command
@@ -647,7 +647,7 @@ TokenStatus Translator::processBinaryOperator(Token *&token)
 		m_lastPrecedence = HighestPrecedence;
 	}
 	// checking at end of statement
-	else if (m_table.flags(token) & EndStmt_Flag
+	else if (m_table.hasFlag(token, EndStmt_Flag)
 		&& m_mode == AssignmentList_TokenMode)
 	{
 		// no equal token received yet
@@ -800,7 +800,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		}
 
 		// check for non-assignment operator
-		if ((m_table.flags(token->code()) & Reference_Flag))
+		if (m_table.hasFlag(token, Reference_Flag))
 		{
 			// for assignment operators, nothing gets pushed to the done stack
 			donePush = false;
@@ -846,7 +846,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		// FIXME remove this section for new translator
 		if (token->isDataType(None_DataType) && m_state != UnSet_State)
 		{
-			if (m_table.flags(token->code()) & Print_Flag)
+			if (m_table.hasFlag(token, Print_Flag))
 			{
 				// tell PRINT to stay on same line
 				m_cmdStack.top().flag = PrintStay_CmdFlag | PrintFunc_CmdFlag;
@@ -857,7 +857,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 			if (token2 != NULL)
 			{
 				// if print function, make sure expression ends
-				if (m_table.flags(token->code()) & Print_Flag)
+				if (m_table.hasFlag(token, Print_Flag))
 				{
 					m_state = EndExpr_State;
 				}
@@ -1323,7 +1323,7 @@ TokenStatus Translator::parenStatus(void) const
 	if (m_countStack.top().nOperands == m_countStack.top().nExpected)
 	{
 		// check if there could be more arguments
-		if ((m_table.flags(topToken->code()) & Multiple_Flag) == 0)
+		if (!m_table.hasFlag(topToken, Multiple_Flag))
 		{
 			// internal function - at last argument (no more expected)
 			return ExpOpOrParen_TokenStatus;
@@ -1336,7 +1336,7 @@ TokenStatus Translator::parenStatus(void) const
 
 	// internal function - more arguments expected
 	// (number of arguments doesn't match function's entry)
-	if ((m_table.flags(topToken->code()) & Multiple_Flag) != 0
+	if (m_table.hasFlag(topToken, Multiple_Flag)
 		&& (index = m_table.search(topToken->code(),
 		m_countStack.top().nOperands)) > 0)
 	{
@@ -1387,7 +1387,7 @@ void Translator::doPendingParen(Token *token)
 			else
 			{
 				RpnList::iterator last = m_output->end() - 1;
-				if (m_table.flags((*last)->token()) & Hidden_Flag)
+				if (m_table.hasFlag((*last)->token(), Hidden_Flag))
 				{
 					// last token added is a hidden code
 					last--;  // so get token before hidden code
@@ -2103,7 +2103,7 @@ TokenStatus Translator::processOperator2(Token *&token)
 
 	// check for end of expression
 	if (!token->isType(Operator_TokenType)
-		|| m_table.flags(token) & EndExpr_Flag)
+		|| m_table.hasFlag(token, EndExpr_Flag))
 	{
 		return Done_TokenStatus;
 	}
@@ -2164,7 +2164,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		if (reference != None_Reference)
 		{
 			if (reference == All_Reference
-				&& m_table.flags(token) & SubStr_Flag)
+				&& m_table.hasFlag(token, SubStr_Flag))
 			{
 				token->setReference();
 			}
@@ -2265,7 +2265,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		{
 			if (i == lastOperand)
 			{
-				if ((m_table.flags(code) & Multiple_Flag) == 0)
+				if (!m_table.hasFlag(code, Multiple_Flag))
 				{
 					// function doesn't have multiple entries
 					token->setSubCodeMask(UnUsed_SubCode);
@@ -2314,7 +2314,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 			{
 				status = ExpOpOrComma_TokenStatus;
 			}
-			else if ((m_table.flags(code) & Multiple_Flag) == 0)
+			else if (!m_table.hasFlag(code, Multiple_Flag))
 			{
 				// function doesn't have multiple entries
 				status = ExpOpOrParen_TokenStatus;

@@ -253,7 +253,7 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem, Token *token)
 				cmdItem->token = token;  // set error token
 				return ExpStrExpr_TokenStatus;
 			}
-			if (t.m_table.flags(code) & EndStmt_Flag)
+			if (t.m_table.hasFlag(code, EndStmt_Flag))
 			{
 				cmdItem->token = token;  // set error token
 				return ExpOpSemiOrComma_TokenStatus;
@@ -338,7 +338,7 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem, Token *token)
 			t.m_state = Translator::EndStmt_State;  // expecting end-of-statment
 			return Good_TokenStatus;   // done now, wait for end-of-statment
 		}
-		if (!(t.m_table.flags(code) & EndStmt_Flag))
+		if (!t.m_table.hasFlag(code, EndStmt_Flag))
 		{
 			// unexpected token
 			cmdItem->token = token;  // set error token

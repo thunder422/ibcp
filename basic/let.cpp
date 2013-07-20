@@ -99,8 +99,8 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		}
 
 		// check if this is a sub-string assignment
-		if (translator.table().flags(translator.doneStackTopToken())
-			& SubStr_Flag)
+		if (translator.table().hasFlag(translator.doneStackTopToken(),
+			SubStr_Flag))
 		{
 			// delete comma/equal token, use sub-string function token
 			delete token;
@@ -195,7 +195,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	}
 
 	// check terminating token for end-of-statement
-	if ((translator.table().flags(token) & EndStmt_Flag) == 0)
+	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
 		token->setSubCodeMask(UnUsed_SubCode);
 		return ExpOpOrEnd_TokenStatus;

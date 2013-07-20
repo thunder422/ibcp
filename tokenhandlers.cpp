@@ -221,7 +221,7 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			{
 				// number of arguments doesn't match current function's entry
 				// see if function has multiple entries
-				if ((t.m_table.flags(topToken->code()) & Multiple_Flag) != 0)
+				if (t.m_table.hasFlag(topToken->code(), Multiple_Flag))
 				{
 					// change token to next code (index)
 					// (table entries have been validated during initialization)
