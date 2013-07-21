@@ -7,7 +7,7 @@
    fun:FcInitLoadConfig
    fun:FcInitLoadConfigAndFonts
    fun:FcInit
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
    fun:_ZN12QApplicationC1ERiPPci
    fun:main
@@ -99,8 +99,8 @@
    fun:inflateInit2_
    fun:png_create_read_struct_2
    fun:png_create_read_struct
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN12QImageReader4readEP6QImage
    fun:_ZN12QImageReader4readEv
    fun:_ZN6QImage8fromDataEPKhiPKc
@@ -112,11 +112,11 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
    fun:_ZN8QLibraryC1ERK7QStringiP7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
    fun:_ZN12QApplicationC1ERiPPci
    fun:main
@@ -125,11 +125,11 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
    fun:_ZN8QLibraryC1ERK7QStringiP7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
    fun:_ZN12QApplicationC1ERiPPci
    fun:main
@@ -138,38 +138,54 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
+   fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
+   fun:_ZN8QLibraryC1ERK7QStringiP7QObject
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
+   fun:_ZN12QApplicationC1ERiPPci
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:_Znwm
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringS2_
    fun:_ZN8QLibraryC1ERK7QStringS2_P7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN14QLocalePrivate19updateSystemPrivateEv
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN7QLocaleC1Ev
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
 }
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
-   fun:_ZN8QLibraryC1ERK7QStringiP7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
-   fun:_ZN12QApplicationC1ERiPPci
-   fun:main
+   obj:@QT_LIBRARY_DIR@/libQtDBus.so.@ibcp_QT_VERSION@
+   fun:_ZN15QDBusConnection12connectToBusENS_7BusTypeERK7QString
+   fun:_ZN15QDBusConnection10sessionBusEv
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   obj:/usr/lib/kde4/plugins/styles/qtcurve.so
+   fun:_ZN13QStyleFactory6createERK7QString
+   fun:_ZN12QApplication5styleEv
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
 }
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
    fun:_ZN8QLibraryC1ERK7QStringiP7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
    fun:_ZN12QApplicationC1ERiPPci
    fun:main
@@ -186,34 +202,34 @@
    fun:g_main_context_new
    fun:g_main_context_default
    fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate21createEventDispatcherEv
 }
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringS2_
    fun:_ZN8QLibraryC1ERK7QStringS2_P7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN14QLocalePrivate19updateSystemPrivateEv
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN7QLocaleC1Ev
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
 }
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN8QLibrary21setFileNameAndVersionERK7QStringi
    fun:_ZN8QLibraryC1ERK7QStringiP7QObject
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
    fun:_ZN12QApplicationC1ERiPPci
    fun:main
@@ -238,15 +254,15 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN14QFactoryLoader9updateDirERK7QStringR9QSettings
    fun:_ZN14QFactoryLoader6updateEv
    fun:_ZN14QFactoryLoaderC1EPKcRK7QStringN2Qt15CaseSensitivityE
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN13QStyleFactory6createERK7QString
    fun:_ZN12QApplication5styleEv
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
    fun:_ZN12QApplicationC1ERiPPci
 }
@@ -254,14 +270,14 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN14QFactoryLoader9updateDirERK7QStringR9QSettings
    fun:_ZN14QFactoryLoader6updateEv
    fun:_ZN14QFactoryLoaderC1EPKcRK7QStringN2Qt15CaseSensitivityE
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate18x11_apply_settingsEv
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
    fun:_ZN12QApplicationC1ERiPPci
    fun:main
@@ -278,8 +294,8 @@
    fun:g_main_context_new
    fun:g_main_context_default
    fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate21createEventDispatcherEv
 }
 {
@@ -310,8 +326,8 @@
    fun:g_main_context_acquire
    fun:g_main_context_push_thread_default
    fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN19QApplicationPrivate21createEventDispatcherEv
 }
 {
@@ -334,13 +350,13 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:_Znwm
-   obj:/usr/lib/x86_64-linux-gnu/libQtCore.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtCore.so.@ibcp_QT_VERSION@
    fun:_ZN14QFactoryLoader9updateDirERK7QStringR9QSettings
    fun:_ZN14QFactoryLoader6updateEv
    fun:_ZN14QFactoryLoaderC1EPKcRK7QStringN2Qt15CaseSensitivityE
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
-   obj:/usr/lib/x86_64-linux-gnu/libQtGui.so.4.8.1
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
+   obj:@QT_LIBRARY_DIR@/libQtGui.so.@ibcp_QT_VERSION@
    fun:_ZN12QImageReader4readEP6QImage
    fun:_ZN12QImageReader4readEv
    fun:_ZN6QImage8fromDataEPKhiPKc

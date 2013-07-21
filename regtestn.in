@@ -1,7 +1,7 @@
 # vim:ts=4:sw=4:filetype=sh:
 #
 #	Interactive BASIC Compiler Project
-#	File: memtest - script to run all tests and check for memory issues
+#	File: regtestn - script to run somes tests with new translator (TEMPORARY)
 #	Copyright (C) 2010-2012  Thunder422
 #
 #	This program is free software: you can redistribute it and/or modify
@@ -20,48 +20,31 @@
 #
 #  Change History:
 #
-#  2012-10-25  initial version (started from regtest)
+#  2013-07-21  temporary script (based on regtest.in)
 #
 #
 #  Usage:
-#    memtest
+#    regtestn
 #
 #  Details:
 #    output files are directed to current (IBCP) directory, and then
 #    comparing to the established output files in the test directory
-#    reporting any changes as FAIL; also checks for memory issues
-#    (including memory leaks) and reports a failure if any
-#
-#  Notes:
-#    memory checking requires the valgrind utility, which is only
-#    available on Linux
+#    reporting any changes as FAIL
 #
 
-rm -f parser*.txt expression*.txt translator*.txt
+rm -f expression*.txt translator*.txt
 dir=@ibcp_SOURCE_DIR@/test/
 ./ibcp -v
-for input in ${dir}parser*.dat ${dir}expression*.dat ${dir}translator*.dat
+for input in ${dir}expression*.dat ${dir}translator0[1-5].dat
 do
 	base=${input##*/}
 	output=${base%.dat}.txt
-	memout=${base%.dat}.mem
-	valgrind --leak-check=full --suppressions=./ibcp.supp ./ibcp -t $input >$output 2>$memout
-	result=""
-	cmp -s $dir$output $output
-	if [ $? -ne 0 ]
+	./ibcp -n $input >$output
+	diff -wq $dir$output $output >/dev/null
+	if [ $? -eq 0 ]
 	then
-		result=" Results"
-	fi
-	errsum=(`grep "ERROR SUMMARY" $memout`)
-	if [ ${errsum[3]} -ne 0 ]
-	then
-		result="$result Memory(${errsum[3]})"
-	fi
-	if [ "X$result" == "X" ]
-	then
-		result="OK"
+		echo Test File $base... OK
 	else
-		result="FAIL: $result"
+		echo Test File $base... FAIL
 	fi
-	echo Test File $base... $result
 done

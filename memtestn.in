@@ -45,7 +45,7 @@ do
 	base=${input##*/}
 	output=${base%.dat}.txt
 	memout=${base%.dat}.mem
-	valgrind --leak-check=full --suppressions=${dir}ibcp.supp ./ibcp -n $input >$output 2>$memout
+	valgrind --leak-check=full --suppressions=./ibcp.supp ./ibcp -n $input >$output 2>$memout
 	result=""
 	cmp -s $dir$output $output
 	if [ $? -ne 0 ]

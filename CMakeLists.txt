@@ -96,6 +96,11 @@ configure_file(
 	"${PROJECT_SOURCE_DIR}/regtest.in"
 	"${PROJECT_BINARY_DIR}/regtest" @ONLY
 )
+# TEMPORARY
+configure_file(
+	"${PROJECT_SOURCE_DIR}/regtestn.in"
+	"${PROJECT_BINARY_DIR}/regtestn" @ONLY
+)
 
 # configure a memtest script to pass source directory to the script
 if (NOT WIN32)
@@ -107,6 +112,14 @@ if (NOT WIN32)
 	configure_file(
 		"${PROJECT_SOURCE_DIR}/memtestn.in"
 		"${PROJECT_BINARY_DIR}/memtestn" @ONLY
+	)
+	# build memory error suppression file for specific Qt version
+	set(ibcp_QT_VERSION
+		${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}
+	)
+	configure_file(
+		"${PROJECT_SOURCE_DIR}/test/ibcp.supp.in"
+		"${PROJECT_BINARY_DIR}/ibcp.supp" @ONLY
 	)
 endif (NOT WIN32)
 
