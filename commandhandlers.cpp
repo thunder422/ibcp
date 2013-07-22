@@ -246,10 +246,17 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem, Token *token)
 			{
 				// don't delete token, caller will delete it
 				// report error against first token of expression on done stack
-				token = t.m_doneStack.top().first
-					->setThrough(t.m_doneStack.top().last);
+				token = t.m_doneStack.top().first;
+				if (token == NULL)
+				{
+					token = t.m_doneStack.top().rpnItem->token();
+				}
 				// delete last token if close paren, remove from done stack
-				t.deleteCloseParen(t.m_doneStack.pop().rpnItem->token());
+				if (t.m_doneStack.top().last != NULL)
+				{
+					token->setThrough(t.m_doneStack.top().last);
+					t.deleteCloseParen(t.m_doneStack.pop().last);
+				}
 				cmdItem->token = token;  // set error token
 				return ExpStrExpr_TokenStatus;
 			}

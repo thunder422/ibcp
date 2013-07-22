@@ -77,3 +77,12 @@ Input: INPUT PROMPT A$+
 Input: INPUT PROMPT A$;
                        ^-- expected variable
 
+Input: INPUT PROMPT 1;A
+                    ^-- expected string expression
+
+Input: INPUT PROMPT (A+B);C
+                    ^^^^^-- expected string expression
+
+Input: INPUT PROMPT INT(A);B
+                    ^^^^^^-- expected string expression
+
