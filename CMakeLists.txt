@@ -152,6 +152,7 @@ set(ibcp_SOURCES
 	basic/let.cpp
 	commandhandlers.cpp
 	commandline.cpp
+	donestack.cpp
 	errorlist.cpp
 	editbox.cpp
 	main.cpp

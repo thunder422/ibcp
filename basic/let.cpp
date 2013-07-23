@@ -105,7 +105,10 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 
 			// get sub-string function token from rpn item on top of stack
 			// (delete rpn item since it was not appended to output)
-			token = translator.doneStackPopToken();
+			RpnItem *rpnItem = translator.doneStackPop();
+			token = rpnItem->token();
+			rpnItem->setToken(NULL);  // prevent delete of token
+			delete rpnItem;
 
 			// change to assign sub-string code (first associated code)
 			translator.table().setToken(token,

@@ -28,6 +28,7 @@
 #include <QList>
 #include <QStack>
 
+#include "donestack.h"
 #include "rpnlist.h"
 
 class Table;
@@ -86,30 +87,6 @@ class Translator
 			resize(size() + 1);
 			top().token = token;
 			top().first = first;
-		}
-	};
-
-	struct DoneItem
-	{
-		RpnItem *rpnItem;			// pointer to RPN item
-		Token *first;				// operator token's first operand pointer
-		Token *last;				// operator token's last operand pointer
-	};
-	class DoneStack : public QStack<DoneItem>
-	{
-	public:
-		// drop the top item on stask (pop with no return)
-		void drop(void)
-		{
-			resize(size() - 1);
-		}
-		// push new item with rpn item, first and last tokens
-		void push(RpnItem *rpnItem, Token *first = NULL, Token *last = NULL)
-		{
-			resize(size() + 1);
-			top().rpnItem = rpnItem;
-			top().first = first;
-			top().last = last;
 		}
 	};
 
@@ -180,7 +157,10 @@ public:
 	{
 		return m_table;
 	}
-	Token *doneStackPopToken(void);
+	RpnItem *doneStackPop(void)
+	{
+		return m_doneStack.pop();
+	}
 	Token *doneStackTopToken(void) const
 	{
 		return m_doneStack.top().rpnItem->token();
@@ -229,8 +209,6 @@ private:
 	TokenStatus getExprDataType(DataType &dataType) const;
 	TokenStatus parenStatus(void) const;
 	void doPendingParen(Token *token);
-	void deleteOpenParen(Token *token);
-	void deleteCloseParen(Token *token);
 	void cleanUp(void);		// only call when addToken() returns error
 
 	// Command Specific Functions

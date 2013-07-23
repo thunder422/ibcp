@@ -255,7 +255,8 @@ TokenStatus Input_CmdHandler(Translator &t, CmdItem *cmdItem, Token *token)
 				if (t.m_doneStack.top().last != NULL)
 				{
 					token->setThrough(t.m_doneStack.top().last);
-					t.deleteCloseParen(t.m_doneStack.pop().last);
+					t.m_doneStack.top().first = NULL;  // prevent delete
+					t.m_doneStack.drop();
 				}
 				cmdItem->token = token;  // set error token
 				return ExpStrExpr_TokenStatus;

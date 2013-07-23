@@ -806,8 +806,8 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 			donePush = false;
 
 			// no longer need the first and last operands
-			deleteOpenParen(first);
-			deleteCloseParen(last);
+			DoneItem::deleteOpenParen(first);
+			DoneItem::deleteCloseParen(last);
 		}
 		// save string operands only
 		// get number of strings for non-sub-string codes
@@ -815,7 +815,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		else
 		{
 			// set first and last operands
-			deleteOpenParen(first);
+			DoneItem::deleteOpenParen(first);
 			if (token->isOperator())
 			{
 				// if unary operator, then operator, else first from hold stack
@@ -826,7 +826,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 			else  // non-sub-string internal function
 			{
 				first = NULL;   // token itself is first operand
-				deleteCloseParen(last);
+				DoneItem::deleteCloseParen(last);
 				last = token2;  // last operand is CloseParen token
 			}
 			if (token->isDataType(SubStr_DataType) && !token->reference())
@@ -893,10 +893,9 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 				return BUG_DoneStackEmptyOperands;
 			}
 			// TODO need to keep first/last operands for array/function args
-			deleteOpenParen(m_doneStack.top().first);
-			// check if operand's last token was CloseParen
-			deleteCloseParen(m_doneStack.top().last);
-			operand[i] = m_doneStack.pop().rpnItem;
+			// TODO (in case entire expression needs to be reported as an error)
+			// TODO (RpnItem should have DoneItem operands, not RpnItem)
+			operand[i] = m_doneStack.pop();
 		}
 	}
 
@@ -1090,7 +1089,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 			token = workFirst->setThrough(workLast);
 
 			// delete last token if close paren
-			deleteCloseParen(workLast);
+			DoneItem::deleteCloseParen(workLast);
 
 			// XXX check command on top of command stack XXX
 			return ExpAssignItem_TokenStatus;
@@ -1108,11 +1107,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 		operandIndex);
 	if (dataType == operandDataType)  // exact match?
 	{
-		// pop non-string from done stack
-		deleteOpenParen(m_doneStack.top().first);
-		// check if operand's last token was CloseParen
-		deleteCloseParen(m_doneStack.pop().last);
-
+		m_doneStack.drop();  // remove from done stack (remove paren tokens)
 		return Good_TokenStatus;
 	}
 	Code cvt_code = cvtCodeHaveNeed[dataType][operandDataType];
@@ -1139,11 +1134,8 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 				// change token's code and data type to associated code
 				m_table.setToken(token, assoc_code);
 
-				// pop non-string from done stack
-				deleteOpenParen(m_doneStack.top().first);
-				// check if operand's last token was CloseParen
-				deleteCloseParen(m_doneStack.pop().last);
-
+				// remove from done stack (remove paren tokens)
+				m_doneStack.drop();
 				return Good_TokenStatus;
 			}
 			Code cvt_code2 = cvtCodeHaveNeed[dataType][operandDatatype2];
@@ -1166,10 +1158,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 		// is there an actual conversion code to insert?
 		if (cvt_code != Null_Code)
 		{
-			// pop non-string from done stack
-			deleteOpenParen(m_doneStack.top().first);
-			// check if operand's last token was CloseParen
-			deleteCloseParen(m_doneStack.pop().last);
+			m_doneStack.drop();  // remove from done stack (remove paren tokens)
 
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
@@ -1205,7 +1194,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	}
 
 	// delete last token if close paren
-	deleteCloseParen(workLast);
+	DoneItem::deleteCloseParen(workLast);
 
 	return status;
 }
@@ -1415,52 +1404,6 @@ void Translator::doPendingParen(Token *token)
 }
 
 
-// function to delete a opening parentheses token that is no longer being used
-// as the first operand token of another token
-//
-//   - the first operand token pointer is passed
-//   - no action if first operand token pointer is not set
-//   - no action if first operand token does not have a table entry
-//   - no action if first operand token is not a closing parentheses token
-
-void Translator::deleteOpenParen(Token *token)
-{
-	if (token != NULL && token->isCode(OpenParen_Code))
-	{
-		delete token;  // delete OpenParen token of operand
-	}
-}
-
-
-// function to delete a closing parentheses token that is no longer being used
-// as the last operand token of another token
-//
-//   - the last operand token pointer is passed
-//   - no action if last operand token pointer is not set
-//   - no action if last operand token does not have a table entry
-//   - no action if last operand token is not a closing parentheses token
-//   - if closing parentheses is being used by pending parentheses or in output
-//     as a dummy parentheses token, then last operand flag is cleared
-//   - if closing parentheses token is not being used, then it is deleted
-
-void Translator::deleteCloseParen(Token *token)
-{
-	if (token != NULL && token->isCode(CloseParen_Code))
-	{
-		// check if parentheses token is still being used
-		if (token->isSubCode(Used_SubCode))
-		{
-			// no longer used as last token
-			token->clearSubCodeMask(Last_SubCode);
-		}
-		else  // not used, close parentheses token can be deleted
-		{
-			delete token;  // delete CloseParen token of operand
-		}
-	}
-}
-
-
 // function to clean up the Translator variables after an error is detected
 //
 //   - must be called after add_token() returns an error
@@ -1471,15 +1414,17 @@ void Translator::cleanUp(void)
 	while (!m_holdStack.isEmpty())
 	{
 		// delete first token in command stack item
-		deleteOpenParen(m_holdStack.top().first);
+		Token *token = m_holdStack.top().first;
+		if (token != NULL)
+		{
+			DoneItem::deleteOpenParen(token);
+		}
 		// delete to free the token that was on the stack
 		delete m_holdStack.pop().token;
 	}
 	while (!m_doneStack.isEmpty())
 	{
-		deleteOpenParen(m_doneStack.top().first);
-		// check if operand's last token was CloseParen
-		deleteCloseParen(m_doneStack.pop().last);
+		m_doneStack.drop();  // remove from done stack (remove paren tokens)
 	}
 	// comma support - need to empty count_stack
 	while (!m_countStack.isEmpty())
@@ -1582,8 +1527,7 @@ TokenStatus Translator::checkAssignListToken(Token *&token)
 	if (!m_doneStack.isEmpty())
 	{
 		// delete close paren (array or sub-string) on operand
-		deleteCloseParen(m_doneStack.top().last);
-		token = m_doneStack.pop().rpnItem->token();
+		token = m_doneStack.pop()->token();
 		if (!token->reference()
 			|| equivalentDataType(m_cmdStack.top().token->dataType())
 			!= equivalentDataType(token->dataType()))
@@ -1840,9 +1784,8 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 			}
 			else
 			{
-				// pop result and delete any paren tokens in first/last operands
-				deleteOpenParen(m_doneStack.top().first);
-				deleteCloseParen(m_doneStack.pop().last);
+				// drop result (delete any paren tokens in first/last operands)
+				m_doneStack.drop();
 			}
 		}
 	}
@@ -1980,10 +1923,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 				}
 
 				// replace first and last operands of token on done stack
-				deleteOpenParen(m_doneStack.top().first);
-				m_doneStack.top().first = topToken;
-				deleteCloseParen(m_doneStack.top().last);
-				m_doneStack.top().last = token;
+				m_doneStack.replaceTopFirstLast(topToken, token);
 
 				// mark close paren as used for last operand and pending paren
 				// (so it doesn't get deleted until it's not used anymore)
@@ -2458,18 +2398,6 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		}
 		m_pendingParen = NULL;  // reset pending token
 	}
-}
-
-
-// function to pop the top of the done stack, delete it and return its token
-Token *Translator::doneStackPopToken(void)
-{
-	deleteCloseParen(m_doneStack.top().last);
-	RpnItem *rpnItem = m_doneStack.pop().rpnItem;
-	Token *token = rpnItem->token();
-	rpnItem->setToken(NULL);	// prevent delete of token
-	delete rpnItem;				// delete rpnItem
-	return token;
 }
 
 

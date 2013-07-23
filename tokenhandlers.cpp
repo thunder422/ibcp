@@ -324,10 +324,7 @@ TokenStatus CloseParen_Handler(Translator &t, Token *&token)
 		// clear reference for item on top of done stack
 		t.m_doneStack.top().rpnItem->token()->setReference(false);
 		// replace first and last operands of item on done stack
-		t.deleteOpenParen(t.m_doneStack.top().first);
-		t.m_doneStack.top().first = topToken;
-		t.deleteCloseParen(t.m_doneStack.top().last);
-		t.m_doneStack.top().last = token;
+		t.m_doneStack.replaceTopFirstLast(topToken, token);
 		// mark close paren token as used for last operand and pending paren
 		// (so that it doesn't get deleted until its not used anymore)
 		token->setSubCodeMask(Last_SubCode + Used_SubCode);
@@ -456,8 +453,7 @@ TokenStatus EndOfLine_Handler(Translator &t, Token *&token)
 			return BUG_DoneStackEmpty;
 		}
 		// pop result and delete any paren tokens in first/last operands
-		t.deleteOpenParen(t.m_doneStack.top().first);
-		t.deleteCloseParen(t.m_doneStack.pop().last);
+		t.m_doneStack.drop();
 	}
 
 	// pop and delete null token from top of stack
