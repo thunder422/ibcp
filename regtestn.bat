@@ -37,7 +37,7 @@ rem    be answered No for batch to continue - comp has no option to not
 rem    ask this question)
 rem
 
-del expression*.txt translator0*.txt
+del expression*.txt translator*.txt
 for %%i in (test/expression*.dat test/translator0*.dat) do (
 	ibcp -n test\%%i >%%~ni.txt
 )

@@ -1905,39 +1905,42 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 
 			// get an expression and terminating token
 			token = NULL;
-			if ((status = getExpression(token, dataType)) == Done_TokenStatus)
+			if ((status = getExpression(token, dataType)) != Done_TokenStatus)
 			{
-				// check terminating token
-				if (!token->isCode(CloseParen_Code))
-				{
-					status = ExpOpOrParen_TokenStatus;
-					break;
-				}
-
-				// make sure holding stack contains the open parentheses
-				Token *topToken = m_holdStack.pop().token;
-				if (!topToken->code() == OpenParen_Code)
-				{
-					// oops, no open parentheses (this should not happen)
-					return BUG_UnexpectedCloseParen;
-				}
-
-				// replace first and last operands of token on done stack
-				m_doneStack.replaceTopFirstLast(topToken, token);
-
-				// mark close paren as used for last operand and pending paren
-				// (so it doesn't get deleted until it's not used anymore)
-				token->setSubCodeMask(Last_SubCode + Used_SubCode);
-
-				// set highest precedence if not an operator on done stack top
-				// (no operators in the parentheses)
-				topToken = m_doneStack.top().rpnItem->token();
-				m_lastPrecedence = topToken->isType(Operator_TokenType)
-					? m_table.precedence(topToken) : HighestPrecedence;
-
-				// set pending parentheses token pointer
-				m_pendingParen = token;
+				break;  // exit on error
 			}
+
+			// check terminating token
+			if (!token->isCode(CloseParen_Code))
+			{
+				status = ExpOpOrParen_TokenStatus;
+				break;
+			}
+
+			// make sure holding stack contains the open parentheses
+			Token *topToken = m_holdStack.pop().token;
+			if (!topToken->code() == OpenParen_Code)
+			{
+				// oops, no open parentheses (this should not happen)
+				return BUG_UnexpectedCloseParen;
+			}
+
+			// replace first and last operands of token on done stack
+			m_doneStack.replaceTopFirstLast(topToken, token);
+
+			// mark close paren as used for last operand and pending paren
+			// (so it doesn't get deleted until it's not used anymore)
+			token->setSubCodeMask(Last_SubCode + Used_SubCode);
+
+			// set highest precedence if not an operator on done stack top
+			// (no operators in the parentheses)
+			topToken = m_doneStack.top().rpnItem->token();
+			m_lastPrecedence = topToken->isType(Operator_TokenType)
+				? m_table.precedence(topToken) : HighestPrecedence;
+
+			// set pending parentheses token pointer
+			m_pendingParen = token;
+
 			token = NULL;  // get another token
 		}
 		else
