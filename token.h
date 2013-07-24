@@ -243,10 +243,6 @@ public:
 	}
 
 	// token information functions
-	bool isOperator(void) const
-	{
-		return s_op[m_type];
-	}
 	bool hasParen(void) const
 	{
 		return s_paren[m_type];
@@ -277,7 +273,6 @@ public:
 private:
 	// static members
 	static bool s_paren[sizeof_TokenType];
-	static bool s_op[sizeof_TokenType];
 	static int s_prec[sizeof_TokenType];
 	static bool s_table[sizeof_TokenType];
 	static const QString s_messageArray[sizeof_TokenStatus];

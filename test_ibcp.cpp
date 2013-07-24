@@ -333,9 +333,10 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 	QString info("  ");
 	if (token->hasParen())
 	{
-		info = token->isOperator() ? "??" : "()";
+		info = "()";
 	}
-	else if (token->isOperator())
+	else if (token->isType(Operator_TokenType)
+		|| token->isType(Command_TokenType))
 	{
 		info = "Op";
 	}

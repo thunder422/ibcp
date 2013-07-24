@@ -29,7 +29,6 @@
 
 // static token variables
 bool Token::s_paren[sizeof_TokenType];
-bool Token::s_op[sizeof_TokenType];
 int Token::s_prec[sizeof_TokenType];
 bool Token::s_table[sizeof_TokenType];
 
@@ -109,10 +108,6 @@ void Token::initialize(void)
 	s_paren[IntFuncP_TokenType] = true;
 	s_paren[DefFuncP_TokenType] = true;
 	s_paren[Paren_TokenType] = true;
-
-	// set true for types that are considered an operator
-	s_op[Command_TokenType] = true;
-	s_op[Operator_TokenType] = true;
 
 	// set precedence for non-table token types
 	s_prec[Command_TokenType] = -1;  // use table precedence if -1

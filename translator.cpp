@@ -310,7 +310,8 @@ TokenStatus Translator::addToken(Token *&token)
 	// check for both operand states
 	if (m_state == Operand_State || m_state == OperandOrEnd_State)
 	{
-		if (!token->isOperator())
+		if (!token->isType(Operator_TokenType)
+			&& !token->isType(Command_TokenType))
 		{
 			return processOperand(token);
 		}
@@ -628,7 +629,7 @@ TokenStatus Translator::processBinaryOperator(Token *&token)
 		return endExpressionError();
 	}
 
-	if (!token->isOperator())
+	if (!token->isType(Operator_TokenType) && !token->isType(Command_TokenType))
 	{
 		// state == BinOp_State, but token is not an operator
 		return operatorError();
@@ -816,7 +817,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		{
 			// set first and last operands
 			DoneItem::deleteOpenParen(first);
-			if (token->isOperator())
+			if (token->isType(Operator_TokenType))
 			{
 				// if unary operator, then operator, else first from hold stack
 				// (set first token to unary op)
@@ -1217,7 +1218,7 @@ TokenStatus Translator::getExprDataType(DataType &dataType) const
 	{
 		status = BUG_HoldStackEmpty;
 	}
-	else if (m_holdStack.top().token->isOperator())
+	else if (m_holdStack.top().token->isType(Operator_TokenType))
 	{
 		Code code = m_holdStack.top().token->code();
 		if (code == Null_Code)
@@ -1946,7 +1947,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 		else
 		{
 			Code unaryCode;
-			if (token->isOperator()
+			if (token->isType(Operator_TokenType)
 				&& (unaryCode = m_table.unaryCode(token->code())) != Null_Code)
 			{
 				token->setCode(unaryCode);  // change token to unary operator
