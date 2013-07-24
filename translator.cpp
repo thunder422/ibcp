@@ -2127,15 +2127,15 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			return variableErrStatus(dataType);
 		}
 	case Paren_TokenType:
+		if (reference != None_Reference)
+		{
+			token->setReference();
+		}
 		if ((status = getParenToken(token)) != Good_TokenStatus)
 		{
 			// drop and delete parentheses token since it was not used
 			Token *topToken = m_holdStack.pop().token;
 			delete topToken;
-		}
-		if (reference != None_Reference)
-		{
-			m_doneStack.top().rpnItem->token()->setReference();
 		}
 		return status;
 
@@ -2274,12 +2274,14 @@ TokenStatus Translator::getParenToken(Token *&token)
 	// push parentheses token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each operand
 	m_holdStack.push(token);
+	// determine data type (number for subscripts, any for arguments)
+	DataType dataType = token->reference() ? Number_DataType : Any_DataType;
 	Token *topToken = token;
 
 	for (int nOperands = 1; ; nOperands++)
 	{
 		token = NULL;
-		if ((status = getExpression(token, Any_DataType)) != Done_TokenStatus)
+		if ((status = getExpression(token, dataType)) != Done_TokenStatus)
 		{
 			return status;
 		}
