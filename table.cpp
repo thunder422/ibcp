@@ -639,8 +639,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// OpenParen_Code
 		Operator_TokenType, OneChar_Multiple,
-		"(", NULL, Null_Flag, 2, None_DataType,
-		new ExprInfo(OpenParen_Code)
+		"(", NULL, Null_Flag, 2, None_DataType
 	},
 	{	// CloseParen_Code
 		Operator_TokenType, OneChar_Multiple,

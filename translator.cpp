@@ -555,21 +555,7 @@ bool Translator::processUnaryOperator(Token *&token, TokenStatus &status)
 		return false;
 	}
 
-	Code unary_code = m_table.unaryCode(token->code());
-	if (unary_code == Null_Code)
-	{
-		DataType dataType;
-
-		// oops, not a valid unary operator
-		if ((status = getExprDataType(dataType)) == Good_TokenStatus)
-		{
-			status = expectedErrStatus(dataType);
-		}
-		return false;
-	}
-	// change token to unary operator
-	token->setCode(unary_code);
-	if (unary_code == OpenParen_Code)
+	if (token->isCode(OpenParen_Code))
 	{
 		// check for and add dummy token if necessary
 		doPendingParen(m_holdStack.top().token);
@@ -592,6 +578,20 @@ bool Translator::processUnaryOperator(Token *&token, TokenStatus &status)
 		status = Good_TokenStatus;
 		return false;
 	}
+	Code unary_code = m_table.unaryCode(token->code());
+	if (unary_code == Null_Code)
+	{
+		DataType dataType;
+
+		// oops, not a valid unary operator
+		if ((status = getExprDataType(dataType)) == Good_TokenStatus)
+		{
+			status = expectedErrStatus(dataType);
+		}
+		return false;
+	}
+	// change token to unary operator
+	token->setCode(unary_code);
 	status = Good_TokenStatus;
 	return true;
 }
