@@ -142,7 +142,8 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 				token->setLength(1);  // just point to first character
 				status = endExpressionError();
 			}
-			else if (m_state != Operand_State && m_state != OperandOrEnd_State)
+			else if (m_state != Operand_State && m_state != OperandOrEnd_State
+				&& m_state != Initial_State)
 			{
 				token->setLength(1);  // just point to first character
 				status = operatorError();
@@ -171,7 +172,11 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 				case Expression_TokenMode:
 					// something is on the stack that's not suppose to be there
 					// this is a diagnostic error, should not occur
-					if ((status = getExprDataType(dataType))
+					if (m_state == Initial_State)
+					{
+						status = ExpExpr_TokenStatus;  // (hold stack empty)
+					}
+					else if ((status = getExprDataType(dataType))
 						== Good_TokenStatus)
 					{
 						status = expectedErrStatus(dataType);
@@ -581,7 +586,7 @@ bool Translator::processUnaryOperator(Token *&token, TokenStatus &status)
 	Code unary_code = m_table.unaryCode(token->code());
 	if (unary_code == Null_Code)
 	{
-		DataType dataType;
+		DataType dataType = Any_DataType;
 
 		// oops, not a valid unary operator
 		if ((status = getExprDataType(dataType)) == Good_TokenStatus)
@@ -1649,7 +1654,11 @@ TokenStatus Translator::operatorError(void) const
 
 		case Expression_TokenMode:
 			// FIXME better solution needed once more commands are implemented
-			if (m_cmdStack.top().token->isCode(InputPrompt_Code))
+			if (m_cmdStack.isEmpty())
+			{
+				status = ExpOpOrEnd_TokenStatus;
+			}
+			else if (m_cmdStack.top().token->isCode(InputPrompt_Code))
 			{
 				status = ExpSemiCommaOrEnd_TokenStatus;
 			}
