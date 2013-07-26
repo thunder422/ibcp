@@ -56,9 +56,10 @@ enum DataType
 	String_DataType,
 	SubStr_DataType,
 	// end of the actual execution data types
-	numberof_DataType,	// number of actual execution data types
 	// the following data types are used internally for other uses
 	None_DataType,		// indicates none of the above data types
+	// number of actual execution data types
+	numberof_DataType = None_DataType,
 	Number_DataType,	// either Double or Integer
 	Any_DataType,		// any type (Double, Integer or String)
 	sizeof_DataType

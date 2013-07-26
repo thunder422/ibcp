@@ -64,12 +64,6 @@ static Code cvtCodeHaveNeed[sizeof_DataType][numberof_DataType] = {
 		Null_Code,		// String
 		Null_Code		// SubStr
 	},
-	{	// have numberof,  need:  (will not have any of this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code	// SubStr
-	},
 	{	// have None,      need:  (print functions have this data type)
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
@@ -1588,7 +1582,6 @@ TokenStatus Translator::expectedErrStatus(DataType dataType)
 		ExpNumExpr_TokenStatus,		// Integer
 		ExpStrExpr_TokenStatus,		// String
 		ExpStrExpr_TokenStatus,		// SubStr
-		BUG_InvalidDataType,		// numberof
 		ExpExpr_TokenStatus,		// None
 		ExpNumExpr_TokenStatus,		// Number
 		ExpExpr_TokenStatus			// Any
@@ -1606,7 +1599,6 @@ TokenStatus Translator::actualErrStatus(DataType dataType)
 		ExpStrExpr_TokenStatus,		// Integer
 		ExpNumExpr_TokenStatus,		// String
 		ExpNumExpr_TokenStatus,		// SubStr
-		BUG_InvalidDataType,		// numberof
 		BUG_InvalidDataType			// None
 	};
 
@@ -1622,7 +1614,6 @@ TokenStatus Translator::variableErrStatus(DataType dataType)
 		ExpIntVar_TokenStatus,		// Integer
 		ExpStrItem_TokenStatus,		// String
 		BUG_InvalidDataType,		// SubStr
-		BUG_InvalidDataType,		// numberof
 		ExpAssignItem_TokenStatus,	// None
 		BUG_InvalidDataType,		// Number
 		ExpAssignItem_TokenStatus	// Any
