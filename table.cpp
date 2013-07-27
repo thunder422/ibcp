@@ -1202,8 +1202,10 @@ QStringList Table::setupAndCheck(void)
 			// set expected data type (start with data type of last operand)
 			if (exprInfo->m_nOperands > 0)
 			{
+				// use last operand for operators, first operand for functions
 				exprInfo->m_expectedDataType
-					= exprInfo->m_operandDataType[exprInfo->m_nOperands - 1];
+					= exprInfo->m_operandDataType[m_entry[i].type
+					== Operator_TokenType ? exprInfo->m_nOperands - 1 : 0];
 				// check each secondary associated code
 				if (exprInfo->m_nAssocCodes > 0)
 				{

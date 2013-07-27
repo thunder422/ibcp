@@ -60,7 +60,7 @@ Input: Z(INT(A+B))=C
 Output: A B + INT( Z(<ref>[INT(] C Assign 
 
 Input: Z(A$)=C
-         ^^-- expected numeric expression
+Output: A$<ref> Z(<ref>[A$<ref>] C Assign 
 
 Input: Z(A)=Y(A$)
 Output: A<ref> Z(<ref>[A<ref>] A$<ref> Y([A$<ref>] Assign 

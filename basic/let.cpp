@@ -130,16 +130,10 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		token->setReference(false);
 		letStack.push(token);
 
-		// get data type for multiple assignments
+		// get data type for assignment
 		if (dataType == Any_DataType)
 		{
 			dataType = token->dataType();
-		}
-		else if (token->dataType() != dataType)
-		{
-			token = translator.outputLastToken();
-			return translator.expectedErrStatus(dataType,
-				Translator::All_Reference);
 		}
 
 		token = NULL;
@@ -178,16 +172,9 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		}
 	}
 
-	// check end process expression, inserting conversion codes as needed
-	Token *saveToken = letToken;
-	if ((status = translator.processFinalOperand(letToken, NULL, 1))
-		!= Good_TokenStatus)
-	{
-		delete token;  // expression terminating token
-		delete saveToken;  // wasn't added to output
-		token = letToken;
-		return status;
-	}
+	// drop expresion result from done stack, append last assignment token
+	translator.doneStackDrop();
+	translator.outputAppend(letToken);
 
 	// reset reference, no longer needed, and set hidden LET flag if needed
 	letToken->setReference(false);

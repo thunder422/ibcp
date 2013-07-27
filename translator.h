@@ -134,7 +134,7 @@ public:
 	RpnList *translate(const QString &input, bool exprMode = false);
 	// New Translator Functions
 	RpnList *translate2(const QString &input, bool exprMode);
-	TokenStatus getExpression(Token *&token, DataType dataType);
+	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
 	TokenStatus getOperand(Token *&token, DataType dataType,
 		Reference reference = None_Reference);
 	TokenStatus getInternalFunction(Token *&token);
@@ -161,6 +161,10 @@ public:
 	{
 		return m_doneStack.pop();
 	}
+	void doneStackDrop(void)
+	{
+		 m_doneStack.drop();
+	}
 	Token *doneStackTopToken(void) const
 	{
 		return m_doneStack.top().rpnItem->token();
@@ -177,6 +181,7 @@ public:
 		m_output->append(rpnItem);
 		return rpnItem;
 	}
+	Token *doneStackPopErrorToken(void);
 
 	// Determine Error Funtions (By DataType)
 	static TokenStatus expectedErrStatus(DataType dataType,

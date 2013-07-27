@@ -39,48 +39,69 @@ enum {
 
 
 // array of conversion codes [have data type] [need data type]
-static Code cvtCodeHaveNeed[sizeof_DataType][numberof_DataType] = {
+static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 	{	// have Double,    need:
 		Null_Code,		// Double
 		CvtInt_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code	// SubStr
+		Invalid_Code,	// SubStr
+		Invalid_Code,	// None (will never need this data type)
+		Null_Code,		// Number
+		Null_Code,		// Any
 	},
 	{	// have Integer,   need:
 		CvtDbl_Code,	// Double
 		Null_Code,		// Integer
 		Invalid_Code,	// String
-		Invalid_Code	// SubStr
+		Invalid_Code,	// SubStr
+		Invalid_Code,	// None (will never need this data type)
+		Null_Code,		// Number
+		Null_Code		// Any
 	},
 	{	// have String,    need:
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Null_Code,		// String
-		Null_Code		// SubStr
+		Null_Code,		// SubStr
+		Invalid_Code,	// None (will never need this data type)
+		Invalid_Code,	// Number
+		Null_Code		// Any
 	},
 	{	// have SubStr,    need:  (FIXME this data will be removed)
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Null_Code,		// String
-		Null_Code		// SubStr
+		Null_Code,		// SubStr
+		Invalid_Code,	// None (will never need this data type)
+		Invalid_Code,	// Number
+		Null_Code		// Any
 	},
 	{	// have None,      need:  (print functions have this data type)
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code	// SubStr
+		Invalid_Code,	// SubStr
+		Invalid_Code,	// None (will never need this data type)
+		Invalid_Code,	// Number
+		Invalid_Code	// Any
 	},
 	{	// have Number,    need:  (will not have any of this data type)
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code	// SubStr
+		Invalid_Code,	// SubStr
+		Invalid_Code,	// None (will never need this data type)
+		Invalid_Code,	// Number
+		Invalid_Code	// Any
 	},
 	{	// have Any,       need:  (will not have any of this data type)
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code	// SubStr
+		Invalid_Code,	// SubStr
+		Invalid_Code,	// None (will never need this data type)
+		Invalid_Code,	// Number
+		Invalid_Code	// Any
 	}
 };
 
@@ -1898,14 +1919,16 @@ TokenStatus Translator::getCommand(Token *&token)
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the expression
 
-TokenStatus Translator::getExpression(Token *&token, DataType dataType)
+TokenStatus Translator::getExpression(Token *&token, DataType dataType,
+	int level)
 {
 	TokenStatus status;
+	DataType expectedDataType = dataType;
 
 	forever
 	{
 		if (token == NULL
-			&& (status = getToken(token, dataType)) != Good_TokenStatus)
+			&& (status = getToken(token, expectedDataType)) != Good_TokenStatus)
 		{
 			break;
 		}
@@ -1918,7 +1941,8 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 
 			// get an expression and terminating token
 			token = NULL;
-			if ((status = getExpression(token, dataType)) != Done_TokenStatus)
+			if ((status = getExpression(token, expectedDataType, level + 1))
+				!= Done_TokenStatus)
 			{
 				break;  // exit on error
 			}
@@ -1965,7 +1989,8 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 				token->setCode(unaryCode);  // change token to unary operator
 			}
 			// get operand
-			else if ((status = getOperand(token, dataType)) != Good_TokenStatus)
+			else if ((status = getOperand(token, expectedDataType))
+				!= Good_TokenStatus)
 			{
 				break;
 			}
@@ -1994,13 +2019,35 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 		}
 
 		// check for and process operator (unary or binary)
-		if ((status = processOperator2(token)) != Good_TokenStatus)
+		status = processOperator2(token);
+		if (status == Done_TokenStatus)
 		{
-			break;  // could be Done_TokenStatus
+			if (level == 0)
+			{
+				// add convert code if needed or report error
+				Code cvt_code = cvtCodeHaveNeed[m_doneStack.top().rpnItem
+					->token()->dataType()][dataType];
+				if (cvt_code == Invalid_Code)
+				{
+					delete token;  // delete terminating token
+					token = doneStackPopErrorToken();
+					status = expectedErrStatus(dataType);
+				}
+				else if (cvt_code != Null_Code)
+				{
+					// append hidden conversion code
+					outputAppend(m_table.newToken(cvt_code));
+				}
+			}
+			break;
+		}
+		else if (status != Good_TokenStatus)
+		{
+			break;
 		}
 
 		// get operator's expected data type, reset token and loop back
-		dataType = m_table.expectedDataType(token);
+		expectedDataType = m_table.expectedDataType(token);
 		token = NULL;
 	}
 	return status;
@@ -2081,6 +2128,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 {
 	// FROM processOperand()
 	TokenStatus status;
+	bool doneAppend = true;
 
 	// get token if none was passed
 	if (token == NULL
@@ -2133,8 +2181,10 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			// drop and delete function token since it was not used
 			Token *topToken = m_holdStack.pop().token;
 			delete topToken;
+			return status;
 		}
-		return status;
+		doneAppend = false;  // already appended
+		break;
 
 	case DefFuncP_TokenType:
 		if (reference != None_Reference)
@@ -2155,17 +2205,28 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			// drop and delete parentheses token since it was not used
 			Token *topToken = m_holdStack.pop().token;
 			delete topToken;
+			return status;
 		}
-		return status;
+		doneAppend = false;  //already appended
+		break;
 
 	default:
 		return BUG_NotYetImplemented;
 	}
 
-	// add token directly output list
-	// and push element pointer on done stack
-	m_doneStack.push(outputAppend(token));
-
+	if (doneAppend)
+	{
+		// add token directly to output list
+		// and push element pointer on done stack
+		m_doneStack.push(outputAppend(token));
+	}
+	// for reference, check data type
+	if (reference != None_Reference
+		&& cvtCodeHaveNeed[token->dataType()][dataType] != Null_Code)
+	{
+		token = doneStackPopErrorToken();
+		return expectedErrStatus(dataType, reference);
+	}
 	return Good_TokenStatus;
 }
 
@@ -2178,6 +2239,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 TokenStatus Translator::getInternalFunction(Token *&token)
 {
 	TokenStatus status;
+	DataType expectedDataType;
 
 	// push internal function token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each argument
@@ -2192,7 +2254,8 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		if (i == 0 && topToken->reference())
 		{
 			// sub-string assignment, look for reference operand
-			status = getOperand(token, String_DataType, Variable_Reference);
+			expectedDataType = String_DataType;
+			status = getOperand(token, expectedDataType, Variable_Reference);
 			if (status == Good_TokenStatus)
 			{
 				if ((status = getToken(token)) == Good_TokenStatus)
@@ -2207,11 +2270,29 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		}
 		else
 		{
-			status = getExpression(token, m_table.operandDataType(code, i));
+			if (i == 0)
+			{
+				expectedDataType = m_table.expectedDataType(topToken);
+			}
+			else
+			{
+				expectedDataType = m_table.operandDataType(code, i);
+			}
+			status = getExpression(token, expectedDataType);
 		}
 		if (status != Done_TokenStatus)
 		{
 			return status;
+		}
+
+		// check if associated code for function is needed
+		if (expectedDataType == Number_DataType
+			&& m_doneStack.top().rpnItem->token()->dataType()
+			!= m_table.operandDataType(topToken->code(), 0))
+		{
+			// change token's code and data type to associated code
+			m_table.setToken(topToken,
+				m_table.assocCode(topToken->code()));
 		}
 
 		// check terminating token
@@ -2230,12 +2311,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 				lastOperand = m_table.nOperands(code) - 1;
 			}
 			delete token;  // delete comma token, it's not needed
-			// check argument, change code and insert conversion as needed
-			if ((status = findCode(topToken, i)) != Good_TokenStatus)
-			{
-				token = topToken;  // return token with error
-				return status;
-			}
+			m_doneStack.drop();
 		}
 		else if (token->isCode(CloseParen_Code))
 		{
@@ -2244,15 +2320,26 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 				status = ExpOpOrComma_TokenStatus;
 				break;
 			}
-			status = processFinalOperand(topToken, token, i, 0);
-			if (status != Good_TokenStatus)
+
+			// FIXME this is temporary until old translator removed
+			// FIXME (SubStr_DataType will be removed)
+			if (topToken->isDataType(SubStr_DataType))
 			{
-				delete token;      // delete close paren token
-				token = topToken;  // set to token with error
-				return status;
+				topToken->setDataType(String_DataType);
 			}
+
+			m_doneStack.drop();  // remove from done stack (remove paren tokens)
+
+			// add token to output list if not sub-string assignment
+			RpnItem *rpnItem = topToken->reference()
+				? new RpnItem(topToken) : outputAppend(topToken);
+
+			// push internal function to done stack
+			m_doneStack.push(rpnItem, NULL, token);
+
 			m_holdStack.drop();
-			return status;
+			token = topToken;  // return original token
+			return Good_TokenStatus;
 		}
 		// unexpected token, determine appropriate error
 		else
@@ -2324,15 +2411,23 @@ TokenStatus Translator::getParenToken(Token *&token)
 		}
 		else if (token->isCode(CloseParen_Code))
 		{
-			status = processFinalOperand(topToken, token, 0, nOperands);
-			if (status != Good_TokenStatus)
+			RpnItem **operand = new RpnItem *[nOperands];
+			// save operands for storage in output list
+			for (int i = nOperands; --i >= 0;)
 			{
-				delete token;      // delete close paren token
-				token = topToken;  // set to token with error
-				return status;
+				// TODO will need to keep first/last operands for each operand
+				// TODO (in case expression needs to be reported as an error)
+				// TODO (RpnItem should have DoneItem operands, not RpnItem)
+				operand[i] = m_doneStack.pop();
 			}
+
+			// add token to output list and push element pointer on done stack
+			m_doneStack.push(outputAppend(topToken, nOperands, operand), NULL,
+				token);
+
 			m_holdStack.drop();
-			return status;
+			token = topToken;  // return original token
+			return Good_TokenStatus;
 		}
 		else  // unexpected token
 		{
@@ -2422,6 +2517,31 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		}
 		m_pendingParen = NULL;  // reset pending token
 	}
+}
+
+
+// function to pop the top item from the done stack and return the token
+// from the first to the last operand appropriate for an error token
+
+Token *Translator::doneStackPopErrorToken(void)
+{
+	Token *token = m_doneStack.top().first;
+	if (token == NULL)
+	{
+		// if no first operand token, set to token itself
+		token = m_doneStack.top().rpnItem->token();
+	}
+	else
+	{
+		m_doneStack.top().first = NULL;  // prevent delete when top dropped
+	}
+	// if last operand token set, set error token through last token
+	if (m_doneStack.top().last != NULL)
+	{
+		token->setThrough(m_doneStack.top().last);
+	}
+	m_doneStack.drop();  // (removes any paren tokens)
+	return token;  // return error token
 }
 
 
