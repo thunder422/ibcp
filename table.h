@@ -136,8 +136,10 @@ public:
 
 	// TOKEN RELATED TABLE FUNCTIONS
 	bool isUnaryOperator(Token *token) const;
+	bool isUnaryOrBinaryOperator(Token *token) const;
 	int precedence(Token *token) const;
 	int hasFlag(Token *token, int flag) const;
+	int nOperands(Token *token) const;
 	DataType expectedDataType(Token *token) const;
 	void setToken(Token *token, Code code);
 	Token *newToken(Code code);

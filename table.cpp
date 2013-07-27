@@ -1441,6 +1441,13 @@ bool Table::isUnaryOperator(Token *token) const
 	return token->hasTableEntry() ? isUnaryOperator(token->code()) : false;
 }
 
+// returns whether the token is a unary or binary operator
+// (token type must be operator and have operands)
+bool Table::isUnaryOrBinaryOperator(Token *token) const
+{
+	return token->isType(Operator_TokenType) ? nOperands(token) > 0 : false;
+}
+
 // returns the precedence of the code contained in a token
 //
 //   - the precedence is obtained from the token
@@ -1458,6 +1465,13 @@ int Table::hasFlag(Token *token, int flag) const
 {
 	// (non-table entry token types have no flags)
 	return token->hasTableEntry() ? hasFlag(token->code(), flag) : 0;
+}
+
+// returns number of operands expected for code in token token
+int Table::nOperands(Token *token) const
+{
+	ExprInfo *exprInfo = m_entry[token->code()].exprInfo;
+	return exprInfo == NULL ? 0 : exprInfo->m_nOperands;
 }
 
 // returns the expected data type for last operand for operator token

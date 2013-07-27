@@ -2012,14 +2012,18 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType)
 
 TokenStatus Translator::processOperator2(Token *&token)
 {
-	// unary operators don't force other tokens from hold stack
-	while (m_table.precedence(m_holdStack.top().token)
-		>= m_table.precedence(token) && !m_table.isUnaryOperator(token))
-	{
-		// get operator on top of stack and add it to the output
-		Token *topToken = m_holdStack.top().token;
-		// (don't pop token here in case error occurs)
+	// determine precedence of incoming token
+	// (set highest precedence for unary operators,
+	// which don't force other operators from hold stack)
+	int tokenPrecedence = m_table.isUnaryOperator(token)
+		? HighestPrecedence : m_table.precedence(token);
 
+	// process and drop unary or binary operators on hold stack
+	// while they have higher or same precedence as incoming token
+	Token *topToken;
+	while (m_table.precedence(topToken = m_holdStack.top().token)
+		>= tokenPrecedence && m_table.isUnaryOrBinaryOperator(topToken))
+	{
 		checkPendingParen(topToken, true);
 
 		// change token operator code or insert conversion codes as needed
@@ -2044,14 +2048,13 @@ TokenStatus Translator::processOperator2(Token *&token)
 
 	checkPendingParen(token, false);
 
-	// check for end of expression
-	if (!token->isType(Operator_TokenType)
-		|| m_table.hasFlag(token, EndExpr_Flag))
+	// if a unary or binary operator then process first operand and return
+	if (m_table.isUnaryOrBinaryOperator(token))
 	{
-		return Done_TokenStatus;
+		return processFirstOperand(token);
 	}
 
-	return processFirstOperand(token);
+	return Done_TokenStatus;  // otherwise, end of expression
 }
 
 
