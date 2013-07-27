@@ -179,7 +179,12 @@ public:
 	}
 
 	// Determine Error Funtions (By DataType)
-	static TokenStatus variableErrStatus(DataType dataType);
+	static TokenStatus expectedErrStatus(DataType dataType,
+		Reference reference = None_Reference);
+	static TokenStatus variableErrStatus(DataType dataType)
+	{	// FIXME remove with old translator routines
+		return expectedErrStatus(dataType, All_Reference);
+	}
 
 private:
 	enum Match
@@ -217,7 +222,6 @@ private:
 	TokenStatus setAssignCommand(Token *&token, Code assign_code);
 
 	// Determine Error Funtions (By DataType)
-	static TokenStatus expectedErrStatus(DataType dataType);
 	static TokenStatus actualErrStatus(DataType dataType);
 
 	// Determine Error Functions (By Current State)

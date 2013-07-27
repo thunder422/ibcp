@@ -1575,19 +1575,48 @@ DataType Translator::equivalentDataType(DataType dataType)
 
 
 // function to return the token error status for an expected data type
-TokenStatus Translator::expectedErrStatus(DataType dataType)
+TokenStatus Translator::expectedErrStatus(DataType dataType,
+	Reference reference)
 {
-	static TokenStatus tokenStatus[sizeof_DataType] = {
-		ExpNumExpr_TokenStatus,		// Double
-		ExpNumExpr_TokenStatus,		// Integer
-		ExpStrExpr_TokenStatus,		// String
-		ExpStrExpr_TokenStatus,		// SubStr
-		ExpExpr_TokenStatus,		// None
-		ExpNumExpr_TokenStatus,		// Number
-		ExpExpr_TokenStatus			// Any
+	static TokenStatus tokenStatus[sizeof_DataType][sizeof_Reference] = {
+	    {	// Double
+			ExpNumExpr_TokenStatus,		// None
+			ExpDblVar_TokenStatus,		// Variable
+			ExpDblVar_TokenStatus		// All
+	    },
+	    {	// Integer
+			ExpNumExpr_TokenStatus,		// None
+			ExpIntVar_TokenStatus,		// Variable
+			ExpIntVar_TokenStatus		// All
+	    },
+	    {	// String
+			ExpStrExpr_TokenStatus,		// None
+			ExpStrVar_TokenStatus,		// Variable
+			ExpStrItem_TokenStatus		// All
+	    },
+	    {	// SubStr
+			ExpStrExpr_TokenStatus,		// None
+			BUG_InvalidDataType,		// Variable
+			BUG_InvalidDataType			// All
+	    },
+	    {	// None
+			ExpExpr_TokenStatus,		// None
+			ExpAssignItem_TokenStatus,	// Variable
+			ExpAssignItem_TokenStatus	// All
+	    },
+	    {	// Number
+			ExpNumExpr_TokenStatus,		// None
+			BUG_InvalidDataType,		// Variable
+			BUG_InvalidDataType			// All
+	    },
+	    {	// Any
+			ExpExpr_TokenStatus,		// None
+			ExpAssignItem_TokenStatus,	// Variable
+			ExpAssignItem_TokenStatus	// All
+	    }
 	};
 
-	return tokenStatus[dataType];
+	return tokenStatus[dataType][reference];
 }
 
 
@@ -1600,23 +1629,6 @@ TokenStatus Translator::actualErrStatus(DataType dataType)
 		ExpNumExpr_TokenStatus,		// String
 		ExpNumExpr_TokenStatus,		// SubStr
 		BUG_InvalidDataType			// None
-	};
-
-	return tokenStatus[dataType];
-}
-
-
-// function to return the token error status for a variable data type
-TokenStatus Translator::variableErrStatus(DataType dataType)
-{
-	static TokenStatus tokenStatus[sizeof_DataType] = {
-		ExpDblVar_TokenStatus,		// Double
-		ExpIntVar_TokenStatus,		// Integer
-		ExpStrItem_TokenStatus,		// String
-		BUG_InvalidDataType,		// SubStr
-		ExpAssignItem_TokenStatus,	// None
-		BUG_InvalidDataType,		// Number
-		ExpAssignItem_TokenStatus	// Any
 	};
 
 	return tokenStatus[dataType];
@@ -2075,7 +2087,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		&& (status = getToken(token, dataType)) != Good_TokenStatus)
 	{
 		return reference == None_Reference
-			? status : variableErrStatus(dataType);
+			? status : expectedErrStatus(dataType, reference);
 	}
 
 	// set default data type for token if it has none
@@ -2085,15 +2097,14 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	{
 	case Command_TokenType:
 	case Operator_TokenType:
-		return reference == None_Reference
-			? expectedErrStatus(dataType) : variableErrStatus(dataType);
+		return expectedErrStatus(dataType, reference);
 
 	case Constant_TokenType:
 		// fall thru
 	case IntFuncN_TokenType:
 		if (reference != None_Reference)
 		{
-			return variableErrStatus(dataType);
+			return expectedErrStatus(dataType, reference);
 		}
 	case DefFuncN_TokenType:
 		// fall thru
@@ -2114,7 +2125,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			}
 			else
 			{
-				return ExpStrVar_TokenStatus;
+				return expectedErrStatus(dataType, reference);
 			}
 		}
 		if ((status = getInternalFunction(token)) != Good_TokenStatus)
@@ -2128,7 +2139,11 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	case DefFuncP_TokenType:
 		if (reference != None_Reference)
 		{
-			return variableErrStatus(dataType);
+			// NOTE these are allowed in the DEF command
+			// just point to the open parentheses of the token
+			token->addLengthToColumn();
+			token->setLength(1);
+			return ExpEqualOrComma_TokenStatus;
 		}
 	case Paren_TokenType:
 		if (reference != None_Reference)

@@ -138,7 +138,8 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		else if (token->dataType() != dataType)
 		{
 			token = translator.outputLastToken();
-			return translator.variableErrStatus(dataType);
+			return translator.expectedErrStatus(dataType,
+				Translator::All_Reference);
 		}
 
 		token = NULL;
