@@ -1809,7 +1809,11 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 		token = NULL;
 		status = getExpression(token, Any_DataType);
 
-		if (status == Done_TokenStatus)
+		if (status == Parser_TokenStatus && token->isDataType(None_DataType))
+		{
+			status = ExpOpOrEnd_TokenStatus;
+		}
+		else if (status == Done_TokenStatus)
 		{
 			// pop final result off of done stack
 			if (m_doneStack.isEmpty())
@@ -1944,6 +1948,10 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			if ((status = getExpression(token, expectedDataType, level + 1))
 				!= Done_TokenStatus)
 			{
+				if (m_table.isUnaryOperator(token))
+				{
+					status = ExpBinOpOrParen_TokenStatus;
+				}
 				break;  // exit on error
 			}
 
@@ -2004,15 +2012,12 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			// get binary operator or end-of-expression token
 			if ((status = getToken(token)) != Good_TokenStatus)
 			{
-				// if parser error then expected binary operator or end
-				// (this error needs to be changed appropriately by caller)
-				status = ExpOpOrEnd_TokenStatus;
+				// if parser error then caller needs to handle it
 				break;
 			}
 			// check for unary operator (token should be a binary operator)
 			if (m_table.isUnaryOperator(token))
 			{
-				// (this error needs to be changed appropriately by caller)
 				status = ExpBinOpOrEnd_TokenStatus;
 				break;
 			}
@@ -2134,8 +2139,16 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	if (token == NULL
 		&& (status = getToken(token, dataType)) != Good_TokenStatus)
 	{
-		return reference == None_Reference
-			? status : expectedErrStatus(dataType, reference);
+		if (reference == None_Reference)
+		{
+			// if parser error then caller needs to handle it
+			return status;
+		}
+		if (status == Parser_TokenStatus)
+		{
+			token->setLength(1);  // only report error at first char of token
+		}
+		return expectedErrStatus(dataType, reference);
 	}
 
 	// set default data type for token if it has none
@@ -2240,6 +2253,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 {
 	TokenStatus status;
 	DataType expectedDataType;
+	bool unaryOperator = false;
 
 	// push internal function token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each argument
@@ -2280,20 +2294,35 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 			}
 			status = getExpression(token, expectedDataType);
 		}
-		if (status != Done_TokenStatus)
+
+		if (status == Done_TokenStatus)
+		{
+			// check if associated code for function is needed
+			if (expectedDataType == Number_DataType
+				&& m_doneStack.top().rpnItem->token()->dataType()
+				!= m_table.operandDataType(topToken->code(), 0))
+			{
+				// change token's code and data type to associated code
+				m_table.setToken(topToken,
+					m_table.assocCode(topToken->code()));
+			}
+		}
+		else if (status == Parser_TokenStatus)
+		{
+			if (token->isDataType(Double_DataType))
+			{
+				return status;  // return parser error
+			}
+		}
+		else if (m_table.isUnaryOperator(token))
+		{
+			unaryOperator = true;
+		}
+		else
 		{
 			return status;
 		}
-
-		// check if associated code for function is needed
-		if (expectedDataType == Number_DataType
-			&& m_doneStack.top().rpnItem->token()->dataType()
-			!= m_table.operandDataType(topToken->code(), 0))
-		{
-			// change token's code and data type to associated code
-			m_table.setToken(topToken,
-				m_table.assocCode(topToken->code()));
-		}
+		// pass other parser errors and unary operators to error code below
 
 		// check terminating token
 		if (token->isCode(Comma_Code))
@@ -2350,16 +2379,19 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 			}
 			else if (i < lastOperand)
 			{
-				status = ExpOpOrComma_TokenStatus;
+				status = unaryOperator ? ExpBinOpOrComma_TokenStatus
+					: ExpOpOrComma_TokenStatus;
 			}
 			else if (!m_table.hasFlag(code, Multiple_Flag))
 			{
 				// function doesn't have multiple entries
-				status = ExpOpOrParen_TokenStatus;
+				status = unaryOperator ? ExpBinOpOrParen_TokenStatus
+					: ExpOpOrParen_TokenStatus;
 			}
 			else
 			{
-				status = ExpOpCommaOrParen_TokenStatus;
+				status = unaryOperator ? ExpBinOpCommaOrParen_TokenStatus
+					: ExpOpCommaOrParen_TokenStatus;
 			}
 			break;
 		}
@@ -2389,6 +2421,15 @@ TokenStatus Translator::getParenToken(Token *&token)
 		token = NULL;
 		if ((status = getExpression(token, dataType)) != Done_TokenStatus)
 		{
+			if (status == Parser_TokenStatus
+				&& token->isDataType(None_DataType))
+			{
+				status = ExpOpCommaOrParen_TokenStatus;
+			}
+			else if (m_table.isUnaryOperator(token))
+			{
+				status = ExpBinOpCommaOrParen_TokenStatus;
+			}
 			return status;
 		}
 
@@ -2451,12 +2492,15 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 	token->setSubCodeMask(UnUsed_SubCode);
 	if (token->isType(Error_TokenType))
 	{
-		if (!operand && token->dataType() == Double_DataType)
+		if (!operand && token->dataType() == Double_DataType
+			|| dataType == String_DataType)
 		{
 			// only do this for non-operand number constant errors
 			token->setLength(1);  // just point to first character
+			token->setDataType(None_DataType);  // indicate not a number error
 		}
-		if (operand && token->dataType() != Double_DataType)
+		if (operand && (token->dataType() != Double_DataType
+			|| dataType == String_DataType))
 		{
 			// non-number constant error, return expected expression error
 			return expectedErrStatus(dataType);

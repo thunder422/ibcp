@@ -33,71 +33,139 @@ int Token::s_prec[sizeof_TokenType];
 bool Token::s_table[sizeof_TokenType];
 
 // token status message array
-//   (TokenStatus enumeration generated from names
-//   in comments at the end each line by enums.awk,
-//   lines starting with comments are ignored)
+//   (TokenStatus enumeration generated from names in comments
+//   on the line before the line with the message string by enums.awk,
+//   extra lines starting with comments are ignored)
 const QString Token::s_messageArray[sizeof_TokenStatus] = {
-	tr("Null_TokenStatus (BUG)"),							// Null
-	tr("Good_TokenStatus (BUG)"),							// Good
-	tr("Done_TokenStatus (BUG)"),							// Done
-	tr("Parser_TokenStatus (BUG)"),							// Parser
-	tr("expected command"),									// ExpCmd
-	tr("expected expression"),								// ExpExpr
-	tr("expected expression or end-of-statement"),			// ExpExprOrEnd
-	tr("expected operator or end-of-statement"),			// ExpOpOrEnd
-	tr("expected binary operator or end-of-statement"),		// ExpBinOpOrEnd
-	tr("expected equal or comma for assignment"),			// ExpEqualOrComma
-	tr("expected comma"),									// ExpComma
-	tr("expected item for assignment"),						// ExpAssignItem
-	tr("expected operator or comma"),						// ExpOpOrComma
-	tr("expected operator, comma or closing parentheses"),	// ExpOpCommaOrParen
-	tr("expected operator or closing parentheses"),			// ExpOpOrParen
-	tr("expected double expression"),						// ExpDouble
-	tr("expected integer expression"),						// ExpInteger
-	tr("expected string expression (old)"),					// ExpString
-	tr("expected numeric expression"),						// ExpNumExpr
-	tr("expected string expression"),						// ExpStrExpr
-	tr("expected semicolon, comma or end-of-statement"),	// ExpSemiCommaOrEnd
-	tr("expected semicolon or comma"),						// ExpSemiOrComma
-	tr("expected operator, semicolon or comma"),			// ExpOpSemiOrComma
-	tr("expected double variable"),							// ExpDblVar
-	tr("expected integer variable"),						// ExpIntVar
-	tr("expected string variable"),							// ExpStrVar
-	tr("expected variable"),								// ExpVar
-	tr("expected string item for assignment"),				// ExpStrItem
-	tr("expected end-of-statement"),						// ExpEndStmt
+    // Null
+	tr("Null_TokenStatus (BUG)"),
+    // Good
+	tr("Good_TokenStatus (BUG)"),
+    // Done
+	tr("Done_TokenStatus (BUG)"),
+    // Parser
+	tr("Parser_TokenStatus (BUG)"),
+    // ExpCmd
+	tr("expected command"),
+    // ExpExpr
+	tr("expected expression"),
+    // ExpExprOrEnd
+	tr("expected expression or end-of-statement"),
+    // ExpOpOrEnd
+	tr("expected operator or end-of-statement"),
+    // ExpBinOpOrEnd
+	tr("expected binary operator or end-of-statement"),
+    // ExpEqualOrComma
+	tr("expected equal or comma for assignment"),
+    // ExpComma
+	tr("expected comma"),
+    // ExpAssignItem
+	tr("expected item for assignment"),
+    // ExpOpOrComma
+	tr("expected operator or comma"),
+    // ExpOpCommaOrParen
+	tr("expected operator, comma or closing parentheses"),
+    // ExpOpOrParen
+	tr("expected operator or closing parentheses"),
+    // ExpBinOpOrComma
+	tr("expected binary operator or comma"),
+    // ExpBinOpCommaOrParen
+	tr("expected binary operator, comma or closing parentheses"),
+    // ExpBinOpOrParen
+	tr("expected binary operator or closing parentheses"),
+    // ExpDouble
+	tr("expected double expression"),
+    // ExpInteger
+	tr("expected integer expression"),
+    // ExpString
+	tr("expected string expression (old)"),
+    // ExpNumExpr
+	tr("expected numeric expression"),
+    // ExpStrExpr
+	tr("expected string expression"),
+    // ExpSemiCommaOrEnd
+	tr("expected semicolon, comma or end-of-statement"),
+    // ExpSemiOrComma
+	tr("expected semicolon or comma"),
+    // ExpOpSemiOrComma
+	tr("expected operator, semicolon or comma"),
+    // ExpBinOpSemiOrComma
+	tr("expected binary operator, semicolon or comma"),
+    // ExpDblVar
+	tr("expected double variable"),
+    // ExpIntVar
+	tr("expected integer variable"),
+    // ExpStrVar
+	tr("expected string variable"),
+    // ExpVar
+	tr("expected variable"),
+    // ExpStrItem
+	tr("expected string item for assignment"),
+    // ExpEndStmt
+	tr("expected end-of-statement"),
 	// the following statuses used during development
-	tr("BUG: not yet implemented"),					// NotYetImplemented
-	tr("BUG: invalid mode"),						// InvalidMode
-	tr("BUG: hold stack empty"),					// HoldStackEmpty
-	tr("BUG: hold stack not empty"),				// HoldStackNotEmpty
-	tr("BUG: done stack not empty"),				// DoneStackNotEmpty
-	tr("BUG: done stack empty - parentheses"),		// DoneStackEmptyParen
-	tr("BUG: done stack empty - operands"),			// DoneStackEmptyOperands
-	tr("BUG: done stack empty - operands 2"),		// DoneStackEmptyOperands2
-	tr("BUG: done stack empty - find code"),		// DoneStackEmptyFindCode
-	tr("BUG: unexpected closing parentheses"),		// UnexpectedCloseParen
-	tr("BUG: unexpected token on hold stack"),		// UnexpectedToken
-	tr("BUG: expected operand on done stack"),		// DoneStackEmpty
-	tr("BUG: command stack not empty"),				// CmdStackNotEmpty
-	tr("BUG: command stack empty"),					// CmdStackEmpty
-	tr("BUG: command stack empty for expression"),	// CmdStackEmptyExpr
-	tr("BUG: command stack empty for command"),		// CmdStackEmptyCmd
-	tr("BUG: no assign list code found"),			// NoAssignListCode
-	tr("BUG: invalid data type"),					// InvalidDataType
-	tr("BUG: count stack empty"),					// CountStackEmpty
-	tr("BUG: unexpected parentheses in expression"),	// UnexpParenExpr
-	tr("BUG: unexpected token"),					// UnexpToken
-	tr("BUG: debug #1"),							// Debug1
-	tr("BUG: debug #2"),							// Debug2
-	tr("BUG: debug #3"),							// Debug3
-	tr("BUG: debug #4"),							// Debug4
-	tr("BUG: debug #5"),							// Debug5
-	tr("BUG: debug #6"),							// Debug6
-	tr("BUG: debug #7"),							// Debug7
-	tr("BUG: debug #8"),							// Debug8
-	tr("BUG: debug #9"),							// Debug9
-	tr("BUG: debug")								// Debug
+    // NotYetImplemented
+	tr("BUG: not yet implemented"),
+    // InvalidMode
+	tr("BUG: invalid mode"),
+    // HoldStackEmpty
+	tr("BUG: hold stack empty"),
+    // HoldStackNotEmpty
+	tr("BUG: hold stack not empty"),
+    // DoneStackNotEmpty
+	tr("BUG: done stack not empty"),
+    // DoneStackEmptyParen
+	tr("BUG: done stack empty - parentheses"),
+    // DoneStackEmptyOperands
+	tr("BUG: done stack empty - operands"),
+    // DoneStackEmptyOperands2
+	tr("BUG: done stack empty - operands 2"),
+    // DoneStackEmptyFindCode
+	tr("BUG: done stack empty - find code"),
+    // UnexpectedCloseParen
+	tr("BUG: unexpected closing parentheses"),
+    // UnexpectedToken
+	tr("BUG: unexpected token on hold stack"),
+    // DoneStackEmpty
+	tr("BUG: expected operand on done stack"),
+    // CmdStackNotEmpty
+	tr("BUG: command stack not empty"),
+    // CmdStackEmpty
+	tr("BUG: command stack empty"),
+    // CmdStackEmptyExpr
+	tr("BUG: command stack empty for command"),
+    // CmdStackEmptyCmd
+	tr("BUG: command stack empty for expression"),
+    // NoAssignListCode
+	tr("BUG: no assign list code found"),
+    // InvalidDataType
+	tr("BUG: invalid data type"),
+    // CountStackEmpty
+	tr("BUG: count stack empty"),
+    // UnexpParenExpr
+	tr("BUG: unexpected parentheses in expression"),
+    // UnexpToken
+	tr("BUG: unexpected token"),
+    // Debug1
+	tr("BUG: debug #1"),
+    // Debug2
+	tr("BUG: debug #2"),
+    // Debug3
+	tr("BUG: debug #3"),
+    // Debug4
+	tr("BUG: debug #4"),
+    // Debug5
+	tr("BUG: debug #5"),
+    // Debug6
+	tr("BUG: debug #6"),
+    // Debug7
+	tr("BUG: debug #7"),
+    // Debug8
+	tr("BUG: debug #8"),
+    // Debug9
+	tr("BUG: debug #9"),
+    // Debug
+	tr("BUG: debug")
 };
 
 

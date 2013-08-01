@@ -114,23 +114,28 @@ BEGIN {
 			# found end of token message array
 			msg_array = 0
 		}
-		else {
+		else
+		{
 			nf = split(line, field)
-			if (field[nf - 1] == "//")
+			if (field[1] == "//")
 			{
-				# 2012-10-06: remove the CR if present
-				cr = index(field[nf], "\r")
+				# remove the CR if present
+				name = field[2]
+				cr = index(name, "\r")
 				if (cr > 0)
 				{
-					field[nf] = substr(field[nf], 0, cr - 1)
+					name = substr(name, 0, cr - 1)
 				}
-				if (field[1] !~ /BUG/)
+			}
+			else
+			{
+				if (line !~ /BUG:/)
 				{
-					ts = field[nf] "_TokenStatus"
+					ts = name "_TokenStatus"
 				}
 				else
 				{
-					ts = "BUG_" field[nf]
+					ts = "BUG_" name
 				}
 
 				# check for duplicates

@@ -90,10 +90,10 @@ Input: MID$(..
             ^-- expected string variable
 
 Input: MID$(A$?
-              ^-- expected operator or comma
+              ^-- expected comma
 
 Input: MID$(A$.e
-              ^-- expected operator or comma
+              ^-- expected comma
 
 Input: MID$(A$,?
                ^-- expected numeric expression
@@ -256,4 +256,31 @@ Input: INPUT PROMPT "A";A(1,?
 
 Input: INPUT PROMPT "A";A(1,1e999
                             ^^^^^-- floating point constant is out of range
+
+Input: Z = A NOT
+             ^^^-- expected binary operator or end-of-statement
+
+Input: Z = A + B NOT
+                 ^^^-- expected binary operator or end-of-statement
+
+Input: Z = (A NOT
+              ^^^-- expected binary operator or closing parentheses
+
+Input: Z = INT(A NOT
+                 ^^^-- expected binary operator or closing parentheses
+
+Input: Z = MID$(A$ NOT
+                   ^^^-- expected binary operator or comma
+
+Input: Z = MID$(A$,5 NOT
+                     ^^^-- expected binary operator, comma or closing parentheses
+
+Input: Z = A(B NOT
+               ^^^-- expected binary operator, comma or closing parentheses
+
+Input: MID$(A$ NOT
+               ^^^-- expected comma
+
+Input: MID$(A$,5 NOT
+                 ^^^-- expected binary operator, comma or closing parentheses
 

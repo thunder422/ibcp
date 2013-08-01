@@ -144,6 +144,10 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	if ((status = translator.getExpression(token,
 		translator.equivalentDataType(dataType))) != Done_TokenStatus)
 	{
+		if (status == Parser_TokenStatus && token->isDataType(None_DataType))
+		{
+			status = ExpOpOrEnd_TokenStatus;
+		}
 		return status;
 	}
 

@@ -140,3 +140,14 @@ INPUT PROMPT A$(1,.
 
 INPUT PROMPT "A";A(1,?
 INPUT PROMPT "A";A(1,1e999
+
+# unexpected unary operator tests
+Z = A NOT
+Z = A + B NOT
+Z = (A NOT
+Z = INT(A NOT
+Z = MID$(A$ NOT
+Z = MID$(A$,5 NOT
+Z = A(B NOT
+MID$(A$ NOT
+MID$(A$,5 NOT
