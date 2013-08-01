@@ -40,7 +40,7 @@
 rm -f expression*.txt translator*.txt
 dir=@ibcp_SOURCE_DIR@/test/
 ./ibcp -v
-for input in ${dir}expression*.dat ${dir}translator0[1-5].dat
+for input in ${dir}expression*.dat ${dir}translator*.dat
 do
 	base=${input##*/}
 	output=${base%.dat}.txt

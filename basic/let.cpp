@@ -79,10 +79,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		}
 
 		// get and check next token for comma or equal
-		if ((status = translator.getToken(token)) != Good_TokenStatus)
-		{
-			return ExpEqualOrComma_TokenStatus;
-		}
+		status = translator.getToken(token);
 		if (token->isCode(Comma_Code))
 		{
 			done = false;
@@ -91,8 +88,13 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		{
 			done = true;
 		}
-		else
+		else  // invalid token or parser error
 		{
+			if (translator.table().hasFlag(translator.doneStackTopToken(),
+				SubStr_Flag))
+			{
+				delete translator.doneStackPop();
+			}
 			return ExpEqualOrComma_TokenStatus;
 		}
 
