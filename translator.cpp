@@ -107,7 +107,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 
 
 Translator::Translator(Table &table): m_table(table),
-    m_parser(new Parser(table)), m_output(NULL), m_pendingParen(NULL)
+	m_parser(new Parser(table)), m_output(NULL), m_pendingParen(NULL)
 {
 
 }
@@ -523,7 +523,7 @@ TokenStatus Translator::processOperand(Token *&token)
 		// add token directly output list
 		// and push element pointer on done stack
 		RpnItem *rpnItem = new RpnItem(token);
-        m_output->append(rpnItem);
+		m_output->append(rpnItem);
 		m_doneStack.push(rpnItem);
 		// in reference mode, if have variable, set end expression state
 		// otherwise next token must be a binary operator
@@ -1210,9 +1210,6 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	}
 	// report entire expression
 	token = workFirst->setThrough(workLast);
-	if (token->isCode(OpenParen_Code))
-	{
-	}
 
 	// delete last token if close paren
 	DoneItem::deleteCloseParen(workLast);
@@ -1600,41 +1597,41 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 	Reference reference)
 {
 	static TokenStatus tokenStatus[sizeof_DataType][sizeof_Reference] = {
-	    {	// Double
+		{	// Double
 			ExpNumExpr_TokenStatus,		// None
 			ExpDblVar_TokenStatus,		// Variable
 			ExpDblVar_TokenStatus		// All
-	    },
-	    {	// Integer
+		},
+		{	// Integer
 			ExpNumExpr_TokenStatus,		// None
 			ExpIntVar_TokenStatus,		// Variable
 			ExpIntVar_TokenStatus		// All
-	    },
-	    {	// String
+		},
+		{	// String
 			ExpStrExpr_TokenStatus,		// None
 			ExpStrVar_TokenStatus,		// Variable
 			ExpStrItem_TokenStatus		// All
-	    },
-	    {	// SubStr
+		},
+		{	// SubStr
 			ExpStrExpr_TokenStatus,		// None
 			BUG_InvalidDataType,		// Variable
 			BUG_InvalidDataType			// All
-	    },
-	    {	// None
+		},
+		{	// None
 			ExpExpr_TokenStatus,		// None
 			ExpAssignItem_TokenStatus,	// Variable
 			ExpAssignItem_TokenStatus	// All
-	    },
-	    {	// Number
+		},
+		{	// Number
 			ExpNumExpr_TokenStatus,		// None
 			BUG_InvalidDataType,		// Variable
 			BUG_InvalidDataType			// All
-	    },
-	    {	// Any
+		},
+		{	// Any
 			ExpExpr_TokenStatus,		// None
 			ExpAssignItem_TokenStatus,	// Variable
 			ExpAssignItem_TokenStatus	// All
-	    }
+		}
 	};
 
 	return tokenStatus[dataType][reference];
@@ -1887,7 +1884,7 @@ TokenStatus Translator::getCommand(Token *&token)
 	TranslateFunction translate;
 	Token *commandToken;
 
-	if ((status = getToken(token, None_DataType)) != Good_TokenStatus)
+	if ((status = getToken(token)) != Good_TokenStatus)
 	{
 		return ExpCmd_TokenStatus;
 	}
@@ -2131,7 +2128,6 @@ TokenStatus Translator::processOperator2(Token *&token)
 TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		Reference reference)
 {
-	// FROM processOperand()
 	TokenStatus status;
 	bool doneAppend = true;
 
@@ -2192,8 +2188,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		if ((status = getInternalFunction(token)) != Good_TokenStatus)
 		{
 			// drop and delete function token since it was not used
-			Token *topToken = m_holdStack.pop().token;
-			delete topToken;
+			delete m_holdStack.pop().token;
 			return status;
 		}
 		doneAppend = false;  // already appended
@@ -2216,8 +2211,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		if ((status = getParenToken(token)) != Good_TokenStatus)
 		{
 			// drop and delete parentheses token since it was not used
-			Token *topToken = m_holdStack.pop().token;
-			delete topToken;
+			delete m_holdStack.pop().token;
 			return status;
 		}
 		doneAppend = false;  //already appended
@@ -2472,8 +2466,7 @@ TokenStatus Translator::getParenToken(Token *&token)
 		}
 		else  // unexpected token
 		{
-			status = ExpOpCommaOrParen_TokenStatus;
-			return status;
+			return ExpOpCommaOrParen_TokenStatus;
 		}
 	}
 }

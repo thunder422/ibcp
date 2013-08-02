@@ -38,8 +38,8 @@ rem    ask this question)
 rem
 
 del expression*.txt translator*.txt
-for %%i in (test/expression*.dat test/translator0*.dat) do (
+for %%i in (test/expression*.dat test/translator*.dat) do (
 	ibcp -n test\%%i >%%~ni.txt
 )
 comp test\expression*.txt expression*.txt
-comp test\translator0*.txt translator0*.txt
+comp test\translator*.txt translator*.txt

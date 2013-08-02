@@ -38,6 +38,33 @@ Planned Roadmap (updated 2013-04-05):
 	To be defined...
 
 
+Release 0.4.2 (2013-08-01)
+
+	Project developmental release - implementation of the new
+	translator scheme continues with the translation of all LET
+	statements and some improvements were made to the core
+	translator routines.
+
+	  - implemented more functional done stack class
+	  - reformatted token status messages
+	  - corrected issues with unary operators and parser errors
+	  - corrected a dependency cmake issue with autoenums.h
+	  - changed how token codes are checked
+	  - corrected minor issues in old translator routines
+	  - auto-generate memory error suppression file for Qt version
+
+	Note: Some issues in the old translator have been corrected and
+	now all tests succeed when using the old translator.  Since some
+	of the expected results are now different (due to the change in
+	LET statement translations), the unmodified expected results
+	files are saved and the test scripts use these when present.
+	Temporary scripts were added for testing the new translator
+	routines.  All tests containing assignments work correctly with
+	the new translator routines.  The regtestn.bat batch does not
+	currently work very well as the old translator expected results
+	files confuse it.
+
+
 Release 0.4.1 (2013-07-05)
 
 	Project developmental release - implementation of the new

@@ -101,9 +101,9 @@ class Translator
 		Initial_State,				// initial state
 		BinOp_State,				// expecting binary operator
 		Operand_State,				// expecting unary operator or operand
-		OperandOrEnd_State,			// expecting operand or end (2010-06-10)
-		EndExpr_State,				// expecting end of expression (2011-03-05)
-        EndStmt_State,				// expecting end of statement (2011-03-19)
+		OperandOrEnd_State,			// expecting operand or end
+		EndExpr_State,				// expecting end of expression
+		EndStmt_State,				// expecting end of statement
 		UnSet_State,				// FIXME used to indicate new translator
 		sizeof_State
 	} m_state;						// current state of translator
@@ -209,7 +209,7 @@ private:
 	TokenStatus addToken(Token *&token);
 	TokenStatus processOperand(Token *&token);
 	bool processUnaryOperator(Token *&token, TokenStatus &status);
-    TokenStatus processBinaryOperator(Token *&token);
+	TokenStatus processBinaryOperator(Token *&token);
 	TokenStatus processOperator(Token *&token);
 	TokenStatus processFirstOperand(Token *&token);
 	TokenStatus expressionEnd(void);
@@ -240,7 +240,7 @@ private:
 	{
 		m_output->setError(errorToken);
 		delete errorToken;
-    }
+	}
 
 public:
 	// token handler friend function definitions section

@@ -228,7 +228,7 @@ static ExprInfo IntInt_ExprInfo(Null_Code, Operands(IntInt));
 
 static ExprInfo Str_ExprInfo(Null_Code, Operands(Str));
 static ExprInfo StrInt_ExprInfo(Null_Code, Operands(StrInt));
-static ExprInfo StrStr_ExprInfo(Null_Code, Operands(StrStr));  //?
+static ExprInfo StrStr_ExprInfo(Null_Code, Operands(StrStr));
 static ExprInfo StrStrInt_ExprInfo(Null_Code, Operands(StrStrInt));
 
 static ExprInfo StrIntInt_ExprInfo(Null_Code, Operands(StrIntInt));
@@ -498,7 +498,7 @@ static TableEntry tableEntries[] =
 	{	// Instr2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"INSTR(", "INSTR2(", Multiple_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		&StrStr_ExprInfo
 	},
 	{	// Instr3_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -740,8 +740,7 @@ static TableEntry tableEntries[] =
 	{	// AssignListStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr)),
-		NULL, Null_TokenMode, Assign_CmdHandler
+		&StrStr_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
 	},
 	{	// AssignListMix_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -793,8 +792,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// CatStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		"+", "+$", Null_Flag, 40, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		"+", "+$", Null_Flag, 40, String_DataType, &StrStr_ExprInfo
 	},
 	{	// SubI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -881,8 +879,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// EqStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		"=", "=$", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		"=", "=$", Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo
 	},
 	{	// GtI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -899,8 +896,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// GtStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		">", ">$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		">", ">$", Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
 	},
 	{	// GtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -917,8 +913,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// GtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		">=", ">=$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		">=", ">=$", Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
 	},
 	{	// LtI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -935,8 +930,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// LtStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<", "<$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		"<", "<$", Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
 	},
 	{	// LtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -953,8 +947,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// LtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<=", "<=$", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		"<=", "<=$", Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
 	},
 	{	// NotEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -971,8 +964,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// NotEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<>", "<>$", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr))
+		"<>", "<>$", Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo
 	},
 	{	// AbsInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,

@@ -392,4 +392,5 @@ bool Token::operator==(const Token &other) const
 	return true;
 }
 
+
 // end: token.cpp

@@ -1,0 +1,286 @@
+
+Input: ?
+       ^-- expected command
+
+Input: 01
+       ^-- expected command
+
+Input: A?
+        ^-- expected equal or comma for assignment
+
+Input: A..
+        ^-- expected equal or comma for assignment
+
+Input: A(?
+         ^-- expected numeric expression
+
+Input: A(.e
+         ^-- expected digits in mantissa of floating point constant
+
+Input: A(1?
+          ^-- expected operator, comma or closing parentheses
+
+Input: A(1 1e
+           ^-- expected operator, comma or closing parentheses
+
+Input: A(1,?
+           ^-- expected numeric expression
+
+Input: A(1,.
+           ^-- expected digits in floating point constant
+
+Input: A,?
+         ^-- expected double variable
+
+Input: A,1e999
+         ^-- expected double variable
+
+Input: A,B?
+          ^-- expected equal or comma for assignment
+
+Input: A,B 01
+           ^-- expected equal or comma for assignment
+
+Input: A,B,?
+           ^-- expected double variable
+
+Input: A,B,..
+           ^-- expected double variable
+
+Input: A=?
+         ^-- expected numeric expression
+
+Input: A=.e
+         ^-- expected digits in mantissa of floating point constant
+
+Input: A=1?
+          ^-- expected operator or end-of-statement
+
+Input: A=1 1e
+           ^-- expected operator or end-of-statement
+
+Input: A=1+?
+           ^-- expected numeric expression
+
+Input: A=1+..
+           ^^-- expected digits or single decimal point in floating point constant
+
+Input: A$=?
+          ^-- expected string expression
+
+Input: A$=1e999
+          ^-- expected string expression
+
+Input: A$="A"?
+             ^-- expected operator or end-of-statement
+
+Input: A$="A"1e999
+             ^-- expected operator or end-of-statement
+
+Input: A$="A"+?
+              ^-- expected string expression
+
+Input: A$="A"+01
+              ^-- expected string expression
+
+Input: MID$(?
+            ^-- expected string variable
+
+Input: MID$(..
+            ^-- expected string variable
+
+Input: MID$(A$?
+              ^-- expected operator or comma
+
+Input: MID$(A$.e
+              ^-- expected operator or comma
+
+Input: MID$(A$,?
+               ^-- expected numeric expression
+
+Input: MID$(A$,1e
+                 ^-- expected sign or digits for exponent in floating point constant
+
+Input: MID$(A$,3?
+                ^-- expected operator, comma or closing parentheses
+
+Input: MID$(A$,3 .
+                 ^-- expected operator, comma or closing parentheses
+
+Input: MID$(A$,3,?
+                 ^-- expected numeric expression
+
+Input: MID$(A$,3,1e999
+                 ^^^^^-- floating point constant is out of range
+
+Input: MID$(A$,3,4?
+                  ^-- expected operator or closing parentheses
+
+Input: MID$(A$,3,4 01
+                   ^-- expected operator or closing parentheses
+
+Input: A$=MID$(?
+               ^-- expected string expression
+
+Input: A$=MID$(..
+               ^-- expected string expression
+
+Input: A$=MID$(B$?
+                 ^-- expected operator or comma
+
+Input: A$=MID$(B$.e
+                 ^-- expected operator or comma
+
+Input: A$=MID$(B$,?
+                  ^-- expected numeric expression
+
+Input: A$=MID$(B$,1e
+                    ^-- expected sign or digits for exponent in floating point constant
+
+Input: A$=MID$(B$,3?
+                   ^-- expected operator, comma or closing parentheses
+
+Input: A$=MID$(B$,3 .
+                    ^-- expected operator, comma or closing parentheses
+
+Input: A$=MID$(B$,3,?
+                    ^-- expected numeric expression
+
+Input: A$=MID$(B$,3,1e999
+                    ^^^^^-- floating point constant is out of range
+
+Input: A$=MID$(B$,3,4?
+                     ^-- expected operator or closing parentheses
+
+Input: A$=MID$(B$,3,4 01
+                      ^-- expected operator or closing parentheses
+
+Input: PRINT ?
+             ^-- expected expression
+
+Input: PRINT ..
+             ^^-- expected digits or single decimal point in floating point constant
+
+Input: PRINT A?
+              ^-- expected operator or end-of-statement
+
+Input: PRINT A.e
+              ^-- expected operator or end-of-statement
+
+Input: PRINT A(?
+               ^-- expected expression
+
+Input: PRINT A(1e
+                 ^-- expected sign or digits for exponent in floating point constant
+
+Input: PRINT A(1?
+                ^-- expected operator, comma or closing parentheses
+
+Input: PRINT A(1 .
+                 ^-- expected operator, comma or closing parentheses
+
+Input: PRINT A(1,?
+                 ^-- expected expression
+
+Input: PRINT A(1,1e999
+                 ^^^^^-- floating point constant is out of range
+
+Input: PRINT A,?
+               ^-- expected expression
+
+Input: PRINT A,01
+               ^-- expected non-zero leading digit in numeric constant
+
+Input: PRINT A,,?
+                ^-- expected expression
+
+Input: PRINT A,,..
+                ^^-- expected digits or single decimal point in floating point constant
+
+Input: INPUT ?
+             ^-- expected variable
+
+Input: INPUT .e
+             ^-- expected variable
+
+Input: INPUT A?
+              ^-- expected semicolon, comma or end-of-statement
+
+Input: INPUT A 1e
+               ^-- expected semicolon, comma or end-of-statement
+
+Input: INPUT A,?
+               ^-- expected variable
+
+Input: INPUT A,.
+               ^-- expected variable
+
+Input: INPUT A(1,?
+                 ^-- expected numeric expression
+
+Input: INPUT A(1,1e999
+                 ^^^^^-- floating point constant is out of range
+
+Input: INPUT PROMPT ?
+                    ^-- expected string expression
+
+Input: INPUT PROMPT 01
+                    ^-- expected string expression
+
+Input: INPUT PROMPT "A"?
+                       ^-- expected semicolon, comma or end-of-statement
+
+Input: INPUT PROMPT "A"..
+                       ^-- expected semicolon, comma or end-of-statement
+
+Input: INPUT PROMPT "A",?
+                        ^-- expected variable
+
+Input: INPUT PROMPT "A",.e
+                        ^-- expected variable
+
+Input: INPUT PROMPT "A",A?
+                         ^-- expected semicolon, comma or end-of-statement
+
+Input: INPUT PROMPT "A",A 1e
+                          ^-- expected semicolon, comma or end-of-statement
+
+Input: INPUT PROMPT A$(1,?
+                         ^-- expected expression
+
+Input: INPUT PROMPT A$(1,.
+                         ^-- expected digits in floating point constant
+
+Input: INPUT PROMPT "A";A(1,?
+                            ^-- expected numeric expression
+
+Input: INPUT PROMPT "A";A(1,1e999
+                            ^^^^^-- floating point constant is out of range
+
+Input: Z = A NOT
+             ^^^-- expected binary operator or end-of-statement
+
+Input: Z = A + B NOT
+                 ^^^-- expected binary operator or end-of-statement
+
+Input: Z = (A NOT
+              ^^^-- expected binary operator or end-of-statement
+
+Input: Z = INT(A NOT
+                 ^^^-- expected binary operator or end-of-statement
+
+Input: Z = MID$(A$ NOT
+                   ^^^-- expected binary operator or end-of-statement
+
+Input: Z = MID$(A$,5 NOT
+                     ^^^-- expected binary operator or end-of-statement
+
+Input: Z = A(B NOT
+               ^^^-- expected binary operator or end-of-statement
+
+Input: MID$(A$ NOT
+               ^^^-- expected comma
+
+Input: MID$(A$,5 NOT
+                 ^^^-- expected binary operator or end-of-statement
+
