@@ -28,6 +28,7 @@
 #include <QCoreApplication>
 #include <QStack>
 #include <QString>
+#include <QStringList>
 
 #include "ibcp.h"
 
@@ -53,6 +54,7 @@ class Token
 {
 	Q_DECLARE_TR_FUNCTIONS(Token)
 
+	int index;				// private index for detecting token leaks
 	int m_column;			// start column of token
 	int m_length;			// length of token
 	TokenType m_type;		// type of the token
@@ -85,6 +87,9 @@ public:
 	{
 		return !(*this == other);
 	}
+	// overload new and delete operators for memory management
+	void *operator new(size_t size);
+	void operator delete(void *ptr);
 
 	// column and length access functions
 	int column(void) const
@@ -277,12 +282,40 @@ private:
 	static bool s_table[sizeof_TokenType];
 	static const QString s_messageArray[sizeof_TokenStatus];
 
+	class FreeStack : public QStack<Token *>
+	{
+	public:
+		~FreeStack(void);
+	};
+	static FreeStack s_freeStack;
+
+	class UsedVector : public QVector<Token *>
+	{
+	public:
+		~UsedVector(void);
+		void reportErrors(void);
+	};
+	static UsedVector s_used;
+
+	class DeletedList : public QStringList
+	{
+	public:
+		~DeletedList(void);
+		void reportErrors(void);
+	};
+	static DeletedList s_deleted;
+
 public:
 	// static member functions
 	static void initialize(void);
 	static const QString message(TokenStatus status)
 	{
 		return s_messageArray[status];
+	}
+	static void reportErrors(void)
+	{
+		s_used.reportErrors();
+		s_deleted.reportErrors();
 	}
 };
 

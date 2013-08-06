@@ -168,8 +168,93 @@ const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	tr("BUG: debug")
 };
 
+Token::FreeStack Token::s_freeStack;	// stack of free tokens
+Token::UsedVector Token::s_used;		// vector of tokens currently in use
+Token::DeletedList Token::s_deleted;	// list of tokens deleted extra times
 
-// function to initialize the static token data
+
+// destructor function for the token free stack
+//
+//   - called automatically at the end of the application
+//   - deletes memory used by the token on the free stack
+
+Token::FreeStack::~FreeStack(void)
+{
+	// delete any tokens left in the free stack
+	while (!isEmpty())
+	{
+		::operator delete(s_freeStack.pop());
+	}
+}
+
+
+// destructor function for the used token vector
+//
+//   - called automatically at the end of the application
+//   - to report token leaks before application terminates
+
+Token::UsedVector::~UsedVector(void)
+{
+	reportErrors();
+}
+
+
+// function to report token leak errors and delete them
+//
+//   - reports any tokens marked as used and deletes them
+//   - to report token leaks at any time (for testing)
+
+void Token::UsedVector::reportErrors(void)
+{
+	bool first = false;
+	for (int i = 0; i < s_used.size(); i++)
+	{
+		if (s_used[i] != NULL)
+		{
+			if (!first)
+			{
+				qCritical("Token Leaks:");
+				first = true;
+			}
+			qCritical("  %d: %s", i, qPrintable(s_used[i]->text()));
+			::operator delete(s_used[i]);
+			s_used[i] = NULL;
+		}
+	}
+}
+
+
+// destructor function for the list of extra token deletes
+//
+//   - called automatically at the end of the application
+//   - to report extra token deletes before application terminates
+
+Token::DeletedList::~DeletedList(void)
+{
+	reportErrors();
+}
+
+
+// function to report extra token deletes errors
+//
+//   - outputs strings contained in the deleted list
+//   - to report extra token deletes at any time (for testing)
+
+void Token::DeletedList::reportErrors(void)
+{
+	if (!s_deleted.isEmpty())
+	{
+		qCritical("Token Extra Deletes:");
+		for (int i = 0; i < s_deleted.size(); i++)
+		{
+			qCritical("  %s", qPrintable(s_deleted[i]));
+		}
+		s_deleted.clear();
+	}
+}
+
+
+// static function to initialize the static token data
 void Token::initialize(void)
 {
 	// set true for types that contain an opening parentheses
@@ -281,7 +366,7 @@ QString Token::text(void)
 	{
 		string += "<ref>";
 	}
-	if (isSubCode(~Used_SubCode))
+	if (isSubCode(~(Used_SubCode | UnUsed_SubCode)))
 	{
 		string += '\'';
 		if (isSubCode(Paren_SubCode))
@@ -390,6 +475,64 @@ bool Token::operator==(const Token &other) const
 		return false;
 	}
 	return true;
+}
+
+
+// function to overload the default new operator
+//
+//   - if available tokens on free stack then pops one and returns it
+//   - otherwise new memory is allocated
+//   - token pointer is added to the used vector
+
+void *Token::operator new(size_t size)
+{
+	Token *token;
+	if (s_freeStack.isEmpty())
+	{
+		// allocate the memory for the token
+		token = (Token *)::operator new(size);
+
+		// set index into used vector and add to vector
+		token->index = s_used.size();
+		s_used.append(token);
+	}
+	else  // get a token from the free stack
+	{
+		token = s_freeStack.pop();
+
+		// mark token as used
+		s_used[token->index] = token;
+	}
+
+	// return pointer to new token
+	return token;
+}
+
+
+// function to overload the default delete operator
+//
+//   - ignores null pointer values
+//   - pushes token to free stack, does not delete the token
+//   - if token was already deleted then adds text of token to deleted list
+//   - otherwise token pointer is removed from the used vector
+
+void Token::operator delete(void *ptr)
+{
+	if (ptr != NULL)
+	{
+		Token *token = (Token *)ptr;
+
+		if (s_used[token->index] == NULL)  // already deleted?
+		{
+			s_deleted.append(QString("%1: %2").arg(token->index)
+				.arg(token->text()));
+		}
+		else  // mark token as unused and cache on free stack
+		{
+			s_used[token->index] = NULL;
+			s_freeStack.push(token);
+		}
+	}
 }
 
 

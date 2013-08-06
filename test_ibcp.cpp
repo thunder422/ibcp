@@ -265,6 +265,8 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			translateInput(cout, translator, inputLine, false);
 			break;
 		}
+		// report any token leaks and extra token deletes
+		Token::reportErrors();
 	}
 	if (!inputMode)
 	{
