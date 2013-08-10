@@ -256,8 +256,8 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 		}
 		else  // token is in the rpn output list
 		{
-			// make a copy of the token to save
-			setErrorToken(new Token(*token));
+			// token is already in output so don't delete it
+			m_output->setError(token);
 		}
 		m_output->setErrorMessage(token->message(status));
 		cleanUp();

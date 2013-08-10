@@ -239,7 +239,8 @@ static TableEntry tableEntries[] =
 {
 	// Null_Code entry at beginning so Null_Code == 0
 	{	// Null_Code
-		Operator_TokenType
+		Operator_TokenType, OneWord_Multiple,
+		"", "NULL"
 	},
 	//***********************
 	//   BEGIN PLAIN WORDS
@@ -774,7 +775,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// EOL_Code
 		Operator_TokenType, OneWord_Multiple,
-		NULL, NULL, EndExpr_Flag | EndStmt_Flag, 4, None_DataType, NULL,
+		NULL, "EOL", EndExpr_Flag | EndStmt_Flag, 4, None_DataType, NULL,
 		EndOfLine_Handler
 	},
 	{	// AddI1_Code

@@ -236,6 +236,7 @@ private:
 	TokenStatus unexpectedEndError(void) const;
 
 	// set error token (deleting any previous error token first)
+	// FIXME remove this, only used by old translator
 	void setErrorToken(Token *errorToken)
 	{
 		m_output->setError(errorToken);

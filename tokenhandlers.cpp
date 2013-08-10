@@ -502,6 +502,11 @@ TokenStatus RemOp_Handler(Translator &t, Token *&token)
 
 	// add rem operator token with remark string to output
 	t.m_output->append(new RpnItem(token));
+	if (t.m_mode == Command_TokenMode)
+	{
+		// delete Null token on hold stack (hack)
+		delete t.m_holdStack.pop().token;
+	}
 	return Done_TokenStatus;
 }
 
