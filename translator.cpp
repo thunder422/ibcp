@@ -45,7 +45,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		CvtInt_Code,	// Integer
 		Invalid_Code,	// String
 		Invalid_Code,	// SubStr
-		Invalid_Code,	// None (will never need this data type)
+		Null_Code,		// None
 		Null_Code,		// Number
 		Null_Code,		// Any
 	},
@@ -54,7 +54,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Null_Code,		// Integer
 		Invalid_Code,	// String
 		Invalid_Code,	// SubStr
-		Invalid_Code,	// None (will never need this data type)
+		Null_Code,		// None
 		Null_Code,		// Number
 		Null_Code		// Any
 	},
@@ -63,7 +63,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Integer
 		Null_Code,		// String
 		Null_Code,		// SubStr
-		Invalid_Code,	// None (will never need this data type)
+		Null_Code,		// None
 		Invalid_Code,	// Number
 		Null_Code		// Any
 	},
@@ -72,7 +72,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Integer
 		Null_Code,		// String
 		Null_Code,		// SubStr
-		Invalid_Code,	// None (will never need this data type)
+		Null_Code,		// None
 		Invalid_Code,	// Number
 		Null_Code		// Any
 	},
@@ -81,7 +81,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
 		Invalid_Code,	// SubStr
-		Invalid_Code,	// None (will never need this data type)
+		Null_Code,		// None (print function allowed if needed None)
 		Invalid_Code,	// Number
 		Invalid_Code	// Any
 	},
@@ -90,7 +90,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
 		Invalid_Code,	// SubStr
-		Invalid_Code,	// None (will never need this data type)
+		Invalid_Code,	// None
 		Invalid_Code,	// Number
 		Invalid_Code	// Any
 	},
@@ -99,7 +99,7 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
 		Invalid_Code,	// SubStr
-		Invalid_Code,	// None (will never need this data type)
+		Invalid_Code,	// None
 		Invalid_Code,	// Number
 		Invalid_Code	// Any
 	}
@@ -1924,7 +1924,9 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 	int level)
 {
 	TokenStatus status;
-	DataType expectedDataType = dataType;
+	DataType expectedDataType = dataType == None_DataType
+		? Any_DataType : dataType;
+	DataType operandDataType = dataType;
 
 	forever
 	{
@@ -1994,9 +1996,25 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 				token->setCode(unaryCode);  // change token to unary operator
 			}
 			// get operand
-			else if ((status = getOperand(token, expectedDataType))
+			else if ((status = getOperand(token, operandDataType))
 				!= Good_TokenStatus)
 			{
+				// check if error didn't occur inside parens of a paren token
+				// (array or function) and empty expression is allowed
+				if (m_holdStack.top().token->isNull()
+					&& dataType == None_DataType)
+				{
+					// allow any token to terminate expression
+					status = Done_TokenStatus;
+				}
+				break;
+			}
+			else if (doneStackTopToken()->isDataType(None_DataType)
+				&& dataType != None_DataType)
+			{
+				// print functions are not allowed
+				token = doneStackPopErrorToken();
+				status = expectedErrStatus(dataType);
 				break;
 			}
 			else
@@ -2010,6 +2028,14 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			if ((status = getToken(token)) != Good_TokenStatus)
 			{
 				// if parser error then caller needs to handle it
+				break;
+			}
+			if (doneStackTopToken()->isDataType(None_DataType)
+				&& m_holdStack.top().token->isNull()
+				&& dataType == None_DataType)
+			{
+				// for print functions return now with token as terminator
+				status = Done_TokenStatus;
 				break;
 			}
 			// check for unary operator (token should be a binary operator)
@@ -2049,7 +2075,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 		}
 
 		// get operator's expected data type, reset token and loop back
-		expectedDataType = m_table.expectedDataType(token);
+		operandDataType = expectedDataType = m_table.expectedDataType(token);
 		token = NULL;
 	}
 	return status;
@@ -2185,10 +2211,14 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 				return expectedErrStatus(dataType, reference);
 			}
 		}
+		else if (token->isDataType(None_DataType)
+			&& dataType != None_DataType)
+		{
+			return expectedErrStatus(dataType);
+		}
 		if ((status = getInternalFunction(token)) != Good_TokenStatus)
 		{
-			// drop and delete function token since it was not used
-			delete m_holdStack.pop().token;
+			// leave internal function token on hold stack
 			return status;
 		}
 		doneAppend = false;  // already appended
@@ -2210,8 +2240,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		}
 		if ((status = getParenToken(token)) != Good_TokenStatus)
 		{
-			// drop and delete parentheses token since it was not used
-			delete m_holdStack.pop().token;
+			// leave parentheses token on hold stack
 			return status;
 		}
 		doneAppend = false;  //already appended
@@ -2264,7 +2293,12 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 			// sub-string assignment, look for reference operand
 			expectedDataType = String_DataType;
 			status = getOperand(token, expectedDataType, Variable_Reference);
-			if (status == Good_TokenStatus)
+			if (status != Good_TokenStatus)
+			{
+				// if hold stack top not null, then pop and delete token
+				holdStackPopNonNull();
+			}
+			else
 			{
 				if ((status = getToken(token)) == Good_TokenStatus)
 				{

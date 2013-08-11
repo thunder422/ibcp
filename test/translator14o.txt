@@ -197,6 +197,42 @@ Input: PRINT A,,?
 Input: PRINT A,,..
                 ^^-- expected digits or single decimal point in floating point constant
 
+Input: A=TAB(?
+         ^^^^-- expected numeric expression
+
+Input: A=SPC(..
+         ^^^^-- expected numeric expression
+
+Input: A=TAB(5?
+         ^^^^-- expected numeric expression
+
+Input: A=SPC(S..
+         ^^^^-- expected numeric expression
+
+Input: A=TAB(5)?
+         ^^^^-- expected numeric expression
+
+Input: A=SPC(S)1e
+         ^^^^-- expected numeric expression
+
+Input: A$=TAB(?
+          ^^^^-- expected string expression
+
+Input: A$=SPC(..
+          ^^^^-- expected string expression
+
+Input: A$=TAB(5?
+          ^^^^-- expected string expression
+
+Input: A$=SPC(S..
+          ^^^^-- expected string expression
+
+Input: A$=TAB(5)?
+          ^^^^-- expected string expression
+
+Input: A$=SPC(S)1e
+          ^^^^-- expected string expression
+
 Input: INPUT ?
              ^-- expected variable
 

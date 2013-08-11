@@ -157,6 +157,18 @@ public:
 	{
 		return m_table;
 	}
+	bool holdStackPopNonNull(void)
+	{
+		if (m_holdStack.top().token->isNull())
+		{
+			return false;
+		}
+		else
+		{
+			delete m_holdStack.pop().token;
+			return true;
+		}
+	}
 	RpnItem *doneStackPop(void)
 	{
 		return m_doneStack.pop();

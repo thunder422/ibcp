@@ -56,6 +56,8 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		if ((status = translator.getOperand(token, dataType,
 			Translator::All_Reference)) != Good_TokenStatus)
 		{
+			// if hold stack top not null, then pop and delete token
+			translator.holdStackPopNonNull();
 			if (token->column() > column)
 			{
 				return status;

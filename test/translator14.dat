@@ -111,6 +111,24 @@ PRINT A,01
 PRINT A,,?
 PRINT A,,..
 
+A=TAB(?
+A=SPC(..
+
+A=TAB(5?
+A=SPC(S..
+
+A=TAB(5)?
+A=SPC(S)1e
+
+A$=TAB(?
+A$=SPC(..
+
+A$=TAB(5?
+A$=SPC(S..
+
+A$=TAB(5)?
+A$=SPC(S)1e
+
 INPUT ?
 INPUT .e
 
