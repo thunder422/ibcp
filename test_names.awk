@@ -110,7 +110,7 @@ function find_enum(header_file, start, enum, name)
 		}
 		else if (type_enum)
 		{
-			if (line ~ enum && line !~ /sizeof/)
+			if (line !~ /-1/ && line ~ enum && line !~ /sizeof/)
 			{
 				nf = split(line, field)
 				if (c != "")

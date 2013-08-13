@@ -139,7 +139,7 @@ public:
 		Reference reference = None_Reference);
 	TokenStatus getInternalFunction(Token *&token);
 	TokenStatus getParenToken(Token *&token);
-	TokenStatus getToken(Token *&token, DataType dataType = None_DataType);
+	TokenStatus getToken(Token *&token, DataType dataType = No_DataType);
 
 	// Main Processing Functions
 	TokenStatus processFinalOperand(Token *&token, Token *token2,
@@ -156,18 +156,6 @@ public:
 	Table &table(void) const
 	{
 		return m_table;
-	}
-	bool holdStackPopNonNull(void)
-	{
-		if (m_holdStack.top().token->isNull())
-		{
-			return false;
-		}
-		else
-		{
-			delete m_holdStack.pop().token;
-			return true;
-		}
 	}
 	RpnItem *doneStackPop(void)
 	{

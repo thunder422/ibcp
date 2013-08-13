@@ -1924,9 +1924,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 	int level)
 {
 	TokenStatus status;
-	DataType expectedDataType = dataType == None_DataType
-		? Any_DataType : dataType;
-	DataType operandDataType = dataType;
+	DataType expectedDataType = dataType;
 
 	forever
 	{
@@ -1944,12 +1942,21 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 
 			// get an expression and terminating token
 			token = NULL;
+			if (expectedDataType == None_DataType)
+			{
+				expectedDataType = Any_DataType;
+			}
 			if ((status = getExpression(token, expectedDataType, level + 1))
 				!= Done_TokenStatus)
 			{
 				if (m_table.isUnaryOperator(token))
 				{
 					status = ExpBinOpOrParen_TokenStatus;
+				}
+				if (status == Parser_TokenStatus
+					&& token->isDataType(None_DataType))
+				{
+					status = ExpOpOrParen_TokenStatus;
 				}
 				break;  // exit on error
 			}
@@ -1996,17 +2003,9 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 				token->setCode(unaryCode);  // change token to unary operator
 			}
 			// get operand
-			else if ((status = getOperand(token, operandDataType))
+			else if ((status = getOperand(token, expectedDataType))
 				!= Good_TokenStatus)
 			{
-				// check if error didn't occur inside parens of a paren token
-				// (array or function) and empty expression is allowed
-				if (m_holdStack.top().token->isNull()
-					&& dataType == None_DataType)
-				{
-					// allow any token to terminate expression
-					status = Done_TokenStatus;
-				}
 				break;
 			}
 			else if (doneStackTopToken()->isDataType(None_DataType)
@@ -2075,7 +2074,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 		}
 
 		// get operator's expected data type, reset token and loop back
-		operandDataType = expectedDataType = m_table.expectedDataType(token);
+		expectedDataType = m_table.expectedDataType(token);
 		token = NULL;
 	}
 	return status;
@@ -2180,6 +2179,11 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	{
 	case Command_TokenType:
 	case Operator_TokenType:
+		if (dataType == None_DataType)
+		{
+			// nothing is acceptable, this is terminating token
+			return Done_TokenStatus;
+		}
 		return expectedErrStatus(dataType, reference);
 
 	case Constant_TokenType:
@@ -2218,7 +2222,8 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		}
 		if ((status = getInternalFunction(token)) != Good_TokenStatus)
 		{
-			// leave internal function token on hold stack
+			// drop and delete function token since it was not used
+			delete m_holdStack.pop().token;
 			return status;
 		}
 		doneAppend = false;  // already appended
@@ -2240,7 +2245,8 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		}
 		if ((status = getParenToken(token)) != Good_TokenStatus)
 		{
-			// leave parentheses token on hold stack
+			// drop and delete parentheses token since it was not used
+			delete m_holdStack.pop().token;
 			return status;
 		}
 		doneAppend = false;  //already appended
@@ -2293,12 +2299,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 			// sub-string assignment, look for reference operand
 			expectedDataType = String_DataType;
 			status = getOperand(token, expectedDataType, Variable_Reference);
-			if (status != Good_TokenStatus)
-			{
-				// if hold stack top not null, then pop and delete token
-				holdStackPopNonNull();
-			}
-			else
+			if (status == Good_TokenStatus)
 			{
 				if ((status = getToken(token)) == Good_TokenStatus)
 				{
@@ -2514,7 +2515,7 @@ TokenStatus Translator::getParenToken(Token *&token)
 TokenStatus Translator::getToken(Token *&token, DataType dataType)
 {
 	// if data type is not none, then getting an operand token
-	bool operand = dataType != None_DataType;
+	bool operand = dataType != No_DataType;
 	token = m_parser->token(operand);
 	token->setSubCodeMask(UnUsed_SubCode);
 	if (token->isType(Error_TokenType))
@@ -2527,7 +2528,7 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 			token->setDataType(None_DataType);  // indicate not a number error
 		}
 		if (operand && (token->dataType() != Double_DataType
-			|| dataType == String_DataType))
+			&& dataType != None_DataType || dataType == String_DataType))
 		{
 			// non-number constant error, return expected expression error
 			return expectedErrStatus(dataType);

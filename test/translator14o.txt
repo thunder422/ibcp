@@ -320,3 +320,69 @@ Input: MID$(A$ NOT
 Input: MID$(A$,5 NOT
                  ^^^-- expected binary operator or end-of-statement
 
+Input: Z = A+B?
+              ^-- expected operator or end-of-statement
+
+Input: Z = A+B 1e
+               ^-- expected operator or end-of-statement
+
+Input: Z = A+B*C?
+                ^-- expected operator or end-of-statement
+
+Input: Z = A+B*C 1e
+                 ^-- expected operator or end-of-statement
+
+Input: Z = (?
+            ^-- expected numeric expression
+
+Input: Z = (..
+            ^^-- expected digits or single decimal point in floating point constant
+
+Input: Z = (A?
+             ^-- expected operator or closing parentheses
+
+Input: Z = (A..
+             ^-- expected operator or closing parentheses
+
+Input: Z = (A+?
+              ^-- expected numeric expression
+
+Input: Z = (A+1e
+                ^-- expected sign or digits for exponent in floating point constant
+
+Input: Z = (A+B?
+               ^-- expected operator or closing parentheses
+
+Input: Z = (A+B 1e
+                ^-- expected operator or closing parentheses
+
+Input: Z = (A+B*C?
+                 ^-- expected operator or closing parentheses
+
+Input: Z = (A+B*C 1e
+                  ^-- expected operator or closing parentheses
+
+Input: Z = C(A+B?
+                ^-- expected operator, comma or closing parentheses
+
+Input: Z = C(A+B 1e
+                 ^-- expected operator, comma or closing parentheses
+
+Input: Z = C(A+B*C?
+                  ^-- expected operator, comma or closing parentheses
+
+Input: Z = C(A+B*C 1e
+                   ^-- expected operator, comma or closing parentheses
+
+Input: Z = INT(A+B?
+                  ^-- expected operator or closing parentheses
+
+Input: Z = INT(A+B 1e
+                   ^-- expected operator or closing parentheses
+
+Input: Z = INT(A+B*C?
+                    ^-- expected operator or closing parentheses
+
+Input: Z = INT(A+B*C 1e
+                     ^-- expected operator or closing parentheses
+

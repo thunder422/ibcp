@@ -49,6 +49,7 @@ inline Code operator ++(Code &code, int postfix)
 // data type of operands
 enum DataType
 {
+	No_DataType = -1,
 	// actual execution data types must be listed first
 	// since they will also be used for indexes
 	Double_DataType,

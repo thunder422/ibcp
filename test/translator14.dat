@@ -169,3 +169,37 @@ Z = MID$(A$,5 NOT
 Z = A(B NOT
 MID$(A$ NOT
 MID$(A$,5 NOT
+
+# more parser errors including inside parentheses
+Z = A+B?
+Z = A+B 1e
+
+Z = A+B*C?
+Z = A+B*C 1e
+
+Z = (?
+Z = (..
+
+Z = (A?
+Z = (A..
+
+Z = (A+?
+Z = (A+1e
+
+Z = (A+B?
+Z = (A+B 1e
+
+Z = (A+B*C?
+Z = (A+B*C 1e
+
+Z = C(A+B?
+Z = C(A+B 1e
+
+Z = C(A+B*C?
+Z = C(A+B*C 1e
+
+Z = INT(A+B?
+Z = INT(A+B 1e
+
+Z = INT(A+B*C?
+Z = INT(A+B*C 1e
