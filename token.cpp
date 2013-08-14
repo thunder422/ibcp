@@ -103,6 +103,12 @@ const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	tr("expected string item for assignment"),
     // ExpEndStmt
 	tr("expected end-of-statement"),
+	// ExpExprPfnOrEnd
+	tr("expected expression, print function or end-of-statement"),
+	// ExpExprCommaPfnOrEnd
+	tr("expected expression, comma, print function or end-of-statement"),
+	// ExpOpSemiCommaOrEnd
+	tr("expected operator, semicolon, comma or end-of-statement"),
 	// the following statuses used during development
     // NotYetImplemented
 	tr("BUG: not yet implemented"),

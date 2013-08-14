@@ -259,7 +259,7 @@ static TableEntry tableEntries[] =
 	{	// Print_Code
 		Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Expression_TokenMode, Print_CmdHandler
+		Expression_TokenMode, Print_CmdHandler, printTranslate
 	},
 	{	// Input_Code
 		Command_TokenType, TwoWord_Multiple,

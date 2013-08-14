@@ -167,6 +167,12 @@ Input: PRINT A?
 Input: PRINT A.e
               ^-- expected operator or end-of-statement
 
+Input: PRINT (?
+              ^-- expected expression
+
+Input: PRINT (1e
+                ^-- expected sign or digits for exponent in floating point constant
+
 Input: PRINT A(?
                ^-- expected expression
 
@@ -196,6 +202,42 @@ Input: PRINT A,,?
 
 Input: PRINT A,,..
                 ^^-- expected digits or single decimal point in floating point constant
+
+Input: PRINT INT(?
+                 ^-- expected numeric expression
+
+Input: PRINT INT(1e
+                   ^-- expected sign or digits for exponent in floating point constant
+
+Input: PRINT ASC(A$?
+                   ^-- expected operator, comma or closing parentheses
+
+Input: PRINT ASC(A$1e
+                   ^-- expected operator, comma or closing parentheses
+
+Input: PRINT ASC(A$,?
+                    ^-- expected numeric expression
+
+Input: PRINT ASC(A$,1e
+                      ^-- expected sign or digits for exponent in floating point constant
+
+Input: PRINT TAB(?
+                 ^-- expected numeric expression
+
+Input: PRINT SPC(..
+                 ^^-- expected digits or single decimal point in floating point constant
+
+Input: PRINT TAB(5?
+                  ^-- expected operator or closing parentheses
+
+Input: PRINT SPC(S..
+                  ^-- expected operator or closing parentheses
+
+Input: PRINT TAB(5)?
+                   ^-- expected semicolon, comma or end-of-statement
+
+Input: PRINT SPC(S)1e
+                   ^-- expected semicolon, comma or end-of-statement
 
 Input: A=TAB(?
          ^^^^-- expected numeric expression
@@ -385,4 +427,52 @@ Input: Z = INT(A+B*C?
 
 Input: Z = INT(A+B*C 1e
                      ^-- expected operator or closing parentheses
+
+Input: PRINT A+B?
+                ^-- expected operator or end-of-statement
+
+Input: PRINT A+B 1e
+                 ^-- expected operator or end-of-statement
+
+Input: PRINT A+B*C?
+                  ^-- expected operator or end-of-statement
+
+Input: PRINT A+B*C 1e
+                   ^-- expected operator or end-of-statement
+
+Input: PRINT (A+B?
+                 ^-- expected operator or closing parentheses
+
+Input: PRINT (A+B 1e
+                  ^-- expected operator or closing parentheses
+
+Input: PRINT (A+B*C?
+                   ^-- expected operator or closing parentheses
+
+Input: PRINT (A+B*C 1e
+                    ^-- expected operator or closing parentheses
+
+Input: PRINT C(A+B?
+                  ^-- expected operator, comma or closing parentheses
+
+Input: PRINT C(A+B 1e
+                   ^-- expected operator, comma or closing parentheses
+
+Input: PRINT C(A+B*C?
+                    ^-- expected operator, comma or closing parentheses
+
+Input: PRINT C(A+B*C 1e
+                     ^-- expected operator, comma or closing parentheses
+
+Input: PRINT INT(A+B?
+                    ^-- expected operator or closing parentheses
+
+Input: PRINT INT(A+B 1e
+                     ^-- expected operator or closing parentheses
+
+Input: PRINT INT(A+B*C?
+                      ^-- expected operator or closing parentheses
+
+Input: PRINT INT(A+B*C 1e
+                       ^-- expected operator or closing parentheses
 

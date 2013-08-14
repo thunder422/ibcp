@@ -169,6 +169,10 @@ public:
 	{
 		return m_doneStack.top().rpnItem->token();
 	}
+	bool doneStackEmpty(void)
+	{
+		return m_doneStack.empty();
+	}
 	Token *outputLastToken(void) const
 	{
 		return m_output->last()->token();

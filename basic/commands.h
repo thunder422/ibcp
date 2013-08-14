@@ -33,6 +33,8 @@ class Token;
 
 TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
+TokenStatus printTranslate(Translator &translator, Token *commandToken,
+	Token *&token);
 
 
 #endif // COMMANDS_H

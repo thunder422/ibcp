@@ -3,58 +3,58 @@ Input: PRINT A;B%;C$
 Output: A PrintDbl B% PrintInt C$ PrintStr PRINT 
 
 Input: PRINT A;B%;C$;
-Output: A PrintDbl B% PrintInt C$ PrintStr ; 
+Output: A PrintDbl B% PrintInt C$ PrintStr 
 
 Input: PRINT A,B%,C$
 Output: A PrintDbl , B% PrintInt , C$ PrintStr PRINT 
 
 Input: PRINT A,B%,C$,
-Output: A PrintDbl , B% PrintInt , C$ PrintStr , PRINT 
+Output: A PrintDbl , B% PrintInt , C$ PrintStr , 
 
 Input: PRINT A+B; C%+D%; E$+F$; MID$(E$,1); LEFT$(E$+F$,5)
 Output: A B + PrintDbl C% D% +% PrintInt E$ F$ +$ PrintStr E$ 1 MID2$( PrintStr E$ F$ +$ 5 LEFT$( PrintStr PRINT 
 
 Input: PRINT "Test:"; TAB(10); A%; SPC(5); B
-Output: "Test:" PrintStr 10 TAB( A% PrintInt 5 SPC( B PrintDbl PRINT 
+Output: "Test:" PrintStr 10 TAB(';' A% PrintInt 5 SPC(';' B PrintDbl PRINT 
 
 Input: PRINT "Test:"; TAB(10); A; LOG(5); B
-Output: "Test:" PrintStr 10 TAB( A PrintDbl 5 CvtDbl LOG( PrintDbl B PrintDbl PRINT 
+Output: "Test:" PrintStr 10 TAB(';' A PrintDbl 5 CvtDbl LOG( PrintDbl B PrintDbl PRINT 
 
 Input: PRINT A; TAB(10)
-Output: A PrintDbl 10 TAB( PRINT 
+Output: A PrintDbl 10 TAB( 
 
 Input: PRINT A; TAB(10);
-Output: A PrintDbl 10 TAB( ; 
+Output: A PrintDbl 10 TAB(';' 
 
 Input: PRINT A; SPC(10)
-Output: A PrintDbl 10 SPC( PRINT 
+Output: A PrintDbl 10 SPC( 
 
 Input: PRINT A; SPC(10);
-Output: A PrintDbl 10 SPC( ; 
+Output: A PrintDbl 10 SPC(';' 
 
 Input: PRINT ,,A
 Output: , , A PrintDbl PRINT 
 
 Input: PRINT ,,A,
-Output: , , A PrintDbl , PRINT 
+Output: , , A PrintDbl , 
 
 Input: PRINT A,,B
 Output: A PrintDbl , , B PrintDbl PRINT 
 
 Input: PRINT A,,B,
-Output: A PrintDbl , , B PrintDbl , PRINT 
+Output: A PrintDbl , , B PrintDbl , 
 
 Input: PRINT A;;B
-               ^-- expected expression, print function or end-of-statement
+Output: A PrintDbl ; B PrintDbl PRINT 
 
 Input: PRINT;A;;B;;
-            ^-- expected expression, comma, print function or end-of-statement
+Output: ; A PrintDbl ; B PrintDbl ; 
 
 Input: PRINT;
-            ^-- expected expression, comma, print function or end-of-statement
+Output: ; 
 
 Input: PRINT,
-Output: , PRINT 
+Output: , 
 
 Input: PRINT C(A,,B)
                  ^-- expected expression
@@ -132,5 +132,5 @@ Input: PRINT INT(D(A,,B),E)
                      ^-- expected expression
 
 Input: PRINT A;,
-               ^-- expected expression, print function or end-of-statement
+Output: A PrintDbl , 
 
