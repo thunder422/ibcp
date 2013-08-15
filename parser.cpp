@@ -173,7 +173,7 @@ bool Parser::getIdentifier(void)
 	m_token->setType(m_table.type(code));
 	m_token->setDataType(m_table.dataType(code));
 	m_token->setCode(code);
-	m_token->setLength(len2 + 1);
+	m_token->setLength(pos - m_token->column());
 
 	m_pos = pos;  // move position past second word
 	return true;
