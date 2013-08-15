@@ -2249,7 +2249,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			delete m_holdStack.pop().token;
 			return status;
 		}
-		doneAppend = false;  //already appended
+		doneAppend = false;  // already appended
 		break;
 
 	default:

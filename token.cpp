@@ -37,71 +37,71 @@ bool Token::s_table[sizeof_TokenType];
 //   on the line before the line with the message string by enums.awk,
 //   extra lines starting with comments are ignored)
 const QString Token::s_messageArray[sizeof_TokenStatus] = {
-    // Null
+	// Null
 	tr("Null_TokenStatus (BUG)"),
-    // Good
+	// Good
 	tr("Good_TokenStatus (BUG)"),
-    // Done
+	// Done
 	tr("Done_TokenStatus (BUG)"),
-    // Parser
+	// Parser
 	tr("Parser_TokenStatus (BUG)"),
-    // ExpCmd
+	// ExpCmd
 	tr("expected command"),
-    // ExpExpr
+	// ExpExpr
 	tr("expected expression"),
-    // ExpExprOrEnd
+	// ExpExprOrEnd
 	tr("expected expression or end-of-statement"),
-    // ExpOpOrEnd
+	// ExpOpOrEnd
 	tr("expected operator or end-of-statement"),
-    // ExpBinOpOrEnd
+	// ExpBinOpOrEnd
 	tr("expected binary operator or end-of-statement"),
-    // ExpEqualOrComma
+	// ExpEqualOrComma
 	tr("expected equal or comma for assignment"),
-    // ExpComma
+	// ExpComma
 	tr("expected comma"),
-    // ExpAssignItem
+	// ExpAssignItem
 	tr("expected item for assignment"),
-    // ExpOpOrComma
+	// ExpOpOrComma
 	tr("expected operator or comma"),
-    // ExpOpCommaOrParen
+	// ExpOpCommaOrParen
 	tr("expected operator, comma or closing parentheses"),
-    // ExpOpOrParen
+	// ExpOpOrParen
 	tr("expected operator or closing parentheses"),
-    // ExpBinOpOrComma
+	// ExpBinOpOrComma
 	tr("expected binary operator or comma"),
-    // ExpBinOpCommaOrParen
+	// ExpBinOpCommaOrParen
 	tr("expected binary operator, comma or closing parentheses"),
-    // ExpBinOpOrParen
+	// ExpBinOpOrParen
 	tr("expected binary operator or closing parentheses"),
-    // ExpDouble
+	// ExpDouble
 	tr("expected double expression"),
-    // ExpInteger
+	// ExpInteger
 	tr("expected integer expression"),
-    // ExpString
+	// ExpString
 	tr("expected string expression (old)"),
-    // ExpNumExpr
+	// ExpNumExpr
 	tr("expected numeric expression"),
-    // ExpStrExpr
+	// ExpStrExpr
 	tr("expected string expression"),
-    // ExpSemiCommaOrEnd
+	// ExpSemiCommaOrEnd
 	tr("expected semicolon, comma or end-of-statement"),
-    // ExpSemiOrComma
+	// ExpSemiOrComma
 	tr("expected semicolon or comma"),
-    // ExpOpSemiOrComma
+	// ExpOpSemiOrComma
 	tr("expected operator, semicolon or comma"),
-    // ExpBinOpSemiOrComma
+	// ExpBinOpSemiOrComma
 	tr("expected binary operator, semicolon or comma"),
-    // ExpDblVar
+	// ExpDblVar
 	tr("expected double variable"),
-    // ExpIntVar
+	// ExpIntVar
 	tr("expected integer variable"),
-    // ExpStrVar
+	// ExpStrVar
 	tr("expected string variable"),
-    // ExpVar
+	// ExpVar
 	tr("expected variable"),
-    // ExpStrItem
+	// ExpStrItem
 	tr("expected string item for assignment"),
-    // ExpEndStmt
+	// ExpEndStmt
 	tr("expected end-of-statement"),
 	// ExpExprPfnOrEnd
 	tr("expected expression, print function or end-of-statement"),
@@ -110,67 +110,67 @@ const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	// ExpOpSemiCommaOrEnd
 	tr("expected operator, semicolon, comma or end-of-statement"),
 	// the following statuses used during development
-    // NotYetImplemented
+	// NotYetImplemented
 	tr("BUG: not yet implemented"),
-    // InvalidMode
+	// InvalidMode
 	tr("BUG: invalid mode"),
-    // HoldStackEmpty
+	// HoldStackEmpty
 	tr("BUG: hold stack empty"),
-    // HoldStackNotEmpty
+	// HoldStackNotEmpty
 	tr("BUG: hold stack not empty"),
-    // DoneStackNotEmpty
+	// DoneStackNotEmpty
 	tr("BUG: done stack not empty"),
-    // DoneStackEmptyParen
+	// DoneStackEmptyParen
 	tr("BUG: done stack empty - parentheses"),
-    // DoneStackEmptyOperands
+	// DoneStackEmptyOperands
 	tr("BUG: done stack empty - operands"),
-    // DoneStackEmptyOperands2
+	// DoneStackEmptyOperands2
 	tr("BUG: done stack empty - operands 2"),
-    // DoneStackEmptyFindCode
+	// DoneStackEmptyFindCode
 	tr("BUG: done stack empty - find code"),
-    // UnexpectedCloseParen
+	// UnexpectedCloseParen
 	tr("BUG: unexpected closing parentheses"),
-    // UnexpectedToken
+	// UnexpectedToken
 	tr("BUG: unexpected token on hold stack"),
-    // DoneStackEmpty
+	// DoneStackEmpty
 	tr("BUG: expected operand on done stack"),
-    // CmdStackNotEmpty
+	// CmdStackNotEmpty
 	tr("BUG: command stack not empty"),
-    // CmdStackEmpty
+	// CmdStackEmpty
 	tr("BUG: command stack empty"),
-    // CmdStackEmptyExpr
+	// CmdStackEmptyExpr
 	tr("BUG: command stack empty for command"),
-    // CmdStackEmptyCmd
+	// CmdStackEmptyCmd
 	tr("BUG: command stack empty for expression"),
-    // NoAssignListCode
+	// NoAssignListCode
 	tr("BUG: no assign list code found"),
-    // InvalidDataType
+	// InvalidDataType
 	tr("BUG: invalid data type"),
-    // CountStackEmpty
+	// CountStackEmpty
 	tr("BUG: count stack empty"),
-    // UnexpParenExpr
+	// UnexpParenExpr
 	tr("BUG: unexpected parentheses in expression"),
-    // UnexpToken
+	// UnexpToken
 	tr("BUG: unexpected token"),
-    // Debug1
+	// Debug1
 	tr("BUG: debug #1"),
-    // Debug2
+	// Debug2
 	tr("BUG: debug #2"),
-    // Debug3
+	// Debug3
 	tr("BUG: debug #3"),
-    // Debug4
+	// Debug4
 	tr("BUG: debug #4"),
-    // Debug5
+	// Debug5
 	tr("BUG: debug #5"),
-    // Debug6
+	// Debug6
 	tr("BUG: debug #6"),
-    // Debug7
+	// Debug7
 	tr("BUG: debug #7"),
-    // Debug8
+	// Debug8
 	tr("BUG: debug #8"),
-    // Debug9
+	// Debug9
 	tr("BUG: debug #9"),
-    // Debug
+	// Debug
 	tr("BUG: debug")
 };
 
