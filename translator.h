@@ -127,6 +127,7 @@ public:
 	enum Reference {
 		None_Reference,
 		Variable_Reference,
+		VarDefFn_Reference,
 		All_Reference,
 		sizeof_Reference
 	};

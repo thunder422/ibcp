@@ -1490,36 +1490,43 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 		{	// Double
 			ExpNumExpr_TokenStatus,		// None
 			ExpDblVar_TokenStatus,		// Variable
+			ExpDblVar_TokenStatus,		// VarDefFn
 			ExpDblVar_TokenStatus		// All
 		},
 		{	// Integer
 			ExpNumExpr_TokenStatus,		// None
 			ExpIntVar_TokenStatus,		// Variable
+			ExpIntVar_TokenStatus,		// VarDefFn
 			ExpIntVar_TokenStatus		// All
 		},
 		{	// String
 			ExpStrExpr_TokenStatus,		// None
 			ExpStrVar_TokenStatus,		// Variable
+			ExpStrVar_TokenStatus,		// VarDefFn
 			ExpStrItem_TokenStatus		// All
 		},
 		{	// SubStr
 			ExpStrExpr_TokenStatus,		// None
 			BUG_InvalidDataType,		// Variable
+			BUG_InvalidDataType,		// VarDefFn
 			BUG_InvalidDataType			// All
 		},
 		{	// None
 			ExpExpr_TokenStatus,		// None
 			ExpAssignItem_TokenStatus,	// Variable
+			ExpAssignItem_TokenStatus,	// VarDefFn
 			ExpAssignItem_TokenStatus	// All
 		},
 		{	// Number
 			ExpNumExpr_TokenStatus,		// None
 			BUG_InvalidDataType,		// Variable
+			BUG_InvalidDataType,		// VarDefFn
 			BUG_InvalidDataType			// All
 		},
 		{	// Any
 			ExpExpr_TokenStatus,		// None
-			ExpAssignItem_TokenStatus,	// Variable
+			ExpVar_TokenStatus,			// Variable
+			ExpAssignItem_TokenStatus,	// VarDefFn
 			ExpAssignItem_TokenStatus	// All
 		}
 	};
@@ -2085,6 +2092,10 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			return expectedErrStatus(dataType, reference);
 		}
 	case DefFuncN_TokenType:
+		if (reference == Variable_Reference)
+		{
+			return expectedErrStatus(dataType, reference);
+		}
 		// fall thru
 	case NoParen_TokenType:
 		if (reference != None_Reference)
@@ -2121,7 +2132,11 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		break;
 
 	case DefFuncP_TokenType:
-		if (reference != None_Reference)
+		if (reference == Variable_Reference)
+		{
+			return expectedErrStatus(dataType, reference);
+		}
+		else if (reference != None_Reference)
 		{
 			// NOTE these are allowed in the DEF command
 			// just point to the open parentheses of the token
@@ -2189,7 +2204,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 		{
 			// sub-string assignment, look for reference operand
 			expectedDataType = String_DataType;
-			status = getOperand(token, expectedDataType, Variable_Reference);
+			status = getOperand(token, expectedDataType, VarDefFn_Reference);
 			if (status == Good_TokenStatus)
 			{
 				if ((status = getToken(token)) == Good_TokenStatus)
