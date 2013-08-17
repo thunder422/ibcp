@@ -1377,7 +1377,7 @@ TokenStatus Translator::addPrintCode(void)
 	{
 		// create token for data type specific print token
 		Token *token = m_table.newToken(PrintDbl_Code);
-		return processFinalOperand(token, NULL, 0);
+		return processFinalOperand(token);
 	}
 	return Null_TokenStatus;  // nothing done
 }

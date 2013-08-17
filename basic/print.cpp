@@ -71,7 +71,7 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 			else  // append appropriate print code for done stack top item
 			{
 				Token *printToken = translator.table().newToken(PrintDbl_Code);
-				translator.processFinalOperand(printToken, NULL, 0);
+				translator.processFinalOperand(printToken);
 				printFunction = false;
 			}
 			translator.doneStackDrop();  // print function or print code

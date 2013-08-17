@@ -142,8 +142,8 @@ public:
 	TokenStatus getToken(Token *&token, DataType dataType = No_DataType);
 
 	// Main Processing Functions
-	TokenStatus processFinalOperand(Token *&token, Token *token2,
-		int operandIndex, int nOperands = 0);
+	TokenStatus processFinalOperand(Token *&token, Token *token2 = NULL,
+		int operandIndex = 0, int nOperands = 0);
 
 	// Support Functions
 	TokenStatus processDoneStackTop(Token *&token, int operandIndex = 0,
