@@ -238,7 +238,8 @@ TokenStatus Comma_Handler(Translator &t, Token *&token)
 			}
 
 			// check argument, change code and insert conversion
-			status = t.findCode(topToken, t.m_countStack.top().nOperands - 1);
+			status = t.processDoneStackTop(topToken,
+				t.m_countStack.top().nOperands - 1);
 			if (status != Good_TokenStatus)
 			{
 				delete token;       // delete comma token

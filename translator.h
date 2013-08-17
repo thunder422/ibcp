@@ -146,7 +146,7 @@ public:
 		int operandIndex, int nOperands = 0);
 
 	// Support Functions
-	TokenStatus findCode(Token *&token, int operandIndex,
+	TokenStatus processDoneStackTop(Token *&token, int operandIndex = 0,
 		Token **first = NULL, Token **last = NULL);
 
 	// Determine Error Funtions (By DataType)

@@ -143,6 +143,8 @@ public:
 	DataType expectedDataType(Token *token) const;
 	void setToken(Token *token, Code code);
 	Token *newToken(Code code);
+	Code cvtCode(Token *token, DataType dataType) const;
+	Code findCode(Token *token, DataType &datatype, int operandIndex = 0);
 
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const QStringRef &string) const;

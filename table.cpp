@@ -42,6 +42,74 @@ const int MaxAssocCodes = 4;
 	// for the code (no code currently has more the 3 total codes)
 
 
+// array of conversion codes [have data type] [need data type]
+static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
+	{	// have Double,    need:
+		Null_Code,		// Double
+		CvtInt_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code,	// SubStr  (FIXME this data will be removed)
+		Null_Code,		// None
+		Null_Code,		// Number
+		Null_Code		// Any
+	},
+	{	// have Integer,   need:
+		CvtDbl_Code,	// Double
+		Null_Code,		// Integer
+		Invalid_Code,	// String
+		Invalid_Code,	// SubStr  (FIXME this data will be removed)
+		Null_Code,		// None
+		Null_Code,		// Number
+		Null_Code		// Any
+	},
+	{	// have String,    need:
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Null_Code,		// String
+		Null_Code,		// SubStr  (FIXME this data will be removed)
+		Null_Code,		// None
+		Invalid_Code,	// Number
+		Null_Code		// Any
+	},
+	{	// have SubStr,    need:  (FIXME this data will be removed)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Null_Code,		// String
+		Null_Code,		// SubStr
+		Null_Code,		// None
+		Invalid_Code,	// Number
+		Null_Code		// Any
+	},
+	{	// have None,      need:  (print functions have this data type)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code,	// SubStr  (FIXME this data will be removed)
+		Null_Code,		// None (print function allowed if needed None)
+		Invalid_Code,	// Number
+		Invalid_Code	// Any
+	},
+	{	// have Number,    need:  (will not have any of this data type)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code,	// SubStr  (FIXME this data will be removed)
+		Invalid_Code,	// None
+		Invalid_Code,	// Number
+		Invalid_Code	// Any
+	},
+	{	// have Any,       need:  (will not have any of this data type)
+		Invalid_Code,	// Double
+		Invalid_Code,	// Integer
+		Invalid_Code,	// String
+		Invalid_Code,	// SubStr  (FIXME this data will be removed)
+		Invalid_Code,	// None
+		Invalid_Code,	// Number
+		Invalid_Code	// Any
+	}
+};
+
+
 // expression information for operators and internal functions
 struct ExprInfo
 {
@@ -1491,6 +1559,59 @@ Token *Table::newToken(Code code)
 	return token;
 }
 
+// function to get convert code needed to convert token to data type
+Code Table::cvtCode(Token *token, DataType dataType) const
+{
+	return cvtCodeHaveNeed[token->dataType()][dataType];
+}
+
+
+// function to find and set code in token for a data type
+// and possibly return a conversion code if data type is convertible
+//
+//   - if data type matches expected data type for operand, no action
+//   - else finds associated code that matches data type
+//   - if no associated code, returns possible conversion code for data type
+//   - if no associated code, returns expected data type
+
+Code Table::findCode(Token *token, DataType &dataType, int operandIndex)
+{
+	DataType expectedDataType = operandDataType(token->code(), operandIndex);
+	if (dataType == expectedDataType)  // exact match?
+	{
+		return Null_Code;
+	}
+
+	// get a possible conversion code if no associated code is found
+	Code cvtCode = cvtCodeHaveNeed[dataType][expectedDataType];
+
+	// see if any associated code's data types match
+	int assoc2Index = this->assoc2Index(token->code());
+	if (assoc2Index >= 0)  // if second index -1, then skip associated codes
+	{
+		int start = operandIndex != 1 ? 0 : assoc2Index;
+		int end = nAssocCodes(token->code());
+		if (operandIndex == 0 && assoc2Index != 0)
+		{
+			// for first operand, end at begin of second associated codes group
+			end = assoc2Index;
+		}
+		for (int i = start; i < end; i++)
+		{
+			Code assocCode = this->assocCode(token->code(), i);
+			if (dataType == operandDataType(assocCode, operandIndex))  // match?
+			{
+				// change token's code and data type to associated code
+				setToken(token, assocCode);
+				return Null_Code;
+			}
+		}
+	}
+
+	// did not find an associated code, return conversion code
+	dataType = expectedDataType;  // returned expected data type
+	return cvtCode;  // convert code or invalid
+}
 
 //============================
 //  TABLE SPECIFIC FUNCTIONS

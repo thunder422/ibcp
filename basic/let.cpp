@@ -123,7 +123,8 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 			// change token to appropriate assign code
 			translator.table().setToken(token, Assign_Code);
 			token->setReference();
-			if ((status = translator.findCode(token, 0)) != Good_TokenStatus)
+			status = translator.processDoneStackTop(token);
+			if (status != Good_TokenStatus)
 			{
 				return status;
 			}

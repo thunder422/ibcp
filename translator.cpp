@@ -38,74 +38,6 @@ enum {
 };
 
 
-// array of conversion codes [have data type] [need data type]
-static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
-	{	// have Double,    need:
-		Null_Code,		// Double
-		CvtInt_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// SubStr
-		Null_Code,		// None
-		Null_Code,		// Number
-		Null_Code,		// Any
-	},
-	{	// have Integer,   need:
-		CvtDbl_Code,	// Double
-		Null_Code,		// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// SubStr
-		Null_Code,		// None
-		Null_Code,		// Number
-		Null_Code		// Any
-	},
-	{	// have String,    need:
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Null_Code,		// String
-		Null_Code,		// SubStr
-		Null_Code,		// None
-		Invalid_Code,	// Number
-		Null_Code		// Any
-	},
-	{	// have SubStr,    need:  (FIXME this data will be removed)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Null_Code,		// String
-		Null_Code,		// SubStr
-		Null_Code,		// None
-		Invalid_Code,	// Number
-		Null_Code		// Any
-	},
-	{	// have None,      need:  (print functions have this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// SubStr
-		Null_Code,		// None (print function allowed if needed None)
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	},
-	{	// have Number,    need:  (will not have any of this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// SubStr
-		Invalid_Code,	// None
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	},
-	{	// have Any,       need:  (will not have any of this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// SubStr
-		Invalid_Code,	// None
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	}
-};
-
-
 Translator::Translator(Table &table): m_table(table),
 	m_parser(new Parser(table)), m_output(NULL), m_pendingParen(NULL)
 {
@@ -756,7 +688,7 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 	{
 		// changed token operator code or insert conversion codes as needed
 		Token *orgToken = token;
-		TokenStatus status = findCode(token, 0, &first);
+		TokenStatus status = processDoneStackTop(token, 0, &first);
 		if (status != Good_TokenStatus)
 		{
 			// check if different token has error
@@ -805,7 +737,7 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 //   - from Assign_CmdHandler, token2 will be NULL (not used)
 
 TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
-	int operandIndex, int nOperands)
+	int operandIndex, int nOperands)  // FIXME removed nOperands with old trans
 {
 	bool donePush = true;	// for print-only functions
 	bool doneAppend = true;	// for sub-string assignments
@@ -814,7 +746,8 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 
 	if (nOperands == 0)  // internal function or operator
 	{
-		TokenStatus status = findCode(token, operandIndex, &first, &last);
+		TokenStatus status = processDoneStackTop(token, operandIndex, &first,
+			&last);
 		if (status != Good_TokenStatus)
 		{
 			return status;
@@ -844,12 +777,14 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 				first = operandIndex == 0 ? token : token2;
 				// last operand from token that was on done stack
 			}
-			else  // non-sub-string internal function
+			else  // internal function
+			// FIXME will be for internal code functions only with new trans
 			{
 				first = NULL;   // token itself is first operand
 				DoneItem::deleteCloseParen(last);
 				last = token2;  // last operand is CloseParen token
 			}
+			// FIXME remove check when sub-string data type removed
 			if (token->isDataType(SubStr_DataType) && !token->reference())
 			{
 				// change non-reference sub-string function data type to string
@@ -886,6 +821,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 			}
 		}
 	}
+	// FIXME remove with old translator
 	else  // array or user function
 	{
 		first = NULL;   // token itself is first operand
@@ -898,6 +834,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		}
 	}
 
+	// FIXME remove section with old translator
 	RpnItem **operand;
 	if (nOperands == 0)  // no operands to save?
 	{
@@ -1061,8 +998,8 @@ TokenStatus Translator::callCommandHandler(Token *&token)
 //
 //   - operand index must be valid to token code
 
-TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
-	Token **last)
+TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
+	Token **first, Token **last)
 {
 	if (m_doneStack.isEmpty())
 	{
@@ -1071,27 +1008,28 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	}
 	Token *topToken = m_doneStack.top().rpnItem->token();
 	// get first and last operands for top token
-	Token *workFirst = m_doneStack.top().first;
-	if (workFirst == NULL)
+	Token *localFirst = m_doneStack.top().first;
+	if (localFirst == NULL)
 	{
-		workFirst = topToken;  // first operand not set, set to operand token
+		localFirst = topToken;  // first operand not set, set to operand token
 	}
 	if (first != NULL)  // requested by caller?
 	{
-		*first = workFirst;
+		*first = localFirst;
 		m_doneStack.top().first = NULL;  // prevent deletion below
 	}
-	Token *workLast = m_doneStack.top().last;
-	if (workLast == NULL)
+	Token *localLast = m_doneStack.top().last;
+	if (localLast == NULL)
 	{
-		workLast = topToken;  // last operand not set, set to operand token
+		localLast = topToken;  // last operand not set, set to operand token
 	}
 	if (last != NULL)  // requested by caller?
 	{
-		*last = workLast;
+		*last = localLast;
 		m_doneStack.top().last = NULL;  // prevent deletion below
 	}
 
+	// FIXME remove section with old translator
 	// check if reference is required for first operand
 	if (operandIndex == 0 && token->reference())
 	{
@@ -1107,10 +1045,10 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 			}
 			// return non-reference operand
 			// (report entire expression)
-			token = workFirst->setThrough(workLast);
+			token = localFirst->setThrough(localLast);
 
 			// delete last token if close paren
-			DoneItem::deleteCloseParen(workLast);
+			DoneItem::deleteCloseParen(localLast);
 
 			// XXX check command on top of command stack XXX
 			return ExpAssignItem_TokenStatus;
@@ -1124,67 +1062,19 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 
 	// see if main code's data type matches
 	DataType dataType = topToken->dataType();
-	DataType operandDataType = m_table.operandDataType(token->code(),
-		operandIndex);
-	if (dataType == operandDataType)  // exact match?
+	Code cvtCode = m_table.findCode(token, dataType, operandIndex);
+
+	if (cvtCode != Invalid_Code)
 	{
 		m_doneStack.drop();  // remove from done stack (remove paren tokens)
-		return Good_TokenStatus;
-	}
-	Code cvt_code = cvtCodeHaveNeed[dataType][operandDataType];
-	Code new_code = cvt_code == Invalid_Code ? Null_Code : token->code();
-
-	// see if any associated code's data types match
-	int assoc2Index = m_table.assoc2Index(token->code());
-	if (assoc2Index >= 0)  // if second index -1, then skip associated codes
-	{
-		int start = operandIndex != 1 ? 0 : assoc2Index;
-		int end = m_table.nAssocCodes(token->code());
-		if (operandIndex == 0 && assoc2Index != 0)
-		{
-			// for first operand, end at begin of second associated codes group
-			end = assoc2Index;
-		}
-		for (int i = start; i < end; i++)
-		{
-			Code assoc_code = m_table.assocCode(token->code(), i);
-			DataType operandDatatype2 = m_table.operandDataType(assoc_code,
-				operandIndex);
-			if (dataType == operandDatatype2)  // exact match?
-			{
-				// change token's code and data type to associated code
-				m_table.setToken(token, assoc_code);
-
-				// remove from done stack (remove paren tokens)
-				m_doneStack.drop();
-				return Good_TokenStatus;
-			}
-			Code cvt_code2 = cvtCodeHaveNeed[dataType][operandDatatype2];
-			if (cvt_code2 != Invalid_Code && new_code == Null_Code)
-			{
-				new_code = assoc_code;
-				cvt_code = cvt_code2;
-			}
-		}
-	}
-
-	if (new_code != Null_Code)  // found a convertible code?
-	{
-		if (!token->code() == new_code)  // not the main code?
-		{
-			// change token's code and data type to associated code
-			m_table.setToken(token, new_code);
-		}
 
 		// is there an actual conversion code to insert?
-		if (cvt_code != Null_Code)
+		if (cvtCode != Null_Code)
 		{
-			m_doneStack.drop();  // remove from done stack (remove paren tokens)
-
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
 			// append token to end of output list (after operand)
-			outputAppend(m_table.newToken(cvt_code));
+			outputAppend(m_table.newToken(cvtCode));
 		}
 
 		return Good_TokenStatus;
@@ -1197,7 +1087,7 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	TokenStatus status;
 	if (!token->reference())
 	{
-		status = expectedErrStatus(operandDataType);
+		status = expectedErrStatus(dataType);
 		// sub-string no longer needed with first/last operands
 	}
 	else if (token->isDataType(SubStr_DataType))
@@ -1206,13 +1096,13 @@ TokenStatus Translator::findCode(Token *&token, int operandIndex, Token **first,
 	}
 	else
 	{
-		status = variableErrStatus(operandDataType);
+		status = variableErrStatus(dataType);
 	}
 	// report entire expression
-	token = workFirst->setThrough(workLast);
+	token = localFirst->setThrough(localLast);
 
 	// delete last token if close paren
-	DoneItem::deleteCloseParen(workLast);
+	DoneItem::deleteCloseParen(localLast);
 
 	return status;
 }
@@ -1509,7 +1399,7 @@ TokenStatus Translator::setAssignCommand(Token *&token, Code assign_code)
 	token->setReference();
 
 	// find appropriate assign or assign list code
-	TokenStatus status = findCode(token, 0);
+	TokenStatus status = processDoneStackTop(token);
 	if (status != Good_TokenStatus)
 	{
 		return status;
@@ -2052,8 +1942,9 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			if (level == 0)
 			{
 				// add convert code if needed or report error
-				Code cvt_code = cvtCodeHaveNeed[m_doneStack.top().rpnItem
-					->token()->dataType()][dataType];
+				Code cvt_code
+					= m_table.cvtCode(m_doneStack.top().rpnItem->token(),
+					dataType);
 				if (cvt_code == Invalid_Code)
 				{
 					delete token;  // delete terminating token
@@ -2264,7 +2155,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	}
 	// for reference, check data type
 	if (reference != None_Reference
-		&& cvtCodeHaveNeed[token->dataType()][dataType] != Null_Code)
+		&& m_table.cvtCode(token, dataType) != Null_Code)
 	{
 		token = doneStackPopErrorToken();
 		return expectedErrStatus(dataType, reference);
