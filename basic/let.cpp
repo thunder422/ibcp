@@ -122,7 +122,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		{
 			// change token to appropriate assign code
 			translator.table().setToken(token, Assign_Code);
-			token->setReference();
+			token->setReference();  // FIXME remove with old translator
 			status = translator.processDoneStackTop(token);
 			if (status != Good_TokenStatus)
 			{
@@ -130,7 +130,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 			}
 		}
 		// reset reference, no longer needed, and save token
-		token->setReference(false);
+		token->setReference(false);  // FIXME remove with old translator
 		letStack.push(token);
 
 		// get data type for assignment

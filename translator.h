@@ -174,6 +174,7 @@ public:
 	{
 		return m_doneStack.empty();
 	}
+	Token *doneStackPopErrorToken(void);
 
 	int outputCount(void) const
 	{
@@ -195,7 +196,6 @@ public:
 	{
 		m_output->insert(index, new RpnItem(token));
 	}
-	Token *doneStackPopErrorToken(void);
 
 	// Determine Error Funtions (By DataType)
 	static TokenStatus expectedErrStatus(DataType dataType,

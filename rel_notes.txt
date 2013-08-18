@@ -38,6 +38,27 @@ Planned Roadmap (updated 2013-04-05):
 	To be defined...
 
 
+Release 0.4.4 (2013-08-18)
+
+	Project developmental release - implementation of the new
+	translator scheme continues with the translation of all INPUT
+	statements and some improvements were made to the core
+	translator routines.
+
+	  - reorganized associated code processing
+	  - new variable or define function reference type
+
+	Note: All tests succeed when using the old translator.  Since
+	some of the expected results are now different (due to the
+	change in translations), the unmodified expected results files
+	are saved and the test scripts use these when present.  There
+	are temporary scripts for testing the new translator routines.
+	All tests containing assignment, PRINT and INPUT statements work
+	correctly with the new translator routines.  The regtestn.bat
+	batch does not currently work very well as the old translator
+	expected results files confuse it.
+
+
 Release 0.4.3 (2013-08-15)
 
 	Project developmental release - implementation of the new

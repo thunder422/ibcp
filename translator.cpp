@@ -2049,7 +2049,7 @@ TokenStatus Translator::processOperator2(Token *&token)
 //     the token is not a valid operand token
 
 TokenStatus Translator::getOperand(Token *&token, DataType dataType,
-		Reference reference)
+	Reference reference)
 {
 	TokenStatus status;
 	bool doneAppend = true;
