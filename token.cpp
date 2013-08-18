@@ -85,6 +85,8 @@ const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	tr("expected string expression"),
 	// ExpSemiCommaOrEnd
 	tr("expected semicolon, comma or end-of-statement"),
+	// ExpCommaSemiOrEnd
+	tr("expected comma, semicolon or end-of-statement"),
 	// ExpSemiOrComma
 	tr("expected semicolon or comma"),
 	// ExpOpSemiOrComma

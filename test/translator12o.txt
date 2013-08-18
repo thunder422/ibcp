@@ -1,30 +1,30 @@
 
 Input: INPUT A
-Output: InputParse InputBegin A<ref> InputAssign INPUT 
+Output: InputBegin InputParse'End' A<ref> InputAssign INPUT 
 
 Input: INPUT A,B
-Output: InputParse InputParse InputBegin A<ref> InputAssign B<ref> InputAssign INPUT 
+Output: InputBegin InputParse InputParse'End' A<ref> InputAssign B<ref> InputAssign INPUT 
 
 Input: INPUT A,B%,C$
-Output: InputParseStr InputParseInt InputParse InputBegin A<ref> InputAssign B%<ref> InputAssignInt C$<ref> InputAssignStr INPUT 
+Output: InputBegin InputParse InputParseInt InputParseStr'End' A<ref> InputAssign B%<ref> InputAssignInt C$<ref> InputAssignStr INPUT 
 
 Input: INPUT A$;
-Output: InputParseStr InputBegin A$<ref> InputAssignStr INPUT'Keep' 
+Output: InputBegin InputParseStr'End' A$<ref> InputAssignStr INPUT'Keep' 
 
 Input: INPUT A(I%),B%(I%);
-Output: InputParseInt InputParse InputBegin I%<ref> A(<ref>[I%<ref>] InputAssign I%<ref> B%(<ref>[I%<ref>] InputAssignInt INPUT'Keep' 
+Output: InputBegin InputParse InputParseInt'End' I%<ref> A(<ref>[I%<ref>] InputAssign I%<ref> B%(<ref>[I%<ref>] InputAssignInt INPUT'Keep' 
 
 Input: INPUT PROMPT "Enter Number: "; N%
-Output: "Enter Number: " InputParseInt InputBeginStr N%<ref> InputAssignInt INPUT-PROMPT 
+Output: "Enter Number: " InputBeginStr InputParseInt'End' N%<ref> InputAssignInt INPUT-PROMPT 
 
 Input: INPUT PROMPT A$+":"; A
-Output: A$ ":" +$ InputParse InputBeginStr A<ref> InputAssign INPUT-PROMPT 
+Output: A$ ":" +$ InputBeginStr InputParse'End' A<ref> InputAssign INPUT-PROMPT 
 
 Input: INPUT PROMPT "Two Values", A, B;
-Output: "Two Values" InputParse InputParse InputBeginStr'Question' A<ref> InputAssign B<ref> InputAssign INPUT-PROMPT'Keep' 
+Output: "Two Values" InputBeginStr'Question' InputParse InputParse'End' A<ref> InputAssign B<ref> InputAssign INPUT-PROMPT'Keep' 
 
 Input: INPUT PROMPT P$(I%), S$(I%)
-Output: I%<ref> P$([I%<ref>] InputParseStr InputBeginStr'Question' I%<ref> S$(<ref>[I%<ref>] InputAssignStr INPUT-PROMPT 
+Output: I%<ref> P$([I%<ref>] InputBeginStr'Question' InputParseStr'End' I%<ref> S$(<ref>[I%<ref>] InputAssignStr INPUT-PROMPT 
 
 Input: INPUT
             ^-- expected variable
@@ -54,10 +54,10 @@ Input: INPUT FNA(X)
              ^^^-- expected variable
 
 Input: INPUT A B
-               ^-- expected comma, semicolon or end-of-statement
+               ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT A+B
-              ^-- expected comma, semicolon or end-of-statement
+              ^-- expected semicolon, comma or end-of-statement
 
 Input: INPUT A,
                ^-- expected variable

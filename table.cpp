@@ -332,13 +332,13 @@ static TableEntry tableEntries[] =
 	{	// Input_Code
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Reference_TokenMode, Input_CmdHandler
+		Reference_TokenMode, Input_CmdHandler, inputTranslate
 
 	},
 	{	// InputPrompt_Code
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", "PROMPT", Null_Flag, 4, String_DataType, NULL, NULL,
-		Expression_TokenMode, Input_CmdHandler
+		Expression_TokenMode, Input_CmdHandler, inputTranslate
 
 	},
 	{	// Dim_Code

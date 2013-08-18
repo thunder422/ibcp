@@ -174,6 +174,11 @@ public:
 	{
 		return m_doneStack.empty();
 	}
+
+	int outputCount(void) const
+	{
+		return m_output->count();
+	}
 	Token *outputLastToken(void) const
 	{
 		return m_output->last()->token();
@@ -185,6 +190,10 @@ public:
 		RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
 		m_output->append(rpnItem);
 		return rpnItem;
+	}
+	void outputInsert(int index, Token *token)
+	{
+		m_output->insert(index, new RpnItem(token));
 	}
 	Token *doneStackPopErrorToken(void);
 

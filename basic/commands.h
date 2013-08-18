@@ -31,6 +31,8 @@ class Translator;
 class Token;
 
 
+TokenStatus inputTranslate(Translator &translator, Token *commandToken,
+	Token *&token);
 TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
 TokenStatus printTranslate(Translator &translator, Token *commandToken,

@@ -149,6 +149,7 @@ add_custom_command(OUTPUT test_names.h
 
 # list the main program sources
 set(ibcp_SOURCES
+	basic/input.cpp
 	basic/let.cpp
 	basic/print.cpp
 	commandhandlers.cpp

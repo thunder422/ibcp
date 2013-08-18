@@ -282,10 +282,10 @@ Input: INPUT .e
              ^-- expected variable
 
 Input: INPUT A?
-              ^-- expected semicolon, comma or end-of-statement
+              ^-- expected comma, semicolon or end-of-statement
 
 Input: INPUT A 1e
-               ^-- expected semicolon, comma or end-of-statement
+               ^-- expected comma, semicolon or end-of-statement
 
 Input: INPUT A,?
                ^-- expected variable
@@ -306,10 +306,10 @@ Input: INPUT PROMPT 01
                     ^-- expected string expression
 
 Input: INPUT PROMPT "A"?
-                       ^-- expected semicolon, comma or end-of-statement
+                       ^-- expected semicolon or comma
 
 Input: INPUT PROMPT "A"..
-                       ^-- expected semicolon, comma or end-of-statement
+                       ^-- expected semicolon or comma
 
 Input: INPUT PROMPT "A",?
                         ^-- expected variable
@@ -318,10 +318,10 @@ Input: INPUT PROMPT "A",.e
                         ^-- expected variable
 
 Input: INPUT PROMPT "A",A?
-                         ^-- expected semicolon, comma or end-of-statement
+                         ^-- expected comma, semicolon or end-of-statement
 
 Input: INPUT PROMPT "A",A 1e
-                          ^-- expected semicolon, comma or end-of-statement
+                          ^-- expected comma, semicolon or end-of-statement
 
 Input: INPUT PROMPT A$(1,?
                          ^-- expected expression
