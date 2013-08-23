@@ -401,6 +401,10 @@ QString Token::text(void)
 		{
 			string += "Question";
 		}
+		if (isSubCode(Colon_SubCode))
+		{
+			string += ":";
+		}
 		string += '\'';
 	}
 	return string;

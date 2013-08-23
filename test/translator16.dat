@@ -1,0 +1,22 @@
+###################################################
+#  Translator Test #15: Colon Tests (2013-04-05)  #
+###################################################
+
+A=SQR(17):PRINT A
+PRINT A:PRINT B
+PRINT A;:PRINT B
+INPUT A:PRINT A
+A,B,C=5.0:INPUT D
+A$,LEFT$(B$,1),MID$(C$,2,3)="A":PRINT A$
+INPUT PROMPT "Number",A:PRINT A
+INPUT PROMPT "Number";A:PRINT A
+INPUT PROMPT "Number:";A:PRINT A
+INPUT A;:PRINT A
+PRINT A:REM output A
+PRINT A:'output A:test
+INPUT A;:R=SQR(A):PRINT"Sqrt(";A;")=";R
+
+# colon error tests
+:
+PRINT:
+PRINT::PRINT

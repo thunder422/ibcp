@@ -79,7 +79,8 @@ enum SubCode
 	Used_SubCode       = 0x00000020,	// parentheses used in output
 	Last_SubCode       = 0x00000040,	// parentheses used as last token
 	End_SubCode        = 0x00000080,	// end of INPUT parsing codes
-	UnUsed_SubCode     = 0x00000100		// token not in output (for errors)
+	Colon_SubCode      = 0x00000100,	// reproduce ":" after token
+	UnUsed_SubCode     = 0x10000000		// token not in output (for errors)
 };
 
 

@@ -1796,7 +1796,13 @@ TokenStatus Translator::getCommands(Token *&token)
 		{
 			break;
 		}
-		else
+		else if (token->isCode(Colon_Code))
+		{
+			// delete uneeded colon token, set colon sub-code on last token
+			delete token;
+			outputLastToken()->setSubCodeMask(Colon_SubCode);
+		}
+		else  // unknown end statement token, return to caller
 		{
 			return Done_TokenStatus;
 		}

@@ -729,7 +729,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// Colon_Code
 		Operator_TokenType, OneChar_Multiple,
-		":", NULL, Null_Flag, 4, None_DataType
+		":", NULL, EndStmt_Flag, 4, None_DataType
 	},
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
