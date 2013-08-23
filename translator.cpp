@@ -1723,7 +1723,7 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 	}
 	else
 	{
-		status = getCommand(token);
+		status = getCommands(token);
 	}
 
 	if (status == Done_TokenStatus)
@@ -1769,43 +1769,77 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 }
 
 
-// function to get a command from the input line
+// function to get colon separated statements until the end of the line
+
+TokenStatus Translator::getCommands(Token *&token)
+{
+	TokenStatus status;
+
+	forever
+	{
+		if ((status = getToken(token)) != Good_TokenStatus)
+		{
+			return ExpCmd_TokenStatus;
+		}
+
+		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
+		{
+			break;
+		}
+
+		if ((status = processCommand(token)) != Done_TokenStatus)
+		{
+			return status;
+		}
+
+		if (token->isCode(RemOp_Code))
+		{
+			break;
+		}
+		else
+		{
+			return Done_TokenStatus;
+		}
+	}
+	outputAppend(token);  // Rem or RemOp token
+	if ((status = getToken(token)) != Good_TokenStatus)
+	{
+		return BUG_UnexpToken;  // parser problem, should be EOL
+	}
+	return Done_TokenStatus;
+}
+
+
+// function to process a command in the input line
 //
 //   - returns Done_TokenStatus upon success
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the command
 
-TokenStatus Translator::getCommand(Token *&token)
+TokenStatus Translator::processCommand(Token *&commandToken)
 {
-	TokenStatus status;
 	TranslateFunction translate;
-	Token *commandToken;
+	Token *token;
 
-	if ((status = getToken(token)) != Good_TokenStatus)
+	if (commandToken->isType(Command_TokenType))
 	{
-		return ExpCmd_TokenStatus;
-	}
-	if (token->isType(Command_TokenType))
-	{
-		translate = m_table.translateFunction(token->code());
-		commandToken = token;
+		translate = m_table.translateFunction(commandToken->code());
 		token = NULL;  // force translate function to get a token
 	}
 	else  // assume an assignment statement
 	{
 		translate = m_table.translateFunction(Let_Code);
+		token = commandToken;
 		commandToken = NULL;
 		// pass token onto let translate function
 	}
 	if (translate == NULL)
 	{
-		if (token == NULL)
-		{
-			token = commandToken;
-		}
 		return BUG_NotYetImplemented;
 	}
-	return (*translate)(*this, commandToken, token);
+	TokenStatus status = (*translate)(*this, commandToken, token);
+	commandToken = token;
+	return status;
 }
 
 

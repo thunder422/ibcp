@@ -135,6 +135,7 @@ public:
 	RpnList *translate(const QString &input, bool exprMode = false);
 	// New Translator Functions
 	RpnList *translate2(const QString &input, bool exprMode);
+	TokenStatus getCommands(Token *&token);
 	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
 	TokenStatus getOperand(Token *&token, DataType dataType,
 		Reference reference = None_Reference);
@@ -215,7 +216,7 @@ private:
 	};
 
 	// New Translator Functions
-	TokenStatus getCommand(Token *&token);
+	TokenStatus processCommand(Token *&commandToken);
 	TokenStatus processOperator2(Token *&token);
 	void checkPendingParen(Token *token, bool popped);
 
