@@ -66,6 +66,7 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 		{
 			if (translator.doneStackTopToken()->isDataType(None_DataType))
 			{
+				translator.doneStackDrop();  // print function
 				printFunction = true;
 			}
 			else  // append appropriate print code for done stack top item
@@ -74,7 +75,6 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 				translator.processFinalOperand(printToken);
 				printFunction = false;
 			}
-			translator.doneStackDrop();  // print function or print code
 			separator = true;
 			delete lastSemiColon;
 			lastSemiColon = NULL;

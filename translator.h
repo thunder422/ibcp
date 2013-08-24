@@ -92,7 +92,7 @@ public:
 
 	// Main Processing Functions
 	TokenStatus processFinalOperand(Token *&token, Token *token2 = NULL,
-		int operandIndex = 0, int nOperands = 0);
+		int operandIndex = 0);
 
 	// Support Functions
 	TokenStatus processDoneStackTop(Token *&token, int operandIndex = 0,

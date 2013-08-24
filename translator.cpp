@@ -84,122 +84,52 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 }
 
 
-// function to process the final operand for an operator, function, array or
-// command
+// function to process the final operand for an operator or internal code
 //
-//   - called with token final operand is for
-//   - operand_index only used when number of operands is zero
-//   - for arrays and non-internal functions, number of operands is non-zero
-//     (all operands are attached to RPN output item)
-//   - for operands/internal functions/commands: find_code() is called find
-//     correct code and insert any necessary hidden conversion codes;
-//     string operands are counted (only string operands are attached to RPN
-//     output item); and print-only functions are checked for
-//   - if there are operands to save: an operand array is allocated and
-//     operands are popped from the done stack and put into the array
-//   - for sub-string functions, string operand is left on stack for next token
-//   - an RPN output item is created and any operands are attached
-//	 - the RPN output item is appended to the output list
-//	 - item is pushed to the done stack if not a print-only function
-//   - from add_operator, token2 if first operand attached on hold stack
-//   - from add_print_code, token2 is NULL
-//   - from CloseParen_Handler, token2 is CloseParen token
-//   - from Assign_CmdHandler, token2 will be NULL (not used)
+//   - called with token final operand is for (operator or internal code)
+//   - operand_index is zero except for binary operator second operand
+//   - processDoneStackTop() is called to set correct code for data type of
+//     done stack top item and insert any necessary hidden conversion code
+//   - first/last of done stack top item transferred to non-reference tokens
+//   - operator or internal code token appended to RPN output list
+//	 - RPN item is pushed to done stack if operator
+//
+//   - for operator, token2 is first operand of operator on hold stack
+//   - for internal code, token2 is NULL
 
 TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
-	int operandIndex, int nOperands)  // FIXME removed nOperands with old trans
+	int operandIndex)
 {
-	bool donePush = true;	// for print-only functions
-	bool doneAppend = true;	// for sub-string assignments
 	Token *first;			// first operand token
 	Token *last;			// last operand token
 
-	if (nOperands == 0)  // internal function or operator
+	TokenStatus status = processDoneStackTop(token, operandIndex, &first,
+		&last);
+	if (status != Good_TokenStatus)
 	{
-		TokenStatus status = processDoneStackTop(token, operandIndex, &first,
-			&last);
-		if (status != Good_TokenStatus)
-		{
-			return status;
-		}
-
-		// check for non-assignment operator
-		if (m_table.hasFlag(token, Reference_Flag))
-		{
-			// for assignment operators, nothing gets pushed to the done stack
-			donePush = false;
-
-			// no longer need the first and last operands
-			DoneItem::deleteOpenParen(first);
-			DoneItem::deleteCloseParen(last);
-		}
-		// save string operands only
-		// get number of strings for non-sub-string codes
-		// include sub-string reference, which are put on done stack
-		else
-		{
-			// set first and last operands
-			DoneItem::deleteOpenParen(first);
-			if (token->isType(Operator_TokenType))
-			{
-				// if unary operator, then operator, else first from hold stack
-				// (set first token to unary op)
-				first = operandIndex == 0 ? token : token2;
-				// last operand from token that was on done stack
-			}
-			else  // internal function
-			// FIXME will be for internal code functions only with new trans
-			{
-				first = NULL;   // token itself is first operand
-				DoneItem::deleteCloseParen(last);
-				last = token2;  // last operand is CloseParen token
-			}
-
-			if (token->reference())
-			{
-				doneAppend = false;  // don't append sub-string assignment
-			}
-		}
+		return status;
 	}
 
-	// FIXME remove section with old translator
-	RpnItem **operand;
-	if (nOperands == 0)  // no operands to save?
+	DoneItem::deleteOpenParen(first);  // don't need first operand
+	if (token->isType(Operator_TokenType))
 	{
-		operand = NULL;
+		// set first token
+		// unary operator: unary operator token
+		// binary operator: first operator of operator (token2)
+		first = operandIndex == 0 ? token : token2;
+		// last operand set from token that was on done stack
 	}
-	else  // pop string operands off of stack into new array
+	else  // internal code (won't be pushed to done stack)
 	{
-		operand = new RpnItem *[nOperands];
-		// save operands for storage in output list
-		for (int i = nOperands; --i >= 0;)
-		{
-			if (m_doneStack.isEmpty())
-			{
-				return BUG_DoneStackEmptyOperands;
-			}
-			// TODO need to keep first/last operands for array/function args
-			// TODO (in case entire expression needs to be reported as an error)
-			// TODO (RpnItem should have DoneItem operands, not RpnItem)
-			operand[i] = m_doneStack.pop();
-		}
+		DoneItem::deleteCloseParen(last);  // don't need last operand
 	}
 
-	// add token to output list and push element pointer on done stack
-	RpnItem *rpnItem;
-	// check if item should be appended to output (sub-string assignments don't)
-	if (doneAppend)
+	// add token to output list
+	RpnItem *rpnItem = outputAppend(token);
+
+	// push operator token to the done stack
+	if (token->isType(Operator_TokenType))
 	{
-		rpnItem = outputAppend(token, nOperands, operand);
-	}
-	else
-	{
-		rpnItem = new RpnItem(token, nOperands, operand);
-	}
-	// check if output item is to be pushed on done stack
-	if (donePush)
-	{
-		// push index of rpm item about to be added to output list
 		m_doneStack.push(rpnItem, first, last);
 	}
 
