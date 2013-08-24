@@ -96,22 +96,12 @@ configure_file(
 	"${PROJECT_SOURCE_DIR}/regtest.in"
 	"${PROJECT_BINARY_DIR}/regtest" @ONLY
 )
-# TEMPORARY
-configure_file(
-	"${PROJECT_SOURCE_DIR}/regtestn.in"
-	"${PROJECT_BINARY_DIR}/regtestn" @ONLY
-)
 
 # configure a memtest script to pass source directory to the script
 if (NOT WIN32)
 	configure_file(
 		"${PROJECT_SOURCE_DIR}/memtest.in"
 		"${PROJECT_BINARY_DIR}/memtest" @ONLY
-	)
-	# TEMPORARY
-	configure_file(
-		"${PROJECT_SOURCE_DIR}/memtestn.in"
-		"${PROJECT_BINARY_DIR}/memtestn" @ONLY
 	)
 	# build memory error suppression file for specific Qt version
 	set(ibcp_QT_VERSION
@@ -152,7 +142,6 @@ set(ibcp_SOURCES
 	basic/input.cpp
 	basic/let.cpp
 	basic/print.cpp
-	commandhandlers.cpp
 	commandline.cpp
 	donestack.cpp
 	errorlist.cpp
@@ -166,7 +155,6 @@ set(ibcp_SOURCES
 	rpnlist.cpp
 	table.cpp
 	token.cpp
-	tokenhandlers.cpp
 	translator.cpp
 	test_ibcp.cpp
 )

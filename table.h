@@ -72,11 +72,7 @@ enum Multiple
 
 struct TableEntry;
 class Translator;
-struct CmdItem;
 
-typedef TokenStatus (*TokenHandler)(Translator &t, Token *&token);
-typedef TokenStatus (*CommandHandler)(Translator &t, CmdItem *cmdItem,
-	Token *token);
 typedef TokenStatus (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
 
@@ -130,8 +126,6 @@ public:
 	Code assoc2Code(Code code, int index = 0) const;
 	DataType expectedDataType(Code code) const;
 	bool isUnaryOperator(Code code) const;
-	TokenHandler tokenHandler(Code code) const;
-	CommandHandler commandHandler(Code code) const;
 	TranslateFunction translateFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS

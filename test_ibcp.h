@@ -45,8 +45,6 @@ class Tester
 		OptExpression,
 		OptTranslator,
 		OptSizeOf,
-		OptNewExpr,		// FIXME temporary
-		OptNewTrans,	// FIXME temporary
 		OptError = OptSizeOf
 	};
 
@@ -61,7 +59,6 @@ class Tester
 
 	QString m_programName;		// name of program
 	int m_option;				// option bit masks
-	bool m_newTrans;			// use new translator flag FIXME temporary
 	QString m_testName;			// name of test
 	QString m_testFileName;		// name of test file (OptFile only)
 	QString m_errorMessage;		// message if error occurred

@@ -26,8 +26,6 @@
 #include <QString>
 
 #include "table.h"
-#include "commandhandlers.h"
-#include "tokenhandlers.h"
 #include "basic/commands.h"
 
 
@@ -144,9 +142,6 @@ struct TableEntry
 	int precedence;					// precedence of code
 	DataType dataType;				// next expression data type for command
 	ExprInfo *exprInfo;				// expression info pointer (NULL for none)
-	TokenHandler tokenHandler;		// translator token handler pointer
-	TokenMode tokenMode;			// next token mode for command
-	CommandHandler commandHandler;	// translator command handler pointer
 	TranslateFunction translate;	// pointer to translate function
 };
 
@@ -321,24 +316,20 @@ static TableEntry tableEntries[] =
 	//--------------
 	{	// Let_Code
 		Command_TokenType, OneWord_Multiple,
-		"LET", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Assignment_TokenMode, Let_CmdHandler, letTranslate
+		"LET", NULL, Null_Flag, 4, None_DataType, NULL, letTranslate
 	},
 	{	// Print_Code
 		Command_TokenType, OneWord_Multiple,
-		"PRINT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Expression_TokenMode, Print_CmdHandler, printTranslate
+		"PRINT", NULL, Null_Flag, 4, None_DataType, NULL, printTranslate
 	},
 	{	// Input_Code
 		Command_TokenType, TwoWord_Multiple,
-		"INPUT", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Reference_TokenMode, Input_CmdHandler, inputTranslate
+		"INPUT", NULL, Null_Flag, 4, None_DataType, NULL, inputTranslate
 
 	},
 	{	// InputPrompt_Code
 		Command_TokenType, TwoWord_Multiple,
-		"INPUT", "PROMPT", Null_Flag, 4, String_DataType, NULL, NULL,
-		Expression_TokenMode, Input_CmdHandler, inputTranslate
+		"INPUT", "PROMPT", Null_Flag, 4, String_DataType, NULL, inputTranslate
 
 	},
 	{	// Dim_Code
@@ -351,8 +342,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// Rem_Code
 		Command_TokenType, OneWord_Multiple,
-		"REM", NULL, Null_Flag, 4, None_DataType, NULL, NULL,
-		Command_TokenMode, Rem_CmdHandler
+		"REM", NULL, Null_Flag, 4, None_DataType, NULL,
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,
@@ -678,8 +668,7 @@ static TableEntry tableEntries[] =
 	{	// Eq_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", NULL, Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 2)),
-		Equal_Handler
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 2))
 	},
 	{	// Gt_Code
 		Operator_TokenType, TwoChar_Multiple,
@@ -712,20 +701,15 @@ static TableEntry tableEntries[] =
 	},
 	{	// CloseParen_Code
 		Operator_TokenType, OneChar_Multiple,
-		")", NULL, EndExpr_Flag, 4, None_DataType, NULL,
-		CloseParen_Handler
+		")", NULL, EndExpr_Flag, 4, None_DataType
 	},
 	{	// Comma_Code
 		Operator_TokenType, OneChar_Multiple,
-		",", NULL, EndExpr_Flag, 6, None_DataType,
-		NULL,//new ExprInfo(Comma_Code),
-		Comma_Handler
+		",", NULL, EndExpr_Flag, 6, None_DataType
 	},
 	{	// SemiColon_Code
 		Operator_TokenType, OneChar_Multiple,
-		";", NULL, EndExpr_Flag, 6, None_DataType,
-		NULL,//new ExprInfo(SemiColon_Code),
-		SemiColon_Handler
+		";", NULL, EndExpr_Flag, 6, None_DataType
 	},
 	{	// Colon_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -733,8 +717,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
-		"'", NULL, EndExpr_Flag | EndStmt_Flag, 2, None_DataType, NULL,
-		RemOp_Handler
+		"'", NULL, EndExpr_Flag | EndStmt_Flag, 2, None_DataType
 	},
 	//*****************
 	//   END SYMBOLS
@@ -754,26 +737,22 @@ static TableEntry tableEntries[] =
 	{	// Assign_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign", Reference_Flag, 4, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 3)),
-		NULL, Null_TokenMode, Assign_CmdHandler
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 3))
 	},
 	{	// AssignInt_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign%", Reference_Flag, 4, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AssignInt)),
-		NULL, Null_TokenMode, Assign_CmdHandler
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AssignInt))
 	},
 	{	// AssignStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignStr, 1)),
-		NULL, Null_TokenMode, Assign_CmdHandler
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignStr, 1))
 	},
 	{	// AssignSubStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignSub$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(SubStr)),
-		NULL, Null_TokenMode, Assign_CmdHandler
+		new ExprInfo(Null_Code, Operands(SubStr))
 	},
 	{	// AssignLeft_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -798,24 +777,22 @@ static TableEntry tableEntries[] =
 	{	// AssignList_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList", Reference_Flag, 4, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(AssignList, 3)),
-		NULL, Null_TokenMode, Assign_CmdHandler
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(AssignList, 3))
 	},
 	{	// AssignListInt_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList%", Reference_Flag, 4, Integer_DataType,
-		&IntInt_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
+		&IntInt_ExprInfo
 	},
 	{	// AssignListStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList$", Reference_Flag, 4, String_DataType,
-		&StrStr_ExprInfo, NULL, Null_TokenMode, Assign_CmdHandler
+		&StrStr_ExprInfo
 	},
 	{	// AssignListMix_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignListMix$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(SubStr)),
-		NULL, Null_TokenMode, Assign_CmdHandler
+		new ExprInfo(Null_Code, Operands(SubStr))
 	},
 	{	// AssignKeepStr_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -843,8 +820,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// EOL_Code
 		Operator_TokenType, OneWord_Multiple,
-		NULL, "EOL", EndExpr_Flag | EndStmt_Flag, 4, None_DataType, NULL,
-		EndOfLine_Handler
+		NULL, "EOL", EndExpr_Flag | EndStmt_Flag, 4, None_DataType
 	},
 	{	// AddI1_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1406,12 +1382,6 @@ int Table::hasFlag(Code code, int flag) const
 	return m_entry[code].flags & flag;
 }
 
-// returns the token mode to set after command for code
-TokenMode Table::tokenMode(Code code) const
-{
-	return m_entry[code].tokenMode;
-}
-
 // returns the unary operator code (or Null_Code if none) for code
 Code Table::unaryCode(Code code) const
 {
@@ -1472,18 +1442,6 @@ DataType Table::expectedDataType(Code code) const
 bool Table::isUnaryOperator(Code code) const
 {
 	return code == unaryCode(code);
-}
-
-// returns the pointer to the token handler (if any) for code
-TokenHandler Table::tokenHandler(Code code) const
-{
-	return m_entry[code].tokenHandler;
-}
-
-// returns the pointer to the command handler (if anyy) for code
-CommandHandler Table::commandHandler(Code code) const
-{
-	return m_entry[code].commandHandler;
 }
 
 // returns the pointer to the translate function (if any) for code
