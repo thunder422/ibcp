@@ -114,13 +114,11 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 
 		// change token to appropriate assign code and append to output
 		translator.table().setToken(inputToken, InputAssign_Code);
-		inputToken->setReference();  // FIXME remove with old translator
 		status = translator.processFinalOperand(inputToken);
 		if (status != Good_TokenStatus)
 		{
 			break;
 		}
-		inputToken->setReference(false);  // FIXME remove with old translator
 
 		// create and insert input parse code at beginning
 		// (inserted in reverse order for each input variable)

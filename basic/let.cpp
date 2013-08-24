@@ -122,16 +122,13 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		{
 			// change token to appropriate assign code
 			translator.table().setToken(token, Assign_Code);
-			token->setReference();  // FIXME remove with old translator
 			status = translator.processDoneStackTop(token);
 			if (status != Good_TokenStatus)
 			{
 				return status;
 			}
 		}
-		// reset reference, no longer needed, and save token
-		token->setReference(false);  // FIXME remove with old translator
-		letStack.push(token);
+		letStack.push(token);  // save token
 
 		// get data type for assignment
 		if (dataType == Any_DataType)
@@ -183,8 +180,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	translator.doneStackDrop();
 	translator.outputAppend(letToken);
 
-	// reset reference, no longer needed, and set hidden LET flag if needed
-	letToken->setReference(false);
+	// set hidden LET flag if needed
 	if (!hidden)
 	{
 		letToken->setSubCodeMask(Let_SubCode);

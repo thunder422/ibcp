@@ -181,37 +181,6 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 		m_doneStack.top().last = NULL;  // prevent deletion below
 	}
 
-	// FIXME remove section with old translator
-	// check if reference is required for first operand
-	if (operandIndex == 0 && token->reference())
-	{
-		if (!topToken->reference())
-		{
-			// need a reference, so return error
-
-			// only delete token if it's not an internal function
-			if (!token->isType(IntFuncP_TokenType))
-			{
-				// (internal function is on hold stack, will be deleted later)
-				delete token;  // delete the token
-			}
-			// return non-reference operand
-			// (report entire expression)
-			token = localFirst->setThrough(localLast);
-
-			// delete last token if close paren
-			DoneItem::deleteCloseParen(localLast);
-
-			// XXX check command on top of command stack XXX
-			return ExpAssignItem_TokenStatus;
-		}
-	}
-	else
-	{
-		// reset reference flag of operand
-		topToken->setReference(false);
-	}
-
 	// see if main code's data type matches
 	DataType dataType = topToken->dataType();
 	Code cvtCode = m_table.findCode(token, dataType, operandIndex);
@@ -233,19 +202,10 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 	}
 
 	// no match found, report error
-	// change token to token with invalid data type and return error
 	// use main code's expected data type for operand
-	// (return expected variable error for references and sub-strings)
-	TokenStatus status;
-	if (!token->reference())
-	{
-		status = expectedErrStatus(dataType);
-		// sub-string no longer needed with first/last operands
-	}
-	else
-	{
-		status = variableErrStatus(dataType);
-	}
+	TokenStatus status = expectedErrStatus(dataType);
+
+	// change token to token with invalid data type and return error
 	// report entire expression
 	token = localFirst->setThrough(localLast);
 
@@ -846,6 +806,8 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			delete m_holdStack.pop().token;
 			return status;
 		}
+		// reset reference if it was set above, no longer needed
+		token->setReference(false);
 		doneAppend = false;  // already appended
 		break;
 

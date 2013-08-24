@@ -148,10 +148,6 @@ public:
 	// Determine Error Funtions (By DataType)
 	static TokenStatus expectedErrStatus(DataType dataType,
 		Reference reference = None_Reference);
-	static TokenStatus variableErrStatus(DataType dataType)
-	{	// FIXME remove with old translator routines
-		return expectedErrStatus(dataType, All_Reference);
-	}
 
 private:
 	// New Translator Functions
