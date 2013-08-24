@@ -41,7 +41,6 @@ enum TableFlag
 	SubStr_Flag			= 0x00000004,  // code supports sub-string assignments
 	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
 	Print_Flag			= 0x00000010,  // print-only function
-	EndExpr_Flag		= 0x00000040,  // end expression FIXME remove
 	EndStmt_Flag		= 0x00000080   // end statement
 };
 

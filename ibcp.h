@@ -67,20 +67,18 @@ enum DataType
 
 
 // sub-code flags for use in Token and internal program
-// FIXME remove (*) with old translator
 enum SubCode
 {
 	None_SubCode       = 0x00000000,	// no sub-code present
 	Paren_SubCode      = 0x00000001,	// reproduce unnecessary parenthesis
 	Let_SubCode        = 0x00000002,	// reproduce LET keyword for assign
 	Keep_SubCode       = 0x00000004,	// keep cursor on same line of input
-	SemiColon_SubCode  = 0x00000008,	// semicolon after print function (*)
-	Question_SubCode   = 0x00000010,	// add "? " to input prompt
-	Used_SubCode       = 0x00000020,	// parentheses used in output
-	Last_SubCode       = 0x00000040,	// parentheses used as last token
-	End_SubCode        = 0x00000080,	// end of INPUT parsing codes (*)
-	Colon_SubCode      = 0x00000100,	// reproduce ":" after token
-	UnUsed_SubCode     = 0x10000000		// token not in output (for errors)
+	Question_SubCode   = 0x00000008,	// add "? " to input prompt
+	Colon_SubCode      = 0x00000010,	// reproduce ":" after token
+	// sub-codes used by translator only
+	Used_SubCode       = 0x00010000,	// parentheses used in output
+	Last_SubCode       = 0x00020000,	// parentheses used as last token
+	UnUsed_SubCode     = 0x00040000		// token not in output (for errors)
 };
 
 

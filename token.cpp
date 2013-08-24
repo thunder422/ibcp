@@ -385,17 +385,9 @@ QString Token::text(void)
 		{
 			string += "LET";
 		}
-		if (isSubCode(SemiColon_SubCode))
-		{
-			string += ';';
-		}
 		if (isSubCode(Keep_SubCode))
 		{
 			string += "Keep";
-		}
-		if (isSubCode(End_SubCode))
-		{
-			string += "End";
 		}
 		if (isSubCode(Question_SubCode))
 		{

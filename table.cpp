@@ -680,15 +680,15 @@ static TableEntry tableEntries[] =
 	},
 	{	// CloseParen_Code
 		Operator_TokenType, OneChar_Multiple,
-		")", NULL, EndExpr_Flag, 4, None_DataType
+		")", NULL, Null_Flag, 4, None_DataType
 	},
 	{	// Comma_Code
 		Operator_TokenType, OneChar_Multiple,
-		",", NULL, EndExpr_Flag, 6, None_DataType
+		",", NULL, Null_Flag, 6, None_DataType
 	},
 	{	// SemiColon_Code
 		Operator_TokenType, OneChar_Multiple,
-		";", NULL, EndExpr_Flag, 6, None_DataType
+		";", NULL, Null_Flag, 6, None_DataType
 	},
 	{	// Colon_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -696,7 +696,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
-		"'", NULL, EndExpr_Flag | EndStmt_Flag, 2, None_DataType
+		"'", NULL, EndStmt_Flag, 2, None_DataType
 	},
 	//*****************
 	//   END SYMBOLS
@@ -789,7 +789,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// EOL_Code
 		Operator_TokenType, OneWord_Multiple,
-		NULL, "EOL", EndExpr_Flag | EndStmt_Flag, 4, None_DataType
+		NULL, "EOL", EndStmt_Flag, 4, None_DataType
 	},
 	{	// AddI1_Code
 		Operator_TokenType, OneChar_Multiple,
