@@ -2,7 +2,7 @@
 Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer Eq
-	 5: IntFuncP  () SubStr  Mid2
+	 5: IntFuncP  () String  Mid2
 	10: Constant     String  |b|
 	13: Operator  Op None    Comma
 	14: NoParen      None    |A|
@@ -14,7 +14,7 @@ Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	20: NoParen      None    |index|
 	25: Operator  Op None    CloseParen
 	26: Operator  Op Double  Add
-	27: IntFuncP  () SubStr  Left
+	27: IntFuncP  () String  Left
 	33: Constant     String  |TEST|
 	39: Operator  Op None    Comma
 	41: Constant     Integer 1 |1|

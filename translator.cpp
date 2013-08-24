@@ -154,12 +154,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 				DoneItem::deleteCloseParen(last);
 				last = token2;  // last operand is CloseParen token
 			}
-			// FIXME remove check when sub-string data type removed
-			if (token->isDataType(SubStr_DataType) && !token->reference())
-			{
-				// change non-reference sub-string function data type to string
-				token->setDataType(String_DataType);
-			}
+
 			if (token->reference())
 			{
 				doneAppend = false;  // don't append sub-string assignment
@@ -317,10 +312,6 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 		status = expectedErrStatus(dataType);
 		// sub-string no longer needed with first/last operands
 	}
-	else if (token->isDataType(SubStr_DataType))
-	{
-		status = ExpStrVar_TokenStatus;
-	}
 	else
 	{
 		status = variableErrStatus(dataType);
@@ -384,8 +375,7 @@ DataType Translator::equivalentDataType(DataType dataType)
 	static DataType equivalent[numberof_DataType] = {
 		Double_DataType,	// Double
 		Integer_DataType,	// Integer
-		String_DataType,	// String
-		String_DataType		// SubStr
+		String_DataType		// String
 	};
 
 	return equivalent[dataType];
@@ -414,12 +404,6 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 			ExpStrVar_TokenStatus,		// Variable
 			ExpStrVar_TokenStatus,		// VarDefFn
 			ExpStrItem_TokenStatus		// All
-		},
-		{	// SubStr
-			ExpStrExpr_TokenStatus,		// None
-			BUG_InvalidDataType,		// Variable
-			BUG_InvalidDataType,		// VarDefFn
-			BUG_InvalidDataType			// All
 		},
 		{	// None
 			ExpExpr_TokenStatus,		// None
@@ -1087,13 +1071,6 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 			{
 				status = ExpOpOrComma_TokenStatus;
 				break;
-			}
-
-			// FIXME this is temporary until old translator removed
-			// FIXME (SubStr_DataType will be removed)
-			if (topToken->isDataType(SubStr_DataType))
-			{
-				topToken->setDataType(String_DataType);
 			}
 
 			m_doneStack.drop();  // remove from done stack (remove paren tokens)

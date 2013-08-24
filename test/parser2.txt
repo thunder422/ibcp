@@ -48,7 +48,7 @@ Input: LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
 	32: IntFuncP  () Double  Val
 	37: Command   Op EndIf
 	44: NoParen      String  |left$|
-	50: IntFuncP  () SubStr  Left
+	50: IntFuncP  () String  Left
 	56: Operator  Op None    EOL
 
 Input: rem this should be a comment

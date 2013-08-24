@@ -55,7 +55,6 @@ enum DataType
 	Double_DataType,
 	Integer_DataType,
 	String_DataType,
-	SubStr_DataType,
 	// end of the actual execution data types
 	// the following data types are used internally for other uses
 	None_DataType,		// indicates none of the above data types

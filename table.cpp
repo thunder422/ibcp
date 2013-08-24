@@ -34,7 +34,7 @@ const int MaxOperands = 3;
 	// (arguments) for any operator or internal function (there are currently
 	// no internal function with more than 3 arguments)
 
-const int MaxAssocCodes = 4;
+const int MaxAssocCodes = 3;
 	// this value contains the maximum number of associated codes,
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
@@ -46,7 +46,6 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Null_Code,		// Double
 		CvtInt_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code,	// SubStr  (FIXME this data will be removed)
 		Null_Code,		// None
 		Null_Code,		// Number
 		Null_Code		// Any
@@ -55,7 +54,6 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		CvtDbl_Code,	// Double
 		Null_Code,		// Integer
 		Invalid_Code,	// String
-		Invalid_Code,	// SubStr  (FIXME this data will be removed)
 		Null_Code,		// None
 		Null_Code,		// Number
 		Null_Code		// Any
@@ -64,16 +62,6 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Null_Code,		// String
-		Null_Code,		// SubStr  (FIXME this data will be removed)
-		Null_Code,		// None
-		Invalid_Code,	// Number
-		Null_Code		// Any
-	},
-	{	// have SubStr,    need:  (FIXME this data will be removed)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Null_Code,		// String
-		Null_Code,		// SubStr
 		Null_Code,		// None
 		Invalid_Code,	// Number
 		Null_Code		// Any
@@ -82,7 +70,6 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code,	// SubStr  (FIXME this data will be removed)
 		Null_Code,		// None (print function allowed if needed None)
 		Invalid_Code,	// Number
 		Invalid_Code	// Any
@@ -91,7 +78,6 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code,	// SubStr  (FIXME this data will be removed)
 		Invalid_Code,	// None
 		Invalid_Code,	// Number
 		Invalid_Code	// Any
@@ -100,7 +86,6 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 		Invalid_Code,	// Double
 		Invalid_Code,	// Integer
 		Invalid_Code,	// String
-		Invalid_Code,	// SubStr  (FIXME this data will be removed)
 		Invalid_Code,	// None
 		Invalid_Code,	// Number
 		Invalid_Code	// Any
@@ -201,12 +186,6 @@ static DataType StrStr_OperandArray[] = {
 static DataType StrStrInt_OperandArray[] = {
 	String_DataType, String_DataType, Integer_DataType
 };
-static DataType Sub_OperandArray[] = {
-	SubStr_DataType
-};
-static DataType SubStr_OperandArray[] = {
-	SubStr_DataType, String_DataType
-};
 
 
 // associated code data type arrays
@@ -216,11 +195,11 @@ static Code Add_AssocCode[]				= {
 };
 static Code AddI1_AssocCode[]			= {AddInt_Code};
 static Code Assign_AssocCode[]			= {
-	AssignInt_Code, AssignStr_Code, AssignSubStr_Code, AssignList_Code
+	AssignInt_Code, AssignStr_Code, AssignList_Code
 };
 static Code AssignLeft_AssocCode[]		= {AssignKeepLeft_Code};
 static Code AssignList_AssocCode[]		= {
-	AssignListInt_Code, AssignListStr_Code, AssignListMix_Code
+	AssignListInt_Code, AssignListStr_Code
 };
 static Code AssignInt_AssocCode[]		= {AssignListInt_Code};
 static Code AssignMid2_AssocCode[]		= {AssignKeepMid2_Code};
@@ -566,7 +545,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// Left_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"LEFT$(", NULL, SubStr_Flag, 2, SubStr_DataType,
+		"LEFT$(", NULL, SubStr_Flag, 2, String_DataType,
 		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Left, -1))
 	},
 	{	// Len_Code
@@ -576,12 +555,12 @@ static TableEntry tableEntries[] =
 	},
 	{	// Mid2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID2$(", Multiple_Flag | SubStr_Flag, 2, SubStr_DataType,
+		"MID$(", "MID2$(", Multiple_Flag | SubStr_Flag, 2, String_DataType,
 		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Mid2, -1))
 	},
 	{	// Mid3_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"MID$(", "MID3$(", SubStr_Flag, 2, SubStr_DataType,
+		"MID$(", "MID3$(", SubStr_Flag, 2, String_DataType,
 		new ExprInfo(Null_Code, Operands(StrIntInt), AssocCode2(Mid3, -1))
 	},
 	{	// Repeat_Code
@@ -591,7 +570,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// Right_Code
 		IntFuncP_TokenType, OneWord_Multiple,
-		"RIGHT$(", NULL, SubStr_Flag, 2, SubStr_DataType,
+		"RIGHT$(", NULL, SubStr_Flag, 2, String_DataType,
 		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Right, -1))
 	},
 	{	// Space_Code
@@ -737,7 +716,7 @@ static TableEntry tableEntries[] =
 	{	// Assign_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign", Reference_Flag, 4, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 2))
 	},
 	{	// AssignInt_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -748,11 +727,6 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign$", Reference_Flag, 4, String_DataType,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignStr, 1))
-	},
-	{	// AssignSubStr_Code
-		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignSub$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(SubStr))
 	},
 	{	// AssignLeft_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -777,7 +751,7 @@ static TableEntry tableEntries[] =
 	{	// AssignList_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList", Reference_Flag, 4, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(AssignList, 3))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(AssignList, 2))
 	},
 	{	// AssignListInt_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -788,11 +762,6 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList$", Reference_Flag, 4, String_DataType,
 		&StrStr_ExprInfo
-	},
-	{	// AssignListMix_Code
-		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignListMix$", Reference_Flag, 4, String_DataType,
-		new ExprInfo(Null_Code, Operands(SubStr))
 	},
 	{	// AssignKeepStr_Code
 		Operator_TokenType, OneWord_Multiple,
