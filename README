@@ -32,13 +32,14 @@ Currently, the BASIC language parser is operational.  The parser
 converts text input into BASIC language tokens.
 
 The translator is currently being developed with a new scheme that will
-make translation of commands simple to implement.  The LET, PRINT and
-INPUT commands have been implemented so far.  The old translator
-routines have been left in place until the new routines fully support
-the same features, which include the translation of BASIC expressions
-along a few BASIC commands (LET, PRINT, INPUT and REM) into a reverse
-polish notation format that will be used for fast execution of the BASIC
-program.
+make translation of commands simpler to implement.  The LET, PRINT,
+INPUT and REM commands have been implemented so far along with multiple
+statements per line (separated by colons).  The old translator routines
+have been left in place until the new routines fully support the same
+features, which has now been accomplished.  include the translation of
+BASIC expressions The translator translates BASIC commands into a
+reverse polish notation format that will allow fast execution of the
+BASIC program.
 
 A basic GUI has been implemented including file, edit and help menus
 with basic operation menu items, the tool bar with several file and edit

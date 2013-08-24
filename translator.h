@@ -259,7 +259,7 @@ private:
 	}
 
 public:
-	// token handler friend function definitions section
+	// token handler friend function definitions section FIXME remove
 	friend TokenStatus Operator_Handler(Translator &t, Token *&token);
 	friend TokenStatus Equal_Handler(Translator &t, Token *&token);
 	friend TokenStatus Comma_Handler(Translator &t, Token *&token);
@@ -268,7 +268,7 @@ public:
 	friend TokenStatus SemiColon_Handler(Translator &t, Token *&token);
 	friend TokenStatus RemOp_Handler(Translator &t, Token *&token);
 
-	// command handler friend function definitions section
+	// command handler friend function definitions section FIXME remove
 	friend TokenStatus Assign_CmdHandler(Translator &t, CmdItem *cmdItem,
 		Token *token);
 	friend TokenStatus Print_CmdHandler(Translator &t, CmdItem *cmdItem,
