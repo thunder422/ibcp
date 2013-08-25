@@ -45,7 +45,7 @@ class Translator
 	class HoldStack : public QStack<HoldItem>
 	{
 	public:
-		// drop the top item on stask (pop with no return)
+		// drop the top item on stack (pop with no return)
 		void drop(void)
 		{
 			resize(size() - 1);
@@ -66,7 +66,6 @@ class Translator
 	DoneStack m_doneStack;			// items processed stack
 	Token *m_pendingParen;			// closing parentheses token is pending
 	int m_lastPrecedence;			// precedence of last op added during paren
-	bool m_exprMode;				// expression only mode active flag
 
 public:
 	explicit Translator(Table &table);
@@ -81,13 +80,11 @@ public:
 	};
 
 	// New Translator Functions
-	RpnList *translate2(const QString &input, bool exprMode = false);
+	RpnList *translate(const QString &input, bool exprMode = false);
 	TokenStatus getCommands(Token *&token);
 	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
 	TokenStatus getOperand(Token *&token, DataType dataType,
 		Reference reference = None_Reference);
-	TokenStatus getInternalFunction(Token *&token);
-	TokenStatus getParenToken(Token *&token);
 	TokenStatus getToken(Token *&token, DataType dataType = No_DataType);
 
 	// Main Processing Functions
@@ -98,7 +95,7 @@ public:
 	TokenStatus processDoneStackTop(Token *&token, int operandIndex = 0,
 		Token **first = NULL, Token **last = NULL);
 
-	// Determine Error Funtions (By DataType)
+	// Determine Error Functions (By DataType)
 	static DataType equivalentDataType(DataType dataType);
 
 	// Access Functions
@@ -145,14 +142,16 @@ public:
 		m_output->insert(index, new RpnItem(token));
 	}
 
-	// Determine Error Funtions (By DataType)
+	// Determine Error Functions (By DataType)
 	static TokenStatus expectedErrStatus(DataType dataType,
 		Reference reference = None_Reference);
 
 private:
 	// New Translator Functions
 	TokenStatus processCommand(Token *&commandToken);
-	TokenStatus processOperator2(Token *&token);
+	TokenStatus processInternalFunction(Token *&token);
+	TokenStatus processParenToken(Token *&token);
+	TokenStatus processOperator(Token *&token);
 	void checkPendingParen(Token *token, bool popped);
 
 	// Main Processing Functions

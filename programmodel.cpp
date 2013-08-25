@@ -142,7 +142,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	if (operation != Remove_Operation)
 	{
 		// compile line (for now just translate)
-		rpnList = m_translator->translate2(line);
+		rpnList = m_translator->translate(line);
 	}
 
 	if (operation == Change_Operation)

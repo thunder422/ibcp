@@ -52,7 +52,7 @@ Translator::~Translator(void)
 
 // function to process the first operand for an operator
 //
-//  - called from the Operator_Handler or Equal_Handler (for equal operator)
+//  - called from processOperator()
 //  - attaches first operand token from operand on top of done stack
 //  - no first operand token for unary operators
 
@@ -137,18 +137,15 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 }
 
 
-// function to find a code where the expected data types of the operands match
-// the actual operands present; the code in the token is checked first followed
-// by any associated codes that the main code has; the token is updated to the
-// code found
+// function to process the item on top of the done stack for a given operand
+// of an operator or only operand of an internal code token
 //
-//   - the token is unchanged is there is an exact match of data types
-//   - conversion codes are inserted into the output after operands that need
-//     to be converted
-//   - if there is no match, then an appropriate error is returned and the
-//     token argument is changed to pointer to the token with the error
-//
-//   - operand index must be valid to token code
+//   - if requested, the first and last operands of the item are returned
+//   - calls Table::findCode() to check the data type of item:
+//     changes token code to a matching associated code if available
+//     else returns a conversion code if conversion is possible
+//   - if no match found or conversion not possible, an error is returned
+//   - if conversion possible, a conversion code token is appended to output
 
 TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 	Token **first, Token **last)
@@ -273,6 +270,7 @@ DataType Translator::equivalentDataType(DataType dataType)
 
 
 // function to return the token error status for an expected data type
+// and reference type
 TokenStatus Translator::expectedErrStatus(DataType dataType,
 	Reference reference)
 {
@@ -325,7 +323,7 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 //     of translated line
 //   - allows for a special expression mode for testing
 
-RpnList *Translator::translate2(const QString &input, bool exprMode)
+RpnList *Translator::translate(const QString &input, bool exprMode)
 {
 	Token *token;
 	TokenStatus status;
@@ -407,7 +405,12 @@ RpnList *Translator::translate2(const QString &input, bool exprMode)
 }
 
 
-// function to get colon separated statements until the end of the line
+// function to get colon separated statements
+//
+//   - stops at rem, end-of-line or unknown token
+//   - if end is rem (command or operator), end-of-line is returned
+//   - returns terminating token (end-of-line or unknown token)
+//   - caller determines validity of unknown token if returned
 
 TokenStatus Translator::getCommands(Token *&token)
 {
@@ -436,7 +439,7 @@ TokenStatus Translator::getCommands(Token *&token)
 		}
 		else if (token->isCode(Colon_Code))
 		{
-			// delete uneeded colon token, set colon sub-code on last token
+			// delete unneeded colon token, set colon sub-code on last token
 			delete token;
 			outputLastToken()->setSubCodeMask(Colon_SubCode);
 		}
@@ -621,7 +624,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 		}
 
 		// check for and process operator (unary or binary)
-		status = processOperator2(token);
+		status = processOperator(token);
 		if (status == Done_TokenStatus)
 		{
 			if (level == 0)
@@ -672,7 +675,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 //    - otherwise, the first operand of the operator is processed, which also
 //      handles pushing the operator to the hold stack
 
-TokenStatus Translator::processOperator2(Token *&token)
+TokenStatus Translator::processOperator(Token *&token)
 {
 	// determine precedence of incoming token
 	// (set highest precedence for unary operators,
@@ -800,7 +803,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		{
 			return expectedErrStatus(dataType);
 		}
-		if ((status = getInternalFunction(token)) != Good_TokenStatus)
+		if ((status = processInternalFunction(token)) != Good_TokenStatus)
 		{
 			// drop and delete function token since it was not used
 			delete m_holdStack.pop().token;
@@ -829,7 +832,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		{
 			token->setReference();
 		}
-		if ((status = getParenToken(token)) != Good_TokenStatus)
+		if ((status = processParenToken(token)) != Good_TokenStatus)
 		{
 			// drop and delete parentheses token since it was not used
 			delete m_holdStack.pop().token;
@@ -864,7 +867,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 //   - the token argument contains the internal function token
 //   - the token argument contains the token when an error is detected
 
-TokenStatus Translator::getInternalFunction(Token *&token)
+TokenStatus Translator::processInternalFunction(Token *&token)
 {
 	TokenStatus status;
 	DataType expectedDataType;
@@ -1013,7 +1016,7 @@ TokenStatus Translator::getInternalFunction(Token *&token)
 //   - the token argument contains the token with parentheses
 //   - the token argument contains the token when an error is detected
 
-TokenStatus Translator::getParenToken(Token *&token)
+TokenStatus Translator::processParenToken(Token *&token)
 {
 	TokenStatus status;
 
@@ -1045,6 +1048,7 @@ TokenStatus Translator::getParenToken(Token *&token)
 		if (topToken->isType(Paren_TokenType))
 		{
 			Token *operandToken = m_doneStack.top().rpnItem->token();
+			// TODO may also need to check for DefFuncN type here
 			if ((operandToken->isType(NoParen_TokenType)
 				|| operandToken->isType(Paren_TokenType))
 				&& !operandToken->isSubCode(Paren_SubCode))

@@ -260,7 +260,7 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 void Tester::translateInput(QTextStream &cout, Translator &translator,
 	const QString &testInput, bool exprMode)
 {
-	RpnList *rpnList = translator.translate2(testInput, exprMode);
+	RpnList *rpnList = translator.translate(testInput, exprMode);
 	if (!rpnList->hasError())
 	{
 		cout << "Output: " << rpnList->text() << ' ' << endl;
