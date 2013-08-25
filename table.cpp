@@ -198,9 +198,6 @@ static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignList_Code
 };
 static Code AssignLeft_AssocCode[]		= {AssignKeepLeft_Code};
-static Code AssignList_AssocCode[]		= {
-	AssignListInt_Code, AssignListStr_Code
-};
 static Code AssignInt_AssocCode[]		= {AssignListInt_Code};
 static Code AssignMid2_AssocCode[]		= {AssignKeepMid2_Code};
 static Code AssignMid3_AssocCode[]		= {AssignKeepMid3_Code};
@@ -750,8 +747,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// AssignList_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList", Reference_Flag, 4, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(AssignList, 2))
+		"=", "AssignList", Reference_Flag, 4, Double_DataType, &DblDbl_ExprInfo
 	},
 	{	// AssignListInt_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -1217,21 +1213,27 @@ QStringList Table::setupAndCheck(void)
 				{
 					int bitMask = bitMaskDataType[exprInfo->m_expectedDataType];
 					int index = exprInfo->m_assoc2Index;
-					for (; index < exprInfo->m_nAssocCodes; index++)
+					if (index >= 0)
 					{
-						Code assocCode = exprInfo->m_assocCode[index];
-						ExprInfo *exprInfo2 = m_entry[assocCode].exprInfo;
-						if (exprInfo2 != NULL)  // FIXME - remove this
-						bitMask |= bitMaskDataType[exprInfo2
-							->m_operandDataType[exprInfo2->m_nOperands - 1]];
-					}
-					if (bitMask == Num_BitMask)
-					{
-						exprInfo->m_expectedDataType = Number_DataType;
-					}
-					else if (bitMask == Any_BitMask)
-					{
-						exprInfo->m_expectedDataType = Any_DataType;
+						for (; index < exprInfo->m_nAssocCodes; index++)
+						{
+							Code assocCode = exprInfo->m_assocCode[index];
+							ExprInfo *exprInfo2 = m_entry[assocCode].exprInfo;
+							if (exprInfo2 != NULL)
+							{
+								bitMask |= bitMaskDataType[exprInfo2
+									->m_operandDataType[exprInfo2->m_nOperands
+									- 1]];
+							}
+						}
+						if (bitMask == Num_BitMask)
+						{
+							exprInfo->m_expectedDataType = Number_DataType;
+						}
+						else if (bitMask == Any_BitMask)
+						{
+							exprInfo->m_expectedDataType = Any_DataType;
+						}
 					}
 				}
 			}
