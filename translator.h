@@ -79,30 +79,34 @@ public:
 		sizeof_Reference
 	};
 
-	// New Translator Functions
+	// Main Function
 	RpnList *translate(const QString &input, bool exprMode = false);
+
+	// Get Functions
 	TokenStatus getCommands(Token *&token);
 	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
 	TokenStatus getOperand(Token *&token, DataType dataType,
 		Reference reference = None_Reference);
 	TokenStatus getToken(Token *&token, DataType dataType = No_DataType);
 
-	// Main Processing Functions
+	// Public Processing Functions
 	TokenStatus processFinalOperand(Token *&token, Token *token2 = NULL,
 		int operandIndex = 0);
-
-	// Support Functions
 	TokenStatus processDoneStackTop(Token *&token, int operandIndex = 0,
 		Token **first = NULL, Token **last = NULL);
 
-	// Determine Error Functions (By DataType)
+	// Public Support Functions
 	static DataType equivalentDataType(DataType dataType);
+	static TokenStatus expectedErrStatus(DataType dataType,
+		Reference reference = None_Reference);
 
-	// Access Functions
+	// Table Access Function
 	Table &table(void) const
 	{
 		return m_table;
 	}
+
+	// Done Stack Access Functions
 	RpnItem *doneStackPop(void)
 	{
 		return m_doneStack.pop();
@@ -121,6 +125,7 @@ public:
 	}
 	Token *doneStackPopErrorToken(void);
 
+	// Output List Access Functions
 	int outputCount(void) const
 	{
 		return m_output->count();
@@ -142,23 +147,17 @@ public:
 		m_output->insert(index, new RpnItem(token));
 	}
 
-	// Determine Error Functions (By DataType)
-	static TokenStatus expectedErrStatus(DataType dataType,
-		Reference reference = None_Reference);
-
 private:
-	// New Translator Functions
+	// Private Processing Functions
 	TokenStatus processCommand(Token *&commandToken);
 	TokenStatus processInternalFunction(Token *&token);
 	TokenStatus processParenToken(Token *&token);
 	TokenStatus processOperator(Token *&token);
-	void checkPendingParen(Token *token, bool popped);
-
-	// Main Processing Functions
 	TokenStatus processFirstOperand(Token *&token);
 
-	// Support Functions
-	void cleanUp(void);		// only call when addToken() returns error
+	// Private Support Functions
+	void checkPendingParen(Token *token, bool popped);
+	void cleanUp(void);		// only called when error occurs
 };
 
 
