@@ -48,7 +48,7 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 				{
 					status = ExpExprCommaPfnOrEnd_TokenStatus;
 				}
-				// change parser error if not inside paren <-- FIXME
+				// change parser error if not inside paren
 				else if (translator.doneStackTopToken()
 					->isDataType(None_DataType))
 				{

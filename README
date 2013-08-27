@@ -31,15 +31,11 @@ Project Status
 Currently, the BASIC language parser is operational.  The parser
 converts text input into BASIC language tokens.
 
-The translator is currently being developed with a new scheme that will
-make translation of commands simpler to implement.  The LET, PRINT,
-INPUT and REM commands have been implemented so far along with multiple
-statements per line (separated by colons).  The old translator routines
-have been left in place until the new routines fully support the same
-features, which has now been accomplished.  include the translation of
-BASIC expressions The translator translates BASIC commands into a
-reverse polish notation format that will allow fast execution of the
-BASIC program.
+The translator is currently being developed.  The LET, PRINT, INPUT and
+REM commands have been implemented so far along with multiple statements
+per line (separated by colons) and the translation of BASIC expressions.
+The translator translates BASIC commands into a reverse polish notation
+format that will allow fast execution of the BASIC program.
 
 A basic GUI has been implemented including file, edit and help menus
 with basic operation menu items, the tool bar with several file and edit
@@ -94,6 +90,18 @@ copied into the ibcp/build directory.  The test will report whether the
 tests pass or fail.  The memtest script (Linux only) will run all the
 tests but also look for memory leaks (requires the valgrind program).
 
+Because the Qt libraries produce various memory errors, an error
+suppression file was created to suppress these errors.  This suppression
+file, ibcp.supp, is configured for a specific version of Qt, which is
+the default version (4.8.2) installed in Linux Mint 13 KDE with the
+kubuntu backports that upgrade KDE to 4.11.0.  When building the
+application from the source, the ibcp.supp file is configured for the
+version of Qt installed.  However, if running from the binary archive,
+the ibcp.supp file needs to be modified for the version of the Qt
+installed (which can be determined by running the application and
+selecting the Help/About Qt menu item).  The ibcp.supp file should be
+modified by replacing all the "4.8.2" with the version installed.
+
 
 Command Line Options
 --------------------
@@ -110,11 +118,10 @@ from the parser are the resulting tokens.  The output from the
 translator are the resulting reverse polish notation format of the
 tokens.  The program is run interactively with this command:
 
-    ibcp -tp|-te|-tt|-ne|-nt
+    ibcp -tp|-te|-tt
 
 The first 't' character represents 'test' mode and the second stands for
-parser, expression and translator.  The 'n' character activates the new
-translator.
+parser, expression and translator.
 
 
 Running In Batch
@@ -123,21 +130,7 @@ The ibcp program can run in batch by taking a text input file and
 process it through the parser, expression translator, or command
 translator.  The program is run in batch with this command:
 
-    ibcp -t|-n <file>
+    ibcp -t <file>
 
 The beginning of the name of the file (parser, expression, or
-translator) determines how the file will be processed.  The 'n' option
-uses the new translator routines (only expression files are currently
-supported).
-
-
-Test Programs
--------------
-There are several test programs contained in the test sub-directory.
-These programs are built with the this command (after running cmake as
-described above in the build directory):
-
-    make tests
-
-This commands take no command line options.  There are expected results
-for these test programs in the test sub-directory.
+translator) determines how the file will be processed.

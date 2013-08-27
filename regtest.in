@@ -33,7 +33,7 @@
 #
 
 rm -f parser*.txt expression*.txt translator*.txt
-dir=@ibcp_SOURCE_DIR@/test/
+dir=test/
 ./ibcp -v
 for input in ${dir}parser*.dat ${dir}expression*.dat ${dir}translator*.dat
 do

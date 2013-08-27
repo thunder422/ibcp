@@ -25,6 +25,14 @@ project(ibcp)
 
 cmake_minimum_required(VERSION 2.8)
 
+# prevent in source directory builds
+if (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+	message(FATAL_ERROR
+		"\nbuilding in the source directory not allowed"
+		"\nplease create a separate build directory"
+	)
+endif (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+
 # find Qt package
 find_package(Qt4 REQUIRED QtCore QtGui)
 include(${QT_USE_FILE})
@@ -49,7 +57,7 @@ set(ibcp_COPYRIGHT_YEAR 2013)
 
 set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 4)
-set(ibcp_RELEASE_PATCH 5)
+set(ibcp_RELEASE_PATCH 6)
 
 set(ibcp_RELEASE_STRING v${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
 if (ibcp_RELEASE_PATCH LESS 0)
@@ -181,6 +189,43 @@ set(ibcp_RESOURCES
 )
 qt4_add_resources(ibcp_RCC_SOURCES ${ibcp_RESOURCES})
 
+# test and other files
+file(GLOB other_files RELATIVE ${PROJECT_SOURCE_DIR} test/*.dat test/*.txt)
+list(SORT other_files)
+list(APPEND other_files LICENSE README rel_notes.txt)
+
+foreach(file ${other_files})
+	add_custom_command(OUTPUT ${file}
+		COMMAND mkdir -p ${PROJECT_BINARY_DIR}/test
+		COMMAND cp ${PROJECT_SOURCE_DIR}/${file}
+			${PROJECT_BINARY_DIR}/${file}
+		MAIN_DEPENDENCY ${file}
+	)
+endforeach(file ${other_files})
+
+# create binary release archive script appropriate for build system
+string(SUBSTRING ${ibcp_RELEASE_STRING} 1 -1 ibcp_VERSION)
+if (UNIX)
+	add_custom_command(OUTPUT rel_bin.sh
+		COMMAND echo tar cvzf ibcp_${ibcp_VERSION}-bin.tar.gz
+			$<TARGET_FILE_NAME:ibcp> regtest memtest ibcp.supp ${other_files}
+			>rel_bin.sh
+		DEPENDS ${other_files}
+	)
+endif (UNIX)
+if (WIN32)
+	configure_file(
+		"${PROJECT_SOURCE_DIR}/regtest.bat"
+		"${PROJECT_BINARY_DIR}/regtest.bat"
+	)
+	add_custom_command(OUTPUT rel_bin.sh
+		COMMAND echo 7z a -tzip -mx9 ibcp_${ibcp_VERSION}-bin.zip
+			$<TARGET_FILE_NAME:ibcp> regtest regtest.bat ${other_files}
+			>rel_bin.sh
+		DEPENDS ${other_files}
+	)
+endif (WIN32)
+
 # add the executable
 add_executable(ibcp
 	ibcp.h
@@ -190,5 +235,7 @@ add_executable(ibcp
 	${ibcp_MOCS}
 	${ibcp_UI_HEADERS}
 	${ibcp_RCC_SOURCES}
+	${other_files}
+	rel_bin.sh
 )
 target_link_libraries(ibcp ${QT_LIBRARIES})

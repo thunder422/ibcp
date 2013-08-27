@@ -756,8 +756,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// AssignListStr_Code
 		Operator_TokenType, OneWord_Multiple,
-		"=", "AssignList$", Reference_Flag, 4, String_DataType,
-		&StrStr_ExprInfo
+		"=", "AssignList$", Reference_Flag, 4, String_DataType, &StrStr_ExprInfo
 	},
 	{	// AssignKeepStr_Code
 		Operator_TokenType, OneWord_Multiple,

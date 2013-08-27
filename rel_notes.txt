@@ -20,7 +20,6 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap (updated 2013-04-05):
 
-	Implement new translator scheme
 	Define internal program format
 	Implement initial Encoder (RPN list to internal code)
 	Implement Variable Dictionary (needed for Encoder)
@@ -36,6 +35,19 @@ Planned Roadmap (updated 2013-04-05):
 	Implement DEF FN command
 	Implement DO-WHILE-UNTIL-LOOP commands
 	To be defined...
+
+
+Release 0.4.6 (2013-08-25)
+
+	Project developmental release - implementation of the new
+	translator scheme has been completed and the old translator
+	functions have been removed.
+
+	  - removed temporary new translator test command line options
+	  - removed temporary new translator test scripts
+	  - renamed several translator functions
+	  - rearranged translator functions logically from top to bottom
+	  - cmake improvements
 
 
 Release 0.4.5 (2013-08-23)
