@@ -497,7 +497,7 @@ void *Token::operator new(size_t size)
 		token = (Token *)::operator new(size);
 
 		// set index into used vector and add to vector
-		token->index = s_used.size();
+		token->m_id = s_used.size();
 		s_used.append(token);
 	}
 	else  // get a token from the free stack
@@ -505,7 +505,7 @@ void *Token::operator new(size_t size)
 		token = s_freeStack.pop();
 
 		// mark token as used
-		s_used[token->index] = token;
+		s_used[token->m_id] = token;
 	}
 
 	// return pointer to new token
@@ -526,14 +526,14 @@ void Token::operator delete(void *ptr)
 	{
 		Token *token = (Token *)ptr;
 
-		if (s_used[token->index] == NULL)  // already deleted?
+		if (s_used[token->m_id] == NULL)  // already deleted?
 		{
-			s_deleted.append(QString("%1: %2").arg(token->index)
+			s_deleted.append(QString("%1: %2").arg(token->m_id)
 				.arg(token->text()));
 		}
 		else  // mark token as unused and cache on free stack
 		{
-			s_used[token->index] = NULL;
+			s_used[token->m_id] = NULL;
 			s_freeStack.push(token);
 		}
 	}

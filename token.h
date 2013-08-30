@@ -54,7 +54,7 @@ class Token
 {
 	Q_DECLARE_TR_FUNCTIONS(Token)
 
-	int index;				// private index for detecting token leaks
+	int m_id;				// private ID (index) for detecting token leaks
 	int m_column;			// start column of token
 	int m_length;			// length of token
 	TokenType m_type;		// type of the token
