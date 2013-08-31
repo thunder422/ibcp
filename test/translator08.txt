@@ -57,25 +57,25 @@ Input: Z=MID$(A$,2) = B$
 Output: Z<ref> A$ 2 MID2$( B$ =$ CvtDbl Assign 
 
 Input: Z(INT(A+B))=C
-Output: A B + INT( Z(<ref>[INT(] C Assign 
+Output: A B + INT( CvtInt Z(<ref> C Assign 
 
 Input: Z(A$)=C
          ^^-- expected numeric expression
 
 Input: Z(A)=Y(A$)
-Output: A<ref> Z(<ref>[A<ref>] A$<ref> Y([A$<ref>] Assign 
+Output: A CvtInt Z(<ref> A$<ref> Y([A$<ref>] Assign 
 
 Input: Z(A),Y(A)=X(A)
-Output: A<ref> Z(<ref>[A<ref>] A<ref> Y(<ref>[A<ref>] A<ref> X([A<ref>] AssignList 
+Output: A CvtInt Z(<ref> A CvtInt Y(<ref> A<ref> X([A<ref>] AssignList 
 
 Input: Z(A,Y(B))=X(A)
-Output: A<ref> B<ref> Y(<ref>[B<ref>] Z(<ref>[A<ref>,Y(<ref>] A<ref> X([A<ref>] Assign 
+Output: A CvtInt B<ref> Y([B<ref>] CvtInt Z(<ref> A<ref> X([A<ref>] Assign 
 
 Input: Z%(A%),Y%(A%)=X%(A%)
-Output: A%<ref> Z%(<ref>[A%<ref>] A%<ref> Y%(<ref>[A%<ref>] A%<ref> X%([A%<ref>] AssignList% 
+Output: A% Z%(<ref> A% Y%(<ref> A%<ref> X%([A%<ref>] AssignList% 
 
 Input: Z$(A%),Y$(A%)=X$(A%)
-Output: A%<ref> Z$(<ref>[A%<ref>] A%<ref> Y$(<ref>[A%<ref>] A%<ref> X$([A%<ref>] AssignList$ 
+Output: A% Z$(<ref> A% Y$(<ref> A%<ref> X$([A%<ref>] AssignList$ 
 
 Input: TAB(10)=A
        ^^^^-- expected command

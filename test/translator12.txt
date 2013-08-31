@@ -12,7 +12,7 @@ Input: INPUT A$;
 Output: InputParseStr InputBegin A$<ref> InputAssignStr INPUT'Keep' 
 
 Input: INPUT A(I%),B%(I%);
-Output: InputParseInt InputParse InputBegin I%<ref> A(<ref>[I%<ref>] InputAssign I%<ref> B%(<ref>[I%<ref>] InputAssignInt INPUT'Keep' 
+Output: InputParseInt InputParse InputBegin I% A(<ref> InputAssign I% B%(<ref> InputAssignInt INPUT'Keep' 
 
 Input: INPUT PROMPT "Enter Number: "; N%
 Output: "Enter Number: " InputParseInt InputBeginStr N%<ref> InputAssignInt INPUT-PROMPT 
@@ -24,7 +24,7 @@ Input: INPUT PROMPT "Two Values", A, B;
 Output: "Two Values" InputParse InputParse InputBeginStr'Question' A<ref> InputAssign B<ref> InputAssign INPUT-PROMPT'Keep' 
 
 Input: INPUT PROMPT P$(I%), S$(I%)
-Output: I%<ref> P$([I%<ref>] InputParseStr InputBeginStr'Question' I%<ref> S$(<ref>[I%<ref>] InputAssignStr INPUT-PROMPT 
+Output: I%<ref> P$([I%<ref>] InputParseStr InputBeginStr'Question' I% S$(<ref> InputAssignStr INPUT-PROMPT 
 
 Input: INPUT
             ^-- expected variable

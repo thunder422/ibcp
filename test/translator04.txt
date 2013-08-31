@@ -78,5 +78,5 @@ Input: LEFT$(A$,1),B$,RIGHT$(C$,1) = D$
 Output: A$<ref> 1 B$<ref> C$<ref> 1 D$ AssignKeepRight AssignKeep$ AssignLeft 
 
 Input: A(int(B))=C
-Output: B INT( A(<ref>[INT(] C Assign 
+Output: B INT( CvtInt A(<ref> C Assign 
 

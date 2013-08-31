@@ -751,7 +751,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 	// during the processing of the expressions of each operand
 	m_holdStack.push(token);
 	// determine data type (number for subscripts, any for arguments)
-	DataType dataType = token->reference() ? Number_DataType : Any_DataType;
+	DataType dataType = token->reference() ? Integer_DataType : Any_DataType;
 	Token *topToken = token;
 
 	for (int nOperands = 1; ; nOperands++)
@@ -774,13 +774,20 @@ TokenStatus Translator::processParenToken(Token *&token)
 		// set reference for appropriate token types
 		if (topToken->isType(Paren_TokenType))
 		{
-			Token *operandToken = m_doneStack.top().rpnItem->token();
-			// TODO may also need to check for DefFuncN type here
-			if ((operandToken->isType(NoParen_TokenType)
-				|| operandToken->isType(Paren_TokenType))
-				&& !operandToken->isSubCode(Paren_SubCode))
+			if (topToken->reference())
 			{
-				operandToken->setReference();
+				m_doneStack.drop();  // don't need item
+			}
+			else
+			{
+				Token *operandToken = m_doneStack.top().rpnItem->token();
+				// TODO may also need to check for DefFuncN type here
+				if ((operandToken->isType(NoParen_TokenType)
+					|| operandToken->isType(Paren_TokenType))
+					&& !operandToken->isSubCode(Paren_SubCode))
+				{
+					operandToken->setReference();
+				}
 			}
 		}
 
@@ -791,14 +798,24 @@ TokenStatus Translator::processParenToken(Token *&token)
 		}
 		else if (token->isCode(CloseParen_Code))
 		{
-			RpnItem **operand = new RpnItem *[nOperands];
-			// save operands for storage in output list
-			for (int i = nOperands; --i >= 0;)
+			RpnItem **operand;
+			if (topToken->reference())
 			{
-				// TODO will need to keep first/last operands for each operand
-				// TODO (in case expression needs to be reported as an error)
-				// TODO (RpnItem should have DoneItem operands, not RpnItem)
-				operand[i] = m_doneStack.pop();
+				// don't save operands on array references
+				nOperands = 0;
+				operand = NULL;
+			}
+			else  // pop and save operands
+			{
+				operand = new RpnItem *[nOperands];
+				// save operands for storage in output list
+				for (int i = nOperands; --i >= 0;)
+				{
+					// TODO will need to keep first/last operands for each
+					// TODO (in case expression needs to be reported as error)
+					// TODO (RpnItem should have DoneItem operands, not RpnItem)
+					operand[i] = m_doneStack.pop();
+				}
 			}
 
 			// add token to output list and push element pointer on done stack
