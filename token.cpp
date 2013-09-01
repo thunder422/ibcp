@@ -374,26 +374,26 @@ QString Token::text(void)
 	{
 		string += "<ref>";
 	}
-	if (isSubCode(~(Used_SubCode | UnUsed_SubCode)))
+	if (hasSubCode(~(Used_SubCode | UnUsed_SubCode)))
 	{
 		string += '\'';
-		if (isSubCode(Paren_SubCode))
+		if (hasSubCode(Paren_SubCode))
 		{
 			string += ')';
 		}
-		if (isSubCode(Let_SubCode))
+		if (hasSubCode(Let_SubCode))
 		{
 			string += "LET";
 		}
-		if (isSubCode(Keep_SubCode))
+		if (hasSubCode(Keep_SubCode))
 		{
 			string += "Keep";
 		}
-		if (isSubCode(Question_SubCode))
+		if (hasSubCode(Question_SubCode))
 		{
 			string += "Question";
 		}
-		if (isSubCode(Colon_SubCode))
+		if (hasSubCode(Colon_SubCode))
 		{
 			string += ":";
 		}

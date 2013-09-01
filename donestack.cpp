@@ -56,10 +56,10 @@ void DoneItem::deleteCloseParen(Token *token)
 	if (token != NULL && token->isCode(CloseParen_Code))
 	{
 		// check if parentheses token is still being used
-		if (token->isSubCode(Used_SubCode))
+		if (token->hasSubCode(Used_SubCode))
 		{
 			// no longer used as last token
-			token->clearSubCodeMask(Last_SubCode);
+			token->removeSubCode(Last_SubCode);
 		}
 		else  // not used, close parentheses token can be deleted
 		{

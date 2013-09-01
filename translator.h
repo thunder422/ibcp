@@ -137,7 +137,7 @@ public:
 	RpnItem *outputAppend(Token *token, int nOperands = 0,
 		RpnItem **operand = NULL)
 	{
-		token->clearSubCodeMask(UnUsed_SubCode);  // mark as used
+		token->removeSubCode(UnUsed_SubCode);  // mark as used
 		RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
 		m_output->append(rpnItem);
 		return rpnItem;

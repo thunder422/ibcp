@@ -183,7 +183,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	// set hidden LET flag if needed
 	if (!hidden)
 	{
-		letToken->setSubCodeMask(Let_SubCode);
+		letToken->addSubCode(Let_SubCode);
 	}
 
 	// check terminating token for end-of-statement

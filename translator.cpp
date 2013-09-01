@@ -133,7 +133,7 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 		m_output->setError(token);
 		m_output->setErrorMessage(status == Parser_TokenStatus
 			? token->string() : token->message(status));
-		if (token->isSubCode(UnUsed_SubCode))
+		if (token->hasSubCode(UnUsed_SubCode))
 		{
 			delete token;  // token not in output list, needs to be deleted
 		}
@@ -188,7 +188,7 @@ TokenStatus Translator::getCommands(Token *&token)
 		{
 			// delete unneeded colon token, set colon sub-code on last token
 			delete token;
-			outputLastToken()->setSubCodeMask(Colon_SubCode);
+			outputLastToken()->addSubCode(Colon_SubCode);
 		}
 		else  // unknown end statement token, return to caller
 		{
@@ -273,7 +273,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 
 			// mark close paren as used for last operand and pending paren
 			// (so it doesn't get deleted until it's not used anymore)
-			token->setSubCodeMask(Last_SubCode + Used_SubCode);
+			token->addSubCode(Last_SubCode + Used_SubCode);
 
 			// set highest precedence if not an operator on done stack top
 			// (no operators in the parentheses)
@@ -523,7 +523,7 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 	// if data type is not none, then getting an operand token
 	bool operand = dataType != No_DataType;
 	token = m_parser->token(operand);
-	token->setSubCodeMask(UnUsed_SubCode);
+	token->addSubCode(UnUsed_SubCode);
 	if (token->isType(Error_TokenType))
 	{
 		if (!operand && token->dataType() == Double_DataType
@@ -784,7 +784,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 				// TODO may also need to check for DefFuncN type here
 				if ((operandToken->isType(NoParen_TokenType)
 					|| operandToken->isType(Paren_TokenType))
-					&& !operandToken->isSubCode(Paren_SubCode))
+					&& !operandToken->hasSubCode(Paren_SubCode))
 				{
 					operandToken->setReference();
 				}
@@ -1087,10 +1087,10 @@ void Translator::checkPendingParen(Token *token, bool popped)
 			|| !popped && m_lastPrecedence == precedence)
 		{
 			Token *lastToken = m_doneStack.top().rpnItem->token();
-			if (!lastToken->isSubCode(Paren_SubCode))
+			if (!lastToken->hasSubCode(Paren_SubCode))
 			{
 				// mark last code for unnecessary parentheses
-				lastToken->setSubCodeMask(Paren_SubCode);
+				lastToken->addSubCode(Paren_SubCode);
 			}
 			else   // already has parentheses sub-code set
 			{
@@ -1102,10 +1102,10 @@ void Translator::checkPendingParen(Token *token, bool popped)
 			}
 		}
 		// check if being used as last operand before deleting
-		if (m_pendingParen->isSubCode(Last_SubCode))
+		if (m_pendingParen->hasSubCode(Last_SubCode))
 		{
 			// still used as last operand token, just clear used flag
-			m_pendingParen->clearSubCodeMask(Used_SubCode);
+			m_pendingParen->removeSubCode(Used_SubCode);
 		}
 		else  // don't need pending token
 		{

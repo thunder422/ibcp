@@ -185,23 +185,15 @@ public:
 	}
 
 	// sub-code access functions
-	int subCode(void) const
-	{
-		return m_subCode;
-	}
-	int isSubCode(int subCode) const
+	int hasSubCode(int subCode) const
 	{
 		return m_subCode & subCode;
 	}
-	void setSubCode(int subCode)
-	{
-		m_subCode = subCode;
-	}
-	void setSubCodeMask(int subCode)
+	void addSubCode(int subCode)
 	{
 		m_subCode |= subCode;
 	}
-	void clearSubCodeMask(int subCode)
+	void removeSubCode(int subCode)
 	{
 		m_subCode &= ~subCode;
 	}
