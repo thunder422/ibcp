@@ -317,10 +317,15 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 	case Constant_TokenType:
 		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0);
-		switch (token->dataType())
+		switch (token->dataType(true))
 		{
 		case Integer_DataType:
-			cout << ' ' << token->valueInt() << " |" << token->string() << '|';
+			cout << ' ' << token->valueInt();
+			if (token->hasSubCode(Double_SubCode))
+			{
+				cout << "," << token->valueDbl();
+			}
+			cout << " |" << token->string() << '|';
 			break;
 		case Double_DataType:
 			cout << ' ' << token->valueDbl() << " |" << token->string() << '|';

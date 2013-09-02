@@ -389,6 +389,14 @@ bool Parser::getNumber(void)
 	bool ok;
     int len = pos - m_pos;
 	QString numStr = m_input.mid(m_pos, len);
+
+	// save string of number so it later can be reproduced
+	m_token->setString(numStr);
+	m_token->setLength(len);
+	m_pos = pos;  // move to next character after constant
+
+	m_token->setType(Constant_TokenType);
+
 	// FIXME hack for memory issue reported against QString::toInt()/toDouble()
 	QByteArray numBytes;
 	numBytes.append(numStr);
@@ -396,33 +404,41 @@ bool Parser::getNumber(void)
 	{
 		// try to convert to integer first
 		m_token->setValue(numBytes.toInt(&ok));
-		if (!ok)
+		if (ok)
 		{
-			// overflow or underflow, won't fit into an integer
-			decimal = true;  // try as double
-		}
-		else
-		{
-			m_token->setType(Constant_TokenType);
 			m_token->setDataType(Integer_DataType);
-		}
-	}
-	if (decimal)
-	{
-		m_token->setValue(numBytes.toDouble(&ok));
-		if (!ok)
-		{
-			// overflow or underflow, constant is not valid
-			m_token->setError(FPOutOfRange_ErrMsg, len);
+			// convert to double in case double is needed
+			m_token->setValue((double)m_token->valueInt());
 			return true;
 		}
-		m_token->setType(Constant_TokenType);
+		// else overflow or underflow, won't fit into an integer
+		// fall thru and try as double
+	}
+	m_token->setValue(numBytes.toDouble(&ok));
+	if (!ok)
+	{
+		// overflow or underflow, constant is not valid
+		m_token->setError(FPOutOfRange_ErrMsg, len);
+		return true;
+	}
+
+	// if double in range of integer, then set as integer
+	if (m_token->valueDbl() > (double)INT_MIN - 0.5
+		&& m_token->valueDbl() < (double)INT_MAX + 0.5)
+	{
+		m_token->setDataType(Integer_DataType);
+		// convert to integer in case integer is needed
+		m_token->setValue((int)m_token->valueDbl());
+		if (decimal)  // decimal point or exponent?
+		{
+			// indicate number is a double value
+			m_token->addSubCode(Double_SubCode);
+		}
+	}
+	else  // number can't be converted to integer
+	{
 		m_token->setDataType(Double_DataType);
 	}
-	// save string of number so it later can be reproduced
-	m_token->setString(numStr);
-	m_token->setLength(len);
-	m_pos = pos;  // move to next character after constant
 	return true;
 }
 

@@ -111,6 +111,8 @@ const QString Token::s_messageArray[sizeof_TokenStatus] = {
 	tr("expected expression, comma, print function or end-of-statement"),
 	// ExpOpSemiCommaOrEnd
 	tr("expected operator, semicolon, comma or end-of-statement"),
+	// ExpIntConst
+	tr("expected valid integer constant"),
 	// the following statuses used during development
 	// NotYetImplemented
 	tr("BUG: not yet implemented"),
@@ -326,6 +328,10 @@ QString Token::text(void)
 		case Integer_DataType:
 		case Double_DataType:
 			string = m_string;
+			if (m_dataType == Integer_DataType)
+			{
+				string += "%";
+			}
 			break;
 
 		case String_DataType:
@@ -396,6 +402,10 @@ QString Token::text(void)
 		if (hasSubCode(Colon_SubCode))
 		{
 			string += ":";
+		}
+		if (hasSubCode(Double_SubCode))
+		{
+			string += "Double";
 		}
 		string += '\'';
 	}

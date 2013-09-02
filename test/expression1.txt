@@ -21,10 +21,10 @@ Input: var_A * Var_A + Var_B * Var_B
 Output: var_A Var_A * Var_B Var_B * + 
 
 Input: not A < 5 = B > 2
-Output: A 5 <%2 B 2 >%2 =% NOT 
+Output: A 5 < B 2 > =% NOT 
 
 Input: not A < 5 and B > 2 or C < 1 and D <> 2
-Output: A 5 <%2 NOT B 2 >%2 AND C 1 <%2 D 2 <>%2 AND OR 
+Output: A 5 < NOT B 2 > AND C 1 < D 2 <> AND OR 
 
 Input: A * B / C \ D MOD E
 Output: A B * C / D \ E MOD%1 
@@ -33,7 +33,7 @@ Input: A mod B \ C / D * E
 Output: A B C D / E * \ MOD%2 
 
 Input: A * B ^ 2
-Output: A B 2 ^* * 
+Output: A B 2% ^* * 
 
 Input: a$ = "this" + "test"
 Output: a$ "this" "test" +$ =$ 
@@ -42,7 +42,7 @@ Input: -E
 Output: E Neg 
 
 Input: -45 + A
-Output: -45 A +%1 
+Output: -45% A +%1 
 
 Input: -A + B
 Output: A Neg B + 
@@ -81,7 +81,7 @@ Input: A$ + B$
 Output: A$ B$ +$ 
 
 Input: A$ < B$ = 0
-Output: A$ B$ <$ 0 =% 
+Output: A$ B$ <$ 0% =% 
 
 Input: A$ + B
             ^-- expected string expression

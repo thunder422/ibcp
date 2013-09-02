@@ -76,6 +76,7 @@ enum SubCode
 	Question_SubCode   = 0x00000008,	// add "? " to input prompt
 	Colon_SubCode      = 0x00000010,	// reproduce ":" after token
 	// sub-codes used by translator only
+	Double_SubCode     = 0x00001000,	// integer constant has decimal/exponent
 	Used_SubCode       = 0x00010000,	// parentheses used in output
 	Last_SubCode       = 0x00020000,	// parentheses used as last token
 	UnUsed_SubCode     = 0x00040000		// token not in output (for errors)

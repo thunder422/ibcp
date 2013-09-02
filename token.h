@@ -63,10 +63,8 @@ class Token
 	Code m_code;			// internal code of token (index of TableEntry)
 	bool m_reference;		// token is a reference flag
 	int m_subCode;			// sub-code flags of token
-	union {
-		double m_valueDbl;	// value for double constant token
-		int m_valueInt;		// value for integer constant token
-	};
+	double m_valueDbl;		// value for double constant token
+	int m_valueInt;			// value for integer constant token
 
 public:
 	explicit Token(int column = -1)
@@ -124,9 +122,10 @@ public:
 	}
 
 	// data type access functions
-	DataType dataType(void) const
+	DataType dataType(bool actual = false) const
 	{
-		return m_dataType;
+		return !actual && hasSubCode(Double_SubCode)
+			? Double_DataType : m_dataType;
 	}
 	void setDataType(DataType dataType)
 	{

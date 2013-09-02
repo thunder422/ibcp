@@ -344,9 +344,8 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			if (level == 0)
 			{
 				// add convert code if needed or report error
-				Code cvt_code
-					= m_table.cvtCode(m_doneStack.top().rpnItem->token(),
-					dataType);
+				Token *doneToken = m_doneStack.top().rpnItem->token();
+				Code cvt_code = m_table.cvtCode(doneToken, dataType);
 				if (cvt_code == Invalid_Code)
 				{
 					delete token;  // delete terminating token
@@ -355,8 +354,26 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 				}
 				else if (cvt_code != Null_Code)
 				{
-					// append hidden conversion code
-					outputAppend(m_table.newToken(cvt_code));
+					if (doneToken->isType(Constant_TokenType))
+					{
+						// constants don't need conversion
+						if (dataType == Integer_DataType
+							&& doneToken->isDataType(Double_DataType))
+						{
+							delete token;  // delete terminating token
+							token = doneStackPopErrorToken();
+							status = ExpIntConst_TokenStatus;
+						}
+						else  // force to expected data type
+						{
+							doneToken->setDataType(dataType);
+							doneToken->removeSubCode(Double_SubCode);
+						}
+					}
+					else  // append hidden conversion code
+					{
+						outputAppend(m_table.newToken(cvt_code));
+					}
 				}
 			}
 			break;
@@ -417,6 +434,14 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		return expectedErrStatus(dataType, reference);
 
 	case Constant_TokenType:
+		// check if specific numeric data type requested
+		if ((dataType == Double_DataType || dataType == Integer_DataType)
+			&& token->isDataType(Integer_DataType))
+		{
+			// for integer constants, force to desired data type
+			token->setDataType(dataType);
+			token->removeSubCode(Double_SubCode);
+		}
 		// fall thru
 	case IntFuncN_TokenType:
 		if (reference != None_Reference)
@@ -643,13 +668,22 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 		if (status == Done_TokenStatus)
 		{
 			// check if associated code for function is needed
-			if (expectedDataType == Number_DataType
-				&& m_doneStack.top().rpnItem->token()->dataType()
-				!= m_table.operandDataType(topToken->code(), 0))
+			if (expectedDataType == Number_DataType)
 			{
-				// change token's code and data type to associated code
-				m_table.setToken(topToken,
-					m_table.assocCode(topToken->code()));
+				Token *doneToken = m_doneStack.top().rpnItem->token();
+				if (doneToken->dataType()
+					!= m_table.operandDataType(topToken->code(), 0))
+				{
+					// change token's code and data type to associated code
+					m_table.setToken(topToken,
+						m_table.assocCode(topToken->code()));
+				}
+				else if (doneToken->hasSubCode(Double_SubCode))
+				{
+					// change token (constant) to double
+					doneToken->setDataType(Double_DataType);
+					doneToken->removeSubCode(Double_SubCode);
+				}
 			}
 		}
 		else if (status == Parser_TokenStatus)
@@ -1026,8 +1060,7 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 	}
 
 	// see if main code's data type matches
-	DataType dataType = topToken->dataType();
-	Code cvtCode = m_table.findCode(token, dataType, operandIndex);
+	Code cvtCode = m_table.findCode(token, topToken, operandIndex);
 
 	if (cvtCode != Invalid_Code)
 	{
@@ -1047,7 +1080,9 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 
 	// no match found, report error
 	// use main code's expected data type for operand
-	TokenStatus status = expectedErrStatus(dataType);
+	// (if data type is No, then double constant can't be converted to integer)
+	TokenStatus status = topToken->isDataType(No_DataType)
+		? ExpIntConst_TokenStatus : expectedErrStatus(topToken->dataType());
 
 	// change token to token with invalid data type and return error
 	// report entire expression

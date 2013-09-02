@@ -51,10 +51,10 @@ Input: A$=RIGHT$(B,2) = C$
                  ^-- expected string expression
 
 Input: Z=MID$(A$,2) < "B"
-Output: Z<ref> A$ 2 MID2$( "B" <$ CvtDbl Assign 
+Output: Z<ref> A$ 2% MID2$( "B" <$ CvtDbl Assign 
 
 Input: Z=MID$(A$,2) = B$
-Output: Z<ref> A$ 2 MID2$( B$ =$ CvtDbl Assign 
+Output: Z<ref> A$ 2% MID2$( B$ =$ CvtDbl Assign 
 
 Input: Z(INT(A+B))=C
 Output: A B + INT( CvtInt Z(<ref> C Assign 

@@ -191,9 +191,9 @@ static DataType StrStrInt_OperandArray[] = {
 // associated code data type arrays
 static Code Abs_AssocCode[]				= {AbsInt_Code};
 static Code Add_AssocCode[]				= {
-	AddI1_Code, CatStr_Code, AddI2_Code
+	AddInt_Code, CatStr_Code, AddI2_Code
 };
-static Code AddI1_AssocCode[]			= {AddInt_Code};
+static Code AddInt_AssocCode[]			= {AddI1_Code};
 static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignList_Code
 };
@@ -205,20 +205,20 @@ static Code AssignRight_AssocCode[]		= {AssignKeepRight_Code};
 static Code AssignStr_AssocCode[]		= {
 	AssignKeepStr_Code, AssignListStr_Code
 };
-static Code Div_AssocCode[]				= {DivI1_Code, DivI2_Code};
-static Code DivI1_AssocCode[]			= {DivInt_Code};
+static Code Div_AssocCode[]				= {DivInt_Code, DivI2_Code};
+static Code DivInt_AssocCode[]			= {DivI1_Code};
 static Code Eq_AssocCode[]				= {
-	EqI1_Code, EqStr_Code, EqI2_Code
+	EqInt_Code, EqStr_Code, EqI2_Code
 };
-static Code EqI1_AssocCode[]			= {EqInt_Code};
+static Code EqInt_AssocCode[]			= {EqI1_Code};
 static Code Gt_AssocCode[]				= {
-	GtI1_Code, GtStr_Code, GtI2_Code
+	GtInt_Code, GtStr_Code, GtI2_Code
 };
-static Code GtI1_AssocCode[]			= {GtInt_Code};
+static Code GtInt_AssocCode[]			= {GtI1_Code};
 static Code GtEq_AssocCode[]			= {
-	GtEqI1_Code, GtEqStr_Code, GtEqI2_Code
+	GtEqInt_Code, GtEqStr_Code, GtEqI2_Code
 };
-static Code GtEqI1_AssocCode[]			= {GtEqInt_Code};
+static Code GtEqInt_AssocCode[]			= {GtEqI1_Code};
 static Code InputAssign_AssocCode[]		= {
 	InputAssignInt_Code, InputAssignStr_Code, InputParse_Code
 };
@@ -226,26 +226,26 @@ static Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
 static Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
 static Code Left_AssocCode[]			= {AssignLeft_Code};
 static Code Lt_AssocCode[]				= {
-	LtI1_Code, LtStr_Code, LtI2_Code
+	LtInt_Code, LtStr_Code, LtI2_Code
 };
-static Code LtI1_AssocCode[]			= {LtInt_Code};
+static Code LtInt_AssocCode[]			= {LtI1_Code};
 static Code LtEq_AssocCode[]			= {
-	LtEqI1_Code, LtEqStr_Code, LtEqI2_Code
+	LtEqInt_Code, LtEqStr_Code, LtEqI2_Code
 };
-static Code LtEqI1_AssocCode[]			= {LtEqInt_Code};
+static Code LtEqInt_AssocCode[]			= {LtEqI1_Code};
 static Code Mid2_AssocCode[]			= {AssignMid2_Code};
 static Code Mid3_AssocCode[]			= {AssignMid3_Code};
-static Code Mod_AssocCode[]				= {ModI1_Code, ModI2_Code};
-static Code ModI1_AssocCode[]			= {ModInt_Code};
-static Code Mul_AssocCode[]				= {MulI1_Code, MulI2_Code};
-static Code MulI1_AssocCode[]			= {MulInt_Code};
+static Code Mod_AssocCode[]				= {ModInt_Code, ModI2_Code};
+static Code ModInt_AssocCode[]			= {ModI1_Code};
+static Code Mul_AssocCode[]				= {MulInt_Code, MulI2_Code};
+static Code MulInt_AssocCode[]			= {MulI1_Code};
 static Code Neg_AssocCode[]				= {NegInt_Code};
 static Code NotEq_AssocCode[]			= {
-	NotEqI1_Code, NotEqStr_Code, NotEqI2_Code
+	NotEqInt_Code, NotEqStr_Code, NotEqI2_Code
 };
-static Code NotEqI1_AssocCode[] 		= {NotEqInt_Code};
-static Code Power_AssocCode[]			= {PowerI1_Code, PowerMul_Code};
-static Code PowerI1_AssocCode[]			= {PowerInt_Code};
+static Code NotEqInt_AssocCode[] 		= {NotEqI1_Code};
+static Code Power_AssocCode[]			= {PowerInt_Code, PowerMul_Code};
+static Code PowerInt_AssocCode[]		= {PowerI1_Code};
 static Code Print_AssocCode[]			= {
 	PrintInt_Code, PrintStr_Code
 };
@@ -253,8 +253,8 @@ static Code Right_AssocCode[]			= {AssignRight_Code};
 static Code RndArgs_AssocCode[]			= {RndArgInt_Code};
 static Code Sgn_AssocCode[]				= {SgnInt_Code};
 static Code Str_AssocCode[]				= {StrInt_Code};
-static Code Sub_AssocCode[]				= {SubI1_Code, SubI2_Code};
-static Code SubI1_AssocCode[]			= {SubInt_Code};
+static Code Sub_AssocCode[]				= {SubInt_Code, SubI2_Code};
+static Code SubInt_AssocCode[]			= {SubI1_Code};
 
 
 // standard expression information structures
@@ -264,6 +264,7 @@ static ExprInfo DblInt_ExprInfo(Null_Code, Operands(DblInt));
 
 static ExprInfo Int_ExprInfo(Null_Code, Operands(Int));
 static ExprInfo IntInt_ExprInfo(Null_Code, Operands(IntInt));
+static ExprInfo IntDbl_ExprInfo(Null_Code, Operands(IntDbl));
 
 static ExprInfo Str_ExprInfo(Null_Code, Operands(Str));
 static ExprInfo StrInt_ExprInfo(Null_Code, Operands(StrInt));
@@ -638,7 +639,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// Power_Code
 		Operator_TokenType, OneChar_Multiple,
-		"^", NULL, Null_Flag, 50, Double_DataType,
+		"^", NULL, UseConstAsIs_Flag, 50, Double_DataType,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Power, 1))
 	},
 	{	// Eq_Code
@@ -707,7 +708,7 @@ static TableEntry tableEntries[] =
 	{	// Neg_Code
 		Operator_TokenType, OneWord_Multiple,
 		// FIXME temporarily replaced "-" with "Neq" for testing
-		"-", "Neg", Null_Flag, 48, Double_DataType,
+		"-", "Neg", UseConstAsIs_Flag, 48, Double_DataType,
 		new ExprInfo(Neg_Code, Operands(Dbl), AssocCode(Neg))
 	},
 	{	// Assign_Code
@@ -788,8 +789,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// AddI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"+", "+%1", Null_Flag, 40, Double_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(AddI1))
+		"+", "+%1", Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo
 	},
 	{	// AddI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -797,7 +797,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// AddInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"+", "+%", Null_Flag, 40, Integer_DataType, &IntInt_ExprInfo
+		"+", "+%", Null_Flag, 40, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AddInt))
 	},
 	{	// CatStr_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -805,8 +806,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// SubI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"-", "-%1", Null_Flag, 40, Double_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(SubI1))
+		"-", "-%1", Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo
 	},
 	{	// SubI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -814,7 +814,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// SubInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"-", "-%", Null_Flag, 40, Integer_DataType, &IntInt_ExprInfo
+		"-", "-%", Null_Flag, 40, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(SubInt))
 	},
 	{	// NegInt_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -823,8 +824,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// MulI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"*", "*%1", Null_Flag, 46, Double_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(MulI1))
+		"*", "*%1", Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo
 	},
 	{	// MulI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -832,12 +832,12 @@ static TableEntry tableEntries[] =
 	},
 	{	// MulInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"*", "*%", Null_Flag, 46, Integer_DataType, &IntInt_ExprInfo
+		"*", "*%", Null_Flag, 46, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(MulInt))
 	},
 	{	// DivI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"/", "/%1", Null_Flag, 46, Double_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(DivI1))
+		"/", "/%1", Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo
 	},
 	{	// DivI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -845,12 +845,12 @@ static TableEntry tableEntries[] =
 	},
 	{	// DivInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"/", "/%", Null_Flag, 46, Integer_DataType, &IntInt_ExprInfo
+		"/", "/%", Null_Flag, 46, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(DivInt))
 	},
 	{	// ModI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"MOD", "MOD%1", Null_Flag, 42, Double_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(ModI1))
+		"MOD", "MOD%1", Null_Flag, 42, Double_DataType, &IntDbl_ExprInfo
 	},
 	{	// ModI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -858,12 +858,12 @@ static TableEntry tableEntries[] =
 	},
 	{	// ModInt_Code
 		Operator_TokenType, OneWord_Multiple,
-		"MOD", "MOD%", Null_Flag, 42, Integer_DataType, &IntInt_ExprInfo
+		"MOD", "MOD%", Null_Flag, 42, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(ModInt))
 	},
 	{	// PowerI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"^", "^%1", Null_Flag, 50, Double_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(PowerI1))
+		"^", "^%1", Null_Flag, 50, Double_DataType, &IntDbl_ExprInfo
 	},
 	{	// PowerMul_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -871,12 +871,12 @@ static TableEntry tableEntries[] =
 	},
 	{	// PowerInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"^", "^%", Null_Flag, 50, Integer_DataType, &IntInt_ExprInfo
+		"^", "^%", Null_Flag, 50, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(PowerInt))
 	},
 	{	// EqI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"=", "=%1", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(EqI1))
+		"=", "=%1", Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo
 	},
 	{	// EqI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -884,7 +884,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// EqInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"=", "=%", Null_Flag, 30, Integer_DataType, &IntInt_ExprInfo
+		"=", "=%", Null_Flag, 30, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(EqInt))
 	},
 	{	// EqStr_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -892,8 +893,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// GtI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		">", ">%1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(GtI1))
+		">", ">%1", Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
 	},
 	{	// GtI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -901,7 +901,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// GtInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		">", ">%", Null_Flag, 32, Integer_DataType, &IntInt_ExprInfo
+		">", ">%", Null_Flag, 32, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtInt))
 	},
 	{	// GtStr_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -909,8 +910,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// GtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		">=", ">=%1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(GtEqI1))
+		">=", ">=%1", Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
 	},
 	{	// GtEqI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -918,7 +918,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// GtEqInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		">=", ">=%", Null_Flag, 32, Integer_DataType, &IntInt_ExprInfo
+		">=", ">=%", Null_Flag, 32, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtEqInt))
 	},
 	{	// GtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -926,8 +927,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// LtI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<", "<%1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(LtI1))
+		"<", "<%1", Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
 	},
 	{	// LtI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -935,7 +935,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// LtInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<", "<%", Null_Flag, 32, Integer_DataType, &IntInt_ExprInfo
+		"<", "<%", Null_Flag, 32, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtInt))
 	},
 	{	// LtStr_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -943,8 +944,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// LtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<=", "<=%1", Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(LtEqI1))
+		"<=", "<=%1", Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
 	},
 	{	// LtEqI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -952,7 +952,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// LtEqInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<=", "<=%", Null_Flag, 32, Integer_DataType, &IntInt_ExprInfo
+		"<=", "<=%", Null_Flag, 32, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtEqInt))
 	},
 	{	// LtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -960,8 +961,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// NotEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<>", "<>%1", Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntDbl), AssocCode(NotEqI1))
+		"<>", "<>%1", Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo
 	},
 	{	// NotEqI2_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -969,7 +969,8 @@ static TableEntry tableEntries[] =
 	},
 	{	// NotEqInt_Code
 		Operator_TokenType, OneChar_Multiple,
-		"<>", "<>%", Null_Flag, 30, Integer_DataType, &IntInt_ExprInfo
+		"<>", "<>%", Null_Flag, 30, Integer_DataType,
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(NotEqInt))
 	},
 	{	// NotEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1001,7 +1002,7 @@ static TableEntry tableEntries[] =
 	},
 	{	// PrintDbl_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "PrintDbl", Print_Flag, 2, None_DataType,
+		"", "PrintDbl", Print_Flag | UseConstAsIs_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Print))
 	},
 	{	// PrintInt_Code
@@ -1502,16 +1503,27 @@ Code Table::cvtCode(Token *token, DataType dataType) const
 //   - if no associated code, returns possible conversion code for data type
 //   - if no associated code, returns expected data type
 
-Code Table::findCode(Token *token, DataType &dataType, int operandIndex)
+Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 {
 	DataType expectedDataType = operandDataType(token->code(), operandIndex);
-	if (dataType == expectedDataType)  // exact match?
+
+	if (operandToken->dataType() == expectedDataType     // exact match?
+		|| operandIndex == nOperands(token) - 1          // last operand?
+		&& operandToken->isType(Constant_TokenType)
+		&& (expectedDataType == Double_DataType
+		|| operandToken->isDataType(Integer_DataType))
+		&& !hasFlag(token, UseConstAsIs_Flag)
+		&& !operandToken->isDataType(String_DataType))
 	{
+		// force token to expected data type and remove double sub-code
+		// (applies only to constant token type, but safe for all token types)
+		operandToken->setDataType(expectedDataType);
+		operandToken->removeSubCode(Double_SubCode);
 		return Null_Code;
 	}
 
 	// get a possible conversion code if no associated code is found
-	Code cvtCode = cvtCodeHaveNeed[dataType][expectedDataType];
+	Code cvtCode = cvtCodeHaveNeed[operandToken->dataType()][expectedDataType];
 
 	// see if any associated code's data types match
 	int assoc2Index = this->assoc2Index(token->code());
@@ -1527,7 +1539,8 @@ Code Table::findCode(Token *token, DataType &dataType, int operandIndex)
 		for (int i = start; i < end; i++)
 		{
 			Code assocCode = this->assocCode(token->code(), i);
-			if (dataType == operandDataType(assocCode, operandIndex))  // match?
+			if (operandToken->isDataType(operandDataType(assocCode,
+				operandIndex)))  // match?
 			{
 				// change token's code and data type to associated code
 				setToken(token, assocCode);
@@ -1537,7 +1550,28 @@ Code Table::findCode(Token *token, DataType &dataType, int operandIndex)
 	}
 
 	// did not find an associated code, return conversion code
-	dataType = expectedDataType;  // returned expected data type
+	if (cvtCode == Invalid_Code)
+	{
+		// set operand token to return expected data type
+		operandToken->setDataType(expectedDataType);
+	}
+	else if (operandToken->isType(Constant_TokenType))
+	{
+		if (cvtCode == CvtInt_Code && operandToken->isDataType(Double_DataType))
+		{
+			// double constant can't be converted to an integer
+			operandToken->setDataType(No_DataType);
+			cvtCode = Invalid_Code;
+		}
+		else
+		{
+			// numeric constants can be either type, so no conversion is needed
+			// force to expected data type
+			operandToken->setDataType(expectedDataType);
+			operandToken->removeSubCode(Double_SubCode);
+			cvtCode = Null_Code;
+		}
+	}
 	return cvtCode;  // convert code or invalid
 }
 

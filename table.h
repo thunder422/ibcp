@@ -41,6 +41,7 @@ enum TableFlag
 	SubStr_Flag			= 0x00000004,  // code supports sub-string assignments
 	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
 	Print_Flag			= 0x00000010,  // print-only function
+	UseConstAsIs_Flag   = 0x00000020,  // use constant data type as is
 	EndStmt_Flag		= 0x00000080   // end statement
 };
 
@@ -137,7 +138,7 @@ public:
 	void setToken(Token *token, Code code);
 	Token *newToken(Code code);
 	Code cvtCode(Token *token, DataType dataType) const;
-	Code findCode(Token *token, DataType &datatype, int operandIndex = 0);
+	Code findCode(Token *token, Token *operandToken, int operandIndex = 0);
 
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const QStringRef &string) const;

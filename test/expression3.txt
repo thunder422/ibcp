@@ -1,9 +1,9 @@
 
 Input: MID$(A$+B$,(C+5)*D,4)+" Test"
-Output: A$ B$ +$ C 5 +%2 D * CvtInt 4 MID3$( " Test" +$ 
+Output: A$ B$ +$ C 5 + D * CvtInt 4% MID3$( " Test" +$ 
 
 Input: int(Arr(A,B*(C+2))+(D))
-Output: A<ref> B C 2 +%2 * Arr([A<ref>,*] D')' + INT( 
+Output: A<ref> B C 2 + * Arr([A<ref>,*] D')' + INT( 
 
 Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
 Output: X<ref> Y I Neg J + * I FNZ([I] B([X<ref>,*,FNZ(] INT( NUM$ VAL( Array([INT(,VAL(] 

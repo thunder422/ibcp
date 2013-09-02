@@ -1,24 +1,24 @@
 
 Input: A=3
-Output: A<ref> 3 CvtDbl Assign 
+Output: A<ref> 3 Assign 
 
 Input: A,B=3
-Output: A<ref> B<ref> 3 CvtDbl AssignList 
+Output: A<ref> B<ref> 3 AssignList 
 
 Input: A=B=3
-Output: A<ref> B 3 =%2 CvtDbl Assign 
+Output: A<ref> B 3 = CvtDbl Assign 
 
 Input: A=(B)=3
-Output: A<ref> B')' 3 =%2 CvtDbl Assign 
+Output: A<ref> B')' 3 = CvtDbl Assign 
 
 Input: A=(B=3)
-Output: A<ref> B 3 =%2')' CvtDbl Assign 
+Output: A<ref> B 3 =')' CvtDbl Assign 
 
 Input: A,B=(C=3)
-Output: A<ref> B<ref> C 3 =%2')' CvtDbl AssignList 
+Output: A<ref> B<ref> C 3 =')' CvtDbl AssignList 
 
 Input: A,B=C=4
-Output: A<ref> B<ref> C 4 =%2 CvtDbl AssignList 
+Output: A<ref> B<ref> C 4 = CvtDbl AssignList 
 
 Input: A(B,C)=D
 Output: B CvtInt C CvtInt A(<ref> D Assign 

@@ -78,7 +78,7 @@ Input: ((A + B) * C) ^ D
 Output: A B + C * D ^ 
 
 Input: -A ^ 2 + (-B) ^ 3
-Output: A 2 ^* Neg B Neg 3 ^* + 
+Output: A 2% ^* Neg B Neg 3% ^* + 
 
 Input: (A + B) * (C + D)
 Output: A B + C D + * 
