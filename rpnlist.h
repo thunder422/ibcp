@@ -34,6 +34,7 @@
 class RpnItem
 {
 	Token *m_token;				// pointer to token
+	int m_index;				// index within RPN list
 	int m_nOperands;			// number of operands
 	RpnItem **m_operand;		// array of operand pointers
 
@@ -41,6 +42,7 @@ public:
 	RpnItem(Token *token, int nOperands = 0, RpnItem **operand = NULL)
 	{
 		m_token = token;
+		m_index = -1;
 		m_nOperands = nOperands;
 		m_operand = operand;
 	}
@@ -61,6 +63,19 @@ public:
 	void setToken(Token *token)
 	{
 		m_token = token;
+	}
+
+	int index(void) const
+	{
+		return m_index;
+	}
+	void setIndex(int index)
+	{
+		m_index = index;
+	}
+	void incrementIndex(int increment = 1)
+	{
+		m_index += increment;
 	}
 
 	int nOperands(void)

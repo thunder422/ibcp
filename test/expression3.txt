@@ -3,10 +3,10 @@ Input: MID$(A$+B$,(C+5)*D,4)+" Test"
 Output: A$ B$ +$ C 5 + D * CvtInt 4% MID3$( " Test" +$ 
 
 Input: int(Arr(A,B*(C+2))+(D))
-Output: A<ref> B C 2 + * Arr([A<ref>,*] D')' + INT( 
+Output: A<ref> B C 2 + * Arr([0:A<ref>,5:*] D')' + INT( 
 
 Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
-Output: X<ref> Y I Neg J + * I FNZ([I] B([X<ref>,*,FNZ(] INT( NUM$ VAL( Array([INT(,VAL(] 
+Output: X<ref> Y I Neg J + * I FNZ([7:I] B([0:X<ref>,6:*,8:FNZ(] INT( NUM$ VAL( Array([10:INT(,12:VAL(] 
 
 Input: INT(A+B
               ^-- expected operator or closing parentheses

@@ -40,7 +40,8 @@ QString RpnItem::text(void)
 		QChar separator('[');
 		for (int i = 0; i < nOperands(); i++)
 		{
-			string += separator + operand(i)->token()->text();
+			string += separator + QString("%1:%2").arg(operand(i)->index())
+				.arg(operand(i)->token()->text());
 			separator = ',';
 		}
 		string += ']';
@@ -93,7 +94,6 @@ QString RpnList::text(void)
 	}
 	return string;
 }
-
 
 // function to overload the comparison operator
 bool RpnList::operator==(const RpnList &other) const

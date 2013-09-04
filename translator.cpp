@@ -1273,4 +1273,31 @@ void Translator::cleanUp(void)
 }
 
 
+// function to create an rpn item for a token and append it to the output list
+
+RpnItem *Translator::outputAppend(Token *token, int nOperands,
+	RpnItem **operand)
+{
+	token->removeSubCode(UnUsed_SubCode);  // mark as used
+	RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
+	rpnItem->setIndex(outputCount());
+	m_output->append(rpnItem);
+	return rpnItem;
+}
+
+// function to create an rpn item for a token and insert it into the output list
+//
+//   - the indexes of all items after the insertion point are incremented
+
+void Translator::outputInsert(int index, Token *token)
+{
+	m_output->insert(index, new RpnItem(token));
+	// update indexes of all list items after insert point
+	while (++index < outputCount())
+	{
+		m_output->at(index)->incrementIndex();
+	}
+}
+
+
 // end: translator.cpp

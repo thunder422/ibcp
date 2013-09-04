@@ -135,17 +135,8 @@ public:
 		return m_output->last()->token();
 	}
 	RpnItem *outputAppend(Token *token, int nOperands = 0,
-		RpnItem **operand = NULL)
-	{
-		token->removeSubCode(UnUsed_SubCode);  // mark as used
-		RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
-		m_output->append(rpnItem);
-		return rpnItem;
-	}
-	void outputInsert(int index, Token *token)
-	{
-		m_output->insert(index, new RpnItem(token));
-	}
+		RpnItem **operand = NULL);
+	void outputInsert(int index, Token *token);
 
 private:
 	// Private Processing Functions
