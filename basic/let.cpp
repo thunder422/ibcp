@@ -114,7 +114,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 
 			// change to assign sub-string code (first associated code)
 			translator.table().setToken(token,
-				translator.table().assocCode(token->code()));
+				translator.table().associatedCode(token->code()));
 
 			haveSubStr = true;
 		}
@@ -161,7 +161,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 			{
 				// change to keep code (second associated code)
 				translator.table().setToken(letToken,
-					translator.table().assocCode(letToken->code()));
+					translator.table().associatedCode(letToken->code()));
 
 				// append to output and pop next token from let stack
 				translator.outputAppend(letToken);
@@ -172,7 +172,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		else  // have a multiple assignment, change to list code
 		{
 			translator.table().setToken(letToken,
-				translator.table().assoc2Code(letToken->code()));
+				translator.table().secondAssociatedCode(letToken->code()));
 		}
 	}
 

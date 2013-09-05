@@ -35,13 +35,13 @@ RpnList::~RpnList(void)
 QString RpnItem::text(void)
 {
 	QString string = token()->text();
-	if (nOperands() > 0)
+	if (attachedCount() > 0)
 	{
 		QChar separator('[');
-		for (int i = 0; i < nOperands(); i++)
+		for (int i = 0; i < attachedCount(); i++)
 		{
-			string += separator + QString("%1:%2").arg(operand(i)->index())
-				.arg(operand(i)->token()->text());
+			string += separator + QString("%1:%2").arg(attached(i)->index())
+				.arg(attached(i)->token()->text());
 			separator = ',';
 		}
 		string += ']';
@@ -53,13 +53,13 @@ QString RpnItem::text(void)
 // function to overload the comparison operator
 bool RpnItem::operator==(const RpnItem &other) const
 {
-	if (*m_token != *other.m_token || m_nOperands != other.m_nOperands)
+	if (*m_token != *other.m_token || m_attachedCount != other.m_attachedCount)
 	{
 		return false;
 	}
-	for (int i = 0; i < m_nOperands; i++)
+	for (int i = 0; i < m_attachedCount; i++)
 	{
-		if (*m_operand[i]->token() != *other.m_operand[i]->token())
+		if (*m_attached[i]->token() != *other.m_attached[i]->token())
 		{
 			return false;
 		}

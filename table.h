@@ -118,12 +118,12 @@ public:
 	TokenMode tokenMode(Code code) const;
 	Code unaryCode(Code code) const;
 	int precedence(Code code) const;
-	int nOperands(Code code) const;
+	int operandCount(Code code) const;
 	DataType operandDataType(Code code, int operand) const;
-	int nAssocCodes(Code code) const;
-	Code assocCode(Code code, int index = 0) const;
-	int assoc2Index(Code code) const;
-	Code assoc2Code(Code code, int index = 0) const;
+	int associatedCodeCount(Code code) const;
+	Code associatedCode(Code code, int index = 0) const;
+	int secondAssociatedIndex(Code code) const;
+	Code secondAssociatedCode(Code code, int index = 0) const;
 	DataType expectedDataType(Code code) const;
 	bool isUnaryOperator(Code code) const;
 	TranslateFunction translateFunction(Code code) const;
@@ -133,7 +133,7 @@ public:
 	bool isUnaryOrBinaryOperator(Token *token) const;
 	int precedence(Token *token) const;
 	int hasFlag(Token *token, int flag) const;
-	int nOperands(Token *token) const;
+	int operandCount(Token *token) const;
 	DataType expectedDataType(Token *token) const;
 	void setToken(Token *token, Code code);
 	Token *newToken(Code code);
@@ -143,7 +143,7 @@ public:
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const QStringRef &string) const;
 	Code search(const QStringRef &word1, const QStringRef &word2) const;
-	Code search(Code code, int nArguments) const;
+	Code search(Code code, int argumentCount) const;
 	Code search(Code code, DataType *dataType) const;
 	bool match(Code code, DataType *dataType) const;
 };

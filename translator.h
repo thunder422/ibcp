@@ -134,8 +134,8 @@ public:
 	{
 		return m_output->last()->token();
 	}
-	RpnItem *outputAppend(Token *token, int nOperands = 0,
-		RpnItem **operand = NULL);
+	RpnItem *outputAppend(Token *token, int attachedCount = 0,
+		RpnItem **attached = NULL);
 	void outputInsert(int index, Token *token);
 
 private:

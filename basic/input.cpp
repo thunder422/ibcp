@@ -123,7 +123,8 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 		// create and insert input parse code at beginning
 		// (inserted in reverse order for each input variable)
 		translator.outputInsert(indexBegin, translator.table()
-			.newToken(translator.table().assoc2Code(inputToken->code())));
+			.newToken(translator.table()
+			.secondAssociatedCode(inputToken->code())));
 	}
 	while (!done);
 

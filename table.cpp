@@ -97,20 +97,22 @@ static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
 struct ExprInfo
 {
 	Code m_unaryCode;				// operator unary code (Null_Code if none)
-	short m_nOperands;				// number of operands (operators/functions)
-	short m_nAssocCodes;			// number of associated codes
-	short m_assoc2Index;			// second operand assoc codes start index
+	short m_operandCount;			// number of operands (operators/functions)
+	short m_associatedCodeCount;	// number of associated codes
+	short m_secondAssociatedIndex;	// index of second operand associated codes
 	DataType *m_operandDataType;	// data type of each operand
-	Code *m_assocCode;				// associated codes
+	Code *m_associatedCode;			// associated codes
 	DataType m_expectedDataType;	// expected data type of next operand
 
-	ExprInfo(Code unaryCode = Null_Code, short nOperands = 0,
-		DataType *operandDataType = NULL, short nAssocCodes = 0,
-		short assoc2Index = 0, Code *assocCode = NULL,
+	ExprInfo(Code unaryCode = Null_Code, short operandCount = 0,
+		DataType *operandDataType = NULL, short associatedCodeCount = 0,
+		short secondAssociatedIndex = 0, Code *associatedCode = NULL,
 		DataType expectedDataType = None_DataType) :
-		m_unaryCode(unaryCode), m_nOperands(nOperands),
-		m_operandDataType(operandDataType), m_nAssocCodes(nAssocCodes),
-		m_assoc2Index(assoc2Index), m_assocCode(assocCode),
+		m_unaryCode(unaryCode), m_operandCount(operandCount),
+		m_operandDataType(operandDataType),
+		m_associatedCodeCount(associatedCodeCount),
+		m_secondAssociatedIndex(secondAssociatedIndex),
+		m_associatedCode(associatedCode),
 		m_expectedDataType(expectedDataType)
 	{
 	}
@@ -1136,32 +1138,34 @@ QStringList Table::setupAndCheck(void)
 	int type;
 
 	// scan table and record indexes
-	int nEntries = sizeof(tableEntries) / sizeof(TableEntry);
+	int entryCount = sizeof(tableEntries) / sizeof(TableEntry);
 	// find maximum number of operands and associated codes
 	int maxOperands = 0;
 	int maxAssocCodes = 0;
-	for (i = 0; i < nEntries; i++)
+	for (i = 0; i < entryCount; i++)
 	{
 		// check if found new maximums
 		ExprInfo *exprInfo = m_entry[i].exprInfo;
 		if (exprInfo != NULL)
 		{
-			if (maxOperands < exprInfo->m_nOperands)
+			if (maxOperands < exprInfo->m_operandCount)
 			{
-				maxOperands = exprInfo->m_nOperands;
+				maxOperands = exprInfo->m_operandCount;
 			}
-			if (maxAssocCodes < exprInfo->m_nAssocCodes)
+			if (maxAssocCodes < exprInfo->m_associatedCodeCount)
 			{
-				maxAssocCodes = exprInfo->m_nAssocCodes;
+				maxAssocCodes = exprInfo->m_associatedCodeCount;
 			}
 
 			// check if assoc2_index is valid
-			if (exprInfo->m_assoc2Index > 0
-				&& exprInfo->m_assoc2Index > exprInfo->m_nAssocCodes)
+			if (exprInfo->m_secondAssociatedIndex > 0
+				&& exprInfo->m_secondAssociatedIndex
+				> exprInfo->m_associatedCodeCount)
 			{
 				errorList.append(QString("Entry:%1 Assoc2Index=%2 too large, "
-					"maximum is %3").arg(i).arg(exprInfo->m_assoc2Index)
-					.arg(exprInfo->m_nAssocCodes));
+					"maximum is %3").arg(i)
+					.arg(exprInfo->m_secondAssociatedIndex)
+					.arg(exprInfo->m_associatedCodeCount));
 			}
 
 			// validate multiple entries
@@ -1179,12 +1183,13 @@ QStringList Table::setupAndCheck(void)
 					errorList.append(QString("Multiple entry '%1' next entry "
 						"no expression info").arg(m_entry[i + 1].name));
 				}
-				else if (exprInfo2->m_nOperands != exprInfo->m_nOperands + 1)
+				else if (exprInfo2->m_operandCount
+					!= exprInfo->m_operandCount + 1)
 				{
 					errorList.append(QString("Multiple entry '%1' incorrect "
 						"number of operands (%2, %3)").arg(m_entry[i].name)
-						.arg(exprInfo->m_nOperands)
-						.arg(exprInfo2->m_nOperands));
+						.arg(exprInfo->m_operandCount)
+						.arg(exprInfo2->m_operandCount));
 				}
 			}
 
@@ -1202,28 +1207,28 @@ QStringList Table::setupAndCheck(void)
 			};
 
 			// set expected data type (start with data type of last operand)
-			if (exprInfo->m_nOperands > 0)
+			if (exprInfo->m_operandCount > 0)
 			{
 				// use last operand for operators, first operand for functions
 				exprInfo->m_expectedDataType
 					= exprInfo->m_operandDataType[m_entry[i].type
-					== Operator_TokenType ? exprInfo->m_nOperands - 1 : 0];
+					== Operator_TokenType ? exprInfo->m_operandCount - 1 : 0];
 				// check each secondary associated code
-				if (exprInfo->m_nAssocCodes > 0)
+				if (exprInfo->m_associatedCodeCount > 0)
 				{
 					int bitMask = bitMaskDataType[exprInfo->m_expectedDataType];
-					int index = exprInfo->m_assoc2Index;
+					int index = exprInfo->m_secondAssociatedIndex;
 					if (index >= 0)
 					{
-						for (; index < exprInfo->m_nAssocCodes; index++)
+						for (; index < exprInfo->m_associatedCodeCount; index++)
 						{
-							Code assocCode = exprInfo->m_assocCode[index];
+							Code assocCode = exprInfo->m_associatedCode[index];
 							ExprInfo *exprInfo2 = m_entry[assocCode].exprInfo;
 							if (exprInfo2 != NULL)
 							{
 								bitMask |= bitMaskDataType[exprInfo2
-									->m_operandDataType[exprInfo2->m_nOperands
-									- 1]];
+									->m_operandDataType[exprInfo2
+									->m_operandCount - 1]];
 							}
 						}
 						if (bitMask == Num_BitMask)
@@ -1367,9 +1372,9 @@ int Table::precedence(Code code) const
 }
 
 // returns the number of operators (arguments) for code
-int Table::nOperands(Code code) const
+int Table::operandCount(Code code) const
 {
-	return m_entry[code].exprInfo->m_nOperands;
+	return m_entry[code].exprInfo->m_operandCount;
 }
 
 // returns the data type for a specific operator for code
@@ -1379,27 +1384,28 @@ DataType Table::operandDataType(Code code, int operand) const
 }
 
 // returns the number of associate codes for code
-int Table::nAssocCodes(Code code) const
+int Table::associatedCodeCount(Code code) const
 {
-	return m_entry[code].exprInfo->m_nAssocCodes;
+	return m_entry[code].exprInfo->m_associatedCodeCount;
 }
 
 // returns the associate code for a specific index for code
-Code Table::assocCode(Code code, int index) const
+Code Table::associatedCode(Code code, int index) const
 {
-	return m_entry[code].exprInfo->m_assocCode[index];
+	return m_entry[code].exprInfo->m_associatedCode[index];
 }
 
 // returns the start index of the secondary associated codes for code
-int Table::assoc2Index(Code code) const
+int Table::secondAssociatedIndex(Code code) const
 {
-	return m_entry[code].exprInfo->m_assoc2Index;
+	return m_entry[code].exprInfo->m_secondAssociatedIndex;
 }
 
 // returns the secondary associated code for a specific index for code
-Code Table::assoc2Code(Code code, int index) const
+Code Table::secondAssociatedCode(Code code, int index) const
 {
-	return m_entry[code].exprInfo->m_assocCode[assoc2Index(code) + index];
+	return m_entry[code].exprInfo->m_associatedCode[secondAssociatedIndex(code)
+		+ index];
 }
 
 // returns the expected data type for last operand for operator code
@@ -1437,7 +1443,7 @@ bool Table::isUnaryOperator(Token *token) const
 // (token type must be operator and have operands)
 bool Table::isUnaryOrBinaryOperator(Token *token) const
 {
-	return token->isType(Operator_TokenType) ? nOperands(token) > 0 : false;
+	return token->isType(Operator_TokenType) ? operandCount(token) > 0 : false;
 }
 
 // returns the precedence of the code contained in a token
@@ -1460,10 +1466,10 @@ int Table::hasFlag(Token *token, int flag) const
 }
 
 // returns number of operands expected for code in token token
-int Table::nOperands(Token *token) const
+int Table::operandCount(Token *token) const
 {
 	ExprInfo *exprInfo = m_entry[token->code()].exprInfo;
-	return exprInfo == NULL ? 0 : exprInfo->m_nOperands;
+	return exprInfo == NULL ? 0 : exprInfo->m_operandCount;
 }
 
 // returns the expected data type for last operand for operator token
@@ -1508,7 +1514,7 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 	DataType expectedDataType = operandDataType(token->code(), operandIndex);
 
 	if (operandToken->dataType() == expectedDataType     // exact match?
-		|| operandIndex == nOperands(token) - 1          // last operand?
+		|| operandIndex == operandCount(token) - 1       // last operand?
 		&& operandToken->isType(Constant_TokenType)
 		&& (expectedDataType == Double_DataType
 		|| operandToken->isDataType(Integer_DataType))
@@ -1526,11 +1532,11 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 	Code cvtCode = cvtCodeHaveNeed[operandToken->dataType()][expectedDataType];
 
 	// see if any associated code's data types match
-	int assoc2Index = this->assoc2Index(token->code());
+	int assoc2Index = this->secondAssociatedIndex(token->code());
 	if (assoc2Index >= 0)  // if second index -1, then skip associated codes
 	{
 		int start = operandIndex != 1 ? 0 : assoc2Index;
-		int end = nAssocCodes(token->code());
+		int end = associatedCodeCount(token->code());
 		if (operandIndex == 0 && assoc2Index != 0)
 		{
 			// for first operand, end at begin of second associated codes group
@@ -1538,7 +1544,7 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 		}
 		for (int i = start; i < end; i++)
 		{
-			Code assocCode = this->assocCode(token->code(), i);
+			Code assocCode = this->associatedCode(token->code(), i);
 			if (operandToken->isDataType(operandDataType(assocCode,
 				operandIndex)))  // match?
 			{
@@ -1634,12 +1640,12 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 //   - search begins at entry after index
 //   - search ends at end of section
 
-Code Table::search(Code index, int nArguments) const
+Code Table::search(Code index, int argumentCount) const
 {
 	for (Code i = index + 1; m_entry[i].name != NULL; i++)
 	{
 		if (m_entry[index].name == m_entry[i].name
-			&& nArguments == nOperands(i))
+			&& argumentCount == operandCount(i))
 		{
 			return i;
 		}
@@ -1664,9 +1670,9 @@ Code Table::search(Code code, DataType *datatype) const
 		return code;  // main code matches
 	}
 
-	for (int n = nAssocCodes(code); --n >= 0;)
+	for (int n = associatedCodeCount(code); --n >= 0;)
 	{
-		Code assoc_code = this->assocCode(code, n);
+		Code assoc_code = this->associatedCode(code, n);
 		if (match(assoc_code, datatype))
 		{
 			return assoc_code;  // associated code matches
@@ -1682,7 +1688,7 @@ Code Table::search(Code code, DataType *datatype) const
 
 bool Table::match(Code code, DataType *datatype) const
 {
-	for (int n = nOperands(code); --n >= 0;)
+	for (int n = operandCount(code); --n >= 0;)
 	{
 		if (datatype[n] != operandDataType(code, n))
 		{

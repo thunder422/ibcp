@@ -631,7 +631,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 	Token *topToken = token;
 
 	Code code = token->code();
-	int lastOperand = m_table.nOperands(code) - 1;
+	int lastOperand = m_table.operandCount(code) - 1;
 	for (int i = 0; ; i++)
 	{
 		token = NULL;
@@ -676,7 +676,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 				{
 					// change token's code and data type to associated code
 					m_table.setToken(topToken,
-						m_table.assocCode(topToken->code()));
+						m_table.associatedCode(topToken->code()));
 				}
 				else if (doneToken->hasSubCode(Double_SubCode))
 				{
@@ -716,7 +716,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 				}
 				// move to next code; update code and last operand index
 				code = topToken->nextCode();
-				lastOperand = m_table.nOperands(code) - 1;
+				lastOperand = m_table.operandCount(code) - 1;
 			}
 			delete token;  // delete comma token, it's not needed
 			m_doneStack.drop();
@@ -788,7 +788,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 	DataType dataType = token->reference() ? Integer_DataType : Any_DataType;
 	Token *topToken = token;
 
-	for (int nOperands = 1; ; nOperands++)
+	for (int count = 1; ; count++)
 	{
 		token = NULL;
 		if ((status = getExpression(token, dataType)) != Done_TokenStatus)
@@ -832,28 +832,28 @@ TokenStatus Translator::processParenToken(Token *&token)
 		}
 		else if (token->isCode(CloseParen_Code))
 		{
-			RpnItem **operand;
+			RpnItem **attached;
 			if (topToken->reference())
 			{
 				// don't save operands on array references
-				nOperands = 0;
-				operand = NULL;
+				count = 0;
+				attached = NULL;
 			}
 			else  // pop and save operands
 			{
-				operand = new RpnItem *[nOperands];
+				attached = new RpnItem *[count];
 				// save operands for storage in output list
-				for (int i = nOperands; --i >= 0;)
+				for (int i = count; --i >= 0;)
 				{
 					// TODO will need to keep first/last operands for each
 					// TODO (in case expression needs to be reported as error)
 					// TODO (RpnItem should have DoneItem operands, not RpnItem)
-					operand[i] = m_doneStack.pop();
+					attached[i] = m_doneStack.pop();
 				}
 			}
 
 			// add token to output list and push element pointer on done stack
-			m_doneStack.push(outputAppend(topToken, nOperands, operand), NULL,
+			m_doneStack.push(outputAppend(topToken, count, attached), NULL,
 				token);
 
 			m_holdStack.drop();
@@ -1275,11 +1275,11 @@ void Translator::cleanUp(void)
 
 // function to create an rpn item for a token and append it to the output list
 
-RpnItem *Translator::outputAppend(Token *token, int nOperands,
-	RpnItem **operand)
+RpnItem *Translator::outputAppend(Token *token, int attachedCount,
+	RpnItem **attached)
 {
 	token->removeSubCode(UnUsed_SubCode);  // mark as used
-	RpnItem *rpnItem = new RpnItem(token, nOperands, operand);
+	RpnItem *rpnItem = new RpnItem(token, attachedCount, attached);
 	rpnItem->setIndex(outputCount());
 	m_output->append(rpnItem);
 	return rpnItem;

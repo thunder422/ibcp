@@ -35,23 +35,23 @@ class RpnItem
 {
 	Token *m_token;				// pointer to token
 	int m_index;				// index within RPN list
-	int m_nOperands;			// number of operands
-	RpnItem **m_operand;		// array of operand pointers
+	int m_attachedCount;		// number of operands
+	RpnItem **m_attached;		// array of attached item pointers
 
 public:
-	RpnItem(Token *token, int nOperands = 0, RpnItem **operand = NULL)
+	RpnItem(Token *token, int attachedCount = 0, RpnItem **attached = NULL)
 	{
 		m_token = token;
 		m_index = -1;
-		m_nOperands = nOperands;
-		m_operand = operand;
+		m_attachedCount = attachedCount;
+		m_attached = attached;
 	}
 	~RpnItem()
 	{
 		delete m_token;
-		if (m_nOperands > 0)
+		if (m_attachedCount > 0)
 		{
-			delete[] m_operand;
+			delete[] m_attached;
 		}
 	}
 
@@ -78,43 +78,20 @@ public:
 		m_index += increment;
 	}
 
-	int nOperands(void)
+	int attachedCount(void)
 	{
-		return m_nOperands;
+		return m_attachedCount;
 	}
-	void setNOperands(int nOperands)
+	RpnItem *attached(int index)
 	{
-		m_nOperands = nOperands;
+		return m_attached[index];
 	}
 
-	RpnItem **operand(void)
-	{
-		return m_operand;
-	}
-	void setOperand(RpnItem **operand)
-	{
-		m_operand = operand;
-	}
-	RpnItem *operand(int index)
-	{
-		return m_operand[index];
-	}
-	void setOperand(int index, RpnItem *operand)
-	{
-		m_operand[index] = operand;
-	}
 	QString text(void);
 	bool operator==(const RpnItem &other) const;
 	bool operator!=(const RpnItem &other) const
 	{
 		return !(*this == other);
-	}
-
-	// function to set operands without allocating a new array
-	void set(int nOperands, RpnItem **operand)
-	{
-		m_nOperands = nOperands;
-		m_operand = operand;
 	}
 };
 
