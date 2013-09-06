@@ -170,6 +170,11 @@ TokenStatus Translator::getCommands(Token *&token)
 			return ExpCmd_TokenStatus;
 		}
 
+		if (token->isCode(EOL_Code) && m_output->isEmpty())
+		{
+			return Done_TokenStatus;  // blank line allowed
+		}
+
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
 			break;
