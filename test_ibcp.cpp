@@ -203,7 +203,8 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 				break;
 			}
 			inputLine = input.readLine();
-			if (inputLine.isEmpty() || inputLine[0] == '#')
+			if (inputLine[0] == '#'
+				|| m_option != OptEncoder && inputLine.isEmpty())
 			{
 				continue;  // skip blank and comment lines
 			}

@@ -17,6 +17,9 @@ Output: 0:VarRefStr 1:|C$| 2:ConstStr 3:|Test| 4:Assign$
 Input: PRINT C$
 Output: 0:VarStr 1:|C$| 2:PrintStr 3:PRINT 
 
+Input: 
+Output:  
+
 Input: INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment
 Output: 0:ConstStr 1:|Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|D%| 6:InputAssignInt 7:INPUT-PROMPT':' 8:VarRef 9:|E| 10:VarInt 11:|D%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|D%| 17:PrintInt 18:, 19:Var 20:|E| 21:PrintDbl 22:PRINT 23:' 24:| comment| 
 
