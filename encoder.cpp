@@ -37,16 +37,27 @@ Encoder::Encoder(Table &table): m_table(table)
 bool Encoder::encode(RpnList *&input)
 {
 	m_input = input;
-	return assignCodes();
+	int size = prepareTokens();
+	if (size < 0)
+	{
+		return false;
+	}
+	return true;
 }
 
 
-// function to assign codes for tokens types that don't have a code
+// function to prepare tokens for encoding
+//
+//   - assigns codes to token types without codes
+//   - assigns position indexes to each token
+//   - returns number of program words required for line
 
-bool Encoder::assignCodes(void)
+int Encoder::prepareTokens(void)
 {
+	int count = 0;
 	for (int i = 0; i < m_input->count(); i++)
 	{
+		// assign codes to token types without codes
 		Token *token = m_input->at(i)->token();
 		switch (token->type())
 		{
@@ -73,10 +84,17 @@ bool Encoder::assignCodes(void)
 			m_input->setError(token);
 			m_input->setErrorMessage(token->message(BUG_NotYetImplemented));
 			m_input->clear();
-			return false;
+			return -1;
+		}
+
+		// assign position index to tokens (increment count for instruction)
+		token->setIndex(count++);
+		if (m_table.hasFlag(token, HasOperand_Flag))
+		{
+			count++;  // increment count for operand
 		}
 	}
-	return true;
+	return count;
 }
 
 

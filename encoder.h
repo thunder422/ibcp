@@ -39,7 +39,7 @@ public:
 	bool encode(RpnList *&input);
 
 private:
-	bool assignCodes(void);
+	int prepareTokens(void);
 };
 
 #endif // ENCODER_H

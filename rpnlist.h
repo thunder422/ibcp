@@ -87,7 +87,7 @@ public:
 		return m_attached[index];
 	}
 
-	QString text(void);
+	QString text(bool withIndexes = false);
 	bool operator==(const RpnItem &other) const;
 	bool operator!=(const RpnItem &other) const
 	{
@@ -103,7 +103,7 @@ public:
 	RpnList(void) : m_errorColumn(-1), m_errorLength(-1) {}
 	~RpnList(void);
 	void clear(void);
-	QString text(void);
+	QString text(bool withIndexes = false);
 	bool operator==(const RpnList &other) const;
 	bool operator!=(const RpnList &other) const
 	{

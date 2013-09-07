@@ -65,6 +65,7 @@ class Token
 	int m_subCode;			// sub-code flags of token
 	double m_value;			// double value for constant token
 	int m_valueInt;			// integer value for constant token (if possible)
+	int m_index;			// index within encoded program code line
 
 public:
 	explicit Token(int column = -1)
@@ -215,6 +216,16 @@ public:
 		m_valueInt = value;
 	}
 
+	// index access functions
+	int index(void)
+	{
+		return m_index;
+	}
+	void setIndex(int index)
+	{
+		m_index = index;
+	}
+
 	// set error functions
 	void setError(const QString &msg, DataType dataType = Double_DataType)
 	{
@@ -264,9 +275,11 @@ public:
 	}
 
 	// recreate text for token
-	QString text(void);
+	QString text(bool withIndex = false);
 
 private:
+	QString textOperand(bool withIndex);
+
 	// static members
 	static bool s_paren[sizeof_TokenType];
 	static int s_prec[sizeof_TokenType];

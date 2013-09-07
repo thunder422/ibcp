@@ -294,7 +294,7 @@ void Tester::encodeInput(QTextStream &cout, Translator &translator,
 	}
 	else  // translate and encode successful
 	{
-		cout << "Output: " << rpnList->text() << ' ' << endl;
+		cout << "Output: " << rpnList->text(true) << ' ' << endl;
 	}
 	delete rpnList;
 }

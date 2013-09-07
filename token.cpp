@@ -305,21 +305,26 @@ void Token::setDataType(void)
 
 
 // function to recreate text (abbreviated contents) of token
-QString Token::text(void)
+QString Token::text(bool withIndex)
 {
 	Table &table = Table::instance();
 	QString string;
+	QString second;
 
+	if (withIndex)
+	{
+		string = QString("%1:").arg(m_index);
+	}
 	switch (m_type)
 	{
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
-		string = m_string;
+		string += m_string;
 		break;
 
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
-		string = m_string + '(';
+		string += m_string + '(';
 		break;
 
 	case Constant_TokenType:
@@ -327,7 +332,7 @@ QString Token::text(void)
 		{
 		case Integer_DataType:
 		case Double_DataType:
-			string = m_string;
+			string += m_string;
 			if (m_dataType == Integer_DataType)
 			{
 				string += "%";
@@ -335,7 +340,7 @@ QString Token::text(void)
 			break;
 
 		case String_DataType:
-			string = '"' + m_string + '"';
+			string += '"' + m_string + '"';
 			break;
 
 		}
@@ -344,31 +349,33 @@ QString Token::text(void)
 	case Operator_TokenType:
 		if (isCode(RemOp_Code))
 		{
-			string = table.name(m_code) + '|' + m_string + '|';
+			string += table.name(m_code);
+			second = textOperand(withIndex);
 		}
 		else
 		{
-			string = table.debugName(m_code);
+			string += table.debugName(m_code);
 		}
 		break;
 
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
-		string = table.debugName(m_code);
-		if (table.hasFlag(this, HasOperand_Flag))
+		string += table.debugName(m_code);
+		if (withIndex && table.hasFlag(this, HasOperand_Flag))
 		{
-			string += " |" + m_string + '|';
+			second += textOperand(withIndex);
 		}
 		break;
 
 	case Command_TokenType:
 		if (isCode(Rem_Code))
 		{
-			string = table.name(m_code) + '|' + m_string + '|';
+			string += table.name(m_code);
+			second = textOperand(withIndex);
 		}
 		else
 		{
-			string = table.name(m_code);
+			string += table.name(m_code);
 			if (table.name2(m_code) != NULL)
 			{
 				string += '-' + table.name2(m_code);
@@ -413,7 +420,19 @@ QString Token::text(void)
 		}
 		string += '\'';
 	}
-	return string;
+	return string + second;
+}
+
+
+// function to get text of operand (with index if selected)
+QString Token::textOperand(bool withIndex)
+{
+	QString string;
+	if (withIndex)
+	{
+		string = QString(" %1:").arg(m_index + 1);
+	}
+	return string + '|' + m_string + '|';
 }
 
 

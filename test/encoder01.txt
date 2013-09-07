@@ -1,19 +1,22 @@
 
 Input: A=5
-Output: VarRef |A| Const |5| Assign 
+Output: 0:VarRef 1:|A| 2:Const 3:|5| 4:Assign 
 
 Input: PRINT A
-Output: Var |A| PrintDbl PRINT 
+Output: 0:Var 1:|A| 2:PrintDbl 3:PRINT 
 
 Input: B%=6
-Output: VarRefInt |B%| ConstInt |6| Assign% 
+Output: 0:VarRefInt 1:|B%| 2:ConstInt 3:|6| 4:Assign% 
 
 Input: PRINT B%
-Output: VarInt |B%| PrintInt PRINT 
+Output: 0:VarInt 1:|B%| 2:PrintInt 3:PRINT 
 
 Input: C$="Test"
-Output: VarRefStr |C$| ConstStr |Test| Assign$ 
+Output: 0:VarRefStr 1:|C$| 2:ConstStr 3:|Test| 4:Assign$ 
 
 Input: PRINT C$
-Output: VarStr |C$| PrintStr PRINT 
+Output: 0:VarStr 1:|C$| 2:PrintStr 3:PRINT 
+
+Input: INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment
+Output: 0:ConstStr 1:|Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|D%| 6:InputAssignInt 7:INPUT-PROMPT':' 8:VarRef 9:|E| 10:VarInt 11:|D%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|D%| 17:PrintInt 18:, 19:Var 20:|E| 21:PrintDbl 22:PRINT 23:' 24:| comment| 
 

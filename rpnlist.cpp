@@ -32,9 +32,9 @@ RpnList::~RpnList(void)
 
 
 // function to recreate text (abbreviated contents) of item
-QString RpnItem::text(void)
+QString RpnItem::text(bool withIndexes)
 {
-	QString string = token()->text();
+	QString string = token()->text(withIndexes);
 	if (attachedCount() > 0)
 	{
 		QChar separator('[');
@@ -80,7 +80,7 @@ void RpnList::clear(void)
 
 
 // function to recreate text (abbreviated contents) of item
-QString RpnList::text(void)
+QString RpnList::text(bool withIndexes)
 {
 	QString string;
 
@@ -90,7 +90,7 @@ QString RpnList::text(void)
 		{
 			string += ' ';
 		}
-		string += at(i)->text();
+		string += at(i)->text(withIndexes);
 	}
 	return string;
 }

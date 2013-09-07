@@ -7,3 +7,5 @@ B%=6
 PRINT B%
 C$="Test"
 PRINT C$
+
+INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment
