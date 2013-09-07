@@ -423,12 +423,12 @@ bool Parser::getNumber(void)
 	}
 
 	// if double in range of integer, then set as integer
-	if (m_token->valueDbl() > (double)INT_MIN - 0.5
-		&& m_token->valueDbl() < (double)INT_MAX + 0.5)
+	if (m_token->value() > (double)INT_MIN - 0.5
+		&& m_token->value() < (double)INT_MAX + 0.5)
 	{
 		m_token->setDataType(Integer_DataType);
 		// convert to integer in case integer is needed
-		m_token->setValue((int)m_token->valueDbl());
+		m_token->setValue((int)m_token->value());
 		if (decimal)  // decimal point or exponent?
 		{
 			// indicate number is a double value

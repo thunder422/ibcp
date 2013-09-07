@@ -323,12 +323,12 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 			cout << ' ' << token->valueInt();
 			if (token->hasSubCode(Double_SubCode))
 			{
-				cout << "," << token->valueDbl();
+				cout << "," << token->value();
 			}
 			cout << " |" << token->string() << '|';
 			break;
 		case Double_DataType:
-			cout << ' ' << token->valueDbl() << " |" << token->string() << '|';
+			cout << ' ' << token->value() << " |" << token->string() << '|';
 			break;
 		case String_DataType:
 			cout << " |" << token->string() << '|';

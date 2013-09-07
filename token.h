@@ -63,8 +63,8 @@ class Token
 	Code m_code;			// internal code of token (index of TableEntry)
 	bool m_reference;		// token is a reference flag
 	int m_subCode;			// sub-code flags of token
-	double m_valueDbl;		// value for double constant token
-	int m_valueInt;			// value for integer constant token
+	double m_value;			// double value for constant token
+	int m_valueInt;			// integer value for constant token (if possible)
 
 public:
 	explicit Token(int column = -1)
@@ -198,9 +198,9 @@ public:
 	}
 
 	// value access functions
-	double valueDbl(void) const
+	double value(void) const
 	{
-		return m_valueDbl;
+		return m_value;
 	}
 	int valueInt(void) const
 	{
@@ -208,7 +208,7 @@ public:
 	}
 	void setValue(double value)
 	{
-		m_valueDbl = value;
+		m_value = value;
 	}
 	void setValue(int value)
 	{
