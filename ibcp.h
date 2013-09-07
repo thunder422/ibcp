@@ -83,17 +83,4 @@ enum SubCode
 };
 
 
-// expected token mode after command type
-enum TokenMode
-{
-	Null_TokenMode,					// no token mode set flag
-	Command_TokenMode,				// expecting command
-	Assignment_TokenMode,			// expecting assignment
-	AssignmentList_TokenMode,		// comma separated assignment started
-	Expression_TokenMode,			// inside expression
-	Reference_TokenMode,			// reference expected
-	sizeof_TokenMode
-};
-
-
 #endif  // IBCP_H

@@ -115,7 +115,6 @@ public:
 	const QString name2(Code code) const;
 	const QString debugName(Code code) const;
 	int hasFlag(Code code, int flag) const;
-	TokenMode tokenMode(Code code) const;
 	Code unaryCode(Code code) const;
 	int precedence(Code code) const;
 	int operandCount(Code code) const;
