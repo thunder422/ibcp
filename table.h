@@ -42,6 +42,7 @@ enum TableFlag
 	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
 	Print_Flag			= 0x00000010,  // print-only function
 	UseConstAsIs_Flag   = 0x00000020,  // use constant data type as is
+	HasOperand_Flag		= 0x00000040,  // code has operand in program code
 	EndStmt_Flag		= 0x00000080   // end statement
 };
 
@@ -138,6 +139,12 @@ public:
 	Token *newToken(Code code);
 	Code cvtCode(Token *token, DataType dataType) const;
 	Code findCode(Token *token, Token *operandToken, int operandIndex = 0);
+	void findCode(Token *token, Code code)
+	{
+		token->setCode(code);
+		token->setType(type(code));
+		findCode(token, token);
+	}
 
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const QStringRef &string) const;

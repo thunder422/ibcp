@@ -152,6 +152,7 @@ set(ibcp_SOURCES
 	basic/print.cpp
 	commandline.cpp
 	donestack.cpp
+	encoder.cpp
 	errorlist.cpp
 	editbox.cpp
 	main.cpp

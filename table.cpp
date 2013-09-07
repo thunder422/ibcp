@@ -207,6 +207,7 @@ static Code AssignRight_AssocCode[]		= {AssignKeepRight_Code};
 static Code AssignStr_AssocCode[]		= {
 	AssignKeepStr_Code, AssignListStr_Code
 };
+static Code Const_AssocCode[]			= {ConstInt_Code, ConstStr_Code};
 static Code Div_AssocCode[]				= {DivInt_Code, DivI2_Code};
 static Code DivInt_AssocCode[]			= {DivI1_Code};
 static Code Eq_AssocCode[]				= {
@@ -257,6 +258,8 @@ static Code Sgn_AssocCode[]				= {SgnInt_Code};
 static Code Str_AssocCode[]				= {StrInt_Code};
 static Code Sub_AssocCode[]				= {SubInt_Code, SubI2_Code};
 static Code SubInt_AssocCode[]			= {SubI1_Code};
+static Code Var_AssocCode[]				= {VarInt_Code, VarStr_Code};
+static Code VarRef_AssocCode[]			= {VarRefInt_Code, VarRefStr_Code};
 
 
 // standard expression information structures
@@ -1050,6 +1053,45 @@ static TableEntry tableEntries[] =
 	{	// InputParseStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "InputParseStr", Null_Flag, 2, None_DataType
+	},
+	{	// Const_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "Const", HasOperand_Flag, 2, Double_DataType,
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const))
+	},
+	{	// ConstInt_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "ConstInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+	},
+	{	// ConstStr_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "ConstStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
+	},
+	{	// Var_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "Var", HasOperand_Flag, 2, Double_DataType,
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var))
+	},
+	{	// VarInt_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "VarInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+	},
+	{	// VarStr_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "VarStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
+	},
+	{	// VarRef_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "VarRef", HasOperand_Flag, 2, Double_DataType,
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const))
+	},
+	{	// VarRefInt_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "VarRefInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+	},
+	{	// VarRefStr_Code
+		IntFuncN_TokenType, OneWord_Multiple,
+		"", "VarRefStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
 	}
 };
 

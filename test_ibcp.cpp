@@ -33,6 +33,7 @@
 #include "table.h"
 #include "parser.h"
 #include "translator.h"
+#include "encoder.h"
 
 
 // function to process a test input file specified on the command line
@@ -43,6 +44,7 @@ Tester::Tester(const QStringList &args)
 	name[OptParser] = "parser";
 	name[OptExpression] = "expression";
 	name[OptTranslator] = "translator";
+	name[OptEncoder] = "encoder";
 
 	// get base file name of program from first argument
 	m_programName = QFileInfo(args.at(0)).baseName();
@@ -54,7 +56,8 @@ Tester::Tester(const QStringList &args)
 	case 2:
 		if (isOption(args.at(1), "-tp", OptParser, name[OptParser])
 			|| isOption(args.at(1), "-te", OptExpression, name[OptExpression])
-			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator]))
+			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator])
+			|| isOption(args.at(1), "-tc", OptEncoder, name[OptEncoder]))
 		{
 			break;
 		}
@@ -117,7 +120,7 @@ bool Tester::isOption(const QString &arg, const QString &exp,
 QStringList Tester::options(void)
 {
 	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
-		<< "-te" << "-tt";
+		<< "-te" << "-tt" << "-tc";
 }
 
 
@@ -175,6 +178,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 	}
 
 	Translator translator(Table::instance());
+	Encoder encoder(Table::instance());
 
 	if (inputMode)
 	{
@@ -217,6 +221,9 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			break;
 		case OptTranslator:
 			translateInput(cout, translator, inputLine, false);
+			break;
+		case OptEncoder:
+			encodeInput(cout, translator, encoder, inputLine);
 			break;
 		}
 		// report any token leaks and extra token deletes
@@ -269,6 +276,25 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 	{
 		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
 			rpnList->errorMessage());
+	}
+	delete rpnList;
+}
+
+
+// function to parse an input line, translate to an RPN list
+// and output the resulting RPN list
+void Tester::encodeInput(QTextStream &cout, Translator &translator,
+	Encoder &encoder, const QString &testInput)
+{
+	RpnList *rpnList = translator.translate(testInput);
+	if (rpnList->hasError() || !encoder.encode(rpnList))
+	{
+		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
+			rpnList->errorMessage());
+	}
+	else  // translate and encode successful
+	{
+		cout << "Output: " << rpnList->text() << ' ' << endl;
 	}
 	delete rpnList;
 }

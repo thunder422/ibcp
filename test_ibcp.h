@@ -33,6 +33,7 @@ class Token;
 class RpnItem;
 class RpnList;
 class Translator;
+class Encoder;
 
 class Tester
 {
@@ -44,6 +45,7 @@ class Tester
 		OptParser = OptFirst,
 		OptExpression,
 		OptTranslator,
+		OptEncoder,
 		OptSizeOf,
 		OptError = OptSizeOf
 	};
@@ -53,6 +55,8 @@ class Tester
 	void parseInput(QTextStream &cout, const QString &testInput);
 	void translateInput(QTextStream &cout, Translator &translator,
 		const QString &testInput, bool exprMode);
+	void encodeInput(QTextStream &cout, Translator &translator,
+		Encoder &encoder, const QString &testInput);
 	bool printToken(QTextStream &cout, Token *token, bool tab);
 	void printError(QTextStream &cout, int column, int length,
 		const QString &error);

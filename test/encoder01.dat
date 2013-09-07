@@ -1,0 +1,9 @@
+###################################
+#  Encoder Test #1: Initial Test  #
+###################################
+A=5
+PRINT A
+B%=6
+PRINT B%
+C$="Test"
+PRINT C$

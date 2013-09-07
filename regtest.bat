@@ -2,7 +2,7 @@ rem vim:ts=4:sw=4:
 rem
 rem	Interactive BASIC Compiler Project
 rem	File: regtest.bat - Windows batch file to run all tests
-rem	Copyright (C) 2010-2012  Thunder422
+rem	Copyright (C) 2010-2013  Thunder422
 rem
 rem	This program is free software: you can redistribute it and/or modify
 rem	it under the terms of the GNU General Public License as published by
@@ -37,10 +37,11 @@ rem    be answered No for batch to continue - comp has no option to not
 rem    ask this question)
 rem
 
-del parser*.txt expression*.txt translator*.txt
-for %%i in (test/parser*.dat test/expression*.dat test/translator*.dat) do (
+del parser*.txt expression*.txt translator*.txt encoder*.txt
+for %%i in (test/parser*.dat test/expression*.dat test/translator*.dat test/encoder*.dat) do (
 	ibcp -t test\%%i >%%~ni.txt
 )
 comp test\parser*.txt parser*.txt
 comp test\expression*.txt expression*.txt
 comp test\translator*.txt translator*.txt
+comp test\encoder*.txt encoder*.txt

@@ -355,6 +355,10 @@ QString Token::text(void)
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
 		string = table.debugName(m_code);
+		if (table.hasFlag(this, HasOperand_Flag))
+		{
+			string += " |" + m_string + '|';
+		}
 		break;
 
 	case Command_TokenType:
