@@ -6,13 +6,13 @@ Input: PRINT A
 Output: Var |A| PrintDbl PRINT 
 
 Input: B%=6
-Output: ConstInt |B%| ConstInt |6| Assign% 
+Output: VarRefInt |B%| ConstInt |6| Assign% 
 
 Input: PRINT B%
 Output: VarInt |B%| PrintInt PRINT 
 
 Input: C$="Test"
-Output: ConstStr |C$| ConstStr |Test| Assign$ 
+Output: VarRefStr |C$| ConstStr |Test| Assign$ 
 
 Input: PRINT C$
 Output: VarStr |C$| PrintStr PRINT 

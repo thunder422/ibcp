@@ -1083,7 +1083,7 @@ static TableEntry tableEntries[] =
 	{	// VarRef_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"", "VarRef", HasOperand_Flag, 2, Double_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef))
 	},
 	{	// VarRefInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
