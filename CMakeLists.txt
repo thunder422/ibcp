@@ -56,8 +56,8 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 set(ibcp_COPYRIGHT_YEAR 2013)
 
 set(ibcp_RELEASE_MAJOR 0)
-set(ibcp_RELEASE_MINOR 4)
-set(ibcp_RELEASE_PATCH 6)
+set(ibcp_RELEASE_MINOR 5)
+set(ibcp_RELEASE_PATCH 0)
 
 set(ibcp_RELEASE_STRING v${ibcp_RELEASE_MAJOR}.${ibcp_RELEASE_MINOR})
 if (ibcp_RELEASE_PATCH LESS 0)

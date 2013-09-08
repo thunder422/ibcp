@@ -34,8 +34,9 @@ converts text input into BASIC language tokens.
 The translator is currently being developed.  The LET, PRINT, INPUT and
 REM commands have been implemented so far along with multiple statements
 per line (separated by colons) and the translation of BASIC expressions.
-The translator translates BASIC commands into a reverse polish notation
-format that will allow fast execution of the BASIC program.
+The translator converts tokens from the parser into reverse polish
+notation, which will allow internal program code to be created in a
+format format that will allow fast execution of the BASIC program.
 
 A basic GUI has been implemented including file, edit and help menus
 with basic operation menu items, the tool bar with several file and edit
@@ -54,6 +55,11 @@ with an error, the error message is shown on the status bar (which also
 now includes the current line number and column).  There are actions
 (via menu, tool bar and key shortcuts) for moving the cursor to the next
 or previous error.
+
+The encoder development has been started.  The encoder converts the
+reverse polish notation tokens into the internal program code that will
+be executed when the program is run.  The first phase of the encoder has
+been completed, which prepares the tokens for encoding.
 
 
 Building The Program
@@ -94,7 +100,7 @@ Because the Qt libraries produce various memory errors, an error
 suppression file was created to suppress these errors.  This suppression
 file, ibcp.supp, is configured for a specific version of Qt, which is
 the default version (4.8.2) installed in Linux Mint 13 KDE with the
-kubuntu backports that upgrade KDE to 4.11.0.  When building the
+kubuntu backports that upgrade KDE to 4.11.1.  When building the
 application from the source, the ibcp.supp file is configured for the
 version of Qt installed.  However, if running from the binary archive,
 the ibcp.supp file needs to be modified for the version of the Qt
@@ -118,10 +124,10 @@ from the parser are the resulting tokens.  The output from the
 translator are the resulting reverse polish notation format of the
 tokens.  The program is run interactively with this command:
 
-    ibcp -tp|-te|-tt
+    ibcp -tp|-te|-tt|-tc
 
 The first 't' character represents 'test' mode and the second stands for
-parser, expression and translator.
+parser, expression, translator and encoder.
 
 
 Running In Batch
@@ -132,5 +138,5 @@ translator.  The program is run in batch with this command:
 
     ibcp -t <file>
 
-The beginning of the name of the file (parser, expression, or
-translator) determines how the file will be processed.
+The beginning of the name of the file (parser, expression, translator
+or encoder) determines how the file will be processed.

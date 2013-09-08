@@ -80,6 +80,11 @@ int Encoder::prepareTokens(void)
 		case IntFuncN_TokenType:
 		case IntFuncP_TokenType:
 			break;  // these token types already have a code
+		// TODO for arrays, check for integer subscripts, add CvtInt
+		// TODO   for double subscripts, report error for strings
+		// TODO for functions, check arguments for data types, add CvtDbl
+		// TODO   or CvtInt as needed, report erros for wrong types
+		// TODO   and check number of arguments
 		default:
 			m_input->setError(token);
 			m_input->setErrorMessage(token->message(BUG_NotYetImplemented));
