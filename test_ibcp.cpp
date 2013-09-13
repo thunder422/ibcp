@@ -268,7 +268,8 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 void Tester::translateInput(QTextStream &cout, Translator &translator,
 	const QString &testInput, bool exprMode)
 {
-	RpnList *rpnList = translator.translate(testInput, exprMode);
+	RpnList *rpnList = translator.translate(testInput, exprMode
+		? Translator::Expression_TestMode : Translator::Yes_TestMode);
 	if (!rpnList->hasError())
 	{
 		cout << "Output: " << rpnList->text() << ' ' << endl;
@@ -288,7 +289,7 @@ void Tester::encodeInput(QTextStream &cout, Translator &translator,
 	Encoder &encoder, const QString &testInput)
 {
 	RpnList *rpnList = translator.translate(testInput);
-	if (rpnList->hasError() || !encoder.encode(rpnList))
+	if (rpnList->hasError())
 	{
 		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
 			rpnList->errorMessage());

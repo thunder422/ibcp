@@ -63,7 +63,7 @@ Translator::~Translator(void)
 //     of translated line
 //   - allows for a special expression mode for testing
 
-RpnList *Translator::translate(const QString &input, bool exprMode)
+RpnList *Translator::translate(const QString &input, TestMode testMode)
 {
 	Token *token;
 	TokenStatus status;
@@ -74,7 +74,7 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 
 	m_holdStack.push(m_table.newToken(Null_Code));
 
-	if (exprMode)
+	if (testMode == Expression_TestMode)
 	{
 		token = NULL;
 		status = getExpression(token, Any_DataType);
@@ -119,6 +119,11 @@ RpnList *Translator::translate(const QString &input, bool exprMode)
 			if (!m_doneStack.isEmpty())
 			{
 				status = BUG_DoneStackNotEmpty;
+			}
+
+			if (testMode == No_TestMode)
+			{
+				status = outputAssignCodes(token);
 			}
 		}
 		else
@@ -1302,6 +1307,69 @@ void Translator::outputInsert(int index, Token *token)
 	{
 		m_output->at(index)->incrementIndex();
 	}
+}
+
+
+// function to prepare tokens for encoding
+//
+//   - assigns codes to token types without codes
+//   - assigns position indexes to each token
+//   - returns number of program words required for line
+
+TokenStatus Translator::outputAssignCodes(Token *&token)
+{
+	for (int i = 0; i < m_output->count(); i++)
+	{
+		// assign codes to token types without codes
+		token = m_output->at(i)->token();
+		switch (token->type())
+		{
+		case Constant_TokenType:
+			m_table.findCode(token, Const_Code);
+			break;
+
+		case NoParen_TokenType:
+			if (token->reference())
+			{
+				m_table.findCode(token, VarRef_Code);
+				token->setReference(false);  // FIXME remove (need for testing)
+			}
+			else
+			{
+				m_table.findCode(token, Var_Code);
+			}
+			break;
+
+		case Command_TokenType:
+		case Operator_TokenType:
+		case IntFuncN_TokenType:
+		case IntFuncP_TokenType:
+			break;  // these token types already have a code
+
+		// TODO for arrays, check for integer subscripts, add CvtInt
+		// TODO   for double subscripts, report error for strings
+		// TODO for functions, check arguments for data types, add CvtDbl
+		// TODO   or CvtInt as needed, report erros for wrong types
+		// TODO   and check number of arguments
+
+		default:
+			return BUG_NotYetImplemented;
+		}
+	}
+
+	// count number of program words needed
+	m_output->resetCodeSize();
+	for (int i = 0; i < m_output->count(); i++)
+	{
+		// assign position index to tokens (increment count for instruction)
+		token = m_output->at(i)->token();
+		token->setIndex(m_output->incrementCodeSize());
+		if (m_table.hasFlag(token, HasOperand_Flag))
+		{
+			m_output->incrementCodeSize();  // increment count for operand
+		}
+	}
+	return Done_TokenStatus;
 }
 
 

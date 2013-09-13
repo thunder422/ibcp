@@ -71,6 +71,13 @@ public:
 	explicit Translator(Table &table);
 	~Translator(void);
 
+	enum TestMode {
+		No_TestMode,
+		Expression_TestMode,
+		Yes_TestMode,
+		sizeof_TestMode
+	};
+
 	enum Reference {
 		None_Reference,
 		Variable_Reference,
@@ -80,7 +87,7 @@ public:
 	};
 
 	// Main Function
-	RpnList *translate(const QString &input, bool exprMode = false);
+	RpnList *translate(const QString &input, TestMode testMode = No_TestMode);
 
 	// Get Functions
 	TokenStatus getCommands(Token *&token);
@@ -149,6 +156,9 @@ private:
 	// Private Support Functions
 	void checkPendingParen(Token *token, bool popped);
 	void cleanUp(void);		// only called when error occurs
+
+	// Output List Function
+	TokenStatus outputAssignCodes(Token *&token);
 };
 
 

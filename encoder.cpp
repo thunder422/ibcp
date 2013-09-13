@@ -23,83 +23,11 @@
 //	2013-09-06	initial version
 
 #include "encoder.h"
-#include "rpnlist.h"
 #include "table.h"
 
 
 Encoder::Encoder(Table &table): m_table(table)
 {
-}
-
-
-// function to encode a translated RPN list
-
-bool Encoder::encode(RpnList *&input)
-{
-	m_input = input;
-	int size = prepareTokens();
-	if (size < 0)
-	{
-		return false;
-	}
-	return true;
-}
-
-
-// function to prepare tokens for encoding
-//
-//   - assigns codes to token types without codes
-//   - assigns position indexes to each token
-//   - returns number of program words required for line
-
-int Encoder::prepareTokens(void)
-{
-	int count = 0;
-	for (int i = 0; i < m_input->count(); i++)
-	{
-		// assign codes to token types without codes
-		Token *token = m_input->at(i)->token();
-		switch (token->type())
-		{
-		case Constant_TokenType:
-			m_table.findCode(token, Const_Code);
-			break;
-		case NoParen_TokenType:
-			if (token->reference())
-			{
-				m_table.findCode(token, VarRef_Code);
-				token->setReference(false);  // FIXME remove (need for testing)
-			}
-			else
-			{
-				m_table.findCode(token, Var_Code);
-			}
-			break;
-		case Command_TokenType:
-		case Operator_TokenType:
-		case IntFuncN_TokenType:
-		case IntFuncP_TokenType:
-			break;  // these token types already have a code
-		// TODO for arrays, check for integer subscripts, add CvtInt
-		// TODO   for double subscripts, report error for strings
-		// TODO for functions, check arguments for data types, add CvtDbl
-		// TODO   or CvtInt as needed, report erros for wrong types
-		// TODO   and check number of arguments
-		default:
-			m_input->setError(token);
-			m_input->setErrorMessage(token->message(BUG_NotYetImplemented));
-			m_input->clear();
-			return -1;
-		}
-
-		// assign position index to tokens (increment count for instruction)
-		token->setIndex(count++);
-		if (m_table.hasFlag(token, HasOperand_Flag))
-		{
-			count++;  // increment count for operand
-		}
-	}
-	return count;
 }
 
 

@@ -110,6 +110,19 @@ public:
 		return !(*this == other);
 	}
 
+	int codeSize(void)
+	{
+		return m_codeSize;
+	}
+	void resetCodeSize(void)
+	{
+		m_codeSize = 0;
+	}
+	int incrementCodeSize(void)
+	{
+		return m_codeSize++;
+	}
+
 	void setError(Token *errorToken)
 	{
 		m_errorColumn = errorToken->column();
@@ -138,6 +151,7 @@ public:
 	}
 
 private:
+	int m_codeSize;					// size of code required for list
 	int m_errorColumn;				// column of error that occurred
 	int m_errorLength;				// length of error that occurred
 	QString m_errorMessage;			// message of error that occurred
