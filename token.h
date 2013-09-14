@@ -73,6 +73,7 @@ public:
 		m_column = column;
 		m_length = 1;
 		m_reference = false;
+		m_code = Invalid_Code;
 		m_subCode = None_SubCode;
 	}
 	Token(const Token &token)  // copy constructor
@@ -171,7 +172,11 @@ public:
 	}
 	bool isCode(Code code) const
 	{
-		return hasTableEntry() && code == m_code;
+		return code == m_code;
+	}
+	bool hasValidCode(void) const
+	{
+		return m_code != Invalid_Code;
 	}
 
 	// reference access functions
@@ -258,13 +263,9 @@ public:
 	{
 		return s_prec[m_type];
 	}
-	int hasTableEntry(void) const
-	{
-		return s_table[m_type];
-	}
 	bool isNull(void) const
 	{
-		return hasTableEntry() && m_code == Null_Code;
+		return m_code == Null_Code;
 	}
 
 	// set length to include second token
@@ -283,7 +284,6 @@ private:
 	// static members
 	static bool s_paren[sizeof_TokenType];
 	static int s_prec[sizeof_TokenType];
-	static bool s_table[sizeof_TokenType];
 	static const QString s_messageArray[sizeof_TokenStatus];
 
 	class FreeStack : public QStack<Token *>

@@ -299,8 +299,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 		else
 		{
 			Code unaryCode;
-			if (token->isType(Operator_TokenType)
-				&& (unaryCode = m_table.unaryCode(token->code())) != Null_Code)
+			if ((unaryCode = m_table.unaryCode(token)) != Null_Code)
 			{
 				token->setCode(unaryCode);  // change token to unary operator
 			}
@@ -924,8 +923,7 @@ TokenStatus Translator::processOperator(Token *&token)
 
 		// change token operator code or insert conversion codes as needed
 		TokenStatus status = processFinalOperand(topToken,
-			m_holdStack.top().first,
-			m_table.isUnaryOperator(topToken->code()) ? 0 : 1);
+			m_holdStack.top().first, m_table.isUnaryOperator(topToken) ? 0 : 1);
 
 		if (status != Good_TokenStatus)
 		{
@@ -965,7 +963,7 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 	Token *first = NULL;		// first operand token
 
 	// check first operand of binary operators
-	if (!m_table.isUnaryOperator(token->code()))
+	if (!m_table.isUnaryOperator(token))
 	{
 		// changed token operator code or insert conversion codes as needed
 		Token *orgToken = token;

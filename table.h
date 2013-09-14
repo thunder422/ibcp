@@ -116,7 +116,6 @@ public:
 	const QString name2(Code code) const;
 	const QString debugName(Code code) const;
 	int hasFlag(Code code, int flag) const;
-	Code unaryCode(Code code) const;
 	int precedence(Code code) const;
 	int operandCount(Code code) const;
 	DataType operandDataType(Code code, int operand) const;
@@ -129,6 +128,7 @@ public:
 	TranslateFunction translateFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
+	Code unaryCode(Token *token) const;
 	bool isUnaryOperator(Token *token) const;
 	bool isUnaryOrBinaryOperator(Token *token) const;
 	int precedence(Token *token) const;

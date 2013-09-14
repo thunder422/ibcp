@@ -30,7 +30,6 @@
 // static token variables
 bool Token::s_paren[sizeof_TokenType];
 int Token::s_prec[sizeof_TokenType];
-bool Token::s_table[sizeof_TokenType];
 
 // token status message array
 //   (TokenStatus enumeration generated from names in comments
@@ -283,12 +282,6 @@ void Token::initialize(void)
 	s_prec[DefFuncP_TokenType] = 2;
 	s_prec[NoParen_TokenType] = 2;
 	s_prec[Paren_TokenType] = 2;
-
-	// set token type has a table entry flags
-	s_table[Command_TokenType] = true;
-	s_table[Operator_TokenType] = true;
-	s_table[IntFuncN_TokenType] = true;
-	s_table[IntFuncP_TokenType] = true;
 }
 
 

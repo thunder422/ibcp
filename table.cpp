@@ -1400,13 +1400,6 @@ int Table::hasFlag(Code code, int flag) const
 	return m_entry[code].flags & flag;
 }
 
-// returns the unary operator code (or Null_Code if none) for code
-Code Table::unaryCode(Code code) const
-{
-	ExprInfo *ei = m_entry[code].exprInfo;
-	return ei == NULL ? Null_Code : ei->m_unaryCode;
-}
-
 // returns the precedence for code
 int Table::precedence(Code code) const
 {
@@ -1456,13 +1449,6 @@ DataType Table::expectedDataType(Code code) const
 	return m_entry[code].exprInfo->m_expectedDataType;
 }
 
-// returns whether the code is a unary operator code
-// (convenience function to avoid confusion)
-bool Table::isUnaryOperator(Code code) const
-{
-	return code == unaryCode(code);
-}
-
 // returns the pointer to the translate function (if any) for code
 TranslateFunction Table::translateFunction(Code code) const
 {
@@ -1474,11 +1460,25 @@ TranslateFunction Table::translateFunction(Code code) const
 //  TOKEN RELATED TABLE FUNCTIONS
 //=================================
 
+// returns the unary operator code (or Null_Code if none) for token code
+Code Table::unaryCode(Token *token) const
+{
+	if (token->isType(Operator_TokenType))
+	{
+		ExprInfo *ei = m_entry[token->code()].exprInfo;
+		if (ei != NULL)
+		{
+			return ei->m_unaryCode;
+		}
+	}
+	return Null_Code;
+}
+
 // returns whether the token contains a unary operator code
 // (convenience function to avoid confusion)
 bool Table::isUnaryOperator(Token *token) const
 {
-	return token->hasTableEntry() ? isUnaryOperator(token->code()) : false;
+	return token->isType(Operator_TokenType) ? operandCount(token) == 1 : false;
 }
 
 // returns whether the token is a unary or binary operator
@@ -1503,8 +1503,8 @@ int Table::precedence(Token *token) const
 //   - returns Null_Flag is the token does not contain a code
 int Table::hasFlag(Token *token, int flag) const
 {
-	// (non-table entry token types have no flags)
-	return token->hasTableEntry() ? hasFlag(token->code(), flag) : 0;
+	// (invalid code tokens have no flags)
+	return token->hasValidCode() ? hasFlag(token->code(), flag) : 0;
 }
 
 // returns number of operands expected for code in token token
