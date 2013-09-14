@@ -1,6 +1,6 @@
 
 Input: Z = C(A,,B)
-               ^-- expected expression
+               ^-- expected numeric expression
 
 Input: Z = INT(A,
                 ^-- expected operator or closing parentheses

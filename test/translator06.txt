@@ -57,7 +57,7 @@ Input: PRINT,
 Output: , PRINT 
 
 Input: PRINT C(A,,B)
-                 ^-- expected expression
+                 ^-- expected numeric expression
 
 Input: PRINT C(A;B)
                 ^-- expected operator, comma or closing parentheses
@@ -111,7 +111,7 @@ Input: PRINT VAL(TAB(10))
                  ^^^^-- expected string expression
 
 Input: PRINT A(TAB(10))
-               ^^^^-- expected expression
+               ^^^^-- expected numeric expression
 
 Input: PRINT A+TAB(10)
                ^^^^-- expected numeric expression
@@ -126,10 +126,10 @@ Input: PRINT TAB(10)+A
                     ^-- expected semicolon, comma or end-of-statement
 
 Input: PRINT C(D(A,,B),E)
-                   ^-- expected expression
+                   ^-- expected numeric expression
 
 Input: PRINT INT(D(A,,B),E)
-                     ^-- expected expression
+                     ^-- expected numeric expression
 
 Input: PRINT A;,
                ^-- expected expression, print function or end-of-statement

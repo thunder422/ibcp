@@ -174,10 +174,13 @@ Input: PRINT (1e
                 ^-- expected sign or digits for exponent in floating point constant
 
 Input: PRINT A(?
-               ^-- expected expression
+               ^-- expected numeric expression
 
 Input: PRINT A(1e
                  ^-- expected sign or digits for exponent in floating point constant
+
+Input: PRINT F(?
+               ^-- expected expression
 
 Input: PRINT A(1?
                 ^-- expected operator, comma or closing parentheses
@@ -186,10 +189,13 @@ Input: PRINT A(1 .
                  ^-- expected operator, comma or closing parentheses
 
 Input: PRINT A(1,?
-                 ^-- expected expression
+                 ^-- expected numeric expression
 
 Input: PRINT A(1,1e999
                  ^^^^^-- floating point constant is out of range
+
+Input: PRINT F(1,?
+                 ^-- expected expression
 
 Input: PRINT A,?
                ^-- expected expression, comma, print function or end-of-statement
@@ -324,10 +330,13 @@ Input: INPUT PROMPT "A",A 1e
                           ^-- expected comma, semicolon or end-of-statement
 
 Input: INPUT PROMPT A$(1,?
-                         ^-- expected expression
+                         ^-- expected numeric expression
 
 Input: INPUT PROMPT A$(1,.
                          ^-- expected digits in floating point constant
+
+Input: INPUT PROMPT F$(1,?
+                         ^-- expected expression
 
 Input: INPUT PROMPT "A";A(1,?
                             ^-- expected numeric expression

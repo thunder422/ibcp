@@ -45,10 +45,10 @@ Input: A(B+C,D=E)=F
 Output: B C + CvtInt D E = A(<ref> F Assign 
 
 Input: A(B,C)=D(E)
-Output: B CvtInt C CvtInt A(<ref> E<ref> D([5:E<ref>] Assign 
+Output: B CvtInt C CvtInt A(<ref> E CvtInt D( Assign 
 
 Input: A(B,C),D(E)=INT(F)+Function(G)+Array(H)
-Output: B CvtInt C CvtInt A(<ref> E CvtInt D(<ref> F INT( G<ref> Function([10:G<ref>] + H<ref> Array([13:H<ref>] + AssignList 
+Output: B CvtInt C CvtInt A(<ref> E CvtInt D(<ref> F INT( G<ref> Function([10:G<ref>] + H CvtInt Array( + AssignList 
 
 Input: A=B,C=4
           ^-- expected operator or end-of-statement

@@ -11,6 +11,8 @@ INPUT PROMPT "Enter Number: "; N%
 INPUT PROMPT A$+":"; A
 INPUT PROMPT "Two Values", A, B;
 INPUT PROMPT P$(I%), S$(I%)
+INPUT PROMPT F$(I%), S$(I%)
+INPUT PROMPT FNA$(I%), S$(I%)
 # error tests
 INPUT
 INPUT,

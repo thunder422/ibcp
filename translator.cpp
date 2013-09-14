@@ -795,7 +795,20 @@ TokenStatus Translator::processParenToken(Token *&token)
 	// during the processing of the expressions of each operand
 	m_holdStack.push(token);
 	// determine data type (number for subscripts, any for arguments)
-	DataType dataType = token->reference() ? Integer_DataType : Any_DataType;
+	DataType dataType;
+	// TODO need to check test mode once dictionaries are implemented
+	// NOTE for now assume functions start with an 'F'
+	if (token->isType(Paren_TokenType) && (token->reference()
+		|| !token->string().startsWith('F', Qt::CaseInsensitive)))
+	{
+		dataType = Integer_DataType;  // array subscripts
+	}
+	else
+	{
+		// TODO with function dictionaries, get data type for argument
+		// TODO (move into loop below)
+		dataType = Any_DataType;  // function arguments
+	}
 	Token *topToken = token;
 
 	for (int count = 1; ; count++)
@@ -818,11 +831,11 @@ TokenStatus Translator::processParenToken(Token *&token)
 		// set reference for appropriate token types
 		if (topToken->isType(Paren_TokenType))
 		{
-			if (topToken->reference())
+			if (dataType == Integer_DataType)  // array subscript?
 			{
 				m_doneStack.drop();  // don't need item
 			}
-			else
+			else  // function argument
 			{
 				Token *operandToken = m_doneStack.top().rpnItem->token();
 				// TODO may also need to check for DefFuncN type here
@@ -843,7 +856,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 		else if (token->isCode(CloseParen_Code))
 		{
 			RpnItem **attached;
-			if (topToken->reference())
+			if (dataType == Integer_DataType)  // array subscript?
 			{
 				// don't save operands on array references
 				count = 0;

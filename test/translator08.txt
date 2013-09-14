@@ -63,19 +63,19 @@ Input: Z(A$)=C
          ^^-- expected numeric expression
 
 Input: Z(A)=Y(A$)
-Output: A CvtInt Z(<ref> A$<ref> Y([3:A$<ref>] Assign 
+              ^^-- expected numeric expression
 
 Input: Z(A),Y(A)=X(A)
-Output: A CvtInt Z(<ref> A CvtInt Y(<ref> A<ref> X([6:A<ref>] AssignList 
+Output: A CvtInt Z(<ref> A CvtInt Y(<ref> A CvtInt X( AssignList 
 
 Input: Z(A,Y(B))=X(A)
-Output: A CvtInt B<ref> Y([2:B<ref>] CvtInt Z(<ref> A<ref> X([6:A<ref>] Assign 
+Output: A CvtInt B CvtInt Y( CvtInt Z(<ref> A CvtInt X( Assign 
 
 Input: Z%(A%),Y%(A%)=X%(A%)
-Output: A% Z%(<ref> A% Y%(<ref> A%<ref> X%([4:A%<ref>] AssignList% 
+Output: A% Z%(<ref> A% Y%(<ref> A% X%( AssignList% 
 
 Input: Z$(A%),Y$(A%)=X$(A%)
-Output: A% Z$(<ref> A% Y$(<ref> A%<ref> X$([4:A%<ref>] AssignList$ 
+Output: A% Z$(<ref> A% Y$(<ref> A% X$( AssignList$ 
 
 Input: TAB(10)=A
        ^^^^-- expected command

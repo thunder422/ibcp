@@ -33,7 +33,7 @@ Input: Z=INT((A+,
                 ^-- expected numeric expression
 
 Input: Z=A(,
-           ^-- expected expression
+           ^-- expected numeric expression
 
 Input: Z=A(-,
             ^-- expected numeric expression
@@ -42,7 +42,7 @@ Input: Z=A(B+,
              ^-- expected numeric expression
 
 Input: Z=A((,
-            ^-- expected expression
+            ^-- expected numeric expression
 
 Input: Z=A((-,
              ^-- expected numeric expression
@@ -60,7 +60,7 @@ Input: Z=A(INT(A+,
                  ^-- expected numeric expression
 
 Input: Z=A(B(,
-             ^-- expected expression
+             ^-- expected numeric expression
 
 Input: Z=A(B(-,
               ^-- expected numeric expression
