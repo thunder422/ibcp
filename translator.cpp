@@ -1336,18 +1336,18 @@ TokenStatus Translator::outputAssignCodes(Token *&token)
 		switch (token->type())
 		{
 		case Constant_TokenType:
-			m_table.findCode(token, Const_Code);
+			m_table.setTokenCode(token, Const_Code);
 			break;
 
 		case NoParen_TokenType:
 			if (token->reference())
 			{
-				m_table.findCode(token, VarRef_Code);
+				m_table.setTokenCode(token, VarRef_Code);
 				token->setReference(false);  // FIXME remove (need for testing)
 			}
 			else
 			{
-				m_table.findCode(token, Var_Code);
+				m_table.setTokenCode(token, Var_Code);
 			}
 			break;
 

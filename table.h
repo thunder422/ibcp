@@ -121,6 +121,7 @@ public:
 	DataType operandDataType(Code code, int operand) const;
 	int associatedCodeCount(Code code) const;
 	Code associatedCode(Code code, int index = 0) const;
+	Code *associatedCodeArray(Code code) const;
 	int secondAssociatedIndex(Code code) const;
 	Code secondAssociatedCode(Code code, int index = 0) const;
 	DataType expectedDataType(Code code) const;
@@ -139,11 +140,11 @@ public:
 	Token *newToken(Code code);
 	Code cvtCode(Token *token, DataType dataType) const;
 	Code findCode(Token *token, Token *operandToken, int operandIndex = 0);
-	void findCode(Token *token, Code code)
+	bool setTokenCode(Token *token, Code code, DataType dataType,
+		int operandIndex);
+	void setTokenCode(Token *token, Code baseCode)
 	{
-		token->setCode(code);
-		token->setType(type(code));
-		findCode(token, token);
+		setTokenCode(token, baseCode, token->dataType(), 0);
 	}
 
 	// TABLE SPECIFIC FUNCTIONS

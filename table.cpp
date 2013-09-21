@@ -1430,6 +1430,12 @@ Code Table::associatedCode(Code code, int index) const
 	return m_entry[code].exprInfo->m_associatedCode[index];
 }
 
+// returns the associated code array for a code
+Code *Table::associatedCodeArray(Code code) const
+{
+	return m_entry[code].exprInfo->m_associatedCode;
+}
+
 // returns the start index of the secondary associated codes for code
 int Table::secondAssociatedIndex(Code code) const
 {
@@ -1570,32 +1576,15 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 		return Null_Code;
 	}
 
-	// get a possible conversion code if no associated code is found
-	Code cvtCode = cvtCodeHaveNeed[operandToken->dataType()][expectedDataType];
-
 	// see if any associated code's data types match
-	int assoc2Index = this->secondAssociatedIndex(token->code());
-	if (assoc2Index >= 0)  // if second index -1, then skip associated codes
+	if (setTokenCode(token, token->code(), operandToken->dataType(),
+		operandIndex))
 	{
-		int start = operandIndex != 1 ? 0 : assoc2Index;
-		int end = associatedCodeCount(token->code());
-		if (operandIndex == 0 && assoc2Index != 0)
-		{
-			// for first operand, end at begin of second associated codes group
-			end = assoc2Index;
-		}
-		for (int i = start; i < end; i++)
-		{
-			Code assocCode = this->associatedCode(token->code(), i);
-			if (operandToken->isDataType(operandDataType(assocCode,
-				operandIndex)))  // match?
-			{
-				// change token's code and data type to associated code
-				setToken(token, assocCode);
-				return Null_Code;
-			}
-		}
+		return Null_Code;
 	}
+
+	// get a conversion code if no associated code was found
+	Code cvtCode = cvtCodeHaveNeed[operandToken->dataType()][expectedDataType];
 
 	// did not find an associated code, return conversion code
 	if (cvtCode == Invalid_Code)
@@ -1622,6 +1611,57 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 	}
 	return cvtCode;  // convert code or invalid
 }
+
+
+// function to set the code for of token for the specified operand
+// appropriate for the data type specified
+//
+//   - if the data type does not match the operand data type of the code,
+//     then the associated codes of the code searched for a matching code
+//   - if there are no associated codes, or none is found, returns false
+//   - upon success, sets the code, type and data type of the token
+
+bool Table::setTokenCode(Token *token, Code code, DataType dataType,
+	int operandIndex)
+{
+	// first check if data type already matches data type of code
+	if (dataType != operandDataType(code, operandIndex))
+	{
+		// if not, see if data type of any associated code matches
+		int i = secondAssociatedIndex(code);
+		if (i < 0)  // if second index -1, then no associated codes to search
+		{
+			return false;
+		}
+		// determine range of associated codes to search
+		int end = associatedCodeCount(code);
+		if (operandIndex == 0 && i != 0)  // first operand?
+		{
+			// if first operand and there are second operand associated codes
+			// then set end to start of second operand associated codes
+			// and start to first associated code
+			end = i;
+			i = 0;
+		}
+		Code *associatedCodes = associatedCodeArray(code);
+		forever
+		{
+			if (i >= end)
+			{
+				return false;  // did not find an associated code for data type
+			}
+			code = associatedCodes[i++];
+			if (dataType == operandDataType(code, operandIndex))
+			{
+				break;
+			}
+		}
+	}
+	// change token's code and data type to associated code
+	setToken(token, code);
+	return true;
+}
+
 
 //============================
 //  TABLE SPECIFIC FUNCTIONS
