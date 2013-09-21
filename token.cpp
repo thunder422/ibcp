@@ -321,21 +321,33 @@ QString Token::text(bool withIndex)
 		break;
 
 	case Constant_TokenType:
-		switch (m_dataType)
+		if (withIndex)
 		{
-		case Integer_DataType:
-		case Double_DataType:
-			string += m_string;
-			if (m_dataType == Integer_DataType)
+			string += table.debugName(m_code);
+			second = textOperand(withIndex);
+		}
+		else
+		{
+			if (m_code == Invalid_Code)
 			{
-				string += "%";
+				string += '?';
 			}
-			break;
+			switch (m_dataType)
+			{
+			case Integer_DataType:
+			case Double_DataType:
+				string += m_string;
+				if (m_dataType == Integer_DataType)
+				{
+					string += "%";
+				}
+				break;
 
-		case String_DataType:
-			string += '"' + m_string + '"';
-			break;
+			case String_DataType:
+				string += '"' + m_string + '"';
+				break;
 
+			}
 		}
 		break;
 

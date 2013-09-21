@@ -373,11 +373,6 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 							token = doneStackPopErrorToken();
 							status = ExpIntConst_TokenStatus;
 						}
-						else  // force to expected data type
-						{
-							doneToken->setDataType(dataType);
-							doneToken->removeSubCode(Double_SubCode);
-						}
 					}
 					else  // append hidden conversion code
 					{
@@ -450,6 +445,11 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			// for integer constants, force to desired data type
 			token->setDataType(dataType);
 			token->removeSubCode(Double_SubCode);
+		}
+		if (dataType == Double_DataType || dataType == Integer_DataType
+			|| dataType == String_DataType)
+		{
+			m_table.setTokenCode(token, Const_Code);
 		}
 		// fall thru
 	case IntFuncN_TokenType:
@@ -689,9 +689,13 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 				}
 				else if (doneToken->hasSubCode(Double_SubCode))
 				{
-					// change token (constant) to double
+					// change token (constant) from integer to double
 					doneToken->setDataType(Double_DataType);
 					doneToken->removeSubCode(Double_SubCode);
+				}
+				if (doneToken->isType(Constant_TokenType))
+				{
+					doneToken->setCode(Const_Code);
 				}
 			}
 		}
@@ -1335,10 +1339,6 @@ TokenStatus Translator::outputAssignCodes(Token *&token)
 		token = m_output->at(i)->token();
 		switch (token->type())
 		{
-		case Constant_TokenType:
-			m_table.setTokenCode(token, Const_Code);
-			break;
-
 		case NoParen_TokenType:
 			if (token->reference())
 			{
@@ -1351,6 +1351,7 @@ TokenStatus Translator::outputAssignCodes(Token *&token)
 			}
 			break;
 
+		case Constant_TokenType:
 		case Command_TokenType:
 		case Operator_TokenType:
 		case IntFuncN_TokenType:

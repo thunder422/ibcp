@@ -1055,16 +1055,16 @@ static TableEntry tableEntries[] =
 		"", "InputParseStr", Null_Flag, 2, None_DataType
 	},
 	{	// Const_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Constant_TokenType, OneWord_Multiple,
 		"", "Const", HasOperand_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const))
 	},
 	{	// ConstInt_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Constant_TokenType, OneWord_Multiple,
 		"", "ConstInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
 	},
 	{	// ConstStr_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Constant_TokenType, OneWord_Multiple,
 		"", "ConstStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
 	},
 	{	// Var_Code
@@ -1386,7 +1386,7 @@ const QString Table::name2(Code code) const
 // except for internal functions with multiple argument footprints
 const QString Table::debugName(Code code) const
 {
-	QString name = m_entry[code].name2;
+	QString name = code == Invalid_Code ? "<NotSet>" : m_entry[code].name2;
 	if (name.isEmpty())
 	{
 		name = m_entry[code].name;
@@ -1573,6 +1573,10 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 		// (applies only to constant token type, but safe for all token types)
 		operandToken->setDataType(expectedDataType);
 		operandToken->removeSubCode(Double_SubCode);
+		if (operandToken->isType(Constant_TokenType))
+		{
+			setTokenCode(operandToken, Const_Code);
+		}
 		return Null_Code;
 	}
 
@@ -1580,6 +1584,10 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 	if (setTokenCode(token, token->code(), operandToken->dataType(),
 		operandIndex))
 	{
+		if (operandToken->isType(Constant_TokenType))
+		{
+			setTokenCode(operandToken, Const_Code);
+		}
 		return Null_Code;
 	}
 
@@ -1606,6 +1614,7 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 			// force to expected data type
 			operandToken->setDataType(expectedDataType);
 			operandToken->removeSubCode(Double_SubCode);
+			setTokenCode(operandToken, Const_Code);
 			cvtCode = Null_Code;
 		}
 	}
