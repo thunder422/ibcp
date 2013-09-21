@@ -451,18 +451,30 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		{
 			m_table.setTokenCode(token, Const_Code);
 		}
-		// fall thru
+		if (reference != None_Reference)
+		{
+			return expectedErrStatus(dataType, reference);
+		}
+		break;  // go add token to output and push to done stack
+
 	case IntFuncN_TokenType:
 		if (reference != None_Reference)
 		{
 			return expectedErrStatus(dataType, reference);
 		}
+		break;  // go add token to output and push to done stack
+
 	case DefFuncN_TokenType:
 		if (reference == Variable_Reference)
 		{
 			return expectedErrStatus(dataType, reference);
 		}
-		// fall thru
+		if (reference != None_Reference)
+		{
+			token->setReference();
+		}
+		break;  // go add token to output and push to done stack
+
 	case NoParen_TokenType:
 		if (reference != None_Reference)
 		{
@@ -512,6 +524,15 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			token->setLength(1);
 			return ExpEqualOrComma_TokenStatus;
 		}
+		if ((status = processParenToken(token)) != Good_TokenStatus)
+		{
+			// drop and delete define function token since it was not used
+			delete m_holdStack.pop().token;
+			return status;
+		}
+		doneAppend = false;  // already appended
+		break;
+
 	case Paren_TokenType:
 		if (reference != None_Reference)
 		{
