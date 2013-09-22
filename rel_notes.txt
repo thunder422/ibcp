@@ -37,10 +37,24 @@ Planned Roadmap (updated 2013-04-05):
 	To be defined...
 
 
+Release 0.5.1 (2013-09-22)
+
+	Project developmental release - preparation of the tokens for
+	encoding has been revisited; initially performed in the encoder
+	class, tokens are now prepared in the translator class.
+
+	  - token codes assigned as soon as possible in the translator
+	  - token program indexes assigned at the end of translation
+	  - program code size determined when program indexes assigned
+	  - debug output modified to indicate tokens not assigned a code
+	  - translator output list functions moved to rpn list class
+	  - commands.h renamed to more generic basic.h
+
+
 Release 0.5.0 (2013-09-07)
 
 	Project developmental release - implementation of the encoder
-	has been start; the first phase has been completed where the
+	has been started; the first phase has been completed where the
 	RPN list of tokens from the translator are prepared for
 	encoding.
 

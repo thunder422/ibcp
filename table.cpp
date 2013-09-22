@@ -285,7 +285,7 @@ static TableEntry tableEntries[] =
 	// Null_Code entry at beginning so Null_Code == 0
 	{	// Null_Code
 		Operator_TokenType, OneWord_Multiple,
-		"", "NULL"
+		NULL, "NULL"
 	},
 	//***********************
 	//   BEGIN PLAIN WORDS
@@ -1007,92 +1007,92 @@ static TableEntry tableEntries[] =
 	},
 	{	// PrintDbl_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "PrintDbl", Print_Flag | UseConstAsIs_Flag, 2, None_DataType,
+		NULL, "PrintDbl", Print_Flag | UseConstAsIs_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Print))
 	},
 	{	// PrintInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "PrintInt", Print_Flag, 2, None_DataType, &Int_ExprInfo
+		NULL, "PrintInt", Print_Flag, 2, None_DataType, &Int_ExprInfo
 	},
 	{	// PrintStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "PrintStr", Print_Flag, 2, None_DataType, &Str_ExprInfo
+		NULL, "PrintStr", Print_Flag, 2, None_DataType, &Str_ExprInfo
 	},
 	{	// InputBegin_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputBegin", Null_Flag, 2, None_DataType
+		NULL, "InputBegin", Null_Flag, 2, None_DataType
 	},
 	{	// InputBeginStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputBeginStr", Null_Flag, 2, None_DataType,
+		NULL, "InputBeginStr", Null_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Str))
 	},
 	{	// InputAssign_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputAssign", Reference_Flag, 2, None_DataType,
+		NULL, "InputAssign", Reference_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode2(InputAssign, 2))
 	},
 	{	// InputAssignInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputAssignInt", Reference_Flag, 2, None_DataType,
+		NULL, "InputAssignInt", Reference_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Int), AssocCode(InputAssignInt))
 	},
 	{	// InputAssignStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputAssignStr", Reference_Flag, 2, None_DataType,
+		NULL, "InputAssignStr", Reference_Flag, 2, None_DataType,
 		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputAssignStr))
 	},
 	{	// InputParse_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputParse", Null_Flag, 2, None_DataType
+		NULL, "InputParse", Null_Flag, 2, None_DataType
 	},
 	{	// InputParseInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputParseInt", Null_Flag, 2, None_DataType
+		NULL, "InputParseInt", Null_Flag, 2, None_DataType
 	},
 	{	// InputParseStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
-		"", "InputParseStr", Null_Flag, 2, None_DataType
+		NULL, "InputParseStr", Null_Flag, 2, None_DataType
 	},
 	{	// Const_Code
 		Constant_TokenType, OneWord_Multiple,
-		"", "Const", HasOperand_Flag, 2, Double_DataType,
+		NULL, "Const", HasOperand_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const))
 	},
 	{	// ConstInt_Code
 		Constant_TokenType, OneWord_Multiple,
-		"", "ConstInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+		NULL, "ConstInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
 	},
 	{	// ConstStr_Code
 		Constant_TokenType, OneWord_Multiple,
-		"", "ConstStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
+		NULL, "ConstStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
 	},
 	{	// Var_Code
 		NoParen_TokenType, OneWord_Multiple,
-		"", "Var", HasOperand_Flag, 2, Double_DataType,
+		NULL, "Var", HasOperand_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var))
 	},
 	{	// VarInt_Code
 		NoParen_TokenType, OneWord_Multiple,
-		"", "VarInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+		NULL, "VarInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
 	},
 	{	// VarStr_Code
 		NoParen_TokenType, OneWord_Multiple,
-		"", "VarStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
+		NULL, "VarStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
 	},
 	{	// VarRef_Code
 		NoParen_TokenType, OneWord_Multiple,
-		"", "VarRef", HasOperand_Flag | Reference_Flag, 2, Double_DataType,
+		NULL, "VarRef", HasOperand_Flag | Reference_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef))
 	},
 	{	// VarRefInt_Code
 		NoParen_TokenType, OneWord_Multiple,
-		"", "VarRefInt", HasOperand_Flag | Reference_Flag, 2, Integer_DataType,
+		NULL, "VarRefInt", HasOperand_Flag | Reference_Flag, 2, Integer_DataType,
 		&Int_ExprInfo
 	},
 	{	// VarRefStr_Code
 		NoParen_TokenType, OneWord_Multiple,
-		"", "VarRefStr", HasOperand_Flag | Reference_Flag, 2, String_DataType,
+		NULL, "VarRefStr", HasOperand_Flag | Reference_Flag, 2, String_DataType,
 		&Str_ExprInfo
 	}
 };

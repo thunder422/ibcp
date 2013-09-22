@@ -58,8 +58,9 @@ or previous error.
 
 The encoder development has been started.  The encoder converts the
 reverse polish notation tokens into the internal program code that will
-be executed when the program is run.  The first phase of the encoder has
-been completed, which prepares the tokens for encoding.
+be executed when the program is run.  The first phase required for
+encoding has been completed, where the translator prepares the tokens
+for encoding.
 
 
 Building The Program
