@@ -29,6 +29,8 @@
 
 #include "token.h"
 
+class Table;
+
 
 // class for holding an item in the RPN output list
 class RpnItem
@@ -110,18 +112,14 @@ public:
 		return !(*this == other);
 	}
 
+	RpnItem *append(Token *token, int attachedCount = 0,
+		RpnItem **attached = NULL);
+	void insert(int index, Token *token);
 	int codeSize(void)
 	{
 		return m_codeSize;
 	}
-	void resetCodeSize(void)
-	{
-		m_codeSize = 0;
-	}
-	int incrementCodeSize(void)
-	{
-		return m_codeSize++;
-	}
+	bool setCodeSize(Table &table, Token *&token);
 
 	void setError(Token *errorToken)
 	{

@@ -142,8 +142,14 @@ public:
 		return m_output->last()->token();
 	}
 	RpnItem *outputAppend(Token *token, int attachedCount = 0,
-		RpnItem **attached = NULL);
-	void outputInsert(int index, Token *token);
+		RpnItem **attached = NULL)
+	{
+		return m_output->append(token, attachedCount, attached);
+	}
+	void outputInsert(int index, Token *token)
+	{
+		return m_output->insert(index, token);
+	}
 
 private:
 	// Private Processing Functions

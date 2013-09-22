@@ -23,6 +23,7 @@
 //	2013-03-30	initial version
 
 #include "rpnlist.h"
+#include "table.h"
 
 
 RpnList::~RpnList(void)
@@ -111,6 +112,60 @@ bool RpnList::operator==(const RpnList &other) const
 		if (*at(i) != *other.at(i))
 		{
 			return false;
+		}
+	}
+	return true;
+}
+
+
+// function to create an rpn item for a token and append it to the list
+
+RpnItem *RpnList::append(Token *token, int attachedCount, RpnItem **attached)
+{
+	token->removeSubCode(UnUsed_SubCode);  // mark as used
+	RpnItem *rpnItem = new RpnItem(token, attachedCount, attached);
+	rpnItem->setIndex(count());
+	QList<RpnItem *>::append(rpnItem);
+	return rpnItem;
+}
+
+// function to create an rpn item for a token and insert it into the list
+//
+//   - the indexes of all items after the insertion point are incremented
+
+void RpnList::insert(int index, Token *token)
+{
+	QList<RpnItem *>::insert(index, new RpnItem(token));
+	// update indexes of all list items after insert point
+	while (++index < count())
+	{
+		at(index)->incrementIndex();
+	}
+}
+
+
+// function to set program code size
+//
+//   - assigns position indexes to each token
+//   - sets code size required for encoded line
+//   - upon error returns token of code not yet implemented
+
+bool RpnList::setCodeSize(Table &table, Token *&token)
+{
+	// count number of program words needed
+	m_codeSize = 0;
+	for (int i = 0; i < count(); i++)
+	{
+		// assign position index to tokens (increment count for instruction)
+		token = at(i)->token();
+		if (!token->hasValidCode())
+		{
+			return false;
+		}
+		token->setIndex(m_codeSize++);
+		if (table.hasFlag(token->code(), HasOperand_Flag))
+		{
+			m_codeSize++;  // increment count for operand
 		}
 	}
 	return true;

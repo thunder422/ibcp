@@ -121,9 +121,10 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 				status = BUG_DoneStackNotEmpty;
 			}
 
-			if (testMode == No_TestMode)
+			if (testMode == No_TestMode
+				&& !m_output->setCodeSize(m_table, token))
 			{
-				status = outputAssignCodes(token);
+				status = BUG_NotYetImplemented;
 			}
 		}
 		else
@@ -205,7 +206,7 @@ TokenStatus Translator::getCommands(Token *&token)
 			return Done_TokenStatus;
 		}
 	}
-	outputAppend(token);  // Rem or RemOp token
+	m_output->append(token);  // Rem or RemOp token
 	if ((status = getToken(token)) != Good_TokenStatus)
 	{
 		return BUG_UnexpToken;  // parser problem, should be EOL
@@ -376,7 +377,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 					}
 					else  // append hidden conversion code
 					{
-						outputAppend(m_table.newToken(cvt_code));
+						m_output->append(m_table.newToken(cvt_code));
 					}
 				}
 			}
@@ -556,7 +557,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	{
 		// add token directly to output list
 		// and push element pointer on done stack
-		m_doneStack.push(outputAppend(token));
+		m_doneStack.push(m_output->append(token));
 	}
 	// for reference, check data type
 	if (reference != None_Reference
@@ -768,7 +769,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 
 			// add token to output list if not sub-string assignment
 			RpnItem *rpnItem = topToken->reference()
-				? new RpnItem(topToken) : outputAppend(topToken);
+				? new RpnItem(topToken) : m_output->append(topToken);
 
 			// push internal function to done stack
 			m_doneStack.push(rpnItem, NULL, token);
@@ -832,6 +833,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 	{
 		// TODO with function dictionaries, get data type for argument
 		// TODO (move into loop below)
+		// TODO and check number of arguments
 		dataType = Any_DataType;  // function arguments
 	}
 	Token *topToken = token;
@@ -901,7 +903,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 			}
 
 			// add token to output list and push element pointer on done stack
-			m_doneStack.push(outputAppend(topToken, count, attached), NULL,
+			m_doneStack.push(m_output->append(topToken, count, attached), NULL,
 				token);
 
 			m_holdStack.drop();
@@ -1053,7 +1055,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 	}
 
 	// add token to output list
-	RpnItem *rpnItem = outputAppend(token);
+	RpnItem *rpnItem = m_output->append(token);
 
 	// push operator token to the done stack
 	if (token->isType(Operator_TokenType))
@@ -1119,7 +1121,7 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
 			// append token to end of output list (after operand)
-			outputAppend(m_table.newToken(cvtCode));
+			m_output->append(m_table.newToken(cvtCode));
 		}
 
 		return Good_TokenStatus;
@@ -1177,7 +1179,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 			else   // already has parentheses sub-code set
 			{
 				// add dummy token
-				outputAppend(m_pendingParen);
+				m_output->append(m_pendingParen);
 				// reset pending token and return (don't delete token)
 				m_pendingParen = NULL;
 				return;
@@ -1317,82 +1319,6 @@ void Translator::cleanUp(void)
 		delete m_pendingParen;
 		m_pendingParen = NULL;
 	}
-}
-
-
-// function to create an rpn item for a token and append it to the output list
-
-RpnItem *Translator::outputAppend(Token *token, int attachedCount,
-	RpnItem **attached)
-{
-	token->removeSubCode(UnUsed_SubCode);  // mark as used
-	RpnItem *rpnItem = new RpnItem(token, attachedCount, attached);
-	rpnItem->setIndex(outputCount());
-	m_output->append(rpnItem);
-	return rpnItem;
-}
-
-// function to create an rpn item for a token and insert it into the output list
-//
-//   - the indexes of all items after the insertion point are incremented
-
-void Translator::outputInsert(int index, Token *token)
-{
-	m_output->insert(index, new RpnItem(token));
-	// update indexes of all list items after insert point
-	while (++index < outputCount())
-	{
-		m_output->at(index)->incrementIndex();
-	}
-}
-
-
-// function to prepare tokens for encoding
-//
-//   - assigns codes to token types without codes
-//   - assigns position indexes to each token
-//   - returns number of program words required for line
-
-TokenStatus Translator::outputAssignCodes(Token *&token)
-{
-	for (int i = 0; i < m_output->count(); i++)
-	{
-		// assign codes to token types without codes
-		token = m_output->at(i)->token();
-		switch (token->type())
-		{
-		case NoParen_TokenType:
-		case Constant_TokenType:
-		case Command_TokenType:
-		case Operator_TokenType:
-		case IntFuncN_TokenType:
-		case IntFuncP_TokenType:
-			break;  // these token types already have a code
-
-		// TODO for arrays, check for integer subscripts, add CvtInt
-		// TODO   for double subscripts, report error for strings
-		// TODO for functions, check arguments for data types, add CvtDbl
-		// TODO   or CvtInt as needed, report erros for wrong types
-		// TODO   and check number of arguments
-
-		default:
-			return BUG_NotYetImplemented;
-		}
-	}
-
-	// count number of program words needed
-	m_output->resetCodeSize();
-	for (int i = 0; i < m_output->count(); i++)
-	{
-		// assign position index to tokens (increment count for instruction)
-		token = m_output->at(i)->token();
-		token->setIndex(m_output->incrementCodeSize());
-		if (m_table.hasFlag(token, HasOperand_Flag))
-		{
-			m_output->incrementCodeSize();  // increment count for operand
-		}
-	}
-	return Done_TokenStatus;
 }
 
 
