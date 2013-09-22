@@ -476,10 +476,11 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		break;  // go add token to output and push to done stack
 
 	case NoParen_TokenType:
-		if (reference != None_Reference)
-		{
-			token->setReference();
-		}
+		// NOTE for now assume a variable
+		// TODO first check if identifier is in function dictionary
+		// TODO only a function reference if name of current function
+		m_table.setTokenCode(token, reference == None_Reference
+			? Var_Code : VarRef_Code);
 		break;  // go add token to output and push to done stack
 
 	case IntFuncP_TokenType:
@@ -1361,17 +1362,6 @@ TokenStatus Translator::outputAssignCodes(Token *&token)
 		switch (token->type())
 		{
 		case NoParen_TokenType:
-			if (token->reference())
-			{
-				m_table.setTokenCode(token, VarRef_Code);
-				token->setReference(false);  // FIXME remove (need for testing)
-			}
-			else
-			{
-				m_table.setTokenCode(token, Var_Code);
-			}
-			break;
-
 		case Constant_TokenType:
 		case Command_TokenType:
 		case Operator_TokenType:

@@ -311,8 +311,27 @@ QString Token::text(bool withIndex)
 	switch (m_type)
 	{
 	case DefFuncN_TokenType:
-	case NoParen_TokenType:
 		string += m_string;
+		break;
+
+	case NoParen_TokenType:
+		if (withIndex)
+		{
+			string += table.debugName(m_code);
+			second = textOperand(withIndex);
+		}
+		else
+		{
+			if (m_code == Invalid_Code)
+			{
+				string += '?';
+			}
+			string += m_string;
+			if (table.hasFlag(this, Reference_Flag))
+			{
+				string += "<ref>";
+			}
+		}
 		break;
 
 	case DefFuncP_TokenType:

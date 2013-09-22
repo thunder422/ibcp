@@ -1068,30 +1068,32 @@ static TableEntry tableEntries[] =
 		"", "ConstStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
 	},
 	{	// Var_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		NoParen_TokenType, OneWord_Multiple,
 		"", "Var", HasOperand_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var))
 	},
 	{	// VarInt_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		NoParen_TokenType, OneWord_Multiple,
 		"", "VarInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
 	},
 	{	// VarStr_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		NoParen_TokenType, OneWord_Multiple,
 		"", "VarStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
 	},
 	{	// VarRef_Code
-		IntFuncN_TokenType, OneWord_Multiple,
-		"", "VarRef", HasOperand_Flag, 2, Double_DataType,
+		NoParen_TokenType, OneWord_Multiple,
+		"", "VarRef", HasOperand_Flag | Reference_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef))
 	},
 	{	// VarRefInt_Code
-		IntFuncN_TokenType, OneWord_Multiple,
-		"", "VarRefInt", HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+		NoParen_TokenType, OneWord_Multiple,
+		"", "VarRefInt", HasOperand_Flag | Reference_Flag, 2, Integer_DataType,
+		&Int_ExprInfo
 	},
 	{	// VarRefStr_Code
-		IntFuncN_TokenType, OneWord_Multiple,
-		"", "VarRefStr", HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
+		NoParen_TokenType, OneWord_Multiple,
+		"", "VarRefStr", HasOperand_Flag | Reference_Flag, 2, String_DataType,
+		&Str_ExprInfo
 	}
 };
 
