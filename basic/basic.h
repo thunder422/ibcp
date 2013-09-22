@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: commands.h - basic command definitions header file
+//	File: basic.h - basic directory definitions header file
 //	Copyright (C) 2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
@@ -22,8 +22,8 @@
 //
 //	2013-07-06	initial version
 
-#ifndef COMMANDS_H
-#define COMMANDS_H
+#ifndef BASIC_H
+#define BASIC_H
 
 #include "ibcp.h"
 
@@ -31,6 +31,7 @@ class Translator;
 class Token;
 
 
+// translate functions
 TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
 TokenStatus letTranslate(Translator &translator, Token *commandToken,
@@ -39,4 +40,4 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
 
 
-#endif // COMMANDS_H
+#endif // BASIC_H

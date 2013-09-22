@@ -26,7 +26,7 @@
 #include <QString>
 
 #include "table.h"
-#include "basic/commands.h"
+#include "basic/basic.h"
 
 
 const int MaxOperands = 3;

@@ -230,6 +230,7 @@ endif (WIN32)
 # add the executable
 add_executable(ibcp
 	ibcp.h
+	basic/basic.h
 	autoenums.h
 	test_names.h
 	${ibcp_SOURCES}
