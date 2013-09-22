@@ -69,17 +69,16 @@ enum DataType
 // sub-code flags for use in Token and internal program
 enum SubCode
 {
-	None_SubCode       = 0x00000000,	// no sub-code present
-	Paren_SubCode      = 0x00000001,	// reproduce unnecessary parenthesis
-	Let_SubCode        = 0x00000002,	// reproduce LET keyword for assign
-	Keep_SubCode       = 0x00000004,	// keep cursor on same line of input
-	Question_SubCode   = 0x00000008,	// add "? " to input prompt
-	Colon_SubCode      = 0x00000010,	// reproduce ":" after token
+	None_SubCode		= 0x00000000,	// no sub-code present
+	ProgramMask_SubCode	= 0x0000FC00,	// mask for actual program sub-codes
+	Paren_SubCode		= 0x00000400,	// reproduce unnecessary parenthesis
+	Colon_SubCode		= 0x00000800,	// reproduce ":" after token
+	Option_SubCode		= 0x00001000,	// reproduce command specific option
 	// sub-codes used by translator only
-	Double_SubCode     = 0x00001000,	// integer constant has decimal/exponent
-	Used_SubCode       = 0x00010000,	// parentheses used in output
-	Last_SubCode       = 0x00020000,	// parentheses used as last token
-	UnUsed_SubCode     = 0x00040000		// token not in output (for errors)
+	Double_SubCode		= 0x00000001,	// integer constant has decimal/exponent
+	Used_SubCode		= 0x00010000,	// parentheses used in output
+	Last_SubCode		= 0x00020000,	// parentheses used as last token
+	UnUsed_SubCode		= 0x00040000	// token not in output (for errors)
 };
 
 

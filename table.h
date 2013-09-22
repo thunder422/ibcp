@@ -114,6 +114,7 @@ public:
 	Multiple multiple(Code code) const;
 	const QString name(Code code) const;
 	const QString name2(Code code) const;
+	const QString optionName(Code code) const;
 	const QString debugName(Code code) const;
 	int hasFlag(Code code, int flag) const;
 	int precedence(Code code) const;

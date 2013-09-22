@@ -422,17 +422,10 @@ QString Token::text(bool withIndex)
 		{
 			string += ')';
 		}
-		if (hasSubCode(Let_SubCode))
+		if (hasSubCode(Option_SubCode))
 		{
-			string += "LET";
-		}
-		if (hasSubCode(Keep_SubCode))
-		{
-			string += "Keep";
-		}
-		if (hasSubCode(Question_SubCode))
-		{
-			string += "Question";
+			QString option = table.optionName(m_code);
+			string += option.isEmpty() ? "BUG" : option;
 		}
 		if (hasSubCode(Colon_SubCode))
 		{

@@ -57,7 +57,7 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 		translator.doneStackDrop();
 		if (token->isCode(Comma_Code))
 		{
-			token->addSubCode(Question_SubCode);
+			token->addSubCode(Option_SubCode);
 		}
 		else if (!token->isCode(SemiColon_Code))
 		{
@@ -95,7 +95,7 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 		}
 		else if (token->isCode(SemiColon_Code))
 		{
-			commandToken->addSubCode(Keep_SubCode);
+			commandToken->addSubCode(Option_SubCode);
 			done = true;
 			inputToken = token;
 
