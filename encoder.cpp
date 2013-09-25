@@ -23,11 +23,34 @@
 //	2013-09-06	initial version
 
 #include "encoder.h"
+#include "rpnlist.h"
+#include "programmodel.h"
 #include "table.h"
 
 
 Encoder::Encoder(Table &table): m_table(table)
 {
+}
+
+
+// function to encode a translated RPN list
+
+ProgramLine Encoder::encode(RpnList *input)
+{
+	ProgramLine programLine(input->codeSize());
+
+	for (int i = 0; i < input->count(); i++)
+	{
+		Token *token = input->at(i)->token();
+		programLine[token->index()].setInstruction(token->code(),
+			token->subCodes());
+		if (m_table.hasFlag(token, HasOperand_Flag))
+		{
+			// TODO for now set set operand to zero
+			programLine[token->index() + 1].setOperand(0);
+		}
+	}
+	return programLine;
 }
 
 

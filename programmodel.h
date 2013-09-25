@@ -27,11 +27,60 @@
 
 #include <QAbstractListModel>
 #include <QStringList>
+#include <QVector>
 
+#include "ibcp.h"
 #include "errorlist.h"
 
 class RpnList;
 class Translator;
+
+
+// class for holding and accessing a program word
+class ProgramWord
+{
+	unsigned short m_word;				// one program word
+
+public:
+	// instruction access functions
+	Code instructionCode(void) const
+	{
+		return (Code)(m_word & ProgramMask_Code);
+	}
+	bool instructionHasSubCode(int subCode) const
+	{
+		return (m_word & subCode) != 0;
+	}
+	void setInstruction(Code code, unsigned subCode)
+	{
+		m_word = (unsigned)code | subCode & ProgramMask_SubCode;
+	}
+	QString instructionText(void) const;
+
+	// operand word access functions
+	unsigned short operand(void) const
+	{
+		return m_word;
+	}
+	void setOperand(unsigned short operand)
+	{
+		m_word = operand;
+    }
+    QString operandText(void) const;
+};
+
+
+// class for hold a vector of program words representing a program line
+class ProgramLine : public QVector<ProgramWord>
+{
+public:
+	ProgramLine(int size): QVector<ProgramWord>(size)
+	{
+
+	}
+	QString text(void);
+};
+
 
 class ProgramModel : public QAbstractListModel
 {

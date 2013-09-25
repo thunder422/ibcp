@@ -202,6 +202,10 @@ public:
 	{
 		m_subCode &= ~subCode;
 	}
+	int subCodes(void) const
+	{
+		return m_subCode;
+	}
 
 	// value access functions
 	double value(void) const

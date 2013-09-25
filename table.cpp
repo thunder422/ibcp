@@ -332,7 +332,7 @@ static TableEntry tableEntries[] =
 	{	// Rem_Code
 		Command_TokenType, OneWord_Multiple,
 		"REM", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		HasOperand_Flag, 4, None_DataType, NULL,
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,
@@ -781,7 +781,7 @@ static TableEntry tableEntries[] =
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
 		"'", NULL, NULL,
-		EndStmt_Flag, 2, None_DataType
+		EndStmt_Flag | HasOperand_Flag, 2, None_DataType
 	},
 	//*****************
 	//   END SYMBOLS

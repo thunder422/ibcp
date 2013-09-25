@@ -28,6 +28,73 @@
 #include "translator.h"
 
 
+// function to return the text for an instruction word
+QString ProgramWord::instructionText(void) const
+{
+	Table &table = Table::instance();
+	QString string;
+
+	Code code = instructionCode();
+	string += table.debugName(code);
+
+	if (instructionHasSubCode(ProgramMask_SubCode))
+	{
+		string += '\'';
+		if (instructionHasSubCode(Paren_SubCode))
+		{
+			string += ')';
+		}
+		if (instructionHasSubCode(Option_SubCode))
+		{
+			QString option = table.optionName(code);
+			string += option.isEmpty() ? "BUG" : option;
+		}
+		if (instructionHasSubCode(Colon_SubCode))
+		{
+			string += ":";
+		}
+		string += '\'';
+	}
+	return string;
+}
+
+
+// function to return the text for an instruction word
+QString ProgramWord::operandText(void) const
+{
+	// TODO need to look up index in appropriate dictionary to get name
+	// Rem -- Command -- Remark
+	// RemOp -- Operator -- Remark
+	// ConstX -- Constant -- Constant
+	// VarX -- NoParen -- Variable
+	// VarRefX -- NoParen -- Variable
+	return QString("|%2:%3|").arg(operand()).arg("--");
+}
+
+
+// function to return the text for a program line
+QString ProgramLine::text(void)
+{
+	Table &table = Table::instance();
+	QString string;
+
+	for (int i = 0; i < count(); i++)
+	{
+		if (i > 0)
+		{
+			string += ' ';
+		}
+		string += QString("%1:%2").arg(i).arg(at(i).instructionText());
+
+		if (table.hasFlag(at(i).instructionCode(), HasOperand_Flag))
+		{
+			string += QString(" %1:%2").arg(i).arg(at(++i).operandText());
+		}
+	}
+	return string;
+}
+
+
 ProgramModel::ProgramModel(QObject *parent) :
 	QAbstractListModel(parent),
 	m_translator(new Translator(Table::instance()))

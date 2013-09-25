@@ -25,21 +25,22 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
+#include "ibcp.h"
+#include "programmodel.h"
+
 class RpnList;
 class Table;
 
 class Encoder
 {
 	Table &m_table;					// reference to the table instance
-	RpnList *m_input;				// translated input list
 
 public:
-    Encoder(Table &table);
+	Encoder(Table &table);
 
-	bool encode(RpnList *&input);
+	ProgramLine encode(RpnList *input);
 
 private:
-	int prepareTokens(void);
 };
 
 #endif // ENCODER_H

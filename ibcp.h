@@ -78,7 +78,10 @@ enum SubCode
 	Double_SubCode		= 0x00000001,	// integer constant has decimal/exponent
 	Used_SubCode		= 0x00010000,	// parentheses used in output
 	Last_SubCode		= 0x00020000,	// parentheses used as last token
-	UnUsed_SubCode		= 0x00040000	// token not in output (for errors)
+	UnUsed_SubCode		= 0x00040000,	// token not in output (for errors)
+
+	// code program mask
+	ProgramMask_Code	= 0x000003FF	// mask for actual program codes
 };
 
 
