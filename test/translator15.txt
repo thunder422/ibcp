@@ -11,6 +11,12 @@ Output: REM|+Same here|
 Input: REM'and here
 Output: REM|'and here| 
 
+Input: REMARK This should also be a comment
+Output: REM|ARK This should also be a comment| 
+
+Input: REM           Comment with spaces
+Output: REM|           Comment with spaces| 
+
 Input: 'operator form of REM at beginning of line
 Output: '|operator form of REM at beginning of line| 
 

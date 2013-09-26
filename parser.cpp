@@ -68,6 +68,19 @@ bool Parser::getIdentifier(void)
 	bool paren;				// word has opening parenthesis flag
 	SearchType search;		// table search type
 
+	// check to see if this is the start of a remark
+	if (m_input.midRef(m_pos).startsWith(m_table.name(Rem_Code),
+		Qt::CaseInsensitive))
+	{
+		m_table.setToken(m_token, Rem_Code);
+		m_token->setLength(m_table.name(Rem_Code).length());
+		// move position past command and grab rest of line
+		m_pos += m_token->length();
+		m_token->setString(m_input.mid(m_pos));
+		m_pos += m_token->stringLength();
+		return true;
+	}
+
 	int pos = scanWord(m_pos, dataType, paren);
 	if (pos == -1)
 	{
@@ -134,21 +147,12 @@ bool Parser::getIdentifier(void)
 	m_pos = pos;  // move position past first word
 
 	// setup token in case this is only one word
-	m_token->setType(m_table.type(code));
-	m_token->setDataType(m_table.dataType(code));
-	m_token->setCode(code);
+	m_table.setToken(m_token, code);
 	m_token->setLength(len);
 
 	if (m_table.multiple(code) == OneWord_Multiple)
 	{
 		// identifier can only be a single word
-		if (code == Rem_Code)
-		{
-			// remark requires special handling
-			// remark string is to end of line
-			m_token->setString(m_input.mid(m_pos));
-			m_pos += m_token->stringLength();
-		}
 		return true;
 	}
 
@@ -170,9 +174,7 @@ bool Parser::getIdentifier(void)
 		return true;
 	}
 	// get information from two word command
-	m_token->setType(m_table.type(code));
-	m_token->setDataType(m_table.dataType(code));
-	m_token->setCode(code);
+	m_table.setToken(m_token, code);
 	m_token->setLength(pos - m_token->column());
 
 	m_pos = pos;  // move position past second word

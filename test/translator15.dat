@@ -6,6 +6,8 @@ REM This is a comment
 REM"Space not required if followed by non-alpha numeric"
 REM+Same here
 REM'and here
+REMARK This should also be a comment
+REM           Comment with spaces
 
 'operator form of REM at beginning of line
 A=3'assign A
