@@ -1,11 +1,12 @@
 ###################################
 #  Encoder Test #1: Initial Test  #
 ###################################
+REM This is a sample program
 A=5
 PRINT A
-B%=6
+B%=6:REM comment
 PRINT B%
 C$="Test"
-PRINT C$
+PRINT C$' not much to see here
 
 INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment

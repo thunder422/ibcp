@@ -25,10 +25,13 @@
 #ifndef BASIC_H
 #define BASIC_H
 
+#include <QtGlobal>
+
 #include "ibcp.h"
 
 class Translator;
 class Token;
+class ProgramUnit;
 
 
 // translate functions
@@ -38,6 +41,10 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
 TokenStatus printTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
+
+
+// encode function
+quint16 RemEncode(ProgramUnit *programUnit, Token *token);
 
 
 #endif // BASIC_H

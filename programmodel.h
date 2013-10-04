@@ -32,6 +32,7 @@
 #include "ibcp.h"
 #include "errorlist.h"
 
+class Dictionary;
 class RpnList;
 class Translator;
 
@@ -65,12 +66,12 @@ public:
 	void setOperand(unsigned short operand)
 	{
 		m_word = operand;
-    }
-    QString operandText(void) const;
+	}
+	QString operandText(void) const;
 };
 
 
-// class for hold a vector of program words representing a program line
+// class for holding a vector of program words representing a program line
 class ProgramLine : public QVector<ProgramWord>
 {
 public:
@@ -79,6 +80,22 @@ public:
 
 	}
 	QString text(void);
+};
+
+
+// class for holding one program unit (main routine, subroutine, or function)
+class ProgramUnit
+{
+	Dictionary *m_remDictionary;			// pointer to remarks dictionary
+
+public:
+	ProgramUnit(void);
+	~ProgramUnit(void);
+
+	Dictionary *remDictionary(void) const
+	{
+		return m_remDictionary;
+	}
 };
 
 

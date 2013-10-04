@@ -1,25 +1,28 @@
 
+Input: REM This is a sample program
+Output: 0:REM 1:|0:--|
+
 Input: A=5
-Output: 0:VarRef 1:|A| 2:Const 3:|5| 4:Assign 
+Output: 0:VarRef 1:|0:--| 2:Const 3:|0:--| 4:Assign
 
 Input: PRINT A
-Output: 0:Var 1:|A| 2:PrintDbl 3:PRINT 
+Output: 0:Var 1:|0:--| 2:PrintDbl 3:PRINT
 
-Input: B%=6
-Output: 0:VarRefInt 1:|B%| 2:ConstInt 3:|6| 4:Assign% 
+Input: B%=6:REM comment
+Output: 0:VarRefInt 1:|0:--| 2:ConstInt 3:|0:--| 4:Assign%':' 5:REM 6:|1:--|
 
 Input: PRINT B%
-Output: 0:VarInt 1:|B%| 2:PrintInt 3:PRINT 
+Output: 0:VarInt 1:|0:--| 2:PrintInt 3:PRINT
 
 Input: C$="Test"
-Output: 0:VarRefStr 1:|C$| 2:ConstStr 3:|Test| 4:Assign$ 
+Output: 0:VarRefStr 1:|0:--| 2:ConstStr 3:|0:--| 4:Assign$
 
-Input: PRINT C$
-Output: 0:VarStr 1:|C$| 2:PrintStr 3:PRINT 
+Input: PRINT C$' not much to see here
+Output: 0:VarStr 1:|0:--| 2:PrintStr 3:PRINT 4:' 5:|2:--|
 
 Input: 
-Output:  
+Output: 
 
 Input: INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment
-Output: 0:ConstStr 1:|Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|D%| 6:InputAssignInt 7:INPUT-PROMPT':' 8:VarRef 9:|E| 10:VarInt 11:|D%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|D%| 17:PrintInt 18:, 19:Var 20:|E| 21:PrintDbl 22:PRINT 23:' 24:| comment| 
+Output: 0:ConstStr 1:|0:--| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|0:--| 6:InputAssignInt 7:PROMPT':' 8:VarRef 9:|0:--| 10:VarInt 11:|0:--| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|0:--| 17:PrintInt 18:, 19:Var 20:|0:--| 21:PrintDbl 22:PRINT 23:' 24:|1:--|
 

@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: encoder.h - encoder class header file
+//	File: dictionary.h - dictionary class header file
 //	Copyright (C) 2013  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
@@ -20,27 +20,32 @@
 //
 //	Change History:
 //
-//	2013-09-06	initial version
+//	2013-09-27	initial version
 
-#ifndef ENCODER_H
-#define ENCODER_H
+#ifndef DICTIONARY_H
+#define DICTIONARY_H
 
-#include "ibcp.h"
-#include "programmodel.h"
+#include <QMap>
+#include <QStack>
+#include <QStringList>
 
-class RpnList;
-class Table;
+class Token;
 
-class Encoder
+
+class Dictionary
 {
-	Table &m_table;					// reference to the table instance
-
 public:
-	Encoder(Table &table);
+	Dictionary(void);
 
-	ProgramLine encode(RpnList *input, ProgramUnit *programUnit);
+	quint16 add(Token *token, bool *returnNewEntry = NULL);
+	void remove(quint16 index);
 
 private:
+	QStack<quint16> m_freeStack;		// stack of free items
+	QStringList m_keyList;				// list of keys
+	QMap<QString, int> m_keyMap;		// map of keys to indexes
+	QList<quint16> m_useCount;			// list of key use counts
 };
 
-#endif // ENCODER_H
+
+#endif // DICTIONARY_H

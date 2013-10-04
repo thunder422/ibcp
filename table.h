@@ -73,9 +73,11 @@ enum Multiple
 
 struct TableEntry;
 class Translator;
+class ProgramUnit;
 
 typedef TokenStatus (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
+typedef quint16 (*EncodeFunction)(ProgramUnit *programUnit, Token *token);
 
 
 class Table
@@ -128,6 +130,7 @@ public:
 	DataType expectedDataType(Code code) const;
 	bool isUnaryOperator(Code code) const;
 	TranslateFunction translateFunction(Code code) const;
+	EncodeFunction encodeFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
 	Code unaryCode(Token *token) const;

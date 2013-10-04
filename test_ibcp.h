@@ -34,6 +34,7 @@ class RpnItem;
 class RpnList;
 class Translator;
 class Encoder;
+class ProgramUnit;
 
 class Tester
 {
@@ -56,7 +57,7 @@ class Tester
 	void translateInput(QTextStream &cout, Translator &translator,
 		const QString &testInput, bool exprMode);
 	void encodeInput(QTextStream &cout, Translator &translator,
-		Encoder &encoder, const QString &testInput);
+		Encoder &encoder, ProgramUnit *programUnit, const QString &testInput);
 	bool printToken(QTextStream &cout, Token *token, bool tab);
 	void printError(QTextStream &cout, int column, int length,
 		const QString &error);

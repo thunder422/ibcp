@@ -22,6 +22,7 @@
 //
 //	2013-09-06	initial version
 
+#include "dictionary.h"
 #include "encoder.h"
 #include "rpnlist.h"
 #include "programmodel.h"
@@ -35,7 +36,7 @@ Encoder::Encoder(Table &table): m_table(table)
 
 // function to encode a translated RPN list
 
-ProgramLine Encoder::encode(RpnList *input)
+ProgramLine Encoder::encode(RpnList *input, ProgramUnit *programUnit)
 {
 	ProgramLine programLine(input->codeSize());
 
@@ -46,11 +47,34 @@ ProgramLine Encoder::encode(RpnList *input)
 			token->subCodes());
 		if (m_table.hasFlag(token, HasOperand_Flag))
 		{
-			// TODO for now set set operand to zero
-			programLine[token->index() + 1].setOperand(0);
+			quint16 operand;
+			EncodeFunction encode = m_table.encodeFunction(token->code());
+			if (encode == NULL)
+			{
+				// TODO for now set set operand to zero
+				operand = 0;
+			}
+			else
+			{
+				operand = encode(programUnit, token);
+			}
+			programLine[token->index() + 1].setOperand(operand);
 		}
 	}
 	return programLine;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                       MISCELLANEOUS ENCODE FUNCTIONS                       //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+quint16 RemEncode(ProgramUnit *programUnit, Token *token)
+{
+	return programUnit->remDictionary()->add(token);
 }
 
 

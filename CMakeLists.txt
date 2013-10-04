@@ -151,6 +151,7 @@ set(ibcp_SOURCES
 	basic/let.cpp
 	basic/print.cpp
 	commandline.cpp
+	dictionary.cpp
 	donestack.cpp
 	encoder.cpp
 	errorlist.cpp

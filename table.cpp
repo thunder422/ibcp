@@ -131,6 +131,7 @@ struct TableEntry
 	DataType dataType;				// next expression data type for command
 	ExprInfo *exprInfo;				// expression info pointer (NULL for none)
 	TranslateFunction translate;	// pointer to translate function
+	EncodeFunction encode;			// pointer to encode function
 };
 
 
@@ -332,7 +333,7 @@ static TableEntry tableEntries[] =
 	{	// Rem_Code
 		Command_TokenType, OneWord_Multiple,
 		"REM", NULL, NULL,
-		HasOperand_Flag, 4, None_DataType, NULL,
+		HasOperand_Flag, 4, None_DataType, NULL, NULL, RemEncode
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,
@@ -781,7 +782,7 @@ static TableEntry tableEntries[] =
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
 		"'", NULL, NULL,
-		EndStmt_Flag | HasOperand_Flag, 2, None_DataType
+		EndStmt_Flag | HasOperand_Flag, 2, None_DataType, NULL, NULL, RemEncode
 	},
 	//*****************
 	//   END SYMBOLS
@@ -1635,6 +1636,11 @@ TranslateFunction Table::translateFunction(Code code) const
 	return m_entry[code].translate;
 }
 
+// returns the pointer to the encode function (if any) for code
+EncodeFunction Table::encodeFunction(Code code) const
+{
+	return m_entry[code].encode;
+}
 
 //=================================
 //  TOKEN RELATED TABLE FUNCTIONS

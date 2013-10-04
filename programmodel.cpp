@@ -22,10 +22,18 @@
 //
 //	2013-03-15	initial version
 
+#include "dictionary.h"
 #include "programmodel.h"
 #include "rpnlist.h"
 #include "table.h"
 #include "translator.h"
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           PROGRAM WORD FUNCTIONS                           //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 
 // function to return the text for an instruction word
@@ -72,6 +80,13 @@ QString ProgramWord::operandText(void) const
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           PROGRAM LINE FUNCTIONS                           //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
 // function to return the text for a program line
 QString ProgramLine::text(void)
 {
@@ -93,6 +108,32 @@ QString ProgramLine::text(void)
 	}
 	return string;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           PROGRAM UNIT FUNCTIONS                           //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+ProgramUnit::ProgramUnit(void)
+{
+	m_remDictionary = new Dictionary;
+}
+
+
+ProgramUnit::~ProgramUnit(void)
+{
+	delete m_remDictionary;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                          PROGRAM MODEL FUNCTIONS                           //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 
 ProgramModel::ProgramModel(QObject *parent) :

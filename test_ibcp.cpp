@@ -179,6 +179,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 
 	Translator translator(Table::instance());
 	Encoder encoder(Table::instance());
+	ProgramUnit programUnit;
 
 	if (inputMode)
 	{
@@ -224,7 +225,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			translateInput(cout, translator, inputLine, false);
 			break;
 		case OptEncoder:
-			encodeInput(cout, translator, encoder, inputLine);
+			encodeInput(cout, translator, encoder, &programUnit, inputLine);
 			break;
 		}
 		// report any token leaks and extra token deletes
@@ -286,7 +287,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
 void Tester::encodeInput(QTextStream &cout, Translator &translator,
-	Encoder &encoder, const QString &testInput)
+	Encoder &encoder, ProgramUnit *programUnit, const QString &testInput)
 {
 	RpnList *rpnList = translator.translate(testInput);
 	if (rpnList->hasError())
@@ -296,7 +297,7 @@ void Tester::encodeInput(QTextStream &cout, Translator &translator,
 	}
 	else  // translate and encode successful
 	{
-		ProgramLine programLine = encoder.encode(rpnList);
+		ProgramLine programLine = encoder.encode(rpnList, programUnit);
 		cout << "Output: " << programLine.text() << endl;
 	}
 	delete rpnList;
