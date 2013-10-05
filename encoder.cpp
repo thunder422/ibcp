@@ -72,7 +72,7 @@ ProgramLine Encoder::encode(RpnList *input, ProgramUnit *programUnit)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-quint16 RemEncode(ProgramUnit *programUnit, Token *token)
+quint16 remEncode(ProgramUnit *programUnit, Token *token)
 {
 	return programUnit->remDictionary()->add(token);
 }

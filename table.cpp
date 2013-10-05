@@ -301,23 +301,27 @@ static TableEntry tableEntries[] =
 	{	// Let_Code
 		Command_TokenType, OneWord_Multiple,
 		"LET", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL, letTranslate
+		Null_Flag, 4, None_DataType, NULL,
+		letTranslate
 	},
 	{	// Print_Code
 		Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL, printTranslate
+		Null_Flag, 4, None_DataType, NULL,
+		printTranslate
 	},
 	{	// Input_Code
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", NULL, "Keep",
-		Null_Flag, 4, None_DataType, NULL, inputTranslate
+		Null_Flag, 4, None_DataType, NULL,
+		inputTranslate
 
 	},
 	{	// InputPrompt_Code
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", "PROMPT", "Keep",
-		Null_Flag, 4, String_DataType, NULL, inputTranslate
+		Null_Flag, 4, String_DataType, NULL,
+		inputTranslate
 
 	},
 	{	// Dim_Code
@@ -333,7 +337,8 @@ static TableEntry tableEntries[] =
 	{	// Rem_Code
 		Command_TokenType, OneWord_Multiple,
 		"REM", NULL, NULL,
-		HasOperand_Flag, 4, None_DataType, NULL, NULL, RemEncode
+		HasOperand_Flag, 4, None_DataType, NULL,
+		NULL, remEncode
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,
@@ -782,7 +787,8 @@ static TableEntry tableEntries[] =
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
 		"'", NULL, NULL,
-		EndStmt_Flag | HasOperand_Flag, 2, None_DataType, NULL, NULL, RemEncode
+		EndStmt_Flag | HasOperand_Flag, 2, None_DataType, NULL,
+		NULL, remEncode
 	},
 	//*****************
 	//   END SYMBOLS

@@ -43,8 +43,8 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
 
 
-// encode function
-quint16 RemEncode(ProgramUnit *programUnit, Token *token);
+// encode functions
+quint16 remEncode(ProgramUnit *programUnit, Token *token);
 
 
 #endif // BASIC_H
