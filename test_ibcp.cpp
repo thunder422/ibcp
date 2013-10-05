@@ -179,7 +179,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 
 	Translator translator(Table::instance());
 	Encoder encoder(Table::instance());
-	ProgramUnit programUnit;
+	ProgramUnit programUnit(Table::instance());
 
 	if (inputMode)
 	{
@@ -297,8 +297,9 @@ void Tester::encodeInput(QTextStream &cout, Translator &translator,
 	}
 	else  // translate and encode successful
 	{
-		ProgramLine programLine = encoder.encode(rpnList, programUnit);
-		cout << "Output: " << programLine.text() << endl;
+		QVector<ProgramWord> programLine = encoder.encode(rpnList, programUnit);
+		cout << "Output: " << programUnit->debugText(programLine.data(),
+			programLine.count()) << endl;
 	}
 	delete rpnList;
 }

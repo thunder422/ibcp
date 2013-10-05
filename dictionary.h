@@ -39,6 +39,10 @@ public:
 
 	quint16 add(Token *token, bool *returnNewEntry = NULL);
 	void remove(quint16 index);
+	QString string(int index) const
+	{
+		return m_keyList.at(index);
+	}
 
 private:
 	QStack<quint16> m_freeStack;		// stack of free items

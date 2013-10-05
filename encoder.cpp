@@ -36,9 +36,9 @@ Encoder::Encoder(Table &table): m_table(table)
 
 // function to encode a translated RPN list
 
-ProgramLine Encoder::encode(RpnList *input, ProgramUnit *programUnit)
+QVector<ProgramWord> Encoder::encode(RpnList *input, ProgramUnit *programUnit)
 {
-	ProgramLine programLine(input->codeSize());
+	QVector<ProgramWord> programLine(input->codeSize());
 
 	for (int i = 0; i < input->count(); i++)
 	{

@@ -34,6 +34,7 @@
 
 class Dictionary;
 class RpnList;
+class Table;
 class Translator;
 
 
@@ -56,7 +57,7 @@ public:
 	{
 		m_word = (unsigned)code | subCode & ProgramMask_SubCode;
 	}
-	QString instructionText(void) const;
+	QString instructionDebugText(void) const;
 
 	// operand word access functions
 	unsigned short operand(void) const
@@ -67,35 +68,27 @@ public:
 	{
 		m_word = operand;
 	}
-	QString operandText(void) const;
-};
-
-
-// class for holding a vector of program words representing a program line
-class ProgramLine : public QVector<ProgramWord>
-{
-public:
-	ProgramLine(int size): QVector<ProgramWord>(size)
-	{
-
-	}
-	QString text(void);
+	QString operandDebugText(QString text) const;
 };
 
 
 // class for holding one program unit (main routine, subroutine, or function)
 class ProgramUnit
 {
+	Table &m_table;							// reference to the table object
 	Dictionary *m_remDictionary;			// pointer to remarks dictionary
 
 public:
-	ProgramUnit(void);
+	ProgramUnit(Table &table);
 	~ProgramUnit(void);
 
 	Dictionary *remDictionary(void) const
 	{
 		return m_remDictionary;
 	}
+
+	QString operandText(Code code, int operand);
+	QString debugText(ProgramWord *line, int count);
 };
 
 

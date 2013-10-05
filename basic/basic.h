@@ -47,4 +47,8 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 quint16 remEncode(ProgramUnit *programUnit, Token *token);
 
 
+// operand text functions
+QString remOperandText(ProgramUnit *programUnit, quint16 operand);
+
+
 #endif // BASIC_H

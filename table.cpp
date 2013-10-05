@@ -132,6 +132,7 @@ struct TableEntry
 	ExprInfo *exprInfo;				// expression info pointer (NULL for none)
 	TranslateFunction translate;	// pointer to translate function
 	EncodeFunction encode;			// pointer to encode function
+	OperandTextFunction operandText;// pointer to operand text function
 };
 
 
@@ -338,7 +339,7 @@ static TableEntry tableEntries[] =
 		Command_TokenType, OneWord_Multiple,
 		"REM", NULL, NULL,
 		HasOperand_Flag, 4, None_DataType, NULL,
-		NULL, remEncode
+		NULL, remEncode, remOperandText
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,
@@ -788,7 +789,7 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneChar_Multiple,
 		"'", NULL, NULL,
 		EndStmt_Flag | HasOperand_Flag, 2, None_DataType, NULL,
-		NULL, remEncode
+		NULL, remEncode, remOperandText
 	},
 	//*****************
 	//   END SYMBOLS
@@ -1646,6 +1647,12 @@ TranslateFunction Table::translateFunction(Code code) const
 EncodeFunction Table::encodeFunction(Code code) const
 {
 	return m_entry[code].encode;
+}
+
+// returns the pointer to the operand text function (if any) for code
+OperandTextFunction Table::operandTextFunction(Code code) const
+{
+	return m_entry[code].operandText;
 }
 
 //=================================

@@ -78,6 +78,8 @@ class ProgramUnit;
 typedef TokenStatus (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
 typedef quint16 (*EncodeFunction)(ProgramUnit *programUnit, Token *token);
+typedef QString (*OperandTextFunction)(ProgramUnit *programUnit,
+	quint16 operand);
 
 
 class Table
@@ -131,6 +133,7 @@ public:
 	bool isUnaryOperator(Code code) const;
 	TranslateFunction translateFunction(Code code) const;
 	EncodeFunction encodeFunction(Code code) const;
+	OperandTextFunction operandTextFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
 	Code unaryCode(Token *token) const;

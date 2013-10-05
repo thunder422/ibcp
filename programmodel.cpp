@@ -36,8 +36,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// function to return the text for an instruction word
-QString ProgramWord::instructionText(void) const
+// function to return the debug text for an instruction word
+QString ProgramWord::instructionDebugText(void) const
 {
 	Table &table = Table::instance();
 	QString string;
@@ -67,46 +67,10 @@ QString ProgramWord::instructionText(void) const
 }
 
 
-// function to return the text for an instruction word
-QString ProgramWord::operandText(void) const
+// function to return the debug text for an instruction word
+QString ProgramWord::operandDebugText(QString text) const
 {
-	// TODO need to look up index in appropriate dictionary to get name
-	// Rem -- Command -- Remark
-	// RemOp -- Operator -- Remark
-	// ConstX -- Constant -- Constant
-	// VarX -- NoParen -- Variable
-	// VarRefX -- NoParen -- Variable
-	return QString("|%2:%3|").arg(operand()).arg("--");
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//                           PROGRAM LINE FUNCTIONS                           //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-
-// function to return the text for a program line
-QString ProgramLine::text(void)
-{
-	Table &table = Table::instance();
-	QString string;
-
-	for (int i = 0; i < count(); i++)
-	{
-		if (i > 0)
-		{
-			string += ' ';
-		}
-		string += QString("%1:%2").arg(i).arg(at(i).instructionText());
-
-		if (table.hasFlag(at(i).instructionCode(), HasOperand_Flag))
-		{
-			string += QString(" %1:%2").arg(i).arg(at(++i).operandText());
-		}
-	}
-	return string;
+	return QString("|%2:%3|").arg(operand()).arg(text);
 }
 
 
@@ -117,7 +81,7 @@ QString ProgramLine::text(void)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-ProgramUnit::ProgramUnit(void)
+ProgramUnit::ProgramUnit(Table &table): m_table(table)
 {
 	m_remDictionary = new Dictionary;
 }
@@ -126,6 +90,51 @@ ProgramUnit::ProgramUnit(void)
 ProgramUnit::~ProgramUnit(void)
 {
 	delete m_remDictionary;
+}
+
+
+QString ProgramUnit::operandText(Code code, int operand)
+{
+	OperandTextFunction operandText = m_table.operandTextFunction(code);
+	return operandText == NULL ? "--": operandText(this, operand);
+}
+
+
+// function to return the text for a program line
+QString ProgramUnit::debugText(ProgramWord *line, int count)
+{
+	QString string;
+
+	for (int i = 0; i < count; i++)
+	{
+		if (i > 0)
+		{
+			string += ' ';
+		}
+		string += QString("%1:%2").arg(i).arg(line[i].instructionDebugText());
+
+		Code code = line[i].instructionCode();
+		if (m_table.hasFlag(code, HasOperand_Flag))
+		{
+			QString operand = operandText(code, line[++i].operand());
+			string += QString(" %1:%2").arg(i)
+				.arg(line[i].operandDebugText(operand));
+		}
+	}
+	return string;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                           OPERAND TEXT FUNCTIONS                           //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+QString remOperandText(ProgramUnit *programUnit, quint16 operand)
+{
+	return programUnit->remDictionary()->string(operand);
 }
 
 
