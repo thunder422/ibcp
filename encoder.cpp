@@ -65,17 +65,4 @@ QVector<ProgramWord> Encoder::encode(RpnList *input, ProgramUnit *programUnit)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//                       MISCELLANEOUS ENCODE FUNCTIONS                       //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-
-quint16 remEncode(ProgramUnit *programUnit, Token *token)
-{
-	return programUnit->remDictionary()->add(token);
-}
-
-
 // end: encoder.cpp

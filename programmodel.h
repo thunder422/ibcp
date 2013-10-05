@@ -77,6 +77,9 @@ class ProgramUnit
 {
 	Table &m_table;							// reference to the table object
 	Dictionary *m_remDictionary;			// pointer to remarks dictionary
+	Dictionary *m_varDblDictionary;			// double variables dictionary
+	Dictionary *m_varIntDictionary;			// integer variables dictionary
+	Dictionary *m_varStrDictionary;			// string variables dictionary
 
 public:
 	ProgramUnit(Table &table);
@@ -85,6 +88,18 @@ public:
 	Dictionary *remDictionary(void) const
 	{
 		return m_remDictionary;
+	}
+	Dictionary *varDblDictionary(void) const
+	{
+		return m_varDblDictionary;
+	}
+	Dictionary *varIntDictionary(void) const
+	{
+		return m_varIntDictionary;
+	}
+	Dictionary *varStrDictionary(void) const
+	{
+		return m_varStrDictionary;
 	}
 
 	QString operandText(Code code, int operand);

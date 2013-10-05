@@ -1242,33 +1242,39 @@ static TableEntry tableEntries[] =
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "Var", NULL,
 		HasOperand_Flag, 2, Double_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var)),
+		NULL, varDblEncode, varDblOperandText
 	},
 	{	// VarInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarInt", NULL,
-		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		NULL, varIntEncode, varIntOperandText
 	},
 	{	// VarStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarStr", NULL,
-		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
+		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo,
+		NULL, varStrEncode, varStrOperandText
 	},
 	{	// VarRef_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRef", NULL,
 		HasOperand_Flag | Reference_Flag, 2, Double_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef)),
+		NULL, varDblEncode, varDblOperandText
 	},
 	{	// VarRefInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefInt", NULL,
-		HasOperand_Flag | Reference_Flag, 2, Integer_DataType, &Int_ExprInfo
+		HasOperand_Flag | Reference_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		NULL, varIntEncode, varIntOperandText
 	},
 	{	// VarRefStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefStr", NULL,
-		HasOperand_Flag | Reference_Flag, 2, String_DataType, &Str_ExprInfo
+		HasOperand_Flag | Reference_Flag, 2, String_DataType, &Str_ExprInfo,
+		NULL, varStrEncode, varStrOperandText
 	}
 };
 

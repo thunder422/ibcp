@@ -84,12 +84,18 @@ QString ProgramWord::operandDebugText(QString text) const
 ProgramUnit::ProgramUnit(Table &table): m_table(table)
 {
 	m_remDictionary = new Dictionary;
+	m_varDblDictionary = new Dictionary;
+	m_varIntDictionary = new Dictionary;
+	m_varStrDictionary = new Dictionary;
 }
 
 
 ProgramUnit::~ProgramUnit(void)
 {
 	delete m_remDictionary;
+	delete m_varDblDictionary;
+	delete m_varIntDictionary;
+	delete m_varStrDictionary;
 }
 
 
@@ -122,19 +128,6 @@ QString ProgramUnit::debugText(ProgramWord *line, int count)
 		}
 	}
 	return string;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//                           OPERAND TEXT FUNCTIONS                           //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-
-QString remOperandText(ProgramUnit *programUnit, quint16 operand)
-{
-	return programUnit->remDictionary()->string(operand);
 }
 
 

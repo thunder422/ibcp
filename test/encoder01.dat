@@ -10,3 +10,15 @@ C$="Test"
 PRINT C$' not much to see here
 
 INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment
+
+A=A+B+C
+PRINT A,B,C
+A$="Test"+CHR$(B%+48)
+PRINT B%;A$
+
+'reuse some constants, have some new constants
+C%=B%+6
+rem reuse previous double constant as double
+D%=C%+5
+'same constant but as string; should be separate string constant
+PRINT "Test",C%,"5"

@@ -45,10 +45,16 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 
 // encode functions
 quint16 remEncode(ProgramUnit *programUnit, Token *token);
+quint16 varDblEncode(ProgramUnit *programUnit, Token *token);
+quint16 varIntEncode(ProgramUnit *programUnit, Token *token);
+quint16 varStrEncode(ProgramUnit *programUnit, Token *token);
 
 
 // operand text functions
 QString remOperandText(ProgramUnit *programUnit, quint16 operand);
+QString varDblOperandText(ProgramUnit *programUnit, quint16 operand);
+QString varIntOperandText(ProgramUnit *programUnit, quint16 operand);
+QString varStrOperandText(ProgramUnit *programUnit, quint16 operand);
 
 
 #endif // BASIC_H
