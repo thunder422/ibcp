@@ -81,6 +81,7 @@ class ProgramUnit
 	// pointers to the global program dictionaries
 	Dictionary *m_remDictionary;
 	InfoDictionary<ConstNumInfo> *m_constNumDictionary;
+	ConstStrDictionary *m_constStrDictionary;
 
 	// pointers to the local unit dictionaries
 	Dictionary *m_varDblDictionary;
@@ -99,6 +100,10 @@ public:
 	InfoDictionary<ConstNumInfo> *constNumDictionary(void) const
 	{
 		return m_constNumDictionary;
+	}
+	InfoDictionary<ConstStrInfo> *constStrDictionary(void) const
+	{
+		return m_constStrDictionary;
 	}
 
 	Dictionary *varDblDictionary(void) const

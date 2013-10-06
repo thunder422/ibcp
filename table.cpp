@@ -1238,7 +1238,8 @@ static TableEntry tableEntries[] =
 	{	// ConstStr_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstStr", NULL,
-		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo
+		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo,
+		NULL, constStrEncode, constStrOperandText
 	},
 	{	// Var_Code
 		NoParen_TokenType, OneWord_Multiple,

@@ -84,6 +84,7 @@ ProgramUnit::ProgramUnit(Table &table): m_table(table)
 {
 	m_remDictionary = new Dictionary;
 	m_constNumDictionary = new InfoDictionary<ConstNumInfo>;
+	m_constStrDictionary = new ConstStrDictionary;
 
 	m_varDblDictionary = new Dictionary;
 	m_varIntDictionary = new Dictionary;
@@ -95,6 +96,7 @@ ProgramUnit::~ProgramUnit(void)
 {
 	delete m_remDictionary;
 	delete m_constNumDictionary;
+	delete m_constStrDictionary;
 
 	delete m_varDblDictionary;
 	delete m_varIntDictionary;

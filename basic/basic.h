@@ -57,6 +57,28 @@ public:
 };
 
 
+class ConstStrInfo
+{
+	QString *m_value;
+
+public:
+	ConstStrInfo(void);
+	ConstStrInfo(Token *token);
+
+	QString *value(void) const
+	{
+		return m_value;
+	}
+};
+
+
+class ConstStrDictionary : public InfoDictionary<ConstStrInfo>
+{
+public:
+	~ConstStrDictionary(void);
+};
+
+
 // translate functions
 TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
@@ -69,6 +91,7 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 // encode functions
 quint16 remEncode(ProgramUnit *programUnit, Token *token);
 quint16 constNumEncode(ProgramUnit *programUnit, Token *token);
+quint16 constStrEncode(ProgramUnit *programUnit, Token *token);
 quint16 varDblEncode(ProgramUnit *programUnit, Token *token);
 quint16 varIntEncode(ProgramUnit *programUnit, Token *token);
 quint16 varStrEncode(ProgramUnit *programUnit, Token *token);
@@ -77,6 +100,7 @@ quint16 varStrEncode(ProgramUnit *programUnit, Token *token);
 // operand text functions
 QString remOperandText(ProgramUnit *programUnit, quint16 operand);
 QString constNumOperandText(ProgramUnit *programUnit, quint16 operand);
+QString constStrOperandText(ProgramUnit *programUnit, quint16 operand);
 QString varDblOperandText(ProgramUnit *programUnit, quint16 operand);
 QString varIntOperandText(ProgramUnit *programUnit, quint16 operand);
 QString varStrOperandText(ProgramUnit *programUnit, quint16 operand);

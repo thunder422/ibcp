@@ -22,3 +22,4 @@ rem reuse previous double constant as double
 D%=C%+5
 'same constant but as string; should be separate string constant
 PRINT "Test",C%,"5"
+PRINT "Quote""Test"
