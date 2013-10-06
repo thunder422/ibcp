@@ -22,7 +22,6 @@
 //
 //	2013-03-15	initial version
 
-#include "dictionary.h"
 #include "programmodel.h"
 #include "rpnlist.h"
 #include "table.h"
@@ -84,6 +83,8 @@ QString ProgramWord::operandDebugText(QString text) const
 ProgramUnit::ProgramUnit(Table &table): m_table(table)
 {
 	m_remDictionary = new Dictionary;
+	m_constNumDictionary = new InfoDictionary<ConstNumInfo>;
+
 	m_varDblDictionary = new Dictionary;
 	m_varIntDictionary = new Dictionary;
 	m_varStrDictionary = new Dictionary;
@@ -93,6 +94,8 @@ ProgramUnit::ProgramUnit(Table &table): m_table(table)
 ProgramUnit::~ProgramUnit(void)
 {
 	delete m_remDictionary;
+	delete m_constNumDictionary;
+
 	delete m_varDblDictionary;
 	delete m_varIntDictionary;
 	delete m_varStrDictionary;

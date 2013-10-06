@@ -41,6 +41,30 @@ QString remOperandText(ProgramUnit *programUnit, quint16 operand)
 }
 
 
+// CONSTANT FUNCTIONS
+
+ConstNumInfo::ConstNumInfo(void)
+{
+	// default constructor needed for QVector
+}
+
+ConstNumInfo::ConstNumInfo(Token *token)
+{
+	m_value = token->value();
+	m_valueInt = token->valueInt();
+}
+
+quint16 constNumEncode(ProgramUnit *programUnit, Token *token)
+{
+	return programUnit->constNumDictionary()->add(token);
+}
+
+QString constNumOperandText(ProgramUnit *programUnit, quint16 operand)
+{
+	return programUnit->constNumDictionary()->string(operand);
+}
+
+
 // VARIABLE FUNCTIONS
 
 quint16 varDblEncode(ProgramUnit *programUnit, Token *token)

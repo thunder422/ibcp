@@ -1226,12 +1226,14 @@ static TableEntry tableEntries[] =
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "Const", NULL,
 		HasOperand_Flag, 2, Double_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const)),
+		NULL, constNumEncode, constNumOperandText
 	},
 	{	// ConstInt_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstInt", NULL,
-		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo
+		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		NULL, constNumEncode, constNumOperandText
 	},
 	{	// ConstStr_Code
 		Constant_TokenType, OneWord_Multiple,

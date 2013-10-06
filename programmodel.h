@@ -30,9 +30,10 @@
 #include <QVector>
 
 #include "ibcp.h"
+#include "dictionary.h"
 #include "errorlist.h"
+#include "basic/basic.h"
 
-class Dictionary;
 class RpnList;
 class Table;
 class Translator;
@@ -76,10 +77,15 @@ public:
 class ProgramUnit
 {
 	Table &m_table;							// reference to the table object
-	Dictionary *m_remDictionary;			// pointer to remarks dictionary
-	Dictionary *m_varDblDictionary;			// double variables dictionary
-	Dictionary *m_varIntDictionary;			// integer variables dictionary
-	Dictionary *m_varStrDictionary;			// string variables dictionary
+
+	// pointers to the global program dictionaries
+	Dictionary *m_remDictionary;
+	InfoDictionary<ConstNumInfo> *m_constNumDictionary;
+
+	// pointers to the local unit dictionaries
+	Dictionary *m_varDblDictionary;
+	Dictionary *m_varIntDictionary;
+	Dictionary *m_varStrDictionary;
 
 public:
 	ProgramUnit(Table &table);
@@ -89,6 +95,12 @@ public:
 	{
 		return m_remDictionary;
 	}
+
+	InfoDictionary<ConstNumInfo> *constNumDictionary(void) const
+	{
+		return m_constNumDictionary;
+	}
+
 	Dictionary *varDblDictionary(void) const
 	{
 		return m_varDblDictionary;

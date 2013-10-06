@@ -25,13 +25,36 @@
 #ifndef BASIC_H
 #define BASIC_H
 
-#include <QtGlobal>
+#include <QString>
 
 #include "ibcp.h"
+#include "dictionary.h"
 
 class Translator;
 class Token;
 class ProgramUnit;
+
+
+// constant definitions
+
+class ConstNumInfo
+{
+	double m_value;
+	int m_valueInt;
+
+public:
+	ConstNumInfo(void);
+	ConstNumInfo(Token *token);
+
+	double value(void) const
+	{
+		return m_value;
+	}
+	int valueInt(void) const
+	{
+		return m_valueInt;
+	}
+};
 
 
 // translate functions
@@ -45,6 +68,7 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 
 // encode functions
 quint16 remEncode(ProgramUnit *programUnit, Token *token);
+quint16 constNumEncode(ProgramUnit *programUnit, Token *token);
 quint16 varDblEncode(ProgramUnit *programUnit, Token *token);
 quint16 varIntEncode(ProgramUnit *programUnit, Token *token);
 quint16 varStrEncode(ProgramUnit *programUnit, Token *token);
@@ -52,6 +76,7 @@ quint16 varStrEncode(ProgramUnit *programUnit, Token *token);
 
 // operand text functions
 QString remOperandText(ProgramUnit *programUnit, quint16 operand);
+QString constNumOperandText(ProgramUnit *programUnit, quint16 operand);
 QString varDblOperandText(ProgramUnit *programUnit, quint16 operand);
 QString varIntOperandText(ProgramUnit *programUnit, quint16 operand);
 QString varStrOperandText(ProgramUnit *programUnit, quint16 operand);
