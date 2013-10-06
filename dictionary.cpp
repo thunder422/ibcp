@@ -30,10 +30,9 @@ Dictionary::Dictionary(void)
 {
 }
 
-
-quint16 Dictionary::add(Token *token, bool *returnNewEntry)
+quint16 Dictionary::add(Token *token, Dictionary::EntryType *returnNewEntry)
 {
-	bool newEntry;
+	EntryType newEntry;
 
 	int index = m_keyMap.value(token->string(), -1);
 	if (index == -1)  // string not present?
@@ -43,20 +42,21 @@ quint16 Dictionary::add(Token *token, bool *returnNewEntry)
 			index = m_keyList.count();
 			m_keyList.append(token->string());
 			m_useCount.append(1);
+			newEntry = New_Entry;
 		}
 		else  // use a previously freed index
 		{
 			index = m_freeStack.pop();
 			m_keyList[index] = token->string();
 			m_useCount[index] = 1;
+			newEntry = Reused_Entry;
 		}
 		m_keyMap[token->string()] = index;  // save key/index in map
-		newEntry = true;
 	}
 	else  // string already present, update use count
 	{
 		m_useCount[index]++;
-		newEntry = false;
+		newEntry = Exists_Entry;
 	}
 	if (returnNewEntry)
 	{

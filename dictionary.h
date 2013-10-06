@@ -37,8 +37,16 @@ class Dictionary
 public:
 	Dictionary(void);
 
-	quint16 add(Token *token, bool *returnNewEntry = NULL);
 	void remove(quint16 index);
+	enum EntryType
+	{
+		New_Entry,
+		Reused_Entry,
+		Exists_Entry,
+		sizeof_Entry
+	};
+
+	quint16 add(Token *token, EntryType *returnNewEntry = NULL);
 	QString string(int index) const
 	{
 		return m_keyList.at(index);
@@ -49,6 +57,31 @@ private:
 	QStringList m_keyList;				// list of keys
 	QMap<QString, int> m_keyMap;		// map of keys to indexes
 	QList<quint16> m_useCount;			// list of key use counts
+};
+
+
+template <class Info>
+// Info class must have Info(Token *token) constructor
+class InfoDictionary : public Dictionary
+{
+protected:
+	QVector<Info> m_info;				// additional dictionary information
+
+public:
+	quint16 add(Token *token)
+	{
+		EntryType returnNewEntry;
+		int index = Dictionary::add(token, &returnNewEntry);
+		if (returnNewEntry == New_Entry)
+		{
+			m_info.append(Info(token));
+		}
+		else if (returnNewEntry == Reused_Entry)
+		{
+			m_info[index] = Info(token);
+		}
+		return index;
+	}
 };
 
 
