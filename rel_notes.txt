@@ -18,15 +18,12 @@ see <http://www.gnu.org/licenses/>.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-Planned Roadmap (updated 2013-04-05):
+Planned Roadmap (updated 2013-10-06):
 
-	Define internal program format
-	Implement initial Encoder (RPN list to internal code)
-	Implement Variable Dictionary (needed for Encoder)
-	Implement initial Decoder (internal code to RPN list)
-	Implement initial Recreator (RPN list to program text)
+	Integrate encoder with program model
+	Integrate encoder/program model to GUI
+	Implement initial Recreator (internal code to program text)
 	Integrate Recreator to GUI (update Edit Box)
-	Integrate Decoder/Recreator/GUI
 	Implement initial Run-time Module (for LET, PRINT and INPUT)
 	Implement Colon
 	Implement DIM command and arrays
@@ -35,6 +32,20 @@ Planned Roadmap (updated 2013-04-05):
 	Implement DEF FN command
 	Implement DO-WHILE-UNTIL-LOOP commands
 	To be defined...
+
+
+Release 0.5.2 (2013-10-06)
+
+	Project developmental release - the first phase of the encoder
+	has been completed with support for remarks, variables and
+	constants each with their associated dictionaries where the
+	dictionaries are used to store the strings of these elements and
+	an index is stored in the program code.
+
+	  - several sub-codes replaced with single 'option' sub-code
+	  - new program unit for holding code and dictionaries
+	  - new dictionary base class
+	  - new information dictionary template class
 
 
 Release 0.5.1 (2013-09-22)
