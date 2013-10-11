@@ -73,12 +73,12 @@ enum Multiple
 
 struct TableEntry;
 class Translator;
-class ProgramUnit;
+class ProgramModel;
 
 typedef TokenStatus (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
-typedef quint16 (*EncodeFunction)(ProgramUnit *programUnit, Token *token);
-typedef QString (*OperandTextFunction)(ProgramUnit *programUnit,
+typedef quint16 (*EncodeFunction)(ProgramModel *programUnit, Token *token);
+typedef QString (*OperandTextFunction)(ProgramModel *programUnit,
 	quint16 operand);
 
 

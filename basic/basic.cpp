@@ -22,20 +22,19 @@
 //
 //	2013-10-05	initial version
 
-#include "dictionary.h"
 #include "programmodel.h"
 #include "token.h"
 
 
 // REM FUNCTIONS
 
-quint16 remEncode(ProgramUnit *programUnit, Token *token)
+quint16 remEncode(ProgramModel *programUnit, Token *token)
 {
 	return programUnit->remDictionary()->add(token);
 }
 
 
-QString remOperandText(ProgramUnit *programUnit, quint16 operand)
+QString remOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->remDictionary()->string(operand);
 }
@@ -54,12 +53,12 @@ ConstNumInfo::ConstNumInfo(Token *token)
 	m_valueInt = token->valueInt();
 }
 
-quint16 constNumEncode(ProgramUnit *programUnit, Token *token)
+quint16 constNumEncode(ProgramModel *programUnit, Token *token)
 {
 	return programUnit->constNumDictionary()->add(token);
 }
 
-QString constNumOperandText(ProgramUnit *programUnit, quint16 operand)
+QString constNumOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->constNumDictionary()->string(operand);
 }
@@ -84,12 +83,12 @@ ConstStrDictionary::~ConstStrDictionary(void)
 }
 
 
-quint16 constStrEncode(ProgramUnit *programUnit, Token *token)
+quint16 constStrEncode(ProgramModel *programUnit, Token *token)
 {
 	return programUnit->constStrDictionary()->add(token);
 }
 
-QString constStrOperandText(ProgramUnit *programUnit, quint16 operand)
+QString constStrOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->constStrDictionary()->string(operand);
 }
@@ -97,33 +96,33 @@ QString constStrOperandText(ProgramUnit *programUnit, quint16 operand)
 
 // VARIABLE FUNCTIONS
 
-quint16 varDblEncode(ProgramUnit *programUnit, Token *token)
+quint16 varDblEncode(ProgramModel *programUnit, Token *token)
 {
 	return programUnit->varDblDictionary()->add(token);
 }
 
-quint16 varIntEncode(ProgramUnit *programUnit, Token *token)
+quint16 varIntEncode(ProgramModel *programUnit, Token *token)
 {
 	return programUnit->varIntDictionary()->add(token);
 }
 
-quint16 varStrEncode(ProgramUnit *programUnit, Token *token)
+quint16 varStrEncode(ProgramModel *programUnit, Token *token)
 {
 	return programUnit->varStrDictionary()->add(token);
 }
 
 
-QString varDblOperandText(ProgramUnit *programUnit, quint16 operand)
+QString varDblOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->varDblDictionary()->string(operand);
 }
 
-QString varIntOperandText(ProgramUnit *programUnit, quint16 operand)
+QString varIntOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->varIntDictionary()->string(operand);
 }
 
-QString varStrOperandText(ProgramUnit *programUnit, quint16 operand)
+QString varStrOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->varStrDictionary()->string(operand);
 }

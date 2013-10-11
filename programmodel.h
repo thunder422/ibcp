@@ -26,6 +26,7 @@
 #define PROGRAMMODEL_H
 
 #include <QAbstractListModel>
+#include <QString>
 #include <QStringList>
 #include <QVector>
 
@@ -42,8 +43,6 @@ class Translator;
 // class for holding and accessing a program word
 class ProgramWord
 {
-	unsigned short m_word;				// one program word
-
 public:
 	// instruction access functions
 	Code instructionCode(void) const
@@ -70,27 +69,22 @@ public:
 		m_word = operand;
 	}
 	QString operandDebugText(QString text) const;
+
+private:
+	unsigned short m_word;				// one program word
 };
 
 
-// class for holding one program unit (main routine, subroutine, or function)
-class ProgramUnit
+// class for holding a program unit model
+class ProgramModel : public QAbstractListModel
 {
-	Table &m_table;							// reference to the table object
-
-	// pointers to the global program dictionaries
-	Dictionary *m_remDictionary;
-	InfoDictionary<ConstNumInfo> *m_constNumDictionary;
-	ConstStrDictionary *m_constStrDictionary;
-
-	// pointers to the local unit dictionaries
-	Dictionary *m_varDblDictionary;
-	Dictionary *m_varIntDictionary;
-	Dictionary *m_varStrDictionary;
+	Q_OBJECT
 
 public:
-	ProgramUnit(Table &table);
-	~ProgramUnit(void);
+	explicit ProgramModel(QObject *parent = 0);
+	~ProgramModel(void);
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
 	Dictionary *remDictionary(void) const
 	{
@@ -121,17 +115,6 @@ public:
 
 	QString operandText(Code code, int operand);
 	QString debugText(ProgramWord *line, int count);
-};
-
-
-class ProgramModel : public QAbstractListModel
-{
-	Q_OBJECT
-public:
-	explicit ProgramModel(QObject *parent = 0);
-	~ProgramModel(void);
-	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
 signals:
 	void lineCountChanged(int newLineCount);
@@ -144,17 +127,32 @@ public slots:
 private:
 	struct LineInfo
 	{
-		RpnList *rpnList;				// pointer to rpn list
+		RpnList *rpnList;				// REMOVE pointer to rpn list
 		int errIndex;					// index to error list
 	};
+
 	bool updateLine(Operation operation, int lineNumber,
 		const QString &line = QString());
-	void setError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
+	void updateError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
 
+	Table &m_table;						// reference to the table object
 	Translator *m_translator;			// program line translator instance
+
+	// program code variables
 	QList<LineInfo> m_lineInfo;			// program line information list
 	ErrorList m_errors;					// list of program errors
+
+	// pointers to the global program dictionaries
+	Dictionary *m_remDictionary;
+	InfoDictionary<ConstNumInfo> *m_constNumDictionary;
+	ConstStrDictionary *m_constStrDictionary;
+
+	// pointers to the local unit dictionaries
+	Dictionary *m_varDblDictionary;
+	Dictionary *m_varIntDictionary;
+	Dictionary *m_varStrDictionary;
 };
+
 
 #endif // PROGRAMMODEL_H

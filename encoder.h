@@ -38,7 +38,7 @@ class Encoder
 public:
 	Encoder(Table &table);
 
-	QVector<ProgramWord> encode(RpnList *input, ProgramUnit *programUnit);
+	QVector<ProgramWord> encode(RpnList *input, ProgramModel *programUnit);
 
 private:
 };

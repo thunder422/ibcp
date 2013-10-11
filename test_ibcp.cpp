@@ -179,7 +179,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 
 	Translator translator(Table::instance());
 	Encoder encoder(Table::instance());
-	ProgramUnit programUnit(Table::instance());
+	ProgramModel programUnit;  // creates its own translator instance
 
 	if (inputMode)
 	{
@@ -287,7 +287,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
 void Tester::encodeInput(QTextStream &cout, Translator &translator,
-	Encoder &encoder, ProgramUnit *programUnit, const QString &testInput)
+	Encoder &encoder, ProgramModel *programUnit, const QString &testInput)
 {
 	RpnList *rpnList = translator.translate(testInput);
 	if (rpnList->hasError())

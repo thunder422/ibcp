@@ -75,12 +75,15 @@ QString ProgramWord::operandDebugText(QString text) const
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//                           PROGRAM UNIT FUNCTIONS                           //
+//                        PROGRAM UNIT MODEL FUNCTIONS                        //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 
-ProgramUnit::ProgramUnit(Table &table): m_table(table)
+ProgramModel::ProgramModel(QObject *parent) :
+	QAbstractListModel(parent),
+	m_table(Table::instance()),
+	m_translator(new Translator(m_table))
 {
 	m_remDictionary = new Dictionary;
 	m_constNumDictionary = new InfoDictionary<ConstNumInfo>;
@@ -92,8 +95,10 @@ ProgramUnit::ProgramUnit(Table &table): m_table(table)
 }
 
 
-ProgramUnit::~ProgramUnit(void)
+ProgramModel::~ProgramModel(void)
 {
+	delete m_translator;
+
 	delete m_remDictionary;
 	delete m_constNumDictionary;
 	delete m_constStrDictionary;
@@ -104,7 +109,7 @@ ProgramUnit::~ProgramUnit(void)
 }
 
 
-QString ProgramUnit::operandText(Code code, int operand)
+QString ProgramModel::operandText(Code code, int operand)
 {
 	OperandTextFunction operandText = m_table.operandTextFunction(code);
 	return operandText == NULL ? "--": operandText(this, operand);
@@ -112,7 +117,7 @@ QString ProgramUnit::operandText(Code code, int operand)
 
 
 // function to return the text for a program line
-QString ProgramUnit::debugText(ProgramWord *line, int count)
+QString ProgramModel::debugText(ProgramWord *line, int count)
 {
 	QString string;
 
@@ -133,26 +138,6 @@ QString ProgramUnit::debugText(ProgramWord *line, int count)
 		}
 	}
 	return string;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-//                          PROGRAM MODEL FUNCTIONS                           //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
-
-
-ProgramModel::ProgramModel(QObject *parent) :
-	QAbstractListModel(parent),
-	m_translator(new Translator(Table::instance()))
-{
-}
-
-
-ProgramModel::~ProgramModel(void)
-{
-	delete m_translator;
 }
 
 
@@ -272,7 +257,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		delete lineInfo.rpnList;
 		lineInfo.rpnList = rpnList;
 
-		setError(lineNumber, lineInfo, false);
+		updateError(lineNumber, lineInfo, false);
 	}
 	else if (operation == Insert_Operation)
 	{
@@ -280,7 +265,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		lineInfo.rpnList = rpnList;
 		lineInfo.errIndex = -1;
 
-		setError(lineNumber, lineInfo, true);
+		updateError(lineNumber, lineInfo, true);
 
 		m_lineInfo.insert(lineNumber, lineInfo);
 	}
@@ -298,8 +283,9 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 }
 
 
-// function to insert error into list if line has an error
-void ProgramModel::setError(int lineNumber, LineInfo &lineInfo,
+// function to update error into list if line has an error
+// FLAG move this function to program unit
+void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	bool lineInserted)
 {
 	bool hasError = lineInfo.rpnList->hasError();
