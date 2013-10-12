@@ -113,6 +113,7 @@ public:
 		return m_varStrDictionary;
 	}
 
+	QVector<ProgramWord> encode(RpnList *input);  // NOTE public for testing
 	QString operandText(Code code, int operand);
 	QString debugText(ProgramWord *line, int count);
 

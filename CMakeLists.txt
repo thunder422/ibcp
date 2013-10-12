@@ -154,7 +154,6 @@ set(ibcp_SOURCES
 	commandline.cpp
 	dictionary.cpp
 	donestack.cpp
-	encoder.cpp
 	errorlist.cpp
 	editbox.cpp
 	main.cpp

@@ -375,4 +375,34 @@ void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 }
 
 
+// function to encode a translated RPN list
+QVector<ProgramWord> ProgramModel::encode(RpnList *input)
+{
+	QVector<ProgramWord> programLine(input->codeSize());
+
+	for (int i = 0; i < input->count(); i++)
+	{
+		Token *token = input->at(i)->token();
+		programLine[token->index()].setInstruction(token->code(),
+			token->subCodes());
+		if (m_table.hasFlag(token, HasOperand_Flag))
+		{
+			quint16 operand;
+			EncodeFunction encode = m_table.encodeFunction(token->code());
+			if (encode == NULL)
+			{
+				// TODO for now set set operand to zero
+				operand = 0;
+			}
+			else
+			{
+				operand = encode(this, token);
+			}
+			programLine[token->index() + 1].setOperand(operand);
+		}
+	}
+	return programLine;
+}
+
+
 // end: programmodel.cpp

@@ -32,8 +32,8 @@
 #include "commandline.h"
 #include "table.h"
 #include "parser.h"
+#include "programmodel.h"
 #include "translator.h"
-#include "encoder.h"
 
 
 // function to process a test input file specified on the command line
@@ -178,7 +178,6 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 	}
 
 	Translator translator(Table::instance());
-	Encoder encoder(Table::instance());
 	ProgramModel programUnit;  // creates its own translator instance
 
 	if (inputMode)
@@ -225,7 +224,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			translateInput(cout, translator, inputLine, false);
 			break;
 		case OptEncoder:
-			encodeInput(cout, translator, encoder, &programUnit, inputLine);
+			encodeInput(cout, translator, &programUnit, inputLine);
 			break;
 		}
 		// report any token leaks and extra token deletes
@@ -287,7 +286,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
 void Tester::encodeInput(QTextStream &cout, Translator &translator,
-	Encoder &encoder, ProgramModel *programUnit, const QString &testInput)
+	ProgramModel *programUnit, const QString &testInput)
 {
 	RpnList *rpnList = translator.translate(testInput);
 	if (rpnList->hasError())
@@ -297,7 +296,7 @@ void Tester::encodeInput(QTextStream &cout, Translator &translator,
 	}
 	else  // translate and encode successful
 	{
-		QVector<ProgramWord> programLine = encoder.encode(rpnList, programUnit);
+		QVector<ProgramWord> programLine = programUnit->encode(rpnList);
 		cout << "Output: " << programUnit->debugText(programLine.data(),
 			programLine.count()) << endl;
 	}
