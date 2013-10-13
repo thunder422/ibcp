@@ -75,6 +75,33 @@ private:
 };
 
 
+// class for holding the program code
+class ProgramCode : public QVector<ProgramWord>
+{
+public:
+	ProgramCode(void): QVector<ProgramWord>() { }
+	ProgramCode(int size): QVector<ProgramWord>(size) { }
+
+	void insertLine(int i, const ProgramCode &line)
+	{
+		if (line.size() > 0)
+		{
+			int oldSize = size();
+			resize(oldSize + line.size());
+			ProgramWord *lineBegin = data() + i;
+			if (i != oldSize)  // not inserting line at end?
+			{
+				// make hole in code for new line
+				memmove(lineBegin + line.size(), lineBegin, (oldSize - i)
+					* sizeof(ProgramWord));
+			}
+			// copy new line in
+			memmove(lineBegin, line.data(), line.size() * sizeof(ProgramWord));
+		}
+	}
+};
+
+
 // class for holding a program unit model
 class ProgramModel : public QAbstractListModel
 {
@@ -113,7 +140,6 @@ public:
 		return m_varStrDictionary;
 	}
 
-	QVector<ProgramWord> encode(RpnList *input);  // NOTE public for testing
 	QString operandText(Code code, int operand);
 
 	// NOTE temporary functions for testing
@@ -132,20 +158,23 @@ private:
 	struct LineInfo
 	{
 		RpnList *rpnList;				// REMOVE pointer to rpn list
-		QVector<ProgramWord> code;		// REMOVE code for line
+		int offset;						// offset of line in program
+		int size;						// size of line in program
 		int errIndex;					// index to error list
 	};
 
 	bool updateLine(Operation operation, int lineNumber,
 		const QString &line = QString());
-	void updateError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
+	bool updateError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
+	ProgramCode encode(RpnList *input);
 
 	Table &m_table;						// reference to the table object
 	Translator *m_translator;			// program line translator instance
 
 	// program code variables
 	QList<LineInfo> m_lineInfo;			// program line information list
+	ProgramCode m_code;					// code for program unit lines
 	ErrorList m_errors;					// list of program errors
 
 	// pointers to the global program dictionaries

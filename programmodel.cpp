@@ -134,8 +134,8 @@ QString ProgramModel::debugText(int lineIndex)
 {
 	QString string;
 
-	const ProgramWord *line = m_lineInfo.at(lineIndex).code.data();
-	int count = m_lineInfo.at(lineIndex).code.count();
+	ProgramWord *line = m_code.data() + m_lineInfo.at(lineIndex).offset;
+	int count = m_lineInfo.at(lineIndex).size;
 	for (int i = 0; i < count; i++)
 	{
 		if (i > 0)
@@ -253,7 +253,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	const QString &line)
 {
 	RpnList *rpnList;
-	QVector<ProgramWord> lineCode;
+	ProgramCode lineCode;
 
 	if (operation != Remove_Operation)
 	{
@@ -284,11 +284,24 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		LineInfo lineInfo;
 		lineInfo.rpnList = rpnList;
 		lineInfo.errIndex = -1;
-		// FIXME temporarily just store single line code in line info
-		lineInfo.code = lineCode;
 
-		updateError(lineNumber, lineInfo, true);
+		if (!updateError(lineNumber, lineInfo, true))
+		{
+			// LINE DOES NOT HAVE ERROR
+			// find offset to insert line
+			if (lineNumber < m_lineInfo.count())
+			{
+				lineInfo.offset = m_lineInfo.at(lineNumber).offset;
+			}
+			else  // append to end
+			{
+				lineInfo.offset = m_code.size();
+			}
+			lineInfo.size = lineCode.size();
 
+			// insert line into code
+			m_code.insertLine(lineInfo.offset, lineCode);
+		}
 		m_lineInfo.insert(lineNumber, lineInfo);
 	}
 	else if (operation == Remove_Operation)
@@ -306,7 +319,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 
 // function to update error into list if line has an error
-void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
+bool ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	bool lineInserted)
 {
 	bool hasError = lineInfo.rpnList->hasError();
@@ -315,43 +328,44 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 		if (!hasError)
 		{
 			removeError(lineNumber, lineInfo, false);
-			return;  // nothing more to do
 		}
 		else if (lineInfo.errIndex != -1)  // had error?
 		{
 			// replace current error
 			m_errors.replace(lineInfo.errIndex, ErrorItem(ErrorItem::Translator,
 				lineNumber, lineInfo.rpnList));
-			return;  // nothing more to do
 		}
 	}
-
-	// find location in error list for line number
-	int errIndex = m_errors.find(lineNumber);
-
-	if (hasError)
+	else  // line inserted, need to adjust all errors after new line
 	{
-		// insert new error into error list
-		m_errors.insert(errIndex, ErrorItem(ErrorItem::Translator,
-			lineNumber, lineInfo.rpnList));
+		// find location in error list for line number
+		int errIndex = m_errors.find(lineNumber);
 
-		lineInfo.errIndex = errIndex++;
-	}
-
-	// loop thru rest of errors in list
-	for (; errIndex < m_errors.count(); errIndex++)
-	{
 		if (hasError)
 		{
-			// adjust error index for inserted error
-			m_lineInfo[m_errors[errIndex].lineNumber()].errIndex++;
+			// insert new error into error list
+			m_errors.insert(errIndex, ErrorItem(ErrorItem::Translator,
+				lineNumber, lineInfo.rpnList));
+
+			lineInfo.errIndex = errIndex++;
 		}
-		if (lineInserted)
+
+		// loop thru rest of errors in list
+		for (; errIndex < m_errors.count(); errIndex++)
 		{
-			// adjust error line number for inserted line
-			m_errors.incrementLineNumber(errIndex);
+			if (hasError)
+			{
+				// adjust error index for inserted error
+				m_lineInfo[m_errors[errIndex].lineNumber()].errIndex++;
+			}
+			if (lineInserted)
+			{
+				// adjust error line number for inserted line
+				m_errors.incrementLineNumber(errIndex);
+			}
 		}
 	}
+	return hasError;
 }
 
 
@@ -397,9 +411,9 @@ void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 
 
 // function to encode a translated RPN list
-QVector<ProgramWord> ProgramModel::encode(RpnList *input)
+ProgramCode ProgramModel::encode(RpnList *input)
 {
-	QVector<ProgramWord> programLine(input->codeSize());
+	ProgramCode programLine(input->codeSize());
 
 	for (int i = 0; i < input->count(); i++)
 	{
