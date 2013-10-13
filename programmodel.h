@@ -115,7 +115,10 @@ public:
 
 	QVector<ProgramWord> encode(RpnList *input);  // NOTE public for testing
 	QString operandText(Code code, int operand);
-	QString debugText(ProgramWord *line, int count);
+
+	// NOTE temporary functions for testing
+	RpnList *rpnList(int lineIndex) const;
+	QString debugText(int lineIndex);
 
 signals:
 	void lineCountChanged(int newLineCount);
@@ -129,6 +132,7 @@ private:
 	struct LineInfo
 	{
 		RpnList *rpnList;				// REMOVE pointer to rpn list
+		QVector<ProgramWord> code;		// REMOVE code for line
 		int errIndex;					// index to error list
 	};
 

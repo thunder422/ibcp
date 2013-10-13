@@ -228,7 +228,12 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			break;
 		}
 		// report any token leaks and extra token deletes
-		Token::reportErrors();
+		// FIXME temporary disable for encoder testing since program model
+		//       currently holds on to the rpn lists
+		if (m_option != OptEncoder)
+		{
+			Token::reportErrors();
+		}
 	}
 	if (!inputMode)
 	{
@@ -288,19 +293,19 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 void Tester::encodeInput(QTextStream &cout, Translator &translator,
 	ProgramModel *programUnit, const QString &testInput)
 {
-	RpnList *rpnList = translator.translate(testInput);
+	// call update for no lines deleted, one line inserted at end
+	int lineIndex = programUnit->rowCount();
+	programUnit->update(lineIndex, 0, 1, QStringList() << testInput);
+	RpnList *rpnList = programUnit->rpnList(lineIndex);
 	if (rpnList->hasError())
 	{
 		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
 			rpnList->errorMessage());
 	}
-	else  // translate and encode successful
+	else  // get text of encoded line and output it
 	{
-		QVector<ProgramWord> programLine = programUnit->encode(rpnList);
-		cout << "Output: " << programUnit->debugText(programLine.data(),
-			programLine.count()) << endl;
+		cout << "Output: " << programUnit->debugText(lineIndex) << endl;
 	}
-	delete rpnList;
 }
 
 

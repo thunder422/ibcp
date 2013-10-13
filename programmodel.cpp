@@ -106,6 +106,12 @@ ProgramModel::~ProgramModel(void)
 	delete m_varDblDictionary;
 	delete m_varIntDictionary;
 	delete m_varStrDictionary;
+
+	// NOTE need to delete all of the stored translated line lists
+	for (int i = 0; i < m_lineInfo.count(); i++)
+	{
+		delete m_lineInfo.at(i).rpnList;
+	}
 }
 
 
@@ -116,11 +122,20 @@ QString ProgramModel::operandText(Code code, int operand)
 }
 
 
-// function to return the text for a program line
-QString ProgramModel::debugText(ProgramWord *line, int count)
+// NOTE temporary function to return translated line
+RpnList *ProgramModel::rpnList(int lineIndex) const
+{
+	return m_lineInfo.at(lineIndex).rpnList;
+}
+
+
+// NOTE temporary function to return the text for a program line
+QString ProgramModel::debugText(int lineIndex)
 {
 	QString string;
 
+	const ProgramWord *line = m_lineInfo.at(lineIndex).code.data();
+	int count = m_lineInfo.at(lineIndex).code.count();
 	for (int i = 0; i < count; i++)
 	{
 		if (i > 0)
@@ -238,11 +253,16 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	const QString &line)
 {
 	RpnList *rpnList;
+	QVector<ProgramWord> lineCode;
 
 	if (operation != Remove_Operation)
 	{
 		// compile line (for now just translate)
 		rpnList = m_translator->translate(line);
+		if (!rpnList->hasError())
+		{
+			lineCode = encode(rpnList);
+		}
 	}
 
 	if (operation == Change_Operation)
@@ -264,6 +284,8 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		LineInfo lineInfo;
 		lineInfo.rpnList = rpnList;
 		lineInfo.errIndex = -1;
+		// FIXME temporarily just store single line code in line info
+		lineInfo.code = lineCode;
 
 		updateError(lineNumber, lineInfo, true);
 
@@ -284,7 +306,6 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 
 // function to update error into list if line has an error
-// FLAG move this function to program unit
 void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	bool lineInserted)
 {
