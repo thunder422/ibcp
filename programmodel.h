@@ -143,7 +143,18 @@ public:
 	QString operandText(Code code, int operand);
 
 	// NOTE temporary functions for testing
-	RpnList *rpnList(int lineIndex) const;
+	RpnList *rpnList(int lineIndex) const
+	{
+		return m_lineInfo.at(lineIndex).rpnList;
+	}
+	int lineOffset(int lineIndex) const
+	{
+		return m_lineInfo.at(lineIndex).offset;
+	}
+	int lineSize(int lineIndex) const
+	{
+		return m_lineInfo.at(lineIndex).size;
+	}
 	QString debugText(int lineIndex);
 
 signals:

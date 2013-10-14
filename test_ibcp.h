@@ -55,8 +55,8 @@ class Tester
 	void parseInput(QTextStream &cout, const QString &testInput);
 	void translateInput(QTextStream &cout, Translator &translator,
 		const QString &testInput, bool exprMode);
-	void encodeInput(QTextStream &cout, Translator &translator,
-		ProgramModel *programModel, const QString &testInput);
+	void encodeInput(QTextStream &cout, ProgramModel *programModel,
+		QString &testInput);
 	bool printToken(QTextStream &cout, Token *token, bool tab);
 	void printError(QTextStream &cout, int column, int length,
 		const QString &error);

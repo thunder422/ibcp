@@ -122,13 +122,6 @@ QString ProgramModel::operandText(Code code, int operand)
 }
 
 
-// NOTE temporary function to return translated line
-RpnList *ProgramModel::rpnList(int lineIndex) const
-{
-	return m_lineInfo.at(lineIndex).rpnList;
-}
-
-
 // NOTE temporary function to return the text for a program line
 QString ProgramModel::debugText(int lineIndex)
 {
