@@ -176,7 +176,7 @@ private:
 
 	bool updateLine(Operation operation, int lineNumber,
 		const QString &line = QString());
-	bool updateError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
+	void updateError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
 	ProgramCode encode(RpnList *input);
 

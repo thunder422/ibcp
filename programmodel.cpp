@@ -278,23 +278,22 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		lineInfo.rpnList = rpnList;
 		lineInfo.errIndex = -1;
 
-		if (!updateError(lineNumber, lineInfo, true))
-		{
-			// LINE DOES NOT HAVE ERROR
-			// find offset to insert line
-			if (lineNumber < m_lineInfo.count())
-			{
-				lineInfo.offset = m_lineInfo.at(lineNumber).offset;
-			}
-			else  // append to end
-			{
-				lineInfo.offset = m_code.size();
-			}
-			lineInfo.size = lineCode.size();
+		updateError(lineNumber, lineInfo, true);
 
-			// insert line into code
-			m_code.insertLine(lineInfo.offset, lineCode);
+		// find offset to insert line
+		if (lineNumber < m_lineInfo.count())
+		{
+			lineInfo.offset = m_lineInfo.at(lineNumber).offset;
 		}
+		else  // append to end
+		{
+			lineInfo.offset = m_code.size();
+		}
+		lineInfo.size = lineCode.size();  // zero if line has error
+
+		// insert line into code (nothing if line has error)
+		m_code.insertLine(lineInfo.offset, lineCode);
+
 		m_lineInfo.insert(lineNumber, lineInfo);
 	}
 	else if (operation == Remove_Operation)
@@ -312,7 +311,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 
 // function to update error into list if line has an error
-bool ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
+void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	bool lineInserted)
 {
 	bool hasError = lineInfo.rpnList->hasError();
@@ -358,7 +357,6 @@ bool ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 			}
 		}
 	}
-	return hasError;
 }
 
 
