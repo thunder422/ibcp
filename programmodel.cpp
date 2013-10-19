@@ -250,12 +250,13 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 	if (operation != Remove_Operation)
 	{
-		// compile line (for now just translate)
+		// compile line
 		rpnList = m_translator->translate(line);
 		if (!rpnList->hasError())
 		{
 			lineCode = encode(rpnList);
 		}
+		// if line has error, line code vector will be empty
 	}
 
 	if (operation == Change_Operation)
@@ -266,16 +267,20 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 			return false;  // line not changed; nothing more to do here
 		}
 
-		// replace the list with the new line
+		// REMOVE replace rpn list with the new list
 		delete lineInfo.rpnList;
 		lineInfo.rpnList = rpnList;
 
 		updateError(lineNumber, lineInfo, false);
+
+		// (line gets deleted if new line has an error)
+		m_code.replaceLine(lineInfo.offset, lineInfo.size, lineCode);
+		m_lineInfo.replace(lineNumber, lineCode.size());
 	}
 	else if (operation == Insert_Operation)
 	{
 		LineInfo lineInfo;
-		lineInfo.rpnList = rpnList;
+		lineInfo.rpnList = rpnList;  // REMOVE replace rpn list
 		lineInfo.errIndex = -1;
 
 		updateError(lineNumber, lineInfo, true);
@@ -302,8 +307,13 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 		removeError(lineNumber, lineInfo, true);
 
-		// delete rpn list and remove from list
+		// REMOVE delete rpn list
 		delete lineInfo.rpnList;
+
+		// remove old line from code
+		m_code.removeLine(lineInfo.offset, lineInfo.size);
+
+		// remove from line info list
 		m_lineInfo.removeAt(lineNumber);
 	}
 	return true;

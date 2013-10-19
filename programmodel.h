@@ -95,9 +95,59 @@ public:
 				memmove(lineBegin + line.size(), lineBegin, (oldSize - i)
 					* sizeof(ProgramWord));
 			}
-			// copy new line in
+			// copy new line into program
 			memmove(lineBegin, line.data(), line.size() * sizeof(ProgramWord));
 		}
+	}
+
+	void removeLine(int i, int n)
+	{
+		if (n > 0)  // something to remove?
+		{
+			remove(i, n);
+		}
+	}
+
+	void replaceLine(int i, int n, const ProgramCode &line)
+	{
+		if (line.count() == 0)
+		{
+			// no new line, just remove old line
+			remove(i, n);
+		}
+		ProgramWord *offset;
+		if (line.count() > n)  // new line larger?
+		{
+			// make program larger before moving program after line up
+			resize(count() - n + line.count());
+			offset = data() + i;  // get data, resize may move data
+
+			int moveCount = count() - i - line.count();
+			if (moveCount > 0)  // not at end?
+			{
+				memmove(offset + line.count(), offset + n,
+					moveCount * sizeof(ProgramWord));
+			}
+		}
+		else  // new line smaller or same size
+		{
+			offset = data() + i;
+			if (line.count() < n)  // new line smaller?
+			{
+				// move program after line down before making program smaller
+				offset = data() + i;
+				int moveCount = count() - i - n;
+				if (moveCount > 0)  // not at end?
+				{
+					memmove(offset + line.count(), offset + n,
+						moveCount * sizeof(ProgramWord));
+				}
+				resize(count() - n + line.count());
+				offset = data() + i;  // get data again, resize may move data
+			}
+		}
+		// copy new line into program
+		memmove(offset, line.data(), line.count() * sizeof(ProgramWord));
 	}
 };
 
@@ -173,6 +223,39 @@ private:
 		int size;						// size of line in program
 		int errIndex;					// index to error list
 	};
+	class LineInfoList : public QList<LineInfo>
+	{
+		// adjust offset of all lines after index by size
+		void adjust(int i, int size)
+		{
+			while (++i < count())
+			{
+				(*this)[i].offset += size;
+			}
+		}
+
+	public:
+		// replace size of line at index (adjust line offsets after index)
+		void replace(int i, int size)
+		{
+			adjust(i, size - at(i).size);
+			(*this)[i].size = size;
+		}
+
+		// insert new line at index (adjust line offsets after index)
+		void insert(int i, const LineInfo &t)
+		{
+			QList<LineInfo>::insert(i, t);
+			adjust(i, t.size);
+		}
+
+		// remove line at index (adjust line offsets after index)
+		void removeAt(int i)
+		{
+			adjust(i, -at(i).size);
+			QList<LineInfo>::removeAt(i);
+		}
+	};
 
 	bool updateLine(Operation operation, int lineNumber,
 		const QString &line = QString());
@@ -184,7 +267,7 @@ private:
 	Translator *m_translator;			// program line translator instance
 
 	// program code variables
-	QList<LineInfo> m_lineInfo;			// program line information list
+	LineInfoList m_lineInfo;			// program line information list
 	ProgramCode m_code;					// code for program unit lines
 	ErrorList m_errors;					// list of program errors
 
