@@ -256,8 +256,9 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			RpnList *rpnList = programUnit.rpnList(i);
 			if (rpnList->hasError())
 			{
-				cout << "ERROR " << rpnList->errorColumn() << ":"
-					<< rpnList->errorLength() << " " << rpnList->errorMessage();
+				cout << "[" << programUnit.lineOffset(i) << "] ERROR "
+					<< rpnList->errorColumn() << ":" << rpnList->errorLength()
+					<< " " << rpnList->errorMessage();
 			}
 			else  // get text of encoded line and output it
 			{

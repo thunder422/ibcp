@@ -36,3 +36,5 @@
 +15
 # delete blank line
 -15
+# replace line with error
+19 LET'error!

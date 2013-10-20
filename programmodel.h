@@ -113,7 +113,8 @@ public:
 		if (line.count() == 0)
 		{
 			// no new line, just remove old line
-			remove(i, n);
+			removeLine(i, n);
+			return;
 		}
 		ProgramWord *offset;
 		if (line.count() > n)  // new line larger?

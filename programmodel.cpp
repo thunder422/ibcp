@@ -330,41 +330,41 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 		if (!hasError)
 		{
 			removeError(lineNumber, lineInfo, false);
+			return;  // nothing more to do
 		}
 		else if (lineInfo.errIndex != -1)  // had error?
 		{
 			// replace current error
 			m_errors.replace(lineInfo.errIndex, ErrorItem(ErrorItem::Translator,
 				lineNumber, lineInfo.rpnList));
+			return;  // nothing more to do
 		}
 	}
-	else  // line inserted, need to adjust all errors after new line
-	{
-		// find location in error list for line number
-		int errIndex = m_errors.find(lineNumber);
 
+	// find location in error list for line number
+	int errIndex = m_errors.find(lineNumber);
+
+	if (hasError)
+	{
+		// insert new error into error list
+		m_errors.insert(errIndex, ErrorItem(ErrorItem::Translator,
+			lineNumber, lineInfo.rpnList));
+
+		lineInfo.errIndex = errIndex++;
+	}
+
+	// loop thru rest of errors in list
+	for (; errIndex < m_errors.count(); errIndex++)
+	{
 		if (hasError)
 		{
-			// insert new error into error list
-			m_errors.insert(errIndex, ErrorItem(ErrorItem::Translator,
-				lineNumber, lineInfo.rpnList));
-
-			lineInfo.errIndex = errIndex++;
+			// adjust error index for inserted error
+			m_lineInfo[m_errors[errIndex].lineNumber()].errIndex++;
 		}
-
-		// loop thru rest of errors in list
-		for (; errIndex < m_errors.count(); errIndex++)
+		if (lineInserted)
 		{
-			if (hasError)
-			{
-				// adjust error index for inserted error
-				m_lineInfo[m_errors[errIndex].lineNumber()].errIndex++;
-			}
-			if (lineInserted)
-			{
-				// adjust error line number for inserted line
-				m_errors.incrementLineNumber(errIndex);
-			}
+			// adjust error line number for inserted line
+			m_errors.incrementLineNumber(errIndex);
 		}
 	}
 }
@@ -392,6 +392,10 @@ void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 		// find location in error list for line number
 		errIndex = m_errors.find(lineNumber);
 		hadError = false;
+	}
+	else  // line not deleted and did not have an error
+	{
+		return;  // nothing more to do
 	}
 
 	// loop thru rest of errors in list
