@@ -57,6 +57,11 @@ class Tester
 		const QString &testInput, bool exprMode);
 	void encodeInput(QTextStream &cout, ProgramModel *programModel,
 		QString &testInput);
+	void printInput(QTextStream &cout, const QString &inputLine)
+	{
+		// no 'tr()' for this string - must match expected results file
+		cout << endl << "Input: " << inputLine << endl;
+	}
 	bool printToken(QTextStream &cout, Token *token, bool tab);
 	void printError(QTextStream &cout, int column, int length,
 		const QString &error);

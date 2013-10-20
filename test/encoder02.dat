@@ -1,0 +1,38 @@
+###################################
+#  Encoder Test #2: Program Test  #
+###################################
++REM This is a sample program
++A=5
++PRINT A
++B%=6:REM comment
++PRINT B%
++C$="Test"
++PRINT C$' not much to see here
++
++INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment
++
++A=A+B+C
++PRINT A,B,C
++A$="Test"+CHR$(B%+48)
++PRINT B%;A$
++
++'reuse some constants, have some new constants
++C%=B%+6
++rem reuse previous double constant as double
++D%=C%+5
++'same constant but as string; should be separate string constant
++PRINT "Test",C%,"5"
++PRINT "Quote""Test"
+3 B%=A+6:REM replaced with larger line
+5 D$=STR$(B%)
+-6
++7 PRINT D$' something useful
+8 INPUT PROMPT "Enter:";N%:LET E=SQR(N%):PRINT N%,E' replaced with same size line
+10 A$=CHR$(B%+48)' replaced with smaller line
+21 PRINT "Quote""Test"; D% ' replace last line with larger line
+# replace blank line
+14 PRINT
+# insert blank line
++15
+# delete blank line
+-15

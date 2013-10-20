@@ -208,8 +208,10 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			{
 				continue;  // skip blank and comment lines
 			}
-			// no 'tr()' for this string - must match expected results file
-			cout << endl << "Input: " << inputLine << endl;
+			if (m_option != OptEncoder)
+			{
+				printInput(cout, inputLine);
+			}
 		}
 
 		switch (m_option)
@@ -325,18 +327,104 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 void Tester::encodeInput(QTextStream &cout, ProgramModel *programUnit,
 	QString &testInput)
 {
-	// call update for no lines deleted, one line inserted at end
-	int lineIndex = programUnit->rowCount();
-	programUnit->update(lineIndex, 0, 1, QStringList() << testInput);
-	RpnList *rpnList = programUnit->rpnList(lineIndex);
-	if (rpnList->hasError())
+	// parse beginning of line for line number program operation
+	Operation operation = Change_Operation;
+	int pos = 0;
+	if (pos < testInput.length())
 	{
-		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
-			rpnList->errorMessage());
+		if (testInput.at(pos) == '+')
+		{
+			operation = Insert_Operation;
+			pos++;
+		}
+		else if (testInput.at(pos) == '-')
+		{
+			operation = Remove_Operation;
+			pos++;
+		}
 	}
-	else  // get text of encoded line and output it
+	int digitCount = 0;
+	int lineIndex = 0;
+	while (pos < testInput.length() && testInput.at(pos).isDigit())
 	{
-		cout << "Output: " << programUnit->debugText(lineIndex) << endl;
+		int digit = testInput.at(pos).toAscii() - '0';
+		lineIndex = lineIndex * 10 + digit;
+		pos++;
+		digitCount++;
+	}
+	if (digitCount == 0)  // no number at beginning?
+	{
+		if (operation == Change_Operation)
+		{
+			// no number at beginning, insert at end of program
+			operation = Insert_Operation;
+			lineIndex = programUnit->rowCount();
+		}
+		else if (operation == Insert_Operation)
+		{
+			// no number at beginning, insert at end of program
+			lineIndex = programUnit->rowCount();
+		}
+		else  // no line index number after + or -
+		{
+			printInput(cout, testInput);
+			cout << QString("        ^-- expected line index number") << endl;
+			return;
+		}
+	}
+	else
+	{
+		if (lineIndex > programUnit->rowCount()
+			|| operation != Insert_Operation
+			&& lineIndex == programUnit->rowCount())
+		{
+			printInput(cout, testInput);
+			cout << QString("       %1^-- line index number out of range")
+				.arg(operation == Change_Operation ? "" : " ") << endl;
+			return;
+		}
+		if (operation == Remove_Operation && pos < testInput.length())
+		{
+			printInput(cout, testInput);
+			cout << QString(" ").repeated(7 + pos)
+				<< QString("^-- no statement expected with remove line")
+				<< endl;
+			return;
+		}
+	}
+	// skip spaces
+	while (pos < testInput.length() && testInput.at(pos).isSpace())
+	{
+		pos++;
+	}
+	testInput.remove(0, pos);  // remove operation, number and any spaces
+
+	// call update with arguments dependent on operation
+	if (operation == Remove_Operation)
+	{
+		programUnit->update(lineIndex, 1, 0, QStringList());
+	}
+	else  // Change_Operation or Insert_Operation
+	{
+		programUnit->update(lineIndex, 0, operation == Insert_Operation ? 1 : 0,
+			QStringList() << testInput);
+	}
+
+	RpnList *rpnList = programUnit->rpnList(lineIndex);
+	bool hasError = rpnList->hasError();
+	// only output line if no operation/line number or has an error
+	if (pos == 0 || hasError)
+	{
+		printInput(cout, testInput);
+		if (hasError)
+		{
+			printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
+				rpnList->errorMessage());
+		}
+		else  // get text of encoded line and output it
+		{
+			cout << "Output: " << programUnit->debugText(lineIndex) << endl;
+		}
 	}
 }
 
