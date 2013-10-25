@@ -106,4 +106,13 @@ QString varIntOperandText(ProgramModel *programUnit, quint16 operand);
 QString varStrOperandText(ProgramModel *programUnit, quint16 operand);
 
 
+// remove functions
+void remRemove(ProgramModel *programUnit, quint16 operand);
+void constNumRemove(ProgramModel *programUnit, quint16 operand);
+void constStrRemove(ProgramModel *programUnit, quint16 operand);
+void varDblRemove(ProgramModel *programUnit, quint16 operand);
+void varIntRemove(ProgramModel *programUnit, quint16 operand);
+void varStrRemove(ProgramModel *programUnit, quint16 operand);
+
+
 #endif // BASIC_H

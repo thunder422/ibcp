@@ -33,10 +33,14 @@ quint16 remEncode(ProgramModel *programUnit, Token *token)
 	return programUnit->remDictionary()->add(token);
 }
 
-
 QString remOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->remDictionary()->string(operand);
+}
+
+void remRemove(ProgramModel *programUnit, quint16 operand)
+{
+	programUnit->remDictionary()->remove(operand);
 }
 
 
@@ -61,6 +65,11 @@ quint16 constNumEncode(ProgramModel *programUnit, Token *token)
 QString constNumOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->constNumDictionary()->string(operand);
+}
+
+void constNumRemove(ProgramModel *programUnit, quint16 operand)
+{
+	programUnit->constNumDictionary()->remove(operand);
 }
 
 
@@ -91,6 +100,11 @@ quint16 constStrEncode(ProgramModel *programUnit, Token *token)
 QString constStrOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->constStrDictionary()->string(operand);
+}
+
+void constStrRemove(ProgramModel *programUnit, quint16 operand)
+{
+	programUnit->constStrDictionary()->remove(operand);
 }
 
 
@@ -125,6 +139,22 @@ QString varIntOperandText(ProgramModel *programUnit, quint16 operand)
 QString varStrOperandText(ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->varStrDictionary()->string(operand);
+}
+
+
+void varDblRemove(ProgramModel *programUnit, quint16 operand)
+{
+	programUnit->varDblDictionary()->remove(operand);
+}
+
+void varIntRemove(ProgramModel *programUnit, quint16 operand)
+{
+	programUnit->varIntDictionary()->remove(operand);
+}
+
+void varStrRemove(ProgramModel *programUnit, quint16 operand)
+{
+	programUnit->varStrDictionary()->remove(operand);
 }
 
 

@@ -133,6 +133,7 @@ struct TableEntry
 	TranslateFunction translate;	// pointer to translate function
 	EncodeFunction encode;			// pointer to encode function
 	OperandTextFunction operandText;// pointer to operand text function
+	RemoveFunction remove;			// pointer to remove function
 };
 
 
@@ -339,7 +340,7 @@ static TableEntry tableEntries[] =
 		Command_TokenType, OneWord_Multiple,
 		"REM", NULL, NULL,
 		HasOperand_Flag, 4, None_DataType, NULL,
-		NULL, remEncode, remOperandText
+		NULL, remEncode, remOperandText, remRemove
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,
@@ -789,7 +790,7 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneChar_Multiple,
 		"'", NULL, NULL,
 		EndStmt_Flag | HasOperand_Flag, 2, None_DataType, NULL,
-		NULL, remEncode, remOperandText
+		NULL, remEncode, remOperandText, remRemove
 	},
 	//*****************
 	//   END SYMBOLS
@@ -1227,57 +1228,57 @@ static TableEntry tableEntries[] =
 		NULL, "Const", NULL,
 		HasOperand_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const)),
-		NULL, constNumEncode, constNumOperandText
+		NULL, constNumEncode, constNumOperandText, constNumRemove
 	},
 	{	// ConstInt_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstInt", NULL,
 		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo,
-		NULL, constNumEncode, constNumOperandText
+		NULL, constNumEncode, constNumOperandText, constNumRemove
 	},
 	{	// ConstStr_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstStr", NULL,
 		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo,
-		NULL, constStrEncode, constStrOperandText
+		NULL, constStrEncode, constStrOperandText, constStrRemove
 	},
 	{	// Var_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "Var", NULL,
 		HasOperand_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var)),
-		NULL, varDblEncode, varDblOperandText
+		NULL, varDblEncode, varDblOperandText, varDblRemove
 	},
 	{	// VarInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarInt", NULL,
 		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo,
-		NULL, varIntEncode, varIntOperandText
+		NULL, varIntEncode, varIntOperandText, varIntRemove
 	},
 	{	// VarStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarStr", NULL,
 		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo,
-		NULL, varStrEncode, varStrOperandText
+		NULL, varStrEncode, varStrOperandText, varStrRemove
 	},
 	{	// VarRef_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRef", NULL,
 		HasOperand_Flag | Reference_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef)),
-		NULL, varDblEncode, varDblOperandText
+		NULL, varDblEncode, varDblOperandText, varDblRemove
 	},
 	{	// VarRefInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefInt", NULL,
 		HasOperand_Flag | Reference_Flag, 2, Integer_DataType, &Int_ExprInfo,
-		NULL, varIntEncode, varIntOperandText
+		NULL, varIntEncode, varIntOperandText, varIntRemove
 	},
 	{	// VarRefStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefStr", NULL,
 		HasOperand_Flag | Reference_Flag, 2, String_DataType, &Str_ExprInfo,
-		NULL, varStrEncode, varStrOperandText
+		NULL, varStrEncode, varStrOperandText, varStrRemove
 	}
 };
 
@@ -1662,6 +1663,12 @@ EncodeFunction Table::encodeFunction(Code code) const
 OperandTextFunction Table::operandTextFunction(Code code) const
 {
 	return m_entry[code].operandText;
+}
+
+// returns the pointer to the remove function (if any) for code
+RemoveFunction Table::removeFunction(Code code) const
+{
+	return m_entry[code].remove;
 }
 
 //=================================

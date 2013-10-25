@@ -10,10 +10,10 @@ Program:
 4: [22-25] 0:VarInt 1:|0:B%| 2:PrintInt 3:PRINT
 5: [26-31] 0:VarRefStr 1:|2:D$| 2:VarInt 3:|0:B%| 4:STR%$( 5:Assign$
 6: [32]
-7: [32-37] 0:VarStr 1:|2:D$| 2:PrintStr 3:PRINT 4:' 5:|7: something useful|
-8: [38-62] 0:ConstStr 1:|1:Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|3:N%| 6:InputAssignInt 7:PROMPT':' 8:VarRef 9:|1:E| 10:VarInt 11:|3:N%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|3:N%| 17:PrintInt 18:, 19:Var 20:|1:E| 21:PrintDbl 22:PRINT 23:' 24:|8: replaced with same size line|
+7: [32-37] 0:VarStr 1:|2:D$| 2:PrintStr 3:PRINT 4:' 5:|2: something useful|
+8: [38-62] 0:ConstStr 1:|1:Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|3:N%| 6:InputAssignInt 7:PROMPT':' 8:VarRef 9:|1:E| 10:VarInt 11:|3:N%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|3:N%| 17:PrintInt 18:, 19:Var 20:|1:E| 21:PrintDbl 22:PRINT 23:' 24:|7: replaced with same size line|
 9: [63]
-10: [63-73] 0:VarRefStr 1:|1:A$| 2:VarInt 3:|0:B%| 4:ConstInt 5:|2:48| 6:+% 7:CHR$( 8:Assign$ 9:' 10:|9: replaced with smaller line|
+10: [63-73] 0:VarRefStr 1:|1:A$| 2:VarInt 3:|0:B%| 4:ConstInt 5:|2:48| 6:+% 7:CHR$( 8:Assign$ 9:' 10:|1: replaced with smaller line|
 11: [74-85] 0:Var 1:|0:A| 2:PrintDbl 3:, 4:Var 5:|2:B| 6:PrintDbl 7:, 8:Var 9:|3:C| 10:PrintDbl 11:PRINT
 12: [86-97] 0:VarRefStr 1:|1:A$| 2:ConstStr 3:|0:Test| 4:VarInt 5:|0:B%| 6:ConstInt 7:|2:48| 8:+% 9:CHR$( 10:+$ 11:Assign$
 13: [98-104] 0:VarInt 1:|0:B%| 2:PrintInt 3:VarStr 4:|1:A$| 5:PrintStr 6:PRINT
@@ -24,4 +24,4 @@ Program:
 18: [118-125] 0:VarRefInt 1:|1:D%| 2:VarInt 3:|2:C%| 4:ConstInt 5:|0:5| 6:+% 7:Assign%
 19: [126] ERROR 3:1 expected item for assignment
 20: [126-137] 0:ConstStr 1:|0:Test| 2:PrintStr 3:, 4:VarInt 5:|2:C%| 6:PrintInt 7:, 8:ConstStr 9:|2:5| 10:PrintStr 11:PRINT
-21: [138-146] 0:ConstStr 1:|3:Quote"Test| 2:PrintStr 3:VarInt 4:|1:D%| 5:PrintInt 6:PRINT 7:' 8:|10: replace last line with larger line|
+21: [138-146] 0:ConstStr 1:|3:Quote"Test| 2:PrintStr 3:VarInt 4:|1:D%| 5:PrintInt 6:PRINT 7:' 8:|8: replace last line with larger line|

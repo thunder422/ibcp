@@ -80,6 +80,7 @@ typedef TokenStatus (*TranslateFunction)(Translator &translator,
 typedef quint16 (*EncodeFunction)(ProgramModel *programUnit, Token *token);
 typedef QString (*OperandTextFunction)(ProgramModel *programUnit,
 	quint16 operand);
+typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
 
 
 class Table
@@ -134,6 +135,7 @@ public:
 	TranslateFunction translateFunction(Code code) const;
 	EncodeFunction encodeFunction(Code code) const;
 	OperandTextFunction operandTextFunction(Code code) const;
+	RemoveFunction removeFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
 	Code unaryCode(Token *token) const;

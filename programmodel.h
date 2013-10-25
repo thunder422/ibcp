@@ -263,6 +263,7 @@ private:
 	void updateError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
 	ProgramCode encode(RpnList *input);
+	void dereference(const LineInfo &lineInfo);
 
 	Table &m_table;						// reference to the table object
 	Translator *m_translator;			// program line translator instance

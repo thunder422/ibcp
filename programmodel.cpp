@@ -273,7 +273,9 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 		updateError(lineNumber, lineInfo, false);
 
+		// derefence old line and replace with new line
 		// (line gets deleted if new line has an error)
+		dereference(lineInfo);
 		m_code.replaceLine(lineInfo.offset, lineInfo.size, lineCode);
 		m_lineInfo.replace(lineNumber, lineCode.size());
 	}
@@ -310,7 +312,8 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		// REMOVE delete rpn list
 		delete lineInfo.rpnList;
 
-		// remove old line from code
+		// derefence old line and remove from code
+		dereference(lineInfo);
 		m_code.removeLine(lineInfo.offset, lineInfo.size);
 
 		// remove from line info list
@@ -444,5 +447,21 @@ ProgramCode ProgramModel::encode(RpnList *input)
 	return programLine;
 }
 
+
+// function to dereference contents of line to prepare for its removal
+void ProgramModel::dereference(const LineInfo &lineInfo)
+{
+	ProgramWord *line = m_code.data() + lineInfo.offset;
+	for (int i = 0; i < lineInfo.size; i++)
+	{
+		Code code = line[i].instructionCode();
+		RemoveFunction remove = m_table.removeFunction(code);
+		if (remove != NULL)
+		{
+			remove(this, line[++i].operand());
+		}
+	}
+
+}
 
 // end: programmodel.cpp
