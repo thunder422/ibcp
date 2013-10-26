@@ -275,10 +275,6 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 				rpnList->errorColumn(), rpnList->errorLength(),
 				rpnList->errorMessage());
 		}
-		else
-		{
-			lineCode = encode(rpnList);
-		}
 	}
 
 	if (operation == Change_Operation)
@@ -287,6 +283,12 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		if (*rpnList == *lineInfo.rpnList)
 		{
 			return false;  // line not changed; nothing more to do here
+		}
+
+		// line is different, encode it if there was no translation error
+		if (errorItem.isEmpty())
+		{
+			lineCode = encode(rpnList);
 		}
 
 		// REMOVE replace rpn list with the new list
@@ -308,6 +310,12 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		lineInfo.errIndex = -1;
 
 		updateError(lineNumber, lineInfo, errorItem, true);
+
+		// encode line if there was no translation error
+		if (errorItem.isEmpty())
+		{
+			lineCode = encode(rpnList);
+		}
 
 		// find offset to insert line
 		if (lineNumber < m_lineInfo.count())
