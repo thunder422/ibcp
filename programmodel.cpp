@@ -145,6 +145,21 @@ QString ProgramModel::debugText(int lineIndex)
 				.arg(line[i].operandDebugText(operand));
 		}
 	}
+    return string;
+}
+
+
+// function to return debug text of all the dictionary
+QString ProgramModel::dictionariesDebugText(void)
+{
+	QString string;
+
+	string.append(m_remDictionary->debugText("Remarks"));
+	string.append(m_constNumDictionary->debugText("Number Constants"));
+	string.append(m_constStrDictionary->debugText("String Constants"));
+	string.append(m_varDblDictionary->debugText("Double Variables"));
+	string.append(m_varIntDictionary->debugText("Integer Variables"));
+	string.append(m_varStrDictionary->debugText("String Variables"));
 	return string;
 }
 

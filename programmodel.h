@@ -207,6 +207,7 @@ public:
 		return m_lineInfo.at(lineIndex).size;
 	}
 	QString debugText(int lineIndex);
+	QString dictionariesDebugText(void);
 
 signals:
 	void lineCountChanged(int newLineCount);

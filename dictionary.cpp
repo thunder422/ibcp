@@ -73,7 +73,44 @@ void Dictionary::remove(quint16 index)
 		m_keyMap.remove(m_keyList.at(index));  // remove key/index from map
 		m_keyList[index].clear();
 		m_freeStack.push(index);
+    }
+}
+
+
+QString Dictionary::debugText(const QString header)
+{
+	QString string = QString("\n%1:\n").arg(header);
+	for (int i = 0; i < m_keyList.count(); i++)
+	{
+		if (m_useCount.at(i) != 0)
+		{
+			string.append(QString("%1: %2 |%3|\n").arg(i).arg(m_useCount.at(i))
+				.arg(m_keyList.at(i)));
+		}
 	}
+	string.append("Free:");
+	if (m_freeStack.isEmpty())
+	{
+		string.append(" none");
+	}
+	else
+	{
+		for (int i = 0; i < m_freeStack.count(); i++)
+		{
+			int index = m_freeStack.at(i);
+			string.append(QString(" %1").arg(index));
+			if (m_useCount.at(index) != 0)
+			{
+				string.append(QString("'%1'").arg(m_useCount.at(index)));
+			}
+			if (!m_keyList.at(index).isEmpty())
+			{
+				string.append(QString("|%1|").arg(m_keyList.at(index)));
+			}
+		}
+	}
+	string.append("\n");
+	return string;
 }
 
 

@@ -51,6 +51,7 @@ public:
 	{
 		return m_keyList.at(index);
 	}
+	QString debugText(const QString header);
 
 private:
 	QStack<quint16> m_freeStack;		// stack of free items

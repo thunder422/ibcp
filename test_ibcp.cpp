@@ -276,6 +276,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			}
 			cout << endl;
 		}
+		cout << programUnit.dictionariesDebugText();
 	}
 
 	return true;

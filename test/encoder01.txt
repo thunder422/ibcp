@@ -88,3 +88,43 @@ Program:
 19: [120-121] 0:' 1:|5:same constant but as string; should be separate string constant|
 20: [122-133] 0:ConstStr 1:|0:Test| 2:PrintStr 3:, 4:VarInt 5:|2:C%| 6:PrintInt 7:, 8:ConstStr 9:|2:5| 10:PrintStr 11:PRINT
 21: [134-137] 0:ConstStr 1:|3:Quote"Test| 2:PrintStr 3:PRINT
+
+Remarks:
+0: 1 | This is a sample program|
+1: 2 | comment|
+2: 1 | not much to see here|
+3: 1 |reuse some constants, have some new constants|
+4: 1 | reuse previous double constant as double|
+5: 1 |same constant but as string; should be separate string constant|
+Free: none
+
+Number Constants:
+0: 2 |5|
+1: 2 |6|
+2: 1 |48|
+Free: none
+
+String Constants:
+0: 3 |Test|
+1: 1 |Enter:|
+2: 1 |5|
+3: 1 |Quote"Test|
+Free: none
+
+Double Variables:
+0: 5 |A|
+1: 2 |E|
+2: 2 |B|
+3: 2 |C|
+Free: none
+
+Integer Variables:
+0: 5 |B%|
+1: 4 |D%|
+2: 3 |C%|
+Free: none
+
+String Variables:
+0: 2 |C$|
+1: 2 |A$|
+Free: none
