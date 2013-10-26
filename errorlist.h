@@ -28,7 +28,6 @@
 #include <QList>
 #include <QString>
 
-class RpnList;
 
 enum Operation
 {
@@ -43,10 +42,18 @@ class ErrorItem
 public:
 	enum Type
 	{
-		Translator,
-		Encoder
+		None,
+		Input,
+		Code
 	};
-	ErrorItem(Type type, int lineNumber, RpnList *rpnList);
+	ErrorItem(void);
+	ErrorItem(Type type, int lineNumber, int column, int length,
+		const QString &message);
+
+	bool isEmpty(void) const
+	{
+		return m_type == None;
+	}
 	enum Type type(void) const
 	{
 		return m_type;

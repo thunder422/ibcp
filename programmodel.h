@@ -261,7 +261,8 @@ private:
 
 	bool updateLine(Operation operation, int lineNumber,
 		const QString &line = QString());
-	void updateError(int lineNumber, LineInfo &lineInfo, bool lineInserted);
+	void updateError(int lineNumber, LineInfo &lineInfo,
+		const ErrorItem &errorItem, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
 	ProgramCode encode(RpnList *input);
 	void dereference(const LineInfo &lineInfo);

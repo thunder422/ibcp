@@ -262,16 +262,23 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 {
 	RpnList *rpnList;
 	ProgramCode lineCode;
+	ErrorItem errorItem;
 
 	if (operation != Remove_Operation)
 	{
 		// compile line
+		// if line has error, line code vector will be empty
 		rpnList = m_translator->translate(line);
-		if (!rpnList->hasError())
+		if (rpnList->hasError())
+		{
+			errorItem = ErrorItem(ErrorItem::Input, lineNumber,
+				rpnList->errorColumn(), rpnList->errorLength(),
+				rpnList->errorMessage());
+		}
+		else
 		{
 			lineCode = encode(rpnList);
 		}
-		// if line has error, line code vector will be empty
 	}
 
 	if (operation == Change_Operation)
@@ -286,7 +293,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		delete lineInfo.rpnList;
 		lineInfo.rpnList = rpnList;
 
-		updateError(lineNumber, lineInfo, false);
+		updateError(lineNumber, lineInfo, errorItem, false);
 
 		// derefence old line and replace with new line
 		// (line gets deleted if new line has an error)
@@ -300,7 +307,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		lineInfo.rpnList = rpnList;  // REMOVE replace rpn list
 		lineInfo.errIndex = -1;
 
-		updateError(lineNumber, lineInfo, true);
+		updateError(lineNumber, lineInfo, errorItem, true);
 
 		// find offset to insert line
 		if (lineNumber < m_lineInfo.count())
@@ -340,12 +347,11 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 // function to update error into list if line has an error
 void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
-	bool lineInserted)
+	const ErrorItem &errorItem, bool lineInserted)
 {
-	bool hasError = lineInfo.rpnList->hasError();
 	if (!lineInserted)
 	{
-		if (!hasError)
+		if (errorItem.isEmpty())
 		{
 			removeError(lineNumber, lineInfo, false);
 			return;  // nothing more to do
@@ -353,8 +359,7 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 		else if (lineInfo.errIndex != -1)  // had error?
 		{
 			// replace current error
-			m_errors.replace(lineInfo.errIndex, ErrorItem(ErrorItem::Translator,
-				lineNumber, lineInfo.rpnList));
+			m_errors.replace(lineInfo.errIndex, errorItem);
 			return;  // nothing more to do
 		}
 	}
@@ -362,11 +367,10 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	// find location in error list for line number
 	int errIndex = m_errors.find(lineNumber);
 
-	if (hasError)
+	if (!errorItem.isEmpty())
 	{
 		// insert new error into error list
-		m_errors.insert(errIndex, ErrorItem(ErrorItem::Translator,
-			lineNumber, lineInfo.rpnList));
+		m_errors.insert(errIndex, errorItem);
 
 		lineInfo.errIndex = errIndex++;
 	}
@@ -374,7 +378,7 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	// loop thru rest of errors in list
 	for (; errIndex < m_errors.count(); errIndex++)
 	{
-		if (hasError)
+		if (!errorItem.isEmpty())
 		{
 			// adjust error index for inserted error
 			m_lineInfo[m_errors[errIndex].lineNumber()].errIndex++;

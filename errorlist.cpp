@@ -23,17 +23,24 @@
 //	2013-04-10	initial version
 
 #include "errorlist.h"
-#include "rpnlist.h"
+
+
+// constructor function to set null error item
+ErrorItem::ErrorItem(void)
+{
+	m_type = None;
+}
 
 
 // constructor function to set error item
-ErrorItem::ErrorItem(Type type, int lineNumber, RpnList *rpnList)
+ErrorItem::ErrorItem(Type type, int lineNumber, int column, int length,
+	const QString &message)
 {
 	m_type = type;
 	m_lineNumber = lineNumber;
-	m_column = rpnList->errorColumn();
-	m_length = rpnList->errorLength();
-	m_message = rpnList->errorMessage();
+	m_column = column;
+	m_length = length;
+	m_message = message;
 }
 
 
