@@ -477,7 +477,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		break;  // go add token to output and push to done stack
 
 	case NoParen_TokenType:
-		// NOTE for now assume a variable
+		// REMOVE for now assume a variable
 		// TODO first check if identifier is in function dictionary
 		// TODO only a function reference if name of current function
 		m_table.setTokenCode(token, reference == None_Reference
@@ -823,7 +823,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 	// determine data type (number for subscripts, any for arguments)
 	DataType dataType;
 	// TODO need to check test mode once dictionaries are implemented
-	// NOTE for now assume functions start with an 'F'
+	// REMOVE for now assume functions start with an 'F'
 	if (token->isType(Paren_TokenType) && (token->reference()
 		|| !token->string().startsWith('F', Qt::CaseInsensitive)))
 	{

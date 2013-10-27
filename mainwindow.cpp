@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	// setup program model (connect to edit box changes)
 	m_programModel = new ProgramModel(this);
 	connect(m_editBox, SIGNAL(linesChanged(int, int, int, QStringList)),
-		m_programModel, SLOT(update(int,int,int,QStringList)));
+		m_programModel, SLOT(update(int, int, int, QStringList)));
 	connect(m_programModel, SIGNAL(errorListChanged(ErrorList)),
 		m_editBox, SLOT(updateErrors(ErrorList)));
 

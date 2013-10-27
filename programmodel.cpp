@@ -107,7 +107,7 @@ ProgramModel::~ProgramModel(void)
 	delete m_varIntDictionary;
 	delete m_varStrDictionary;
 
-	// NOTE need to delete all of the stored translated line lists
+	// REMOVE need to delete all of the stored translated line lists
 	for (int i = 0; i < m_lineInfo.count(); i++)
 	{
 		delete m_lineInfo.at(i).rpnList;
@@ -169,7 +169,7 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 }
 
 
-// function to return debug text of all the dictionary
+// NOTE temporary function to return debug text of all the dictionary
 QString ProgramModel::dictionariesDebugText(void)
 {
 	QString string;

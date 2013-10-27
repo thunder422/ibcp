@@ -61,8 +61,8 @@ internal program code that will be executed when the program is run.
 The initial phase of encoder development is completed with support for
 remarks, variables and constants.  Several dictionaries have been
 implementing for storing the strings of the remarks, variables and
-constants.  Currently only single lines are handled though the
-dictionaries are maintained for all of the lines processed.
+constants.  Program lines are encoded and stored into program from where
+there are retreived.
 
 
 Building The Program

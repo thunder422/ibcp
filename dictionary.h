@@ -37,7 +37,6 @@ class Dictionary
 public:
 	Dictionary(void);
 
-	void remove(quint16 index);
 	enum EntryType
 	{
 		New_Entry,
@@ -48,6 +47,7 @@ public:
 
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
 		EntryType *returnNewEntry = NULL);
+	void remove(quint16 index);
 	QString string(int index) const
 	{
 		return m_keyList.at(index);

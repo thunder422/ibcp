@@ -20,8 +20,6 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap (updated 2013-10-06):
 
-	Integrate encoder with program model
-	Integrate encoder/program model to GUI
 	Implement initial Recreator (internal code to program text)
 	Integrate Recreator to GUI (update Edit Box)
 	Implement initial Run-time Module (for LET, PRINT and INPUT)
@@ -32,6 +30,18 @@ Planned Roadmap (updated 2013-10-06):
 	Implement DEF FN command
 	Implement DO-WHILE-UNTIL-LOOP commands
 	To be defined...
+
+
+Release 0.5.3 (2013-10-27)
+
+	Project developmental release - the encoder has been integrated
+	into the program model and the GUI program view.
+
+	  - program model now stores the program code (encoded)
+	  - error items no longer dependent on rpn list class
+	  - dictionary entries optionally case sensitive
+	  - test mode outputs program and dictionary contents at end
+	  - encoder test mode supports insert, replace and remove lines
 
 
 Release 0.5.2 (2013-10-06)
