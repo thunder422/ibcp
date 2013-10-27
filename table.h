@@ -78,7 +78,7 @@ class ProgramModel;
 typedef TokenStatus (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
 typedef quint16 (*EncodeFunction)(ProgramModel *programUnit, Token *token);
-typedef QString (*OperandTextFunction)(ProgramModel *programUnit,
+typedef const QString (*OperandTextFunction)(const ProgramModel *programUnit,
 	quint16 operand);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
 

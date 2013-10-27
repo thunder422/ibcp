@@ -98,12 +98,17 @@ quint16 varStrEncode(ProgramModel *programUnit, Token *token);
 
 
 // operand text functions
-QString remOperandText(ProgramModel *programUnit, quint16 operand);
-QString constNumOperandText(ProgramModel *programUnit, quint16 operand);
-QString constStrOperandText(ProgramModel *programUnit, quint16 operand);
-QString varDblOperandText(ProgramModel *programUnit, quint16 operand);
-QString varIntOperandText(ProgramModel *programUnit, quint16 operand);
-QString varStrOperandText(ProgramModel *programUnit, quint16 operand);
+const QString remOperandText(const ProgramModel *programUnit, quint16 operand);
+const QString constNumOperandText(const ProgramModel *programUnit,
+	quint16 operand);
+const QString constStrOperandText(const ProgramModel *programUnit,
+	quint16 operand);
+const QString varDblOperandText(const ProgramModel *programUnit,
+	quint16 operand);
+const QString varIntOperandText(const ProgramModel *programUnit,
+	quint16 operand);
+const QString varStrOperandText(const ProgramModel *programUnit,
+	quint16 operand);
 
 
 // remove functions

@@ -191,7 +191,7 @@ public:
 		return m_varStrDictionary;
 	}
 
-	QString operandText(Code code, int operand);
+	QString operandText(Code code, int operand) const;
 
 	// NOTE temporary functions for testing
 	int lineOffset(int lineIndex) const
@@ -213,7 +213,7 @@ public:
 			return &m_errors[m_lineInfo.at(lineIndex).errIndex];
 		}
 	}
-	QString debugText(int lineIndex, bool fullInfo = false);
+	QString debugText(int lineIndex, bool fullInfo = false) const;
 	QString dictionariesDebugText(void);
 
 signals:

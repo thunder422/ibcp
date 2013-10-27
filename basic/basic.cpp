@@ -33,7 +33,7 @@ quint16 remEncode(ProgramModel *programUnit, Token *token)
 	return programUnit->remDictionary()->add(token, Qt::CaseSensitive);
 }
 
-QString remOperandText(ProgramModel *programUnit, quint16 operand)
+const QString remOperandText(const ProgramModel *programUnit, quint16 operand)
 {
 	return programUnit->remDictionary()->string(operand);
 }
@@ -62,7 +62,8 @@ quint16 constNumEncode(ProgramModel *programUnit, Token *token)
 	return programUnit->constNumDictionary()->add(token);
 }
 
-QString constNumOperandText(ProgramModel *programUnit, quint16 operand)
+const QString constNumOperandText(const ProgramModel *programUnit,
+	quint16 operand)
 {
 	return programUnit->constNumDictionary()->string(operand);
 }
@@ -97,7 +98,8 @@ quint16 constStrEncode(ProgramModel *programUnit, Token *token)
 	return programUnit->constStrDictionary()->add(token, Qt::CaseSensitive);
 }
 
-QString constStrOperandText(ProgramModel *programUnit, quint16 operand)
+const QString constStrOperandText(const ProgramModel *programUnit,
+	quint16 operand)
 {
 	return programUnit->constStrDictionary()->string(operand);
 }
@@ -126,17 +128,20 @@ quint16 varStrEncode(ProgramModel *programUnit, Token *token)
 }
 
 
-QString varDblOperandText(ProgramModel *programUnit, quint16 operand)
+const QString varDblOperandText(const ProgramModel *programUnit,
+	quint16 operand)
 {
 	return programUnit->varDblDictionary()->string(operand);
 }
 
-QString varIntOperandText(ProgramModel *programUnit, quint16 operand)
+const QString varIntOperandText(const ProgramModel *programUnit,
+	quint16 operand)
 {
 	return programUnit->varIntDictionary()->string(operand);
 }
 
-QString varStrOperandText(ProgramModel *programUnit, quint16 operand)
+const QString varStrOperandText(const ProgramModel *programUnit,
+	quint16 operand)
 {
 	return programUnit->varStrDictionary()->string(operand);
 }

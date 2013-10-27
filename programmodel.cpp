@@ -115,7 +115,7 @@ ProgramModel::~ProgramModel(void)
 }
 
 
-QString ProgramModel::operandText(Code code, int operand)
+QString ProgramModel::operandText(Code code, int operand) const
 {
 	OperandTextFunction operandText = m_table.operandTextFunction(code);
 	return operandText == NULL ? "--": operandText(this, operand);
@@ -123,11 +123,11 @@ QString ProgramModel::operandText(Code code, int operand)
 
 
 // NOTE temporary function to return the text for a program line
-QString ProgramModel::debugText(int lineIndex, bool fullInfo)
+QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 {
 	QString string;
 
-	LineInfo &lineInfo = m_lineInfo[lineIndex];
+	const LineInfo &lineInfo = m_lineInfo[lineIndex];
 	if (fullInfo)
 	{
 		string.append(QString("[%1").arg(lineInfo.offset));
@@ -139,7 +139,7 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo)
 		string.append("]");
 	}
 
-	ProgramWord *line = m_code.data() + m_lineInfo.at(lineIndex).offset;
+	const ProgramWord *line = m_code.data() + m_lineInfo.at(lineIndex).offset;
 	int count = m_lineInfo.at(lineIndex).size;
 	for (int i = 0; i < count; i++)
 	{
@@ -152,7 +152,7 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo)
 		Code code = line[i].instructionCode();
 		if (m_table.hasFlag(code, HasOperand_Flag))
 		{
-			QString operand = operandText(code, line[++i].operand());
+			const QString operand = operandText(code, line[++i].operand());
 			string += QString(" %1:%2").arg(i)
 				.arg(line[i].operandDebugText(operand));
 		}
@@ -160,7 +160,7 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo)
 
 	if (fullInfo && lineInfo.errIndex != -1)
 	{
-		ErrorItem &errorItem = m_errors[lineInfo.errIndex];
+		const ErrorItem &errorItem = m_errors[lineInfo.errIndex];
 		string.append(QString(" ERROR %1:%2 %3").arg(errorItem.column())
 			.arg(errorItem.length()).arg(errorItem.message()));
 	}
@@ -196,16 +196,7 @@ QVariant ProgramModel::data(const QModelIndex &index, int role) const
 		}
 		else if (role == Qt::DisplayRole)
 		{
-			RpnList *rpnList = m_lineInfo.at(index.row()).rpnList;
-			if (!rpnList->hasError())
-			{
-				return rpnList->text();
-			}
-			else  // translate error occurred
-			{
-				return QString("ERROR %1:%2 %3").arg(rpnList->errorColumn())
-					.arg(rpnList->errorLength()).arg(rpnList->errorMessage());
-			}
+			return debugText(index.row(), true);
 		}
 	}
 	return QVariant();
