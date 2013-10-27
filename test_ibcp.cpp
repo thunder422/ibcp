@@ -252,29 +252,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 		cout << "Program:" << endl;
 		for (int i = 0; i < programUnit.rowCount(); i++)
 		{
-			cout << i << ": ";
-			RpnList *rpnList = programUnit.rpnList(i);
-			if (rpnList->hasError())
-			{
-				cout << "[" << programUnit.lineOffset(i) << "] ERROR "
-					<< rpnList->errorColumn() << ":" << rpnList->errorLength()
-					<< " " << rpnList->errorMessage();
-			}
-			else  // get text of encoded line and output it
-			{
-				int offset = programUnit.lineOffset(i);
-				int size = programUnit.lineSize(i);
-				if (size == 0)
-				{
-					cout << "[" << offset << "]";
-				}
-				else
-				{
-					cout << "[" << offset << "-" << offset + size - 1 << "] "
-						<< programUnit.debugText(i);
-				}
-			}
-			cout << endl;
+			cout << i << ": " << programUnit.debugText(i, true) << endl;
 		}
 		cout << programUnit.dictionariesDebugText();
 	}
@@ -412,16 +390,15 @@ void Tester::encodeInput(QTextStream &cout, ProgramModel *programUnit,
 			QStringList() << testInput);
 	}
 
-	RpnList *rpnList = programUnit->rpnList(lineIndex);
-	bool hasError = rpnList->hasError();
+	const ErrorItem *errorItem = programUnit->lineError(lineIndex);
 	// only output line if no operation/line number or has an error
-	if (pos == 0 || hasError)
+	if (pos == 0 || errorItem != NULL)
 	{
 		printInput(cout, testInput);
-		if (hasError)
+		if (errorItem != NULL)
 		{
-			printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
-				rpnList->errorMessage());
+			printError(cout, errorItem->column(), errorItem->length(),
+				errorItem->message());
 		}
 		else  // get text of encoded line and output it
 		{

@@ -194,10 +194,6 @@ public:
 	QString operandText(Code code, int operand);
 
 	// NOTE temporary functions for testing
-	RpnList *rpnList(int lineIndex) const
-	{
-		return m_lineInfo.at(lineIndex).rpnList;
-	}
 	int lineOffset(int lineIndex) const
 	{
 		return m_lineInfo.at(lineIndex).offset;
@@ -206,7 +202,18 @@ public:
 	{
 		return m_lineInfo.at(lineIndex).size;
 	}
-	QString debugText(int lineIndex);
+	const ErrorItem *lineError(int lineIndex) const
+	{
+		if (m_lineInfo.at(lineIndex).errIndex == -1)
+		{
+			return NULL;
+		}
+		else
+		{
+			return &m_errors[m_lineInfo.at(lineIndex).errIndex];
+		}
+	}
+	QString debugText(int lineIndex, bool fullInfo = false);
 	QString dictionariesDebugText(void);
 
 signals:

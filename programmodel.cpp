@@ -123,15 +123,27 @@ QString ProgramModel::operandText(Code code, int operand)
 
 
 // NOTE temporary function to return the text for a program line
-QString ProgramModel::debugText(int lineIndex)
+QString ProgramModel::debugText(int lineIndex, bool fullInfo)
 {
 	QString string;
+
+	LineInfo &lineInfo = m_lineInfo[lineIndex];
+	if (fullInfo)
+	{
+		string.append(QString("[%1").arg(lineInfo.offset));
+		if (lineInfo.size > 0)
+		{
+			string.append(QString("-%1").arg(lineInfo.offset + lineInfo.size
+				- 1));
+		}
+		string.append("]");
+	}
 
 	ProgramWord *line = m_code.data() + m_lineInfo.at(lineIndex).offset;
 	int count = m_lineInfo.at(lineIndex).size;
 	for (int i = 0; i < count; i++)
 	{
-		if (i > 0)
+		if (i > 0 || fullInfo)
 		{
 			string += ' ';
 		}
@@ -145,6 +157,14 @@ QString ProgramModel::debugText(int lineIndex)
 				.arg(line[i].operandDebugText(operand));
 		}
 	}
+
+	if (fullInfo && lineInfo.errIndex != -1)
+	{
+		ErrorItem &errorItem = m_errors[lineInfo.errIndex];
+		string.append(QString(" ERROR %1:%2 %3").arg(errorItem.column())
+			.arg(errorItem.length()).arg(errorItem.message()));
+	}
+
     return string;
 }
 
