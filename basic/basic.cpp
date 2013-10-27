@@ -30,7 +30,7 @@
 
 quint16 remEncode(ProgramModel *programUnit, Token *token)
 {
-	return programUnit->remDictionary()->add(token);
+	return programUnit->remDictionary()->add(token, Qt::CaseSensitive);
 }
 
 QString remOperandText(ProgramModel *programUnit, quint16 operand)
@@ -94,7 +94,7 @@ ConstStrDictionary::~ConstStrDictionary(void)
 
 quint16 constStrEncode(ProgramModel *programUnit, Token *token)
 {
-	return programUnit->constStrDictionary()->add(token);
+	return programUnit->constStrDictionary()->add(token, Qt::CaseSensitive);
 }
 
 QString constStrOperandText(ProgramModel *programUnit, quint16 operand)

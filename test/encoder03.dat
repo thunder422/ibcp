@@ -1,0 +1,13 @@
+######################################
+#  Encoder Test #3: Dictionary Test  #
+######################################
++Var% = 4
++var% = VAR% + 1
++REM comment
++REM Comment
++REM COMMENT
++Var$ = "Test"
++VAR$ = "TEST"
++var$ = "test"
++Var = 1.23e45 / 9.87E-4
++VAR = var * 1.23E45 / 9.87e-4

@@ -25,7 +25,7 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include <QMap>
+#include <QHash>
 #include <QStack>
 #include <QStringList>
 
@@ -46,7 +46,8 @@ public:
 		sizeof_Entry
 	};
 
-	quint16 add(Token *token, EntryType *returnNewEntry = NULL);
+	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
+		EntryType *returnNewEntry = NULL);
 	QString string(int index) const
 	{
 		return m_keyList.at(index);
@@ -56,7 +57,7 @@ public:
 private:
 	QStack<quint16> m_freeStack;		// stack of free items
 	QStringList m_keyList;				// list of keys
-	QMap<QString, int> m_keyMap;		// map of keys to indexes
+	QHash<QString, int> m_keyHash;		// hash map of keys to indexes
 	QList<quint16> m_useCount;			// list of key use counts
 };
 
@@ -69,10 +70,10 @@ protected:
 	QVector<Info> m_info;				// additional dictionary information
 
 public:
-	quint16 add(Token *token)
+	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive)
 	{
 		EntryType returnNewEntry;
-		int index = Dictionary::add(token, &returnNewEntry);
+		int index = Dictionary::add(token, cs, &returnNewEntry);
 		if (returnNewEntry == New_Entry)
 		{
 			m_info.append(Info(token));

@@ -30,11 +30,17 @@ Dictionary::Dictionary(void)
 {
 }
 
-quint16 Dictionary::add(Token *token, Dictionary::EntryType *returnNewEntry)
+
+quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
+	Dictionary::EntryType *returnNewEntry)
 {
 	EntryType newEntry;
 
-	int index = m_keyMap.value(token->string(), -1);
+	// if requested, store upper case of key in hash to make search case
+	// insensitive (first actual string will be stored in key list)
+	QString hashKey = cs == Qt::CaseInsensitive
+		? token->string().toUpper() : token->string();
+	int index = m_keyHash.value(hashKey, -1);
 	if (index == -1)  // string not present?
 	{
 		if (m_freeStack.empty())  // no free indexes available?
@@ -51,7 +57,7 @@ quint16 Dictionary::add(Token *token, Dictionary::EntryType *returnNewEntry)
 			m_useCount[index] = 1;
 			newEntry = Reused_Entry;
 		}
-		m_keyMap[token->string()] = index;  // save key/index in map
+		m_keyHash[hashKey] = index;  // save key/index in map
 	}
 	else  // string already present, update use count
 	{
@@ -70,7 +76,7 @@ void Dictionary::remove(quint16 index)
 {
 	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
 	{
-		m_keyMap.remove(m_keyList.at(index));  // remove key/index from map
+		m_keyHash.remove(m_keyList.at(index));  // remove key/index from map
 		m_keyList[index].clear();
 		m_freeStack.push(index);
     }
