@@ -33,19 +33,6 @@ class CommandLine
 {
 	Q_DECLARE_TR_FUNCTIONS(CommandLine)
 
-	QTextStream &cout(FILE *stream = stdout);
-	void coutClose(void);
-	bool isVersionOption(const QStringList &args);
-	bool isHelpOption(const QStringList &args) const;
-
-	static const char *s_copyrightStatement;
-	static const char *s_warrantyStatement[];
-
-	QString m_programName;
-	int m_returnCode;
-	QTextStream m_cout;
-	QString m_usage;
-	QString m_fileName;
 public:
     explicit CommandLine(const QStringList &args);
 	~CommandLine();
@@ -80,6 +67,21 @@ public:
 	{
 		return s_warrantyStatement;
 	}
+
+private:
+	QTextStream &cout(FILE *stream = stdout);
+	void coutClose(void);
+	bool isVersionOption(const QStringList &args);
+	bool isHelpOption(const QStringList &args) const;
+
+	static const char *s_copyrightStatement;
+	static const char *s_warrantyStatement[];
+
+	QString m_programName;
+	int m_returnCode;
+	QTextStream m_cout;
+	QString m_usage;
+	QString m_fileName;
 };
 
 

@@ -32,6 +32,7 @@ class QListView;
 class ProgramLineDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
+
 public:
 	explicit ProgramLineDelegate(int baseLineNumber, QListView *programView,
 		QObject *parent = 0);

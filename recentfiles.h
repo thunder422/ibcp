@@ -32,6 +32,7 @@
 class RecentFiles : public QObject
 {
 	Q_OBJECT
+
 public:
 	explicit RecentFiles(QMenu *menu, QObject *parent = 0);
 

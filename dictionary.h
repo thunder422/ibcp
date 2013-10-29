@@ -66,9 +66,6 @@ template <class Info>
 // Info class must have Info(Token *token) constructor
 class InfoDictionary : public Dictionary
 {
-protected:
-	QVector<Info> m_info;				// additional dictionary information
-
 public:
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive)
 	{
@@ -84,6 +81,9 @@ public:
 		}
 		return index;
 	}
+
+protected:
+	QVector<Info> m_info;				// additional dictionary information
 };
 
 

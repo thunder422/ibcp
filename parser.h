@@ -37,12 +37,17 @@ class Parser
 {
 	Q_DECLARE_TR_FUNCTIONS(Parser)
 
-	Table &m_table;			// pointer to the table object
-	QString m_input;		// input line being parsed
-	int m_pos;				// index to current position in input string
-	Token *m_token;			// pointer to working token (to be returned)
-	bool m_operandState;	// currently operand state flag (2011-03-27)
+public:
+	explicit Parser(Table &table): m_table(table) {}
+	void setInput(const QString &input)
+	{
+		m_input = input;
+		m_pos = 0;
+		m_operandState = false;
+	}
+	Token *token(bool operandState = false);
 
+private:
 	// main functions
 	bool getCommand(void);
 	bool getIdentifier(void);
@@ -53,15 +58,12 @@ class Parser
 	// support functions
 	void skipWhitespace();
 	int scanWord(int pos, DataType &datatype, bool &paren);
-public:
-	explicit Parser(Table &table): m_table(table) {}
-	void setInput(const QString &input)
-	{
-		m_input = input;
-		m_pos = 0;
-		m_operandState = false;
-	}
-	Token *token(bool operandState = false);
+
+	Table &m_table;			// pointer to the table object
+	QString m_input;		// input line being parsed
+	int m_pos;				// index to current position in input string
+	Token *m_token;			// pointer to working token (to be returned)
+	bool m_operandState;	// currently operand state flag (2011-03-27)
 };
 
 

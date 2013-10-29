@@ -37,36 +37,6 @@ class Parser;
 
 class Translator
 {
-	struct HoldItem
-	{
-		Token *token;				// token pointer on hold stack
-		Token *first;				// operator token's first operand pointer
-	};
-	class HoldStack : public QStack<HoldItem>
-	{
-	public:
-		// drop the top item on stack (pop with no return)
-		void drop(void)
-		{
-			resize(size() - 1);
-		}
-		// push new item with token and first token
-		void push(Token *token, Token *first = NULL)
-		{
-			resize(size() + 1);
-			top().token = token;
-			top().first = first;
-		}
-	};
-
-	Table &m_table;					// reference to the table instance
-	Parser *m_parser;				// pointer to parser instance
-	RpnList *m_output;				// pointer to RPN list output
-	HoldStack m_holdStack;			// operator/function holding stack
-	DoneStack m_doneStack;			// items processed stack
-	Token *m_pendingParen;			// closing parentheses token is pending
-	int m_lastPrecedence;			// precedence of last op added during paren
-
 public:
 	explicit Translator(Table &table);
 	~Translator(void);
@@ -165,6 +135,36 @@ private:
 
 	// Output List Function
 	TokenStatus outputAssignCodes(Token *&token);
+
+	struct HoldItem
+	{
+		Token *token;				// token pointer on hold stack
+		Token *first;				// operator token's first operand pointer
+	};
+	class HoldStack : public QStack<HoldItem>
+	{
+	public:
+		// drop the top item on stack (pop with no return)
+		void drop(void)
+		{
+			resize(size() - 1);
+		}
+		// push new item with token and first token
+		void push(Token *token, Token *first = NULL)
+		{
+			resize(size() + 1);
+			top().token = token;
+			top().first = first;
+		}
+	};
+
+	Table &m_table;					// reference to the table instance
+	Parser *m_parser;				// pointer to parser instance
+	RpnList *m_output;				// pointer to RPN list output
+	HoldStack m_holdStack;			// operator/function holding stack
+	DoneStack m_doneStack;			// items processed stack
+	Token *m_pendingParen;			// closing parentheses token is pending
+	int m_lastPrecedence;			// precedence of last op added during paren
 };
 
 

@@ -35,11 +35,6 @@ class Table;
 // class for holding an item in the RPN output list
 class RpnItem
 {
-	Token *m_token;				// pointer to token
-	int m_index;				// index within RPN list
-	int m_attachedCount;		// number of operands
-	RpnItem **m_attached;		// array of attached item pointers
-
 public:
 	RpnItem(Token *token, int attachedCount = 0, RpnItem **attached = NULL)
 	{
@@ -95,6 +90,12 @@ public:
 	{
 		return !(*this == other);
 	}
+
+private:
+	Token *m_token;				// pointer to token
+	int m_index;				// index within RPN list
+	int m_attachedCount;		// number of operands
+	RpnItem **m_attached;		// array of attached item pointers
 };
 
 

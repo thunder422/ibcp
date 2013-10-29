@@ -39,9 +39,6 @@ class ProgramModel;
 
 class ConstNumInfo
 {
-	double m_value;
-	int m_valueInt;
-
 public:
 	ConstNumInfo(void);
 	ConstNumInfo(Token *token);
@@ -54,13 +51,15 @@ public:
 	{
 		return m_valueInt;
 	}
+
+private:
+	double m_value;
+	int m_valueInt;
 };
 
 
 class ConstStrInfo
 {
-	QString *m_value;
-
 public:
 	ConstStrInfo(void);
 	ConstStrInfo(Token *token);
@@ -69,6 +68,9 @@ public:
 	{
 		return m_value;
 	}
+
+private:
+	QString *m_value;
 };
 
 

@@ -39,6 +39,26 @@ class Tester
 {
 	Q_DECLARE_TR_FUNCTIONS(Test)
 
+public:
+	explicit Tester(const QStringList &args);
+	~Tester(void) {}
+
+	static QStringList options(void);
+	bool run(QTextStream &cout, CommandLine *commandLine);
+	bool hasOption(void) const  // has a test option been specified?
+	{
+		return m_option != OptNone;
+	}
+	bool hasError(void) const  // does test arguments contain an error?
+	{
+		return m_option == OptError;
+	}
+	QString errorMessage(void) const  // message of error
+	{
+		return m_errorMessage;
+	}
+
+private:
 	enum Option {  // contains bit masks
 		OptNone = -1,
 		OptFirst,
@@ -71,24 +91,6 @@ class Tester
 	QString m_testName;			// name of test
 	QString m_testFileName;		// name of test file (OptFile only)
 	QString m_errorMessage;		// message if error occurred
-public:
-	explicit Tester(const QStringList &args);
-	~Tester(void) {}
-
-	static QStringList options(void);
-	bool run(QTextStream &cout, CommandLine *commandLine);
-	bool hasOption(void) const  // has a test option been specified?
-	{
-		return m_option != OptNone;
-	}
-	bool hasError(void) const  // does test arguments contain an error?
-	{
-		return m_option == OptError;
-	}
-	QString errorMessage(void) const  // message of error
-	{
-		return m_errorMessage;
-	}
 };
 
 

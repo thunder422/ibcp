@@ -85,24 +85,6 @@ typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
 
 class Table
 {
-	static Table *s_instance;		// single instance of table
-	static QStringList s_errorList;	// list of errors found during initialize
-
-	TableEntry *m_entry;			// pointer to table entries
-	struct Range
-	{
-		Code beg;					// begin index of range
-		Code end;					// end index of range
-	} m_range[sizeof_SearchType];	// range for each search type
-
-	// these functions private to prevent multiple instances
-	Table(void) {}
-	Table(TableEntry *entry) : m_entry(entry) {}
-	Table(Table const &) {}
-	Table &operator=(Table const &) {return *this;}
-
-	// function to setup and check the table entries
-	QStringList setupAndCheck(void);
 public:
 	// function to create the single instance, initialize and check the table
 	static void initialize(void);
@@ -162,6 +144,26 @@ public:
 	Code search(Code code, int argumentCount) const;
 	Code search(Code code, DataType *dataType) const;
 	bool match(Code code, DataType *dataType) const;
+
+private:
+	// these functions private to prevent multiple instances
+	Table(void) {}
+	Table(TableEntry *entry) : m_entry(entry) {}
+	Table(Table const &) {}
+	Table &operator=(Table const &) {return *this;}
+
+	// function to setup and check the table entries
+	QStringList setupAndCheck(void);
+
+	static Table *s_instance;		// single instance of table
+	static QStringList s_errorList;	// list of errors found during initialize
+
+	TableEntry *m_entry;			// pointer to table entries
+	struct Range
+	{
+		Code beg;					// begin index of range
+		Code end;					// end index of range
+	} m_range[sizeof_SearchType];	// range for each search type
 };
 
 

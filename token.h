@@ -54,19 +54,6 @@ class Token
 {
 	Q_DECLARE_TR_FUNCTIONS(Token)
 
-	int m_id;				// private ID (index) for detecting token leaks
-	int m_column;			// start column of token
-	int m_length;			// length of token
-	TokenType m_type;		// type of the token
-	DataType m_dataType;	// data type of token
-	QString m_string;		// pointer to string of token
-	Code m_code;			// internal code of token (index of TableEntry)
-	bool m_reference;		// token is a reference flag
-	int m_subCode;			// sub-code flags of token
-	double m_value;			// double value for constant token
-	int m_valueInt;			// integer value for constant token (if possible)
-	int m_index;			// index within encoded program code line
-
 public:
 	explicit Token(int column = -1)
 	{
@@ -282,6 +269,18 @@ public:
 	// recreate text for token
 	QString text(bool withIndex = false);
 
+	// static member functions
+	static void initialize(void);
+	static const QString message(TokenStatus status)
+	{
+		return s_messageArray[status];
+	}
+	static void reportErrors(void)
+	{
+		s_used.reportErrors();
+		s_deleted.reportErrors();
+	}
+
 private:
 	QString textOperand(bool withIndex);
 
@@ -313,18 +312,19 @@ private:
 	};
 	static DeletedList s_deleted;
 
-public:
-	// static member functions
-	static void initialize(void);
-	static const QString message(TokenStatus status)
-	{
-		return s_messageArray[status];
-	}
-	static void reportErrors(void)
-	{
-		s_used.reportErrors();
-		s_deleted.reportErrors();
-	}
+	// instance members
+	int m_id;				// private ID (index) for detecting token leaks
+	int m_column;			// start column of token
+	int m_length;			// length of token
+	TokenType m_type;		// type of the token
+	DataType m_dataType;	// data type of token
+	QString m_string;		// pointer to string of token
+	Code m_code;			// internal code of token (index of TableEntry)
+	bool m_reference;		// token is a reference flag
+	int m_subCode;			// sub-code flags of token
+	double m_value;			// double value for constant token
+	int m_valueInt;			// integer value for constant token (if possible)
+	int m_index;			// index within encoded program code line
 };
 
 
