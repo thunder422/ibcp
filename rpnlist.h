@@ -85,7 +85,11 @@ public:
 	}
 
 	QString text(bool withIndexes = false);
-	bool operator==(const RpnItem &other) const;
+	bool operator==(const RpnItem &other) const
+	{
+		return *m_token == *other.m_token
+			&& m_attachedCount == other.m_attachedCount;
+	}
 	bool operator!=(const RpnItem &other) const
 	{
 		return !(*this == other);

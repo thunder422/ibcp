@@ -456,79 +456,23 @@ QString Token::textOperand(bool withIndex)
 // function to overload the comparison operator
 bool Token::operator==(const Token &other) const
 {
-	if (m_type != other.m_type)
+	if (m_code != other.m_code)
 	{
 		return false;
 	}
-	switch (m_type)
-	{
-	case Constant_TokenType:
-		if (m_dataType != other.m_dataType)
-		{
-			return false;
-		}
-		// now fall thru to compare string of constant
-	case DefFuncN_TokenType:
-	case NoParen_TokenType:
-	case DefFuncP_TokenType:
-	case Paren_TokenType:
-		if (m_string != other.m_string)
-		{
-			return false;
-		}
-		break;
-
-	case Operator_TokenType:
-		if (m_code == RemOp_Code)
-		{
-			if (m_string != other.m_string)
-			{
-				return false;
-			}
-		}
-		else
-		{
-			if (m_code != other.m_code)
-			{
-				return false;
-			}
-		}
-		break;
-
-	case Command_TokenType:
-		if (m_code == Rem_Code)
-		{
-			if (m_string != other.m_string)
-			{
-				return false;
-			}
-		}
-		else
-		{
-			if (m_code != other.m_code)
-			{
-				return false;
-			}
-		}
-		break;
-
-	case IntFuncN_TokenType:
-	case IntFuncP_TokenType:
-		if (m_code != other.m_code)
-		{
-			return false;
-		}
-		break;
-
-	default:
-		// nothing to compare
-		break;
-	}
-	if (m_reference != other.m_reference || m_subCode != other.m_subCode)
+	if ((m_subCode & ProgramMask_SubCode)
+		!= (other.m_subCode & ProgramMask_SubCode))
 	{
 		return false;
 	}
-	return true;
+	if (m_code == Rem_Code || m_code == RemOp_Code || m_code == ConstStr_Code)
+	{
+		return m_string.compare(other.m_string, Qt::CaseSensitive) == 0;
+	}
+	else
+	{
+		return m_string.compare(other.m_string) == 0;
+	}
 }
 
 

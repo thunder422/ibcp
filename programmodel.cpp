@@ -293,6 +293,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 		if (*rpnList == *lineInfo.rpnList)
 		{
+			delete rpnList;
 			return false;  // line not changed; nothing more to do here
 		}
 

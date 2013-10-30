@@ -51,24 +51,6 @@ QString RpnItem::text(bool withIndexes)
 }
 
 
-// function to overload the comparison operator
-bool RpnItem::operator==(const RpnItem &other) const
-{
-	if (*m_token != *other.m_token || m_attachedCount != other.m_attachedCount)
-	{
-		return false;
-	}
-	for (int i = 0; i < m_attachedCount; i++)
-	{
-		if (*m_attached[i]->token() != *other.m_attached[i]->token())
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-
 // function to clear all of the RPN items from the list
 void RpnList::clear(void)
 {
