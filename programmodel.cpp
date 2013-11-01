@@ -115,13 +115,6 @@ ProgramModel::~ProgramModel(void)
 }
 
 
-QString ProgramModel::operandText(Code code, int operand) const
-{
-	OperandTextFunction operandText = m_table.operandTextFunction(code);
-	return operandText == NULL ? "--": operandText(this, operand);
-}
-
-
 // NOTE temporary function to return the text for a program line
 QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 {
@@ -150,9 +143,10 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		string += QString("%1:%2").arg(i).arg(line[i].instructionDebugText());
 
 		Code code = line[i].instructionCode();
-		if (m_table.hasFlag(code, HasOperand_Flag))
+		OperandTextFunction operandText = m_table.operandTextFunction(code);
+		if (operandText != NULL)
 		{
-			const QString operand = operandText(code, line[++i].operand());
+			const QString operand = operandText(this, line[++i].operand());
 			string += QString(" %1:%2").arg(i)
 				.arg(line[i].operandDebugText(operand));
 		}
@@ -467,20 +461,10 @@ ProgramCode ProgramModel::encode(RpnList *input)
 		Token *token = input->at(i)->token();
 		programLine[token->index()].setInstruction(token->code(),
 			token->subCodes());
-		if (m_table.hasFlag(token, HasOperand_Flag))
+		EncodeFunction encode = m_table.encodeFunction(token->code());
+		if (encode != NULL)
 		{
-			quint16 operand;
-			EncodeFunction encode = m_table.encodeFunction(token->code());
-			if (encode == NULL)
-			{
-				// TODO for now set set operand to zero
-				operand = 0;
-			}
-			else
-			{
-				operand = encode(this, token);
-			}
-			programLine[token->index() + 1].setOperand(operand);
+			programLine[token->index() + 1].setOperand(encode(this, token));
 		}
 	}
 	return programLine;

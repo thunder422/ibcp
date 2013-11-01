@@ -339,7 +339,7 @@ static TableEntry tableEntries[] =
 	{	// Rem_Code
 		Command_TokenType, OneWord_Multiple,
 		"REM", NULL, NULL,
-		HasOperand_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, None_DataType, NULL,
 		NULL, remEncode, remOperandText, remRemove
 	},
 	{	// If_Code
@@ -789,7 +789,7 @@ static TableEntry tableEntries[] =
 	{	// RemOp_Code
 		Operator_TokenType, OneChar_Multiple,
 		"'", NULL, NULL,
-		EndStmt_Flag | HasOperand_Flag, 2, None_DataType, NULL,
+		EndStmt_Flag, 2, None_DataType, NULL,
 		NULL, remEncode, remOperandText, remRemove
 	},
 	//*****************
@@ -1226,58 +1226,58 @@ static TableEntry tableEntries[] =
 	{	// Const_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "Const", NULL,
-		HasOperand_Flag, 2, Double_DataType,
+		Null_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const)),
 		NULL, constNumEncode, constNumOperandText, constNumRemove
 	},
 	{	// ConstInt_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstInt", NULL,
-		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
 		NULL, constNumEncode, constNumOperandText, constNumRemove
 	},
 	{	// ConstStr_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstStr", NULL,
-		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo,
+		Null_Flag, 2, String_DataType, &Str_ExprInfo,
 		NULL, constStrEncode, constStrOperandText, constStrRemove
 	},
 	{	// Var_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "Var", NULL,
-		HasOperand_Flag, 2, Double_DataType,
+		Null_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var)),
 		NULL, varDblEncode, varDblOperandText, varDblRemove
 	},
 	{	// VarInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarInt", NULL,
-		HasOperand_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove
 	},
 	{	// VarStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarStr", NULL,
-		HasOperand_Flag, 2, String_DataType, &Str_ExprInfo,
+		Null_Flag, 2, String_DataType, &Str_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove
 	},
 	{	// VarRef_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRef", NULL,
-		HasOperand_Flag | Reference_Flag, 2, Double_DataType,
+		Reference_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef)),
 		NULL, varDblEncode, varDblOperandText, varDblRemove
 	},
 	{	// VarRefInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefInt", NULL,
-		HasOperand_Flag | Reference_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Reference_Flag, 2, Integer_DataType, &Int_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove
 	},
 	{	// VarRefStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefStr", NULL,
-		HasOperand_Flag | Reference_Flag, 2, String_DataType, &Str_ExprInfo,
+		Reference_Flag, 2, String_DataType, &Str_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove
 	}
 };
@@ -1657,6 +1657,12 @@ TranslateFunction Table::translateFunction(Code code) const
 EncodeFunction Table::encodeFunction(Code code) const
 {
 	return m_entry[code].encode;
+}
+
+// returns whether the code has an operand
+bool Table::hasOperand(Code code) const
+{
+	return m_entry[code].operandText != NULL;
 }
 
 // returns the pointer to the operand text function (if any) for code

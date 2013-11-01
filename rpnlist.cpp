@@ -145,7 +145,7 @@ bool RpnList::setCodeSize(Table &table, Token *&token)
 			return false;
 		}
 		token->setIndex(m_codeSize++);
-		if (table.hasFlag(token->code(), HasOperand_Flag))
+		if (table.hasOperand(token->code()))
 		{
 			m_codeSize++;  // increment count for operand
 		}

@@ -385,7 +385,7 @@ QString Token::text(bool withIndex)
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
 		string += table.debugName(m_code);
-		if (withIndex && table.hasFlag(this, HasOperand_Flag))
+		if (withIndex && table.hasOperand(m_code))
 		{
 			second += textOperand(withIndex);
 		}

@@ -42,7 +42,6 @@ enum TableFlag
 	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
 	Print_Flag			= 0x00000010,  // print-only function
 	UseConstAsIs_Flag   = 0x00000020,  // use constant data type as is
-	HasOperand_Flag		= 0x00000040,  // code has operand in program code
 	EndStmt_Flag		= 0x00000080   // end statement
 };
 
@@ -116,6 +115,7 @@ public:
 	bool isUnaryOperator(Code code) const;
 	TranslateFunction translateFunction(Code code) const;
 	EncodeFunction encodeFunction(Code code) const;
+	bool hasOperand(Code code) const;
 	OperandTextFunction operandTextFunction(Code code) const;
 	RemoveFunction removeFunction(Code code) const;
 

@@ -191,8 +191,6 @@ public:
 		return m_varStrDictionary;
 	}
 
-	QString operandText(Code code, int operand) const;
-
 	// NOTE temporary functions for testing
 	int lineOffset(int lineIndex) const
 	{
