@@ -169,18 +169,6 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 		}
 	}
 
-	// initialize the worker classes
-	if (Table::hasErrors())
-	{
-		int n = 0;
-		foreach (QString error, Table::errorList())
-		{
-			qCritical("%s", qPrintable(tr("Error #%1: %2").arg(++n)
-				.arg(error)));
-		}
-		qFatal("%s", qPrintable(tr("Program aborting!")));
-	}
-
 	if (inputMode)
 	{
 		cout << endl;
@@ -200,7 +188,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 		cout << endl << tr("Table initialization successful.") << endl;
 	}
 
-	Translator translator(Table::instance());
+	Translator translator;
 	ProgramModel programUnit;  // creates its own translator instance
 
 	if (inputMode)
@@ -287,7 +275,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 // function to parse an input line and print the resulting tokens
 void Tester::parseInput(QTextStream &cout, const QString &testInput)
 {
-	Parser parser(Table::instance());
+	Parser parser;
 	Token *token;
 	bool more;
 

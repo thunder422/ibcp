@@ -138,7 +138,6 @@ struct TableEntry
 
 
 Table *Table::s_instance;			// pointer to single table instance
-QStringList Table::s_errorList;		// list of errors found during initialize
 
 
 // this macro produces two entries for the ExprInfo constructor,
@@ -1283,91 +1282,35 @@ static TableEntry tableEntries[] =
 };
 
 
-// function to create the single instance of the table
-//
-//   - creates the single table instance with the table entries
-//   - fatally aborts if called more than once
-//   - returns list of errors if any detected during initialization
-//   - returns empty list upon successful initialization
-//   - will not allow an second instance to be created
-
-void Table::initialize(void)
-{
-	if (s_instance != NULL || !s_errorList.isEmpty())
-	{
-		qFatal("Only one Table instance may be created!");
-	}
-	s_instance = new Table(tableEntries);
-
-	s_errorList = s_instance->setupAndCheck();
-	if (!s_errorList.isEmpty())
-	{
-		delete s_instance;
-		s_instance = NULL;
-	}
-}
-
-
 // static function to return a refernce to the single table instance
 //
-//   - fatally aborts if table entry errors were detected
-//   - fatally aborts if called before the instance is created
+//   - creates the single table instance with the table entries
+//   - constructor fails (abort application) if there are table errors
 
 Table &Table::instance(void)
 {
-	if (!s_errorList.isEmpty())
-	{
-		qFatal("Table entry errors were detected!");
-	}
 	if (s_instance == NULL)
 	{
-		qFatal("Table instance was not created!");
+		s_instance = new Table(tableEntries, sizeof(tableEntries)
+			/ sizeof(TableEntry));  // aborts application if table errors
 	}
 	return *s_instance;
 }
 
 
-// static function that checks if any table entries were detected
+// constructor function that initializes the table instance variables
 //
-//   - fatally aborts if called before instance creation was attempted
+//   - fatally aborts application if table entry errors were detected
+//   - table entry errors are output before aborting
 
-bool Table::hasErrors(void)
-{
-	if (s_instance == NULL && s_errorList.isEmpty())
-	{
-		qFatal("Table initialization was not attempted!");
-	}
-	return !s_errorList.isEmpty();
-}
-
-
-// static function that returns list of table errors detected
-//
-//   - fatally aborts if called before instance creation was attempted
-
-QStringList Table::errorList(void)
-{
-	if (s_instance == NULL && s_errorList.isEmpty())
-	{
-		qFatal("Table initialization was not attempted!");
-	}
-	return s_errorList;
-}
-
-
-// function that initializes the table variables
-//
-//   - if any error found then list of error messages returned
-//   - an empty list is returned if no errors were detected
-
-QStringList Table::setupAndCheck(void)
+Table::Table(TableEntry *entry, int entryCount) :
+	m_entry(entry)
 {
 	QStringList errorList;
 	int i;
 	int type;
 
 	// scan table and record indexes
-	int entryCount = sizeof(tableEntries) / sizeof(TableEntry);
 	// find maximum number of operands and associated codes
 	int maxOperands = 0;
 	int maxAssocCodes = 0;
@@ -1530,8 +1473,17 @@ QStringList Table::setupAndCheck(void)
 		}
 	}
 
-	// return list of error messages if any
-	return errorList;
+	// if errors then output messages and abort
+	if (!errorList.isEmpty())
+	{
+		int n = 0;
+		foreach (QString error, errorList)
+		{
+			qCritical("%s", qPrintable(tr("Error #%1: %2").arg(++n)
+				.arg(error)));
+		}
+		qFatal("%s", qPrintable(tr("Program aborting!")));
+	}
 }
 
 

@@ -38,7 +38,7 @@ class Parser;
 class Translator
 {
 public:
-	explicit Translator(Table &table);
+	explicit Translator(void);
 	~Translator(void);
 
 	enum TestMode {

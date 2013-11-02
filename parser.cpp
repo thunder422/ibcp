@@ -26,6 +26,13 @@
 #include "table.h"
 
 
+Parser::Parser(void) :
+	m_table(Table::instance())
+{
+
+}
+
+
 // function to get a token at the current position
 //
 //     - a pointer to the token is returned

@@ -38,7 +38,7 @@ class Parser
 	Q_DECLARE_TR_FUNCTIONS(Parser)
 
 public:
-	explicit Parser(Table &table): m_table(table) {}
+	explicit Parser(void);
 	void setInput(const QString &input)
 	{
 		m_input = input;

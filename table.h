@@ -84,15 +84,11 @@ typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
 
 class Table
 {
+	Q_DECLARE_TR_FUNCTIONS(Test)
+
 public:
-	// function to create the single instance, initialize and check the table
-	static void initialize(void);
 	// function to return a reference to the single table instance
 	static Table &instance(void);
-	// function to report if there were any table errors
-	static bool hasErrors(void);
-	// function to returns list of table errors
-	static QStringList errorList(void);
 
 	// CODE RELATED TABLE FUNCTIONS
 	TokenType type(Code code) const;
@@ -148,15 +144,11 @@ public:
 private:
 	// these functions private to prevent multiple instances
 	Table(void) {}
-	Table(TableEntry *entry) : m_entry(entry) {}
+	Table(TableEntry *entry, int entryCount);
 	Table(Table const &) {}
 	Table &operator=(Table const &) {return *this;}
 
-	// function to setup and check the table entries
-	QStringList setupAndCheck(void);
-
 	static Table *s_instance;		// single instance of table
-	static QStringList s_errorList;	// list of errors found during initialize
 
 	TableEntry *m_entry;			// pointer to table entries
 	struct Range

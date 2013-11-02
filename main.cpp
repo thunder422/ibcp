@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 
 	Token::initialize();
-	Table::initialize();
 	MainWindow mainWindow;
 	if (!mainWindow.isGuiActive())
 	{

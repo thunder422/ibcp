@@ -83,7 +83,7 @@ QString ProgramWord::operandDebugText(QString text) const
 ProgramModel::ProgramModel(QObject *parent) :
 	QAbstractListModel(parent),
 	m_table(Table::instance()),
-	m_translator(new Translator(m_table))
+	m_translator(new Translator)
 {
 	m_remDictionary = new Dictionary;
 	m_constNumDictionary = new InfoDictionary<ConstNumInfo>;

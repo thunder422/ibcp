@@ -37,8 +37,11 @@ enum {
 };
 
 
-Translator::Translator(Table &table): m_table(table),
-	m_parser(new Parser(table)), m_output(NULL), m_pendingParen(NULL)
+Translator::Translator(void) :
+	m_table(Table::instance()),
+	m_parser(new Parser),
+	m_output(NULL),
+	m_pendingParen(NULL)
 {
 
 }
