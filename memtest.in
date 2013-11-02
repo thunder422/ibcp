@@ -66,3 +66,29 @@ do
 	fi
 	echo Test File $base... $result
 done
+
+for input in ${dir}expression*.dat ${dir}translator*.dat
+do
+	base=${input##*/}
+	output=${base%.dat}.out
+	memout=r${base%.dat}.mem
+	valgrind --leak-check=full --suppressions=./ibcp.supp ./ibcp -to $input >$output 2>$memout
+	result=""
+	cmp -s $dir$output $output
+	if [ $? -ne 0 ]
+	then
+		result=" Results"
+	fi
+	errsum=(`grep "ERROR SUMMARY" $memout`)
+	if [ ${errsum[3]} -ne 0 ]
+	then
+		result="$result Memory(${errsum[3]})"
+	fi
+	if [ "X$result" == "X" ]
+	then
+		result="OK"
+	else
+		result="FAIL: $result"
+	fi
+	echo Recreate Test File $base... $result
+done

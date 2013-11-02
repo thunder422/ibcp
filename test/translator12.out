@@ -1,0 +1,94 @@
+
+Input: INPUT A
+Output: TEST:InputParse InputBegin A<ref> InputAssign INPUT 
+
+Input: INPUT A,B
+Output: TEST:InputParse InputParse InputBegin A<ref> InputAssign B<ref> InputAssign INPUT 
+
+Input: INPUT A,B%,C$
+Output: TEST:InputParseStr InputParseInt InputParse InputBegin A<ref> InputAssign B%<ref> InputAssignInt C$<ref> InputAssignStr INPUT 
+
+Input: INPUT A$;
+Output: TEST:InputParseStr InputBegin A$<ref> InputAssignStr INPUT'Keep' 
+
+Input: INPUT A(I%),B%(I%);
+Output: TEST:InputParseInt InputParse InputBegin I% A(<ref> InputAssign I% B%(<ref> InputAssignInt INPUT'Keep' 
+
+Input: INPUT PROMPT "Enter Number: "; N%
+Output: TEST:"Enter Number: " InputParseInt InputBeginStr N%<ref> InputAssignInt INPUT-PROMPT 
+
+Input: INPUT PROMPT A$+":"; A
+Output: TEST:A$ ":" +$ InputParse InputBeginStr A<ref> InputAssign INPUT-PROMPT 
+
+Input: INPUT PROMPT "Two Values", A, B;
+Output: TEST:"Two Values" InputParse InputParse InputBeginStr'Question' A<ref> InputAssign B<ref> InputAssign INPUT-PROMPT'Keep' 
+
+Input: INPUT PROMPT P$(I%), S$(I%)
+Output: TEST:I% P$( InputParseStr InputBeginStr'Question' I% S$(<ref> InputAssignStr INPUT-PROMPT 
+
+Input: INPUT PROMPT F$(I%), S$(I%)
+Output: TEST:I%<ref> F$([0:I%<ref>] InputParseStr InputBeginStr'Question' I% S$(<ref> InputAssignStr INPUT-PROMPT 
+
+Input: INPUT PROMPT FNA$(I%), S$(I%)
+Output: TEST:I% FNA$([0:I%] InputParseStr InputBeginStr'Question' I% S$(<ref> InputAssignStr INPUT-PROMPT 
+
+Input: INPUT
+            ^-- expected variable
+
+Input: INPUT,
+            ^-- expected variable
+
+Input: INPUT;
+            ^-- expected variable
+
+Input: INPUT; -A
+            ^-- expected variable
+
+Input: INPUT (A)
+             ^-- expected variable
+
+Input: INPUT INT(A)
+             ^^^^-- expected variable
+
+Input: INPUT LEFT$(A$,1)
+             ^^^^^^-- expected variable
+
+Input: INPUT FNA
+             ^^^-- expected variable
+
+Input: INPUT FNA(X)
+             ^^^-- expected variable
+
+Input: INPUT A B
+               ^-- expected comma, semicolon or end-of-statement
+
+Input: INPUT A+B
+              ^-- expected comma, semicolon or end-of-statement
+
+Input: INPUT A,
+               ^-- expected variable
+
+Input: INPUT PROMPT
+                   ^-- expected string expression
+
+Input: INPUT PROMPT A+B*C
+                    ^^^^^-- expected string expression
+
+Input: INPUT PROMPT A$
+                      ^-- expected operator, semicolon or comma
+
+Input: INPUT PROMPT A$+
+                       ^-- expected string expression
+
+Input: INPUT PROMPT A$;
+                       ^-- expected variable
+
+Input: INPUT PROMPT 1;A
+                    ^-- expected string expression
+
+Input: INPUT PROMPT (A+B);C
+                    ^^^^^-- expected string expression
+
+Input: INPUT PROMPT INT(A);B
+                    ^^^^^^-- expected string expression
+

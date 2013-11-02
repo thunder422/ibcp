@@ -1,0 +1,82 @@
+
+Input: LEFT$(A$,1) = B$
+Output: TEST:A$<ref> 1% B$ AssignLeft 
+
+Input: LEFT$(A$,1) = B$ + C$
+Output: TEST:A$<ref> 1% B$ C$ +$ AssignLeft 
+
+Input: MID$(A$,2) = B$
+Output: TEST:A$<ref> 2% B$ AssignMid2 
+
+Input: MID$(A$,2) = B$ + C$
+Output: TEST:A$<ref> 2% B$ C$ +$ AssignMid2 
+
+Input: MID$(A$,2,3) = B$
+Output: TEST:A$<ref> 2% 3% B$ AssignMid3 
+
+Input: MID$(A$,2,3) = B$ + C$
+Output: TEST:A$<ref> 2% 3% B$ C$ +$ AssignMid3 
+
+Input: RIGHT$(A$,2) = B$
+Output: TEST:A$<ref> 2% B$ AssignRight 
+
+Input: RIGHT$(A$,2) = B$ + C$
+Output: TEST:A$<ref> 2% B$ C$ +$ AssignRight 
+
+Input: LEFT$(A$,1) = RIGHT$(B$,1)
+Output: TEST:A$<ref> 1% B$ 1% RIGHT$( AssignLeft 
+
+Input: LEFT$(A$,1) = RIGHT$(B$+C$,1)
+Output: TEST:A$<ref> 1% B$ C$ +$ 1% RIGHT$( AssignLeft 
+
+Input: RIGHT$(A$,2) = B
+                      ^-- expected string expression
+
+Input: RIGHT$(A$,2) = B%
+                      ^^-- expected string expression
+
+Input: RIGHT$(A,2) = B$
+              ^-- expected string variable
+
+Input: RIGHT$(A%,2) = B$
+              ^^-- expected string variable
+
+Input: RIGHT$(A$+B$,2) = C$
+                ^-- expected comma
+
+Input: RIGHT$(LEFT$(A$,1),2) = B$
+              ^^^^^^-- expected string variable
+
+Input: RIGHT$(LEFT$(A$+B$,1),2) = C$
+              ^^^^^^-- expected string variable
+
+Input: LEFT$(A$,1),RIGHT$(B$,1) = C$
+Output: TEST:A$<ref> 1% B$<ref> 1% C$ AssignKeepRight AssignLeft 
+
+Input: LEFT$(A$,1),MID$(B$,2,1),RIGHT$(C$,1) = D$
+Output: TEST:A$<ref> 1% B$<ref> 2% 1% C$<ref> 1% D$ AssignKeepRight AssignKeepMid3 AssignLeft 
+
+Input: LEFT$(A$,1),B$ = C$
+Output: TEST:A$<ref> 1% B$<ref> C$ AssignKeep$ AssignLeft 
+
+Input: LEFT$(A$,1),B$,C$ = D$
+Output: TEST:A$<ref> 1% B$<ref> C$<ref> D$ AssignKeep$ AssignKeep$ AssignLeft 
+
+Input: A$,LEFT$(B$,1) = C$
+Output: TEST:A$<ref> B$<ref> 1% C$ AssignKeepLeft Assign$ 
+
+Input: A$,LEFT$(B$,1),C$ = D$
+Output: TEST:A$<ref> B$<ref> 1% C$<ref> D$ AssignKeep$ AssignKeepLeft Assign$ 
+
+Input: A$,B$,C$ = D$
+Output: TEST:A$<ref> B$<ref> C$<ref> D$ AssignList$ 
+
+Input: A$,B$,LEFT$(C$,1) = D$
+Output: TEST:A$<ref> B$<ref> C$<ref> 1% D$ AssignKeepLeft AssignKeep$ Assign$ 
+
+Input: LEFT$(A$,1),B$,RIGHT$(C$,1) = D$
+Output: TEST:A$<ref> 1% B$<ref> C$<ref> 1% D$ AssignKeepRight AssignKeep$ AssignLeft 
+
+Input: A(int(B))=C
+Output: TEST:B INT( CvtInt A(<ref> C Assign 
+

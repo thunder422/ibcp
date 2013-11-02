@@ -1,0 +1,85 @@
+
+Input: Z = not A < 5.0 = B > 2.0
+Output: TEST:Z<ref> A 5.0 < B 2.0 > =% NOT CvtDbl Assign 
+
+Input: Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2
+Output: TEST:Z%<ref> A% 5% <% NOT B% 2% >% AND C% 1% <% D% 2% <>% AND OR Assign% 
+
+Input: Z$=STR$(VAL("1.23"))
+Output: TEST:Z$<ref> "1.23" VAL( STR$( Assign$ 
+
+Input: Z$=MID$(A$+B$,(C%+5)*D%,4)+" Test"
+Output: TEST:Z$<ref> A$ B$ +$ C% 5% +% D% *% 4% MID3$( " Test" +$ Assign$ 
+
+Input: Z% = (a$ = "this" + "test")
+Output: TEST:Z%<ref> a$ "this" "test" +$ =$')' Assign% 
+
+Input: Z = A% + B
+Output: TEST:Z<ref> A% B +%1 Assign 
+
+Input: Z = A + B%
+Output: TEST:Z<ref> A B% +%2 Assign 
+
+Input: Z% = A% + B%
+Output: TEST:Z%<ref> A% B% +% Assign% 
+
+Input: Z = A% + B% + C
+Output: TEST:Z<ref> A% B% +% C +%1 Assign 
+
+Input: Z = A% - B
+Output: TEST:Z<ref> A% B -%1 Assign 
+
+Input: Z = A - B%
+Output: TEST:Z<ref> A B% -%2 Assign 
+
+Input: Z% = A% - B%
+Output: TEST:Z%<ref> A% B% -% Assign% 
+
+Input: Z = A% - B% * C
+Output: TEST:Z<ref> A% B% C *%1 -%1 Assign 
+
+Input: Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D)
+Output: TEST:Z<ref> A% ABS%( B% SGN%( +% C ABS( D SGN( * +%1 Assign 
+
+Input: Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)
+Output: TEST:Z<ref> A% Neg% ABS%( B% Neg% SGN%( +% C Neg ABS( D Neg SGN( * +%1 Assign 
+
+Input: Z$ = STR$(A) + STR$(A%)
+Output: TEST:Z$<ref> A STR$( A% STR%$( +$ Assign$ 
+
+Input: Z = A% + B * C ^ D
+Output: TEST:Z<ref> A% B C D ^ * +%1 Assign 
+
+Input: Z = A$ + B
+                ^-- expected string expression
+
+Input: Z = A$ + B%
+                ^^-- expected string expression
+
+Input: Z = A + B$
+               ^^-- expected numeric expression
+
+Input: Z = A% + B$
+                ^^-- expected numeric expression
+
+Input: Z$ = A$ - B$
+            ^^-- expected numeric expression
+
+Input: Z$ = MID$(A$,B$,1)
+                    ^^-- expected numeric expression
+
+Input: Z$ = MID$(A$,2,C$)
+                      ^^-- expected numeric expression
+
+Input: Z$ = MID$(A,2,3)
+                 ^-- expected string expression
+
+Input: Z$ = MID$(A$,2,3) + B
+                           ^-- expected string expression
+
+Input: Z = B + MID$(A$,2,3)
+               ^^^^^^^^^^^^-- expected numeric expression
+
+Input: Z = A + (B$ + C$)
+               ^^^^^^^^^-- expected numeric expression
+

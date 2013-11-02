@@ -59,7 +59,7 @@ public:
 	}
 
 private:
-	enum Option {  // contains bit masks
+	enum Option {
 		OptNone = -1,
 		OptFirst,
 		OptParser = OptFirst,
@@ -87,7 +87,8 @@ private:
 		const QString &error);
 
 	QString m_programName;		// name of program
-	int m_option;				// option bit masks
+	int m_option;				// selection option
+	bool m_recreate;			// recreate testing
 	QString m_testName;			// name of test
 	QString m_testFileName;		// name of test file (OptFile only)
 	QString m_errorMessage;		// message if error occurred

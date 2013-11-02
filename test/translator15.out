@@ -1,0 +1,55 @@
+
+Input: REM This is a comment
+Output: TEST:REM| This is a comment| 
+
+Input: REM"Space not required if followed by non-alpha numeric"
+Output: TEST:REM|"Space not required if followed by non-alpha numeric"| 
+
+Input: REM+Same here
+Output: TEST:REM|+Same here| 
+
+Input: REM'and here
+Output: TEST:REM|'and here| 
+
+Input: REMARK This should also be a comment
+Output: TEST:REM|ARK This should also be a comment| 
+
+Input: REM           Comment with spaces
+Output: TEST:REM|           Comment with spaces| 
+
+Input: 'operator form of REM at beginning of line
+Output: TEST:'|operator form of REM at beginning of line| 
+
+Input: A=3'assign A
+Output: TEST:A<ref> 3 Assign '|assign A| 
+
+Input: A=3 'assign A
+Output: TEST:A<ref> 3 Assign '|assign A| 
+
+Input: A=3 ' assign A
+Output: TEST:A<ref> 3 Assign '| assign A| 
+
+Input: PRINT A 'output value
+Output: TEST:A PrintDbl PRINT '|output value| 
+
+Input: PRINT A+3 'comment
+Output: TEST:A 3 + PrintDbl PRINT '|comment| 
+
+Input: PRINT A+3;'comment
+Output: TEST:A 3 + PrintDbl ; '|comment| 
+
+Input: INPUT A'get value from user
+Output: TEST:InputParse InputBegin A<ref> InputAssign INPUT '|get value from user| 
+
+Input: A'bad comment
+        ^-- expected equal or comma for assignment
+
+Input: A='bad comment
+         ^-- expected numeric expression
+
+Input: A=3+'bad comment
+           ^-- expected numeric expression
+
+Input: INPUT'bad input
+            ^-- expected variable
+

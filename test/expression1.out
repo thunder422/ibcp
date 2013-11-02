@@ -1,0 +1,154 @@
+
+Input: A - B
+Output: TEST:A B - 
+
+Input: A + B
+Output: TEST:A B + 
+
+Input: A + B * C
+Output: TEST:A B C * + 
+
+Input: A * B + C
+Output: TEST:A B * C + 
+
+Input: A * -B + -C^D
+Output: TEST:A B Neg * C D ^ Neg + 
+
+Input: Value1 + Value2 - Value3 - Value4
+Output: TEST:Value1 Value2 + Value3 - Value4 - 
+
+Input: var_A * Var_A + Var_B * Var_B
+Output: TEST:var_A Var_A * Var_B Var_B * + 
+
+Input: not A < 5 = B > 2
+Output: TEST:A 5 < B 2 > =% NOT 
+
+Input: not A < 5 and B > 2 or C < 1 and D <> 2
+Output: TEST:A 5 < NOT B 2 > AND C 1 < D 2 <> AND OR 
+
+Input: A * B / C \ D MOD E
+Output: TEST:A B * C / D \ E MOD%1 
+
+Input: A mod B \ C / D * E
+Output: TEST:A B C D / E * \ MOD%2 
+
+Input: A * B ^ 2
+Output: TEST:A B 2% ^* * 
+
+Input: a$ = "this" + "test"
+Output: TEST:a$ "this" "test" +$ =$ 
+
+Input: -E
+Output: TEST:E Neg 
+
+Input: -45 + A
+Output: TEST:-45% A +%1 
+
+Input: -A + B
+Output: TEST:A Neg B + 
+
+Input: -A + --B
+Output: TEST:A Neg B Neg Neg + 
+
+Input: A% + B
+Output: TEST:A% B +%1 
+
+Input: A + B%
+Output: TEST:A B% +%2 
+
+Input: A% + B%
+Output: TEST:A% B% +% 
+
+Input: A% + B% + C
+Output: TEST:A% B% +% C +%1 
+
+Input: A% - B
+Output: TEST:A% B -%1 
+
+Input: A - B%
+Output: TEST:A B% -%2 
+
+Input: A% - B%
+Output: TEST:A% B% -% 
+
+Input: A% - B% * C
+Output: TEST:A% B% C *%1 -%1 
+
+Input: A% + B * C ^ D
+Output: TEST:A% B C D ^ * +%1 
+
+Input: A$ + B$
+Output: TEST:A$ B$ +$ 
+
+Input: A$ < B$ = 0
+Output: TEST:A$ B$ <$ 0% =% 
+
+Input: A$ + B
+            ^-- expected string expression
+
+Input: A$ + B%
+            ^^-- expected string expression
+
+Input: A + B$
+           ^^-- expected numeric expression
+
+Input: A% + B$
+            ^^-- expected numeric expression
+
+Input: A$ - B$
+       ^^-- expected numeric expression
+
+Input: -A$
+        ^^-- expected numeric expression
+
+Input: else
+       ^^^^-- expected expression
+
+Input: - else
+         ^^^^-- expected numeric expression
+
+Input: - +
+         ^-- expected numeric expression
+
+Input: +
+       ^-- expected expression
+
+Input: a print
+         ^^^^^-- expected operator or end-of-statement
+
+Input: a a
+         ^-- expected operator or end-of-statement
+
+Input: a + else
+           ^^^^-- expected numeric expression
+
+Input: a + +
+           ^-- expected numeric expression
+
+Input: a not
+         ^^^-- expected binary operator or end-of-statement
+
+Input: ..
+       ^^-- expected digits or single decimal point in floating point constant
+
+Input: A ..
+         ^-- expected operator or end-of-statement
+
+Input: A + ..
+           ^^-- expected digits or single decimal point in floating point constant
+
+Input: A + B ..
+             ^-- expected operator or end-of-statement
+
+Input: %
+       ^-- expected expression
+
+Input: A %
+         ^-- expected operator or end-of-statement
+
+Input: A$ + %
+            ^-- expected string expression
+
+Input: A + B %
+             ^-- expected operator or end-of-statement
+

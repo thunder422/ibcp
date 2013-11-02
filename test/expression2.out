@@ -1,0 +1,106 @@
+
+Input: (A + B) + C
+Output: TEST:A B +')' C + 
+
+Input: (A * B) + C
+Output: TEST:A B *')' C + 
+
+Input: (A + B) * C
+Output: TEST:A B + C * 
+
+Input: A + (B + C)
+Output: TEST:A B C + + 
+
+Input: A + (B + C) + D
+Output: TEST:A B C + + D + 
+
+Input: A + (B + C) * D
+Output: TEST:A B C + D * + 
+
+Input: (A + (B + C)) + D
+Output: TEST:A B C + +')' D + 
+
+Input: (A + (B + C)) * D
+Output: TEST:A B C + + D * 
+
+Input: A + (B * C)
+Output: TEST:A B C *')' + 
+
+Input: A + (B * C) + D
+Output: TEST:A B C *')' + D + 
+
+Input: A + (B * C) * D
+Output: TEST:A B C *')' D * + 
+
+Input: A + (B * C) ^ D
+Output: TEST:A B C * D ^ + 
+
+Input: A + ((B * C) + D)
+Output: TEST:A B C *')' D + + 
+
+Input: A + ((B * C) * D)
+Output: TEST:A B C *')' D *')' + 
+
+Input: A + ((B * C) ^ D)
+Output: TEST:A B C * D ^')' + 
+
+Input: A * (B + C)
+Output: TEST:A B C + * 
+
+Input: A * (B + C) + D
+Output: TEST:A B C + * D + 
+
+Input: A * (B + C) * D
+Output: TEST:A B C + * D * 
+
+Input: A + (B) + C
+Output: TEST:A B')' + C + 
+
+Input: A + ((B)) + C
+Output: TEST:A B')' ) + C + 
+
+Input: A + B + ((C))
+Output: TEST:A B + C')' ) + 
+
+Input: (A + B + C)
+Output: TEST:A B + C +')' 
+
+Input: ((A + B)) + C
+Output: TEST:A B +')' ) C + 
+
+Input: A + ((B * C))
+Output: TEST:A B C *')' ) + 
+
+Input: A + B * C ^ D
+Output: TEST:A B C D ^ * + 
+
+Input: ((A + B) * C) ^ D
+Output: TEST:A B + C * D ^ 
+
+Input: -A ^ 2 + (-B) ^ 3
+Output: TEST:A 2% ^* Neg B Neg 3% ^* + 
+
+Input: (A + B) * (C + D)
+Output: TEST:A B + C D + * 
+
+Input: (A + B) + (C + D)
+Output: TEST:A B +')' C D + + 
+
+Input: A + B + (C + D)
+Output: TEST:A B + C D + + 
+
+Input: (A * B) + (C * D)
+Output: TEST:A B *')' C D *')' + 
+
+Input: (A + (B * (C ^ D))) + E
+Output: TEST:A B C D ^')' *')' +')' E + 
+
+Input: (A ^ (B * (C + D))) + E
+Output: TEST:A B C D + * ^')' E + 
+
+Input: (A + B
+             ^-- expected operator or closing parentheses
+
+Input: A + B)
+            ^-- expected operator or end-of-statement
+

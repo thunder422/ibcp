@@ -1,0 +1,40 @@
+
+Input: MID$(MID$(A$+B$,2),(C+5)*D,4)
+Output: TEST:A$ B$ +$ 2% MID2$( C 5 + D * CvtInt 4% MID3$( 
+
+Input: abs(A)+FIX(B)+INT(C)+RND(D)+SGN(E)+CINT(F)
+Output: TEST:A ABS( B FIX( + C INT( + D RND( + E SGN( + F CINT( +%2 
+
+Input: SQR(G)+ATN(H)+COS(I)+SIN(J)+TAN(K)+EXP(L)+LOG(M)
+Output: TEST:G SQR( H ATN( + I COS( + J SIN( + K TAN( + L EXP( + M LOG( + 
+
+Input: ASC(A$)+ASC(B$,C)+INSTR(A$,B$)+INSTR(A$,B$,C)+LEN(D$)
+Output: TEST:A$ ASC( B$ C CvtInt ASC2( +% A$ B$ INSTR2( +% A$ B$ C CvtInt INSTR3( +% D$ LEN( +% 
+
+Input: LEFT$(D$,E)+RIGHT$(F$,G)+REPEAT$(H$,5)+SPACE$(15)
+Output: TEST:D$ E CvtInt LEFT$( F$ G CvtInt RIGHT$( +$ H$ 5% REPEAT$( +$ 15% SPACE$( +$ 
+
+Input: A=VAL(STR$(1.23))
+Output: TEST:A 1.23 STR$( VAL( = 
+
+Input: MID$(A$)
+              ^-- expected operator or comma
+
+Input: MID$(A$,1,2,3)
+                  ^-- expected operator or closing parentheses
+
+Input: INSTR(A$)
+               ^-- expected operator or comma
+
+Input: INSTR(A$,B$,C,D)
+                    ^-- expected operator or closing parentheses
+
+Input: ASC(A$,B,C)
+               ^-- expected operator or closing parentheses
+
+Input: INT(1.23,A)
+               ^-- expected operator or closing parentheses
+
+Input: A+RND*6.0
+Output: TEST:A RND 6.0 * + 
+

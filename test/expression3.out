@@ -1,0 +1,40 @@
+
+Input: MID$(A$+B$,(C+5)*D,4)+" Test"
+Output: TEST:A$ B$ +$ C 5 + D * CvtInt 4% MID3$( " Test" +$ 
+
+Input: int(Arr(A,B*(C+2))+(D))
+Output: TEST:A CvtInt B C 2 + * CvtInt Arr( D')' + INT( 
+
+Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
+Output: TEST:X CvtInt Y I Neg J + * CvtInt I FNZ([9:I] CvtInt B( INT( CvtInt NUM$ VAL( CvtInt Array( 
+
+Input: INT(A+B
+              ^-- expected operator or closing parentheses
+
+Input: B,F+G
+        ^-- expected operator or end-of-statement
+
+Input: Arr(B,,C)
+             ^-- expected numeric expression
+
+Input: MID$(,,C)
+            ^-- expected string expression
+
+Input: MID$(A,,C)
+            ^-- expected string expression
+
+Input: MID$(A$,,C)
+               ^-- expected numeric expression
+
+Input: MID$(A$,B$,C)
+               ^^-- expected numeric expression
+
+Input: MID$(A$,B,,C)
+                 ^-- expected numeric expression
+
+Input: MID$(A$,B,C$)
+                 ^^-- expected numeric expression
+
+Input: MID$(A$,B,C,)
+                  ^-- expected operator or closing parentheses
+

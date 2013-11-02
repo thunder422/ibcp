@@ -1,0 +1,61 @@
+
+Input: A=---B
+Output: TEST:A<ref> B Neg Neg Neg Assign 
+
+Input: A=-1.0
+Output: TEST:A<ref> -1.0 Assign 
+
+Input: A%=--1
+Output: TEST:A%<ref> -1% Neg% Assign% 
+
+Input: A=B-1.5
+Output: TEST:A<ref> B 1.5 - Assign 
+
+Input: A=B+-1.5
+Output: TEST:A<ref> B -1.5 + Assign 
+
+Input: A=B+--1.5
+Output: TEST:A<ref> B -1.5 Neg + Assign 
+
+Input: PRINT-1;--1;---1;- 1;
+Output: TEST:-1% PrintInt -1% Neg% PrintInt -1% Neg% Neg% PrintInt 1% Neg% PrintInt ; 
+
+Input: A=- 1.0 + -.001 + -0.12
+Output: TEST:A<ref> 1.0 Neg -.001 + -0.12 + Assign 
+
+Input: A%=-1 + - 2
+Output: TEST:A%<ref> -1% 2% Neg% +% Assign% 
+
+Input: A=-1.2E-23 + -1.2e+23 + -1.2e23
+Output: TEST:A<ref> -1.2E-23 -1.2e+23 + -1.2e23 + Assign 
+
+Input: A=- 1.2E-23 + - 1.2e+23 + - 1.2e23
+Output: TEST:A<ref> 1.2E-23 Neg 1.2e+23 Neg + 1.2e23 Neg + Assign 
+
+Input: A% = NOT -B%
+Output: TEST:A%<ref> B% Neg% NOT Assign% 
+
+Input: A% = NOT -2147483648
+Output: TEST:A%<ref> -2147483648% NOT Assign% 
+
+Input: A% = - NOT 123
+Output: TEST:A%<ref> 123% NOT Neg% Assign% 
+
+Input: A% = -2147483649 
+            ^^^^^^^^^^^-- expected valid integer constant
+
+Input: A = B^-C + B*-C
+Output: TEST:A<ref> B C Neg ^ B C Neg * + Assign 
+
+Input: A = -B^C + -B^-C
+Output: TEST:A<ref> B C ^ Neg B C Neg ^ Neg + Assign 
+
+Input: A = -B*C + -B*-C
+Output: TEST:A<ref> B Neg C * B Neg C Neg * + Assign 
+
+Input: A = (-B^NOT C) + -B*NOT C
+Output: TEST:A<ref> B C CvtInt NOT ^* Neg')' B Neg C CvtInt NOT *%2 + Assign 
+
+Input: A = -B^NOT C + -B*NOT C
+Output: TEST:A<ref> B C B Neg C CvtInt NOT *%2 + CvtInt NOT ^* Neg Assign 
+

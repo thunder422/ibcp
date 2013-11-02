@@ -49,3 +49,17 @@ do
 		echo Test File $base... FAIL
 	fi
 done
+
+for input in ${dir}expression*.dat ${dir}translator*.dat
+do
+	base=${input##*/}
+	output=${base%.dat}.out
+	./ibcp -to $input >$output
+	diff -wq $dir$output $output >/dev/null
+	if [ $? -eq 0 ]
+	then
+		echo Recreate Test File $base... OK
+	else
+		echo Recreate Test File $base... FAIL
+	fi
+done

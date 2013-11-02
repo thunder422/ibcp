@@ -1,0 +1,136 @@
+
+Input: PRINT A;B%;C$
+Output: TEST:A PrintDbl B% PrintInt C$ PrintStr PRINT 
+
+Input: PRINT A;B%;C$;
+Output: TEST:A PrintDbl B% PrintInt C$ PrintStr ; 
+
+Input: PRINT A,B%,C$
+Output: TEST:A PrintDbl , B% PrintInt , C$ PrintStr PRINT 
+
+Input: PRINT A,B%,C$,
+Output: TEST:A PrintDbl , B% PrintInt , C$ PrintStr , PRINT 
+
+Input: PRINT A+B; C%+D%; E$+F$; MID$(E$,1); LEFT$(E$+F$,5)
+Output: TEST:A B + PrintDbl C% D% +% PrintInt E$ F$ +$ PrintStr E$ 1% MID2$( PrintStr E$ F$ +$ 5% LEFT$( PrintStr PRINT 
+
+Input: PRINT "Test:"; TAB(10); A%; SPC(5); B
+Output: TEST:"Test:" PrintStr 10% TAB( A% PrintInt 5% SPC( B PrintDbl PRINT 
+
+Input: PRINT "Test:"; TAB(10); A; LOG(5); B
+Output: TEST:"Test:" PrintStr 10% TAB( A PrintDbl 5 LOG( PrintDbl B PrintDbl PRINT 
+
+Input: PRINT A; TAB(10)
+Output: TEST:A PrintDbl 10% TAB( PRINT 
+
+Input: PRINT A; TAB(10);
+Output: TEST:A PrintDbl 10% TAB( ; 
+
+Input: PRINT A; SPC(10)
+Output: TEST:A PrintDbl 10% SPC( PRINT 
+
+Input: PRINT A; SPC(10);
+Output: TEST:A PrintDbl 10% SPC( ; 
+
+Input: PRINT ,,A
+Output: TEST:, , A PrintDbl PRINT 
+
+Input: PRINT ,,A,
+Output: TEST:, , A PrintDbl , PRINT 
+
+Input: PRINT A,,B
+Output: TEST:A PrintDbl , , B PrintDbl PRINT 
+
+Input: PRINT A,,B,
+Output: TEST:A PrintDbl , , B PrintDbl , PRINT 
+
+Input: PRINT A;;B
+               ^-- expected expression, print function or end-of-statement
+
+Input: PRINT;A;;B;;
+            ^-- expected expression, comma, print function or end-of-statement
+
+Input: PRINT;
+            ^-- expected expression, comma, print function or end-of-statement
+
+Input: PRINT,
+Output: TEST:, PRINT 
+
+Input: PRINT C(A,,B)
+                 ^-- expected numeric expression
+
+Input: PRINT C(A;B)
+                ^-- expected operator, comma or closing parentheses
+
+Input: A=SPC(10)
+         ^^^^-- expected numeric expression
+
+Input: A=TAB(10)
+         ^^^^-- expected numeric expression
+
+Input: PRINT (A,,B)
+               ^-- expected operator or closing parentheses
+
+Input: PRINT A+;
+               ^-- expected numeric expression
+
+Input: PRINT A+,
+               ^-- expected numeric expression
+
+Input: PRINT A+
+               ^-- expected numeric expression
+
+Input: PRINT INT(A+;
+                   ^-- expected numeric expression
+
+Input: PRINT INT(A+,
+                   ^-- expected numeric expression
+
+Input: PRINT INT(A+
+                   ^-- expected numeric expression
+
+Input: PRINT INT(B,,C)
+                  ^-- expected operator or closing parentheses
+
+Input: PRINT (A+B
+                 ^-- expected operator or closing parentheses
+
+Input: PRINT (A+B,
+                 ^-- expected operator or closing parentheses
+
+Input: PRINT MID$(A$+B$
+                       ^-- expected operator or comma
+
+Input: PRINT (TAB(10)
+              ^^^^-- expected expression
+
+Input: PRINT INT(TAB(10))
+                 ^^^^-- expected numeric expression
+
+Input: PRINT VAL(TAB(10))
+                 ^^^^-- expected string expression
+
+Input: PRINT A(TAB(10))
+               ^^^^-- expected numeric expression
+
+Input: PRINT A+TAB(10)
+               ^^^^-- expected numeric expression
+
+Input: PRINT A%+TAB(10)
+                ^^^^-- expected numeric expression
+
+Input: PRINT A$+TAB(10)
+                ^^^^-- expected string expression
+
+Input: PRINT TAB(10)+A
+                    ^-- expected semicolon, comma or end-of-statement
+
+Input: PRINT C(D(A,,B),E)
+                   ^-- expected numeric expression
+
+Input: PRINT INT(D(A,,B),E)
+                     ^-- expected numeric expression
+
+Input: PRINT A;,
+               ^-- expected expression, print function or end-of-statement
+

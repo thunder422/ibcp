@@ -61,40 +61,63 @@ Tester::Tester(const QStringList &args)
 		{
 			break;
 		}
-		// fall through
+		// not one of the above options, fall through
 	case 3:
 		if (args.at(1) == "-t")
 		{
-			if (args.count() == 2)
+			m_recreate = false;
+		}
+		else if (args.at(1) == "-to")
+		{
+			m_recreate = true;
+		}
+		else
+		{
+			break;  // no test option found
+		}
+		if (args.count() == 2)
+		{
+			m_option = OptError;
+			m_errorMessage = tr("%1: missing test file name")
+				.arg(m_programName);
+		}
+		else
+		{
+			// find start of file name less path
+			m_testFileName = args.at(2);
+			QString baseName = QFileInfo(m_testFileName).baseName();
+
+			for (int i = OptFirst; i < OptSizeOf; i++)
+			{
+				// check beginning of file name
+				if (baseName.startsWith(name[i], Qt::CaseInsensitive))
+				{
+					m_option = i;
+					m_testName = name[i];
+					break;
+				}
+			}
+			if (m_option == OptNone)  // no matching names?
 			{
 				m_option = OptError;
-				m_errorMessage = tr("%1: missing test file name")
-					.arg(m_programName);
+				QString parser = m_recreate
+					? "" : QString("%1|").arg(name[OptParser]);
+				m_errorMessage = QString("%1: %2 -t%3 (%4%5|%6)[xx]")
+					.arg(tr("usage")).arg(m_programName).arg(parser)
+					.arg(m_recreate ? "o" : "").arg(name[OptExpression])
+					.arg(name[OptTranslator]);
 			}
-			else
+			else if (m_option == OptParser && m_recreate)
 			{
-				// find start of file name less path
-				m_testFileName = args.at(2);
-				QString baseName = QFileInfo(m_testFileName).baseName();
-
-				for (int i = OptFirst; i < OptSizeOf; i++)
-				{
-					// check beginning of file name
-					if (baseName.startsWith(name[i], Qt::CaseInsensitive))
-					{
-						m_option = i;
-						m_testName = name[i];
-						break;
-					}
-				}
-				if (m_option == OptNone)  // no matching names?
-				{
-					m_option = OptError;
-					m_errorMessage = QString("%1: %2 -t (%3|%4|%5)[xx]")
-						.arg(tr("usage")).arg(m_programName)
-						.arg(name[OptParser]).arg(name[OptExpression])
-						.arg(name[OptTranslator]);
-				}
+				m_option = OptError;
+				m_errorMessage = QString("%1: cannot use -to with %2 files")
+					.arg(m_programName).arg(name[OptParser]);
+			}
+			else if (m_option == OptEncoder && m_recreate)
+			{
+				m_option = OptError;
+				m_errorMessage = QString("%1: using -to with %2 files not yet "
+					"implemented").arg(m_programName).arg(name[OptEncoder]);
 			}
 		}
 	}
@@ -120,7 +143,7 @@ bool Tester::isOption(const QString &arg, const QString &exp,
 QStringList Tester::options(void)
 {
 	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
-		<< "-te" << "-tt" << "-tc";
+		<< "-te" << "-tt" << "-tc" << QString("-to <%1>").arg(tr("test_file"));
 }
 
 
@@ -289,14 +312,25 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 {
 	RpnList *rpnList = translator.translate(testInput, exprMode
 		? Translator::Expression_TestMode : Translator::Yes_TestMode);
-	if (!rpnList->hasError())
-	{
-		cout << "Output: " << rpnList->text() << ' ' << endl;
-	}
-	else  // translate error occurred
+	if (rpnList->hasError())
 	{
 		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
 			rpnList->errorMessage());
+	}
+	else  // no error, translate line and if selected recreate it
+	{
+		QString output;
+		if (m_recreate)
+		{
+			// recreate text from rpn list
+			// TODO for now just use rpn list text with "TEST"
+			output = "TEST:" + rpnList->text();
+		}
+		else
+		{
+			output = rpnList->text();
+		}
+		cout << "Output: " << output << ' ' << endl;
 	}
 	delete rpnList;
 }

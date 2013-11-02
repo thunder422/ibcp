@@ -192,7 +192,9 @@ set(ibcp_RESOURCES
 qt4_add_resources(ibcp_RCC_SOURCES ${ibcp_RESOURCES})
 
 # test and other files
-file(GLOB other_files RELATIVE ${PROJECT_SOURCE_DIR} test/*.dat test/*.txt)
+file(GLOB other_files
+	RELATIVE ${PROJECT_SOURCE_DIR} test/*.dat test/*.txt test/*.out
+)
 list(SORT other_files)
 list(APPEND other_files LICENSE README rel_notes.txt)
 
