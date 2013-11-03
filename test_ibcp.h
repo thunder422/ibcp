@@ -30,6 +30,7 @@
 
 class CommandLine;
 class Token;
+class Recreator;
 class RpnItem;
 class RpnList;
 class Translator;
@@ -74,7 +75,7 @@ private:
 		enum Option option, QString name, bool newTrans = false);
 	void parseInput(QTextStream &cout, const QString &testInput);
 	void translateInput(QTextStream &cout, Translator &translator,
-		const QString &testInput, bool exprMode);
+		Recreator &recreator, const QString &testInput, bool exprMode);
 	void encodeInput(QTextStream &cout, ProgramModel *programModel,
 		QString &testInput);
 	void printInput(QTextStream &cout, const QString &inputLine)

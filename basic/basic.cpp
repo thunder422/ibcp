@@ -23,6 +23,8 @@
 //	2013-10-05	initial version
 
 #include "programmodel.h"
+#include "recreator.h"
+#include "rpnlist.h"
 #include "token.h"
 
 
@@ -107,6 +109,14 @@ const QString constStrOperandText(const ProgramModel *programUnit,
 void constStrRemove(ProgramModel *programUnit, quint16 operand)
 {
 	programUnit->constStrDictionary()->remove(operand);
+}
+
+void constStrRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	// change all double quote to two double qoutes and surround with quotes
+	QString string = rpnItem->token()->string();
+	string.replace('"', "\"\"");
+	recreator.push('"' + string + '"');
 }
 
 

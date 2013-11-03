@@ -33,6 +33,8 @@
 class Translator;
 class Token;
 class ProgramModel;
+class Recreator;
+class RpnItem;
 
 
 // constant definitions
@@ -120,6 +122,12 @@ void constStrRemove(ProgramModel *programUnit, quint16 operand);
 void varDblRemove(ProgramModel *programUnit, quint16 operand);
 void varIntRemove(ProgramModel *programUnit, quint16 operand);
 void varStrRemove(ProgramModel *programUnit, quint16 operand);
+
+
+// recreate functions
+void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
+void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
+void constStrRecreate(Recreator &recreator, RpnItem *rpnItem);
 
 
 #endif // BASIC_H

@@ -162,6 +162,7 @@ set(ibcp_SOURCES
 	programlinedelegate.cpp
 	programmodel.cpp
 	recentfiles.cpp
+	recreator.cpp
 	rpnlist.cpp
 	table.cpp
 	token.cpp

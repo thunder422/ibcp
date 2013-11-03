@@ -33,6 +33,7 @@
 #include "table.h"
 #include "parser.h"
 #include "programmodel.h"
+#include "recreator.h"
 #include "translator.h"
 
 
@@ -190,6 +191,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 
 	Translator translator;
 	ProgramModel programUnit;  // creates its own translator instance
+	Recreator recreator;
 
 	if (inputMode)
 	{
@@ -231,10 +233,10 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			parseInput(cout, inputLine);
 			break;
 		case OptExpression:
-			translateInput(cout, translator, inputLine, true);
+			translateInput(cout, translator, recreator, inputLine, true);
 			break;
 		case OptTranslator:
-			translateInput(cout, translator, inputLine, false);
+			translateInput(cout, translator, recreator, inputLine, false);
 			break;
 		case OptEncoder:
 			encodeInput(cout, &programUnit, inputLine);
@@ -296,7 +298,7 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
 void Tester::translateInput(QTextStream &cout, Translator &translator,
-	const QString &testInput, bool exprMode)
+	Recreator &recreator, const QString &testInput, bool exprMode)
 {
 	RpnList *rpnList = translator.translate(testInput, exprMode
 		? Translator::Expression_TestMode : Translator::Yes_TestMode);
@@ -311,8 +313,13 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 		if (m_recreate)
 		{
 			// recreate text from rpn list
-			// TODO for now just use rpn list text with "TEST"
-			output = "TEST:" + rpnList->text();
+			output = recreator.recreate(rpnList);
+			if (exprMode)
+			{
+				// for expression mode, recreate will return an empty string,
+				// so need to pop the string on top of the stack afterward
+				output = recreator.pop();
+			}
 		}
 		else
 		{

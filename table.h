@@ -73,6 +73,8 @@ enum Multiple
 struct TableEntry;
 class Translator;
 class ProgramModel;
+class Recreator;
+class RpnItem;
 
 typedef TokenStatus (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
@@ -80,6 +82,7 @@ typedef quint16 (*EncodeFunction)(ProgramModel *programUnit, Token *token);
 typedef const QString (*OperandTextFunction)(const ProgramModel *programUnit,
 	quint16 operand);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
+typedef void (*RecreateFunction)(Recreator &recreator, RpnItem *rpnItem);
 
 
 class Table
@@ -114,6 +117,7 @@ public:
 	bool hasOperand(Code code) const;
 	OperandTextFunction operandTextFunction(Code code) const;
 	RemoveFunction removeFunction(Code code) const;
+	RecreateFunction recreateFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
 	Code unaryCode(Token *token) const;
@@ -133,6 +137,7 @@ public:
 	{
 		setTokenCode(token, baseCode, token->dataType(), 0);
 	}
+	QString name(Token *token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const QStringRef &string) const;

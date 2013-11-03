@@ -1,87 +1,87 @@
 
 Input: A - B
-Output: TEST:A B - 
+Output: A - B 
 
 Input: A + B
-Output: TEST:A B + 
+Output: A + B 
 
 Input: A + B * C
-Output: TEST:A B C * + 
+Output: A + B * C 
 
 Input: A * B + C
-Output: TEST:A B * C + 
+Output: A * B + C 
 
 Input: A * -B + -C^D
-Output: TEST:A B Neg * C D ^ Neg + 
+Output: A * -B + -C ^ D 
 
 Input: Value1 + Value2 - Value3 - Value4
-Output: TEST:Value1 Value2 + Value3 - Value4 - 
+Output: Value1 + Value2 - Value3 - Value4 
 
 Input: var_A * Var_A + Var_B * Var_B
-Output: TEST:var_A Var_A * Var_B Var_B * + 
+Output: var_A * Var_A + Var_B * Var_B 
 
 Input: not A < 5 = B > 2
-Output: TEST:A 5 < B 2 > =% NOT 
+Output: NOT A < 5 = B > 2 
 
 Input: not A < 5 and B > 2 or C < 1 and D <> 2
-Output: TEST:A 5 < NOT B 2 > AND C 1 < D 2 <> AND OR 
+Output: NOT A < 5 AND B > 2 OR C < 1 AND D <> 2 
 
 Input: A * B / C \ D MOD E
-Output: TEST:A B * C / D \ E MOD%1 
+Output: A * B / C \ D MOD E 
 
 Input: A mod B \ C / D * E
-Output: TEST:A B C D / E * \ MOD%2 
+Output: A MOD B \ C / D * E 
 
 Input: A * B ^ 2
-Output: TEST:A B 2% ^* * 
+Output: A * B ^ 2 
 
 Input: a$ = "this" + "test"
-Output: TEST:a$ "this" "test" +$ =$ 
+Output: a$ = "this" + "test" 
 
 Input: -E
-Output: TEST:E Neg 
+Output: -E 
 
 Input: -45 + A
-Output: TEST:-45% A +%1 
+Output: -45 + A 
 
 Input: -A + B
-Output: TEST:A Neg B + 
+Output: -A + B 
 
 Input: -A + --B
-Output: TEST:A Neg B Neg Neg + 
+Output: -A + --B 
 
 Input: A% + B
-Output: TEST:A% B +%1 
+Output: A% + B 
 
 Input: A + B%
-Output: TEST:A B% +%2 
+Output: A + B% 
 
 Input: A% + B%
-Output: TEST:A% B% +% 
+Output: A% + B% 
 
 Input: A% + B% + C
-Output: TEST:A% B% +% C +%1 
+Output: A% + B% + C 
 
 Input: A% - B
-Output: TEST:A% B -%1 
+Output: A% - B 
 
 Input: A - B%
-Output: TEST:A B% -%2 
+Output: A - B% 
 
 Input: A% - B%
-Output: TEST:A% B% -% 
+Output: A% - B% 
 
 Input: A% - B% * C
-Output: TEST:A% B% C *%1 -%1 
+Output: A% - B% * C 
 
 Input: A% + B * C ^ D
-Output: TEST:A% B C D ^ * +%1 
+Output: A% + B * C ^ D 
 
 Input: A$ + B$
-Output: TEST:A$ B$ +$ 
+Output: A$ + B$ 
 
 Input: A$ < B$ = 0
-Output: TEST:A$ B$ <$ 0% =% 
+Output: A$ < B$ = 0 
 
 Input: A$ + B
             ^-- expected string expression

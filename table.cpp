@@ -134,6 +134,7 @@ struct TableEntry
 	EncodeFunction encode;			// pointer to encode function
 	OperandTextFunction operandText;// pointer to operand text function
 	RemoveFunction remove;			// pointer to remove function
+	RecreateFunction recreate;		// pointer to recreate function
 };
 
 
@@ -442,38 +443,45 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneWord_Multiple,
 		"MOD", NULL, NULL,
 		Null_Flag, 42, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Mod, 1))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Mod, 1)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// And_Code
 		Operator_TokenType, OneWord_Multiple,
 		"AND", NULL, NULL,
-		Null_Flag, 18, Integer_DataType, &IntInt_ExprInfo
+		Null_Flag, 18, Integer_DataType, &IntInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Or_Code
 		Operator_TokenType, OneWord_Multiple,
 		"OR", NULL, NULL,
-		Null_Flag, 14, Integer_DataType, &IntInt_ExprInfo
+		Null_Flag, 14, Integer_DataType, &IntInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Not_Code
 		Operator_TokenType, OneWord_Multiple,
 		"NOT", NULL, NULL,
 		Null_Flag, 20, Integer_DataType,
-		new ExprInfo(Not_Code, Operands(Int))
+		new ExprInfo(Not_Code, Operands(Int)),
+		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// Eqv_Code
 		Operator_TokenType, OneWord_Multiple,
 		"EQV", NULL, NULL,
-		Null_Flag, 12, Integer_DataType, &IntInt_ExprInfo
+		Null_Flag, 12, Integer_DataType, &IntInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Imp_Code
 		Operator_TokenType, OneWord_Multiple,
 		"IMP", NULL, NULL,
-		Null_Flag, 10, Integer_DataType, &IntInt_ExprInfo
+		Null_Flag, 10, Integer_DataType, &IntInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Xor_Code
 		Operator_TokenType, OneWord_Multiple,
 		"XOR", NULL, NULL,
-		Null_Flag, 16, Integer_DataType, &IntInt_ExprInfo
+		Null_Flag, 16, Integer_DataType, &IntInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	//*********************
 	//   END PLAIN WORDS
@@ -693,72 +701,84 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneChar_Multiple,
 		"+", NULL, NULL,
 		Null_Flag, 40, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Add, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Add, 2)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Sub_Code
 		Operator_TokenType, OneChar_Multiple,
 		"-", NULL, NULL,
 		Null_Flag, 40, Double_DataType,
-		new ExprInfo(Neg_Code, Operands(DblDbl), AssocCode2(Sub, 1))
+		new ExprInfo(Neg_Code, Operands(DblDbl), AssocCode2(Sub, 1)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Mul_Code
 		Operator_TokenType, OneChar_Multiple,
 		"*", NULL, NULL,
 		Null_Flag, 46, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Mul, 1))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Mul, 1)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Div_Code
 		Operator_TokenType, OneChar_Multiple,
 		"/", NULL, NULL,
 		Null_Flag, 46, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Div, 1))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Div, 1)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// IntDiv_Code
 		Operator_TokenType, OneChar_Multiple,
 		"\\", NULL, NULL,
-		Null_Flag, 44, Integer_DataType, &DblDbl_ExprInfo
+		Null_Flag, 44, Integer_DataType, &DblDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Power_Code
 		Operator_TokenType, OneChar_Multiple,
 		"^", NULL, NULL,
 		UseConstAsIs_Flag, 50, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Power, 1))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Power, 1)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Eq_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", NULL, NULL,
 		Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 2)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Gt_Code
 		Operator_TokenType, TwoChar_Multiple,
 		">", NULL, NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Gt, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Gt, 2)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEq_Code
 		Operator_TokenType, TwoChar_Multiple,
 		">=", NULL, NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(GtEq, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(GtEq, 2)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Lt_Code
 		Operator_TokenType, TwoChar_Multiple,
 		"<", NULL, NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Lt, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Lt, 2)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEq_Code
 		Operator_TokenType, TwoChar_Multiple,
 		"<=", NULL, NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(LtEq, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(LtEq, 2)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEq_Code
 		Operator_TokenType, TwoChar_Multiple,
 		"<>", NULL, NULL,
 		Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(NotEq, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(NotEq, 2)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// OpenParen_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -805,7 +825,8 @@ static TableEntry tableEntries[] =
 		// FIXME temporarily replaced "-" with "Neq" for testing
 		"-", "Neg", NULL,
 		UseConstAsIs_Flag, 48, Double_DataType,
-		new ExprInfo(Neg_Code, Operands(Dbl), AssocCode(Neg))
+		new ExprInfo(Neg_Code, Operands(Dbl), AssocCode(Neg)),
+		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// Assign_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -902,235 +923,279 @@ static TableEntry tableEntries[] =
 	{	// AddI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"+", "+%1", NULL,
-		Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo
+		Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AddI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"+", "+%2", NULL,
-		Null_Flag, 40, Double_DataType, &DblInt_ExprInfo
+		Null_Flag, 40, Double_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AddInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"+", "+%", NULL,
 		Null_Flag, 40, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AddInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AddInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// CatStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"+", "+$", NULL,
-		Null_Flag, 40, String_DataType, &StrStr_ExprInfo
+		Null_Flag, 40, String_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"-", "-%1", NULL,
-		Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo
+		Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"-", "-%2", NULL,
-		Null_Flag, 40, Double_DataType, &DblInt_ExprInfo
+		Null_Flag, 40, Double_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"-", "-%", NULL,
 		Null_Flag, 40, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(SubInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(SubInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NegInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"-", "Neg%", NULL,
 		Null_Flag, 40, Integer_DataType,
-		new ExprInfo(NegInt_Code, Operands(Int))
+		new ExprInfo(NegInt_Code, Operands(Int)),
+		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// MulI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"*", "*%1", NULL,
-		Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo
+		Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// MulI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"*", "*%2", NULL,
-		Null_Flag, 46, Double_DataType, &DblInt_ExprInfo
+		Null_Flag, 46, Double_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// MulInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"*", "*%", NULL,
 		Null_Flag, 46, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(MulInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(MulInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"/", "/%1", NULL,
-		Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo
+		Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"/", "/%2", NULL,
-		Null_Flag, 46, Double_DataType, &DblInt_ExprInfo
+		Null_Flag, 46, Double_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"/", "/%", NULL,
 		Null_Flag, 46, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(DivInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(DivInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"MOD", "MOD%1", NULL,
-		Null_Flag, 42, Double_DataType, &IntDbl_ExprInfo
+		Null_Flag, 42, Double_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"MOD", "MOD%2", NULL,
-		Null_Flag, 42, Double_DataType, &DblInt_ExprInfo
+		Null_Flag, 42, Double_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModInt_Code
 		Operator_TokenType, OneWord_Multiple,
 		"MOD", "MOD%", NULL,
 		Null_Flag, 42, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(ModInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(ModInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"^", "^%1", NULL,
-		Null_Flag, 50, Double_DataType, &IntDbl_ExprInfo
+		Null_Flag, 50, Double_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerMul_Code
 		Operator_TokenType, OneChar_Multiple,
 		"^", "^*", NULL,
-		Null_Flag, 50, Double_DataType, &DblInt_ExprInfo
+		Null_Flag, 50, Double_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"^", "^%", NULL,
 		Null_Flag, 50, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(PowerInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(PowerInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", "=%1", NULL,
-		Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo
+		Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", "=%2", NULL,
-		Null_Flag, 30, Integer_DataType, &DblInt_ExprInfo
+		Null_Flag, 30, Integer_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", "=%", NULL,
 		Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(EqInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(EqInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"=", "=$", NULL,
-		Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo
+		Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		">", ">%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
+		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		">", ">%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo
+		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		">", ">%", NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		">", ">$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
+		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		">=", ">=%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
+		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		">=", ">=%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo
+		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		">=", ">=%", NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtEqInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtEqInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		">=", ">=$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
+		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<", "<%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
+		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<", "<%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo
+		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<", "<%", NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<", "<$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
+		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<=", "<=%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo
+		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<=", "<=%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo
+		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<=", "<=%", NULL,
 		Null_Flag, 32, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtEqInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtEqInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<=", "<=$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo
+		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqI1_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<>", "<>%1", NULL,
-		Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo
+		Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqI2_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<>", "<>%2", NULL,
-		Null_Flag, 30, Integer_DataType, &DblInt_ExprInfo
+		Null_Flag, 30, Integer_DataType, &DblInt_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<>", "<>%", NULL,
 		Null_Flag, 30, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(NotEqInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(NotEqInt)),
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqStr_Code
 		Operator_TokenType, OneChar_Multiple,
 		"<>", "<>$", NULL,
-		Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo
+		Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AbsInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -1239,7 +1304,8 @@ static TableEntry tableEntries[] =
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstStr", NULL,
 		Null_Flag, 2, String_DataType, &Str_ExprInfo,
-		NULL, constStrEncode, constStrOperandText, constStrRemove
+		NULL, constStrEncode, constStrOperandText, constStrRemove,
+		constStrRecreate
 	},
 	{	// Var_Code
 		NoParen_TokenType, OneWord_Multiple,
@@ -1629,6 +1695,12 @@ RemoveFunction Table::removeFunction(Code code) const
 	return m_entry[code].remove;
 }
 
+// returns the pointer to the recreate function (if any) for code
+RecreateFunction Table::recreateFunction(Code code) const
+{
+	return m_entry[code].recreate;
+}
+
 //=================================
 //  TOKEN RELATED TABLE FUNCTIONS
 //=================================
@@ -1713,6 +1785,13 @@ Token *Table::newToken(Code code)
 Code Table::cvtCode(Token *token, DataType dataType) const
 {
 	return cvtCodeHaveNeed[token->dataType()][dataType];
+}
+
+
+// function to return text for an command, operator or function code in a token
+QString Table::name(Token *token) const
+{
+	return name(token->code());
 }
 
 
