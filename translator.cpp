@@ -28,15 +28,6 @@
 #include "parser.h"
 
 
-// highest precedence value
-enum {
-	HighestPrecedence = 127
-	// this value was selected as the highest value because it is the highest
-	// one-byte signed value (in case the precedence member is changed to a
-	// char); all precedences in the table must be below this value
-};
-
-
 Translator::Translator(void) :
 	m_table(Table::instance()),
 	m_parser(new Parser),

@@ -63,10 +63,11 @@ QString Recreator::recreate(RpnList *rpnList)
 
 
 // function to push a string with optional precedence to holding stack
-void Recreator::push(QString string)
+void Recreator::push(QString string, int precedence)
 {
 	m_stack.resize(m_stack.size() + 1);
 	m_stack.top().string = string;
+	m_stack.top().precedence = precedence;
 }
 
 
@@ -74,6 +75,13 @@ void Recreator::push(QString string)
 QString Recreator::pop(void)
 {
     return m_stack.pop().string;
+}
+
+
+// function to return the reference to the top item of the stack
+const Recreator::StackItem &Recreator::top(void) const
+{
+	return m_stack.top();
 }
 
 
@@ -88,6 +96,24 @@ void Recreator::topAppend(QString string)
 void Recreator::append(QString string)
 {
 	m_output.append(string);
+}
+
+
+// function to get an operand from the top of the stack
+// (surround operand with parentheses if requested
+QString Recreator::popWithParens(bool addParens)
+{
+	QString string;
+	if (addParens)
+	{
+		string.append('(');
+	}
+	string.append(pop());
+	if (addParens)
+	{
+		string.append(')');
+	}
+	return string;
 }
 
 
@@ -117,13 +143,20 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 // function to recreate a binary operator
 void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
+	QString string;
+	int precedence = recreator.table().precedence(rpnItem->token()->code());
+
 	// get string of second operand
-	QString operand = recreator.pop();
+	// (add parens if operator precedence is higher than or same as operand)
+	string = recreator.popWithParens(precedence >= recreator.top().precedence);
+
 	// get string of operator with spaces, append to first operand
-	QString string = ' ' + recreator.table().name(rpnItem->token()) + ' ';
-	recreator.topAppend(string);
-	// append second operand to first operand and operator
-	recreator.topAppend(operand);
+	// (add parens if operator precendence is higher than the operand)
+	string = recreator.popWithParens(precedence > recreator.top().precedence)
+		+ ' ' + recreator.table().name(rpnItem->token()) + ' ' + string;
+
+	// push operator expression back to stack with precedence of operator
+	recreator.push(string, precedence);
 }
 
 

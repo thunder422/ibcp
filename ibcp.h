@@ -46,6 +46,15 @@ inline Code operator ++(Code &code, int postfix)
 }
 
 
+// highest precedence value
+enum {
+	HighestPrecedence = 127
+	// this value was selected as the highest value because it is the highest
+	// one-byte signed value (in case the precedence member is changed to a
+	// char); all precedences in the table must be below this value
+};
+
+
 // data type of operands
 enum DataType
 {

@@ -36,15 +36,23 @@ class Table;
 
 class Recreator
 {
+	struct StackItem
+	{
+		QString string;				// string of stack item
+		int precedence;				// precedence of stack item
+	};
+
 public:
 	explicit Recreator(void);
 
 	QString recreate(RpnList *rpnList);
 
-	void push(QString string);
+	void push(QString string, int precedence = HighestPrecedence);
 	QString pop(void);
+	const StackItem &top(void) const;
 	void topAppend(QString string);
 	void append(QString string);
+	QString popWithParens(bool addParens);
 
 	const Table &table(void) const
 	{
@@ -52,11 +60,6 @@ public:
 	}
 
 private:
-	struct StackItem
-	{
-		QString string;				// string of stack item
-	};
-
 	Table &m_table;					// reference to table instance
 	QStack<StackItem> m_stack;		// holding string stack
 	QString m_output;				// output string
