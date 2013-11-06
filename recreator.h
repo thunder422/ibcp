@@ -40,6 +40,7 @@ class Recreator
 	{
 		QString string;				// string of stack item
 		int precedence;				// precedence of stack item
+		bool unaryOperator;			// stack item is a unary operator
 	};
 
 public:
@@ -47,7 +48,8 @@ public:
 
 	QString recreate(RpnList *rpnList);
 
-	void push(QString string, int precedence = HighestPrecedence);
+	void push(QString string, int precedence = HighestPrecedence,
+		bool unaryOperator = false);
 	QString pop(void);
 	const StackItem &top(void) const;
 	void topAppend(QString string);

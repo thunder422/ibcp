@@ -104,3 +104,18 @@ Input: (A + B
 Input: A + B)
             ^-- expected operator or end-of-statement
 
+Input: -NOT A%
+Output: A% NOT Neg% 
+
+Input: NOT -A%
+Output: A% Neg% NOT 
+
+Input: -A + B
+Output: A Neg B + 
+
+Input: -(A + B)
+Output: A B + Neg 
+
+Input: -A ^ B
+Output: A B ^ Neg 
+

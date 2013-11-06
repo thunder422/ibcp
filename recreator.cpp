@@ -63,11 +63,12 @@ QString Recreator::recreate(RpnList *rpnList)
 
 
 // function to push a string with optional precedence to holding stack
-void Recreator::push(QString string, int precedence)
+void Recreator::push(QString string, int precedence, bool unaryOperator)
 {
 	m_stack.resize(m_stack.size() + 1);
 	m_stack.top().string = string;
 	m_stack.top().precedence = precedence;
+	m_stack.top().unaryOperator = unaryOperator;
 }
 
 
@@ -127,6 +128,8 @@ QString Recreator::popWithParens(bool addParens)
 // function to recreate a unary operator
 void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
+	int precedence = recreator.table().precedence(rpnItem->token()->code());
+
 	// get string for operator
 	QString string = recreator.table().name(rpnItem->token());
 	// if operator is a plain word operator, then need to add a space
@@ -135,8 +138,13 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 		string.append(' ');
 	}
 	// append operand and push to holding stack
-	string.append(recreator.pop());
-	recreator.push(string);
+	// (add parens if item on top of the stack is not a unary operator
+	// and operator precendence is higher than the operand)
+	string.append(recreator.popWithParens(!recreator.top().unaryOperator
+		&& precedence > recreator.top().precedence));
+
+	// push operator expression back to stack with precedence of operator
+	recreator.push(string, precedence, true);
 }
 
 

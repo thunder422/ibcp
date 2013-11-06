@@ -39,3 +39,9 @@ A + B + (C + D)
 (A + B
 # test missing open parentheses
 A + B)
+# more unary operator tests
+-NOT A%
+NOT -A%
+-A + B
+-(A + B)
+-A ^ B
