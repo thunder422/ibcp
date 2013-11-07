@@ -25,6 +25,7 @@
 #include "recreator.h"
 #include "rpnlist.h"
 #include "table.h"
+#include "basic/basic.h"
 
 
 Recreator::Recreator(void) :
@@ -56,6 +57,10 @@ QString Recreator::recreate(RpnList *rpnList)
 		else  // call recreate function for code
 		{
 			recreate(*this, rpnItem);
+		}
+		if (rpnItem->token()->hasSubCode(Paren_SubCode))
+		{
+			parenRecreate(*this, rpnItem);
 		}
 	}
 	return m_output;
@@ -102,12 +107,21 @@ void Recreator::append(QString string)
 
 // function to get an operand from the top of the stack
 // (surround operand with parentheses if requested
-QString Recreator::popWithParens(bool addParens)
+QString Recreator::popWithParens(bool addParens, int *precedence,
+	bool *unaryOperator)
 {
 	QString string;
 	if (addParens)
 	{
 		string.append('(');
+	}
+	if (precedence)
+	{
+		*precedence = top().precedence;
+	}
+	if (unaryOperator)
+	{
+		*unaryOperator = top().unaryOperator;
 	}
 	string.append(pop());
 	if (addParens)
@@ -165,6 +179,17 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 	// push operator expression back to stack with precedence of operator
 	recreator.push(string, precedence);
+}
+
+
+// function to surround item on top of the holding stack with parentheses
+void parenRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	int precedence;
+	bool unaryOperator;
+
+	QString string = recreator.popWithParens(true, &precedence, &unaryOperator);
+	recreator.push(string, precedence, unaryOperator);
 }
 
 

@@ -788,7 +788,8 @@ static TableEntry tableEntries[] =
 	{	// CloseParen_Code
 		Operator_TokenType, OneChar_Multiple,
 		")", NULL, NULL,
-		Null_Flag, 4, None_DataType
+		Null_Flag, 4, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, parenRecreate
 	},
 	{	// Comma_Code
 		Operator_TokenType, OneChar_Multiple,

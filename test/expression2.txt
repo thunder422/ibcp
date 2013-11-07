@@ -119,3 +119,12 @@ Output: A B + Neg
 Input: -A ^ B
 Output: A B ^ Neg 
 
+Input: A + B + (((C)))
+Output: A B + C')' )')' + 
+
+Input: (((A + B))) + C
+Output: A B +')' )')' C + 
+
+Input: ((((A + B)))) + C
+Output: A B +')' )')' ) C + 
+

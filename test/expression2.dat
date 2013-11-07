@@ -45,3 +45,7 @@ NOT -A%
 -A + B
 -(A + B)
 -A ^ B
+# more parentheses tests
+A + B + (((C)))
+(((A + B))) + C
+((((A + B)))) + C

@@ -54,7 +54,8 @@ public:
 	const StackItem &top(void) const;
 	void topAppend(QString string);
 	void append(QString string);
-	QString popWithParens(bool addParens);
+	QString popWithParens(bool addParens, int *precedence = NULL,
+		bool *unaryOperator = NULL);
 
 	const Table &table(void) const
 	{

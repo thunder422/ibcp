@@ -1164,7 +1164,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		if (m_lastPrecedence > precedence
 			|| !popped && m_lastPrecedence == precedence)
 		{
-			Token *lastToken = m_doneStack.top().rpnItem->token();
+			Token *lastToken = m_output->last()->token();
 			if (!lastToken->hasSubCode(Paren_SubCode))
 			{
 				// mark last code for unnecessary parentheses
