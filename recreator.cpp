@@ -42,18 +42,13 @@ QString Recreator::recreate(RpnList *rpnList, bool exprMode)
 	for (int i = 0; i < rpnList->count(); i++)
 	{
 		RpnItem *rpnItem = rpnList->at(i);
-		RecreateFunction recreate
-			= m_table.recreateFunction(rpnItem->token()->code());
-		if (recreate == NULL)
+		RecreateFunction recreate;
+		if (!rpnItem->token()->hasValidCode()
+			|| (recreate = m_table.recreateFunction(rpnItem->token()->code()))
+			== NULL)
 		{
-			// if not recreate function, then assume token has string
-			QString string = rpnItem->token()->string();
-			// REMOVE temporary check for problems
-			if (string.isEmpty())
-			{
-				string = "???";
-			}
-			push(string);
+			// if no recreate function, then it is missing from table
+			push('?' + rpnItem->token()->string() + '?');
 		}
 		else  // call recreate function for code
 		{
@@ -147,6 +142,13 @@ QString Recreator::popWithParens(bool addParens, int *precedence,
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+
+// function to recreate an operand
+void operandRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	// just push the string of the token
+	recreator.push(rpnItem->token()->string());
+}
 
 // function to recreate a unary operator
 void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)

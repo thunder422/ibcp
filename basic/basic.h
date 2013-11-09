@@ -125,6 +125,7 @@ void varStrRemove(ProgramModel *programUnit, quint16 operand);
 
 
 // recreate functions
+void operandRecreate(Recreator &recreator, RpnItem *rpnItem);
 void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
 void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
 void parenRecreate(Recreator &recreator, RpnItem *rpnItem);

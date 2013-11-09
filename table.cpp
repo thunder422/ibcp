@@ -1293,13 +1293,15 @@ static TableEntry tableEntries[] =
 		NULL, "Const", NULL,
 		Null_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const)),
-		NULL, constNumEncode, constNumOperandText, constNumRemove
+		NULL, constNumEncode, constNumOperandText, constNumRemove,
+		operandRecreate
 	},
 	{	// ConstInt_Code
 		Constant_TokenType, OneWord_Multiple,
 		NULL, "ConstInt", NULL,
 		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
-		NULL, constNumEncode, constNumOperandText, constNumRemove
+		NULL, constNumEncode, constNumOperandText, constNumRemove,
+		operandRecreate
 	},
 	{	// ConstStr_Code
 		Constant_TokenType, OneWord_Multiple,
@@ -1313,38 +1315,38 @@ static TableEntry tableEntries[] =
 		NULL, "Var", NULL,
 		Null_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var)),
-		NULL, varDblEncode, varDblOperandText, varDblRemove
+		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarInt", NULL,
 		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
-		NULL, varIntEncode, varIntOperandText, varIntRemove
+		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarStr", NULL,
 		Null_Flag, 2, String_DataType, &Str_ExprInfo,
-		NULL, varStrEncode, varStrOperandText, varStrRemove
+		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// VarRef_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRef", NULL,
 		Reference_Flag, 2, Double_DataType,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef)),
-		NULL, varDblEncode, varDblOperandText, varDblRemove
+		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarRefInt_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefInt", NULL,
 		Reference_Flag, 2, Integer_DataType, &Int_ExprInfo,
-		NULL, varIntEncode, varIntOperandText, varIntRemove
+		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarRefStr_Code
 		NoParen_TokenType, OneWord_Multiple,
 		NULL, "VarRefStr", NULL,
 		Reference_Flag, 2, String_DataType, &Str_ExprInfo,
-		NULL, varStrEncode, varStrOperandText, varStrRemove
+		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	}
 };
 
