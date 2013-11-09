@@ -136,6 +136,28 @@ QString Recreator::popWithParens(bool addParens, int *precedence,
 }
 
 
+// function to push an item with all of operands popped from the stack
+// (used for functions and arrays; also work with no operand functions)
+void Recreator::pushWithOperands(QString &name, int count)
+{
+	QStack<QString> stack;			// local stack of operands
+
+	QString separator = ")";
+	for (int i = 0; i < count; i++)
+	{
+		QString string = pop();
+		string.append(separator);
+		stack.push(string);
+		separator = ", ";
+	}
+	while (!stack.isEmpty())
+	{
+		name.append(stack.pop());
+	}
+	push(name);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 //                      GENERAL TABLE RECREATE FUNCTIONS                      //
@@ -201,6 +223,22 @@ void parenRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 	QString string = recreator.popWithParens(true, &precedence, &unaryOperator);
 	recreator.push(string, precedence, unaryOperator);
+}
+
+
+// function to recreate an internal function
+void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QString name = recreator.table().name(rpnItem->token());
+	int count = recreator.table().operandCount(rpnItem->token());
+	recreator.pushWithOperands(name, count);
+}
+
+
+// function to do nothing (for hidden codes)
+void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+
 }
 
 

@@ -433,8 +433,8 @@ static TableEntry tableEntries[] =
 	{	// Rnd_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		"RND", NULL, NULL,
-		Null_Flag, 2, Double_DataType, new ExprInfo()
-
+		Null_Flag, 2, Double_DataType, new ExprInfo(),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	//--------------------
 	//   Word Operators
@@ -502,171 +502,201 @@ static TableEntry tableEntries[] =
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ABS(", NULL, NULL,
 		Null_Flag, 2, Double_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Abs))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Abs)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Fix_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"FIX(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Frac_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"FRAC(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Int_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"INT(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 
 	},
 	{	// RndArg_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"RND(", NULL, NULL,
 		Null_Flag, 2, Double_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(RndArgs))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(RndArgs)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sgn_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SGN(", NULL, NULL,
 		Null_Flag, 2, Double_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Sgn))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Sgn)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cint_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"CINT(", NULL, NULL,
-		Null_Flag, 2, Integer_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Integer_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cdbl_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"CDBL(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Int_ExprInfo
+		Null_Flag, 2, Double_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sqr_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SQR(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Atn_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ATN(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cos_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"COS(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sin_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SIN(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tan_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"TAN(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Exp_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"EXP(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Log_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"LOG(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo
+		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tab_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"TAB(", NULL, NULL,
-		Print_Flag, 2, None_DataType, &Int_ExprInfo
+		Print_Flag, 2, None_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Spc_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SPC(", NULL, NULL,
-		Print_Flag, 2, None_DataType, &Int_ExprInfo
+		Print_Flag, 2, None_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Asc_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ASC(", NULL, NULL,
 		Multiple_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(Str))
+		new ExprInfo(Null_Code, Operands(Str)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Asc2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ASC(", "ASC2(", NULL,
 		Null_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrInt))
+		new ExprInfo(Null_Code, Operands(StrInt)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Chr_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"CHR$(", NULL, NULL,
-		Null_Flag, 2, String_DataType, &Int_ExprInfo
+		Null_Flag, 2, String_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"INSTR(", "INSTR2(", NULL,
-		Multiple_Flag, 2, Integer_DataType,
-		&StrStr_ExprInfo
+		Multiple_Flag, 2, Integer_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr3_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"INSTR(", "INSTR3(", NULL,
 		Null_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(StrStrInt))
+		new ExprInfo(Null_Code, Operands(StrStrInt)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Left_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"LEFT$(", NULL, NULL,
 		SubStr_Flag, 2, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Left, -1))
+		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Left, -1)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Len_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"LEN(", NULL, NULL,
 		Null_Flag, 2, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(Str))
+		new ExprInfo(Null_Code, Operands(Str)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid2_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"MID$(", "MID2$(", NULL,
 		Multiple_Flag | SubStr_Flag, 2, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Mid2, -1))
+		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Mid2, -1)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid3_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"MID$(", "MID3$(", NULL,
 		SubStr_Flag, 2, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrIntInt), AssocCode2(Mid3, -1))
+		new ExprInfo(Null_Code, Operands(StrIntInt), AssocCode2(Mid3, -1)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Repeat_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"REPEAT$(", NULL, NULL,
 		Null_Flag, 2, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrInt))
+		new ExprInfo(Null_Code, Operands(StrInt)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Right_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"RIGHT$(", NULL, NULL,
 		SubStr_Flag, 2, String_DataType,
-		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Right, -1))
+		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Right, -1)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Space_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SPACE$(", NULL, NULL,
-		Null_Flag, 2, String_DataType, &Int_ExprInfo
+		Null_Flag, 2, String_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Str_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"STR$(", NULL, NULL,
 		Null_Flag, 2, String_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Str))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Str)),
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Val_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"VAL(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Str_ExprInfo
+		Null_Flag, 2, Double_DataType, &Str_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	//***************************
 	//   END PARENTHESES WORDS
@@ -1201,32 +1231,38 @@ static TableEntry tableEntries[] =
 	{	// AbsInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"ABS(", "ABS%(", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo
+		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// RndArgInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"RND(", "RND%(", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo
+		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// SgnInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SGN(", "SGN%(", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo
+		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// CvtInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "CvtInt", NULL,
-		Hidden_Flag, 2, None_DataType
+		Hidden_Flag, 2, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// CvtDbl_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "CvtDbl", NULL,
-		Hidden_Flag, 2, None_DataType
+		Hidden_Flag, 2, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// StrInt_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"STR$(", "STR%$(", NULL,
-		Null_Flag, 2, String_DataType, &Int_ExprInfo
+		Null_Flag, 2, String_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// PrintDbl_Code
 		IntFuncN_TokenType, OneWord_Multiple,

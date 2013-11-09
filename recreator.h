@@ -56,6 +56,7 @@ public:
 	void append(QString string);
 	QString popWithParens(bool addParens, int *precedence = NULL,
 		bool *unaryOperator = NULL);
+	void pushWithOperands(QString &name, int count);
 
 	const Table &table(void) const
 	{
