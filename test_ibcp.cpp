@@ -313,13 +313,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 		if (m_recreate)
 		{
 			// recreate text from rpn list
-			output = recreator.recreate(rpnList);
-			if (exprMode)
-			{
-				// for expression mode, recreate will return an empty string,
-				// so need to pop the string on top of the stack afterward
-				output = recreator.pop();
-			}
+			output = recreator.recreate(rpnList, exprMode);
 		}
 		else
 		{

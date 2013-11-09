@@ -46,7 +46,7 @@ class Recreator
 public:
 	explicit Recreator(void);
 
-	QString recreate(RpnList *rpnList);
+	QString recreate(RpnList *rpnList, bool exprMode = false);
 
 	void push(QString string, int precedence = HighestPrecedence,
 		bool unaryOperator = false);

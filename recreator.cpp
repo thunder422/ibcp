@@ -36,8 +36,9 @@ Recreator::Recreator(void) :
 
 
 // function to recreate original program text from an rpn list
-QString Recreator::recreate(RpnList *rpnList)
+QString Recreator::recreate(RpnList *rpnList, bool exprMode)
 {
+	m_output.clear();
 	for (int i = 0; i < rpnList->count(); i++)
 	{
 		RpnItem *rpnItem = rpnList->at(i);
@@ -63,6 +64,14 @@ QString Recreator::recreate(RpnList *rpnList)
 			parenRecreate(*this, rpnItem);
 		}
 	}
+	if (exprMode)
+	{
+		append(pop());
+	}
+	while (!m_stack.isEmpty())  // stack empty error check
+	{
+		append(QString(" <NotEmpty:%1>").arg(pop()));
+	}
 	return m_output;
 }
 
@@ -80,7 +89,7 @@ void Recreator::push(QString string, int precedence, bool unaryOperator)
 // function to pop the string on holding stack top, optional return precedence
 QString Recreator::pop(void)
 {
-    return m_stack.pop().string;
+    return m_stack.isEmpty() ? "<Empty>" : m_stack.pop().string;
 }
 
 
