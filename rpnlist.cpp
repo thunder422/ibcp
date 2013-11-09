@@ -35,14 +35,14 @@ RpnList::~RpnList(void)
 // function to recreate text (abbreviated contents) of item
 QString RpnItem::text(bool withIndexes)
 {
-	QString string = token()->text(withIndexes);
-	if (attachedCount() > 0)
+	QString string = m_token->text(withIndexes);
+	if (m_attached != NULL)
 	{
 		QChar separator('[');
-		for (int i = 0; i < attachedCount(); i++)
+		for (int i = 0; i < m_attachedCount; i++)
 		{
-			string += separator + QString("%1:%2").arg(attached(i)->index())
-				.arg(attached(i)->token()->text());
+			string += separator + QString("%1:%2").arg(m_attached[i]->m_index)
+				.arg(m_attached[i]->m_token->text());
 			separator = ',';
 		}
 		string += ']';

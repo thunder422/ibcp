@@ -1383,6 +1383,30 @@ static TableEntry tableEntries[] =
 		NULL, "VarRefStr", NULL,
 		Reference_Flag, 2, String_DataType, &Str_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
+	},
+	{	// Array_Code
+		// TODO preliminary until full array support is implemented
+		Paren_TokenType, OneWord_Multiple,
+		NULL, "Array", NULL,
+		Null_Flag, 2, Double_DataType, NULL
+	},
+	{	// DefFuncN_Code
+		// TODO preliminary until full define function support is implemented
+		DefFuncN_TokenType, OneWord_Multiple,
+		NULL, "DefFuncN", NULL,
+		Null_Flag, 2, Double_DataType, NULL
+	},
+	{	// DefFuncP_Code
+		// TODO preliminary until full define function support is implemented
+		DefFuncP_TokenType, OneWord_Multiple,
+		NULL, "DefFuncP", NULL,
+		Null_Flag, 2, Double_DataType, NULL
+	},
+	{	// Function_Code
+		// TODO preliminary until full user function support is implemented
+		Paren_TokenType, OneWord_Multiple,
+		NULL, "Function", NULL,
+		Null_Flag, 2, Double_DataType, NULL
 	}
 };
 

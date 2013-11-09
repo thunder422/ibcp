@@ -468,6 +468,10 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		{
 			token->setReference();
 		}
+		// TODO temporary until define functions are fully implemented
+		dataType = token->dataType();  // preserve data type
+		m_table.setToken(token, DefFuncN_Code);
+		token->setDataType(dataType);
 		break;  // go add token to output and push to done stack
 
 	case NoParen_TokenType:
@@ -526,6 +530,10 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			delete m_holdStack.pop().token;
 			return status;
 		}
+		// TODO temporary until define functions are fully implemented
+		dataType = token->dataType();  // preserve data type
+		m_table.setToken(token, DefFuncP_Code);
+		token->setDataType(dataType);
 		doneAppend = false;  // already appended
 		break;
 
@@ -818,8 +826,14 @@ TokenStatus Translator::processParenToken(Token *&token)
 	DataType dataType;
 	// TODO need to check test mode once dictionaries are implemented
 	// REMOVE for now assume functions start with an 'F'
-	if (token->isType(Paren_TokenType) && (token->reference()
-		|| !token->string().startsWith('F', Qt::CaseInsensitive)))
+	// TODO temporary until array and functions are fully implemented
+	bool isArray;
+	if (token->isType(Paren_TokenType))
+	{
+		isArray = !token->string().startsWith('F', Qt::CaseInsensitive);
+		token->setCode(isArray ? Array_Code : Function_Code);
+	}
+	if (token->isType(Paren_TokenType) && (token->reference() || isArray))
 	{
 		dataType = Integer_DataType;  // array subscripts
 	}
@@ -880,7 +894,6 @@ TokenStatus Translator::processParenToken(Token *&token)
 			if (dataType == Integer_DataType)  // array subscript?
 			{
 				// don't save operands on array references
-				count = 0;
 				attached = NULL;
 			}
 			else  // pop and save operands
