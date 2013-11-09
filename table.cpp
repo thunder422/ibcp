@@ -1388,25 +1388,29 @@ static TableEntry tableEntries[] =
 		// TODO preliminary until full array support is implemented
 		Paren_TokenType, OneWord_Multiple,
 		NULL, "Array", NULL,
-		Null_Flag, 2, Double_DataType, NULL
+		Null_Flag, 2, Double_DataType, NULL,
+		NULL, NULL, NULL, NULL, arrayRecreate
 	},
 	{	// DefFuncN_Code
 		// TODO preliminary until full define function support is implemented
 		DefFuncN_TokenType, OneWord_Multiple,
 		NULL, "DefFuncN", NULL,
-		Null_Flag, 2, Double_DataType, NULL
+		Null_Flag, 2, Double_DataType, NULL,
+		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
 	{	// DefFuncP_Code
 		// TODO preliminary until full define function support is implemented
 		DefFuncP_TokenType, OneWord_Multiple,
 		NULL, "DefFuncP", NULL,
-		Null_Flag, 2, Double_DataType, NULL
+		Null_Flag, 2, Double_DataType, NULL,
+		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
 	{	// Function_Code
 		// TODO preliminary until full user function support is implemented
 		Paren_TokenType, OneWord_Multiple,
 		NULL, "Function", NULL,
-		Null_Flag, 2, Double_DataType, NULL
+		Null_Flag, 2, Double_DataType, NULL,
+		NULL, NULL, NULL, NULL, functionRecreate
 	}
 };
 

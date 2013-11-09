@@ -130,6 +130,9 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
 void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
 void parenRecreate(Recreator &recreator, RpnItem *rpnItem);
 void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
+void arrayRecreate(Recreator &recreator, RpnItem *rpnItem);
+void functionRecreate(Recreator &recreator, RpnItem *rpnItem);
+void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
 void blankRecreate(Recreator &recreator, RpnItem *rpnItem);
 void constStrRecreate(Recreator &recreator, RpnItem *rpnItem);
 

@@ -235,6 +235,37 @@ void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
 }
 
 
+// function to recreate an array
+void arrayRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QString name = rpnItem->token()->string();
+	name.append('(');  // add close paren since it is not stored with name
+	recreator.pushWithOperands(name, rpnItem->attachedCount());
+}
+
+
+// function to recreate an array
+void functionRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QString name = rpnItem->token()->string();
+	name.append('(');  // add close paren since it is not stored with name
+	recreator.pushWithOperands(name, rpnItem->attachedCount());
+}
+
+
+// function to recreate an array
+void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QString name = rpnItem->token()->string();
+	int count = rpnItem->attachedCount();
+	if (count > 0)
+	{
+		name.append('(');  // add close paren since it is not stored with name
+	}
+	recreator.pushWithOperands(name, count);
+}
+
+
 // function to do nothing (for hidden codes)
 void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
