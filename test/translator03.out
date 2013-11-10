@@ -1,30 +1,30 @@
 
 Input: A% = B% + 5
-Output: TEST:A%<ref> B% 5% +% Assign% 
+Output: A% = B% + 5 
 
 Input: A% = B + 5
-Output: TEST:A%<ref> B 5 + CvtInt Assign% 
+Output: A% = B + 5 
 
 Input: A% = B + 5.0
-Output: TEST:A%<ref> B 5.0 + CvtInt Assign% 
+Output: A% = B + 5.0 
 
 Input: A = B = C = 1.0
-Output: TEST:A<ref> B C = 1.0% =% CvtDbl Assign 
+Output: A = B = C = 1.0 
 
 Input: A, B, C = 1.0
-Output: TEST:A<ref> B<ref> C<ref> 1.0 AssignList 
+Output: A, B, C = 1.0 
 
 Input: A, B, C = 1
-Output: TEST:A<ref> B<ref> C<ref> 1 AssignList 
+Output: A, B, C = 1 
 
 Input: A%,B% = C% + D%
-Output: TEST:A%<ref> B%<ref> C% D% +% AssignList% 
+Output: A%, B% = C% + D% 
 
 Input: A% = B% = C% + D%
-Output: TEST:A%<ref> B% C% D% +% =% Assign% 
+Output: A% = B% = C% + D% 
 
 Input: A$,B$,C$ = "Test"
-Output: TEST:A$<ref> B$<ref> C$<ref> "Test" AssignList$ 
+Output: A$, B$, C$ = "Test" 
 
 Input: A$ = B$ = C$ = "Test"
                       ^^^^^^-- expected numeric expression

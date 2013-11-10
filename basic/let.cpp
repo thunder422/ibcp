@@ -22,6 +22,7 @@
 //
 //	2013-07-06	initial version
 
+#include "recreator.h"
 #include "table.h"
 #include "token.h"
 #include "translator.h"
@@ -193,6 +194,36 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	}
 
 	return Done_TokenStatus;
+}
+
+
+// function to append LET keyword if the option sub-code is set
+void letRecreate(Recreator &recreator, Token *token)
+{
+	if (token->hasSubCode(Option_SubCode))
+	{
+		recreator.append(recreator.table().optionName(token->code()) + ' ');
+	}
+}
+
+
+// function to recreate a list assignment statement
+void assignRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QStack<QString> stack;
+
+	stack.push(recreator.pop());  // push value
+	QString separator = ' ' + recreator.table().name(rpnItem->token()) + ' ';
+	while (!recreator.stackIsEmpty())
+	{
+		stack.push(recreator.pop() + separator);
+		separator = ", ";
+	}
+	letRecreate(recreator, rpnItem->token());
+	while (!stack.isEmpty())
+	{
+		recreator.append(stack.pop());
+	}
 }
 
 

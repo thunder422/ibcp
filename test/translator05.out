@@ -1,42 +1,42 @@
 
 Input: LET A=0.0
-Output: TEST:A<ref> 0.0 Assign'LET' 
+Output: LET A = 0.0 
 
 Input: LET A%=0
-Output: TEST:A%<ref> 0% Assign%'LET' 
+Output: LET A% = 0 
 
 Input: LET A$=""
-Output: TEST:A$<ref> "" Assign$'LET' 
+Output: LET A$ = "" 
 
 Input: LET A=B=C=0.0
-Output: TEST:A<ref> B C = 0.0% =% CvtDbl Assign'LET' 
+Output: LET A = B = C = 0.0 
 
 Input: LET A,B,C=0.0
-Output: TEST:A<ref> B<ref> C<ref> 0.0 AssignList'LET' 
+Output: LET A, B, C = 0.0 
 
 Input: LET A%=B%=C%=0
-Output: TEST:A%<ref> B% C% =% 0% =% Assign%'LET' 
+Output: LET A% = B% = C% = 0 
 
 Input: LET A%,B%,C%=0
-Output: TEST:A%<ref> B%<ref> C%<ref> 0% AssignList%'LET' 
+Output: LET A%, B%, C% = 0 
 
 Input: LET A$=B$=C$=""
                     ^^-- expected numeric expression
 
 Input: LET A$,B$,C$=""
-Output: TEST:A$<ref> B$<ref> C$<ref> "" AssignList$'LET' 
+Output: LET A$, B$, C$ = "" 
 
 Input: LET LEFT$(A$,1) = B$
-Output: TEST:A$<ref> 1% B$ AssignLeft'LET' 
+Output: LET LEFT$(A$, 1) = B$ 
 
 Input: LET LEFT$(A$,1) = B$ + C$
-Output: TEST:A$<ref> 1% B$ C$ +$ AssignLeft'LET' 
+Output: LET LEFT$(A$, 1) = B$ + C$ 
 
 Input: LET LEFT$(A$,1),RIGHT$(B$,1) = C$
-Output: TEST:A$<ref> 1% B$<ref> 1% C$ AssignKeepRight AssignLeft'LET' 
+Output: LET LEFT$(A$, 1), RIGHT$(B$, 1) = C$ 
 
 Input: LET A$,LEFT$(B$,1) = C$
-Output: TEST:A$<ref> B$<ref> 1% C$ AssignKeepLeft Assign$'LET' 
+Output: LET A$, LEFT$(B$, 1) = C$ 
 
 Input: LET LET A=0
            ^^^-- expected item for assignment
@@ -45,5 +45,5 @@ Input: A = 0 LET 5
              ^^^-- expected operator or end-of-statement
 
 Input: PRINT
-Output: TEST:PRINT 
+Output: PRINT 
 

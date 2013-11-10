@@ -88,27 +88,6 @@ QString Recreator::pop(void)
 }
 
 
-// function to return the reference to the top item of the stack
-const Recreator::StackItem &Recreator::top(void) const
-{
-	return m_stack.top();
-}
-
-
-// function to append a string to the top and optionally set precedence
-void Recreator::topAppend(QString string)
-{
-	m_stack.top().string.append(string);
-}
-
-
-// function to append a string to the output string
-void Recreator::append(QString string)
-{
-	m_output.append(string);
-}
-
-
 // function to get an operand from the top of the stack
 // (surround operand with parentheses if requested
 QString Recreator::popWithParens(bool addParens, int *precedence,

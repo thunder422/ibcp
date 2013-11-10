@@ -863,13 +863,15 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign", "LET",
 		Reference_Flag, 4, Double_DataType,
-		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 2))
+		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 2)),
+		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignInt_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "Assign%", "LET",
 		Reference_Flag, 4, Integer_DataType,
-		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AssignInt))
+		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AssignInt)),
+		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignStr_Code
 		Operator_TokenType, OneWord_Multiple,
@@ -904,18 +906,20 @@ static TableEntry tableEntries[] =
 	{	// AssignList_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList", "LET",
-		Reference_Flag, 4, Double_DataType, &DblDbl_ExprInfo
+		Reference_Flag, 4, Double_DataType, &DblDbl_ExprInfo,
+		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListInt_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList%", "LET",
-		Reference_Flag, 4, Integer_DataType,
-		&IntInt_ExprInfo
+		Reference_Flag, 4, Integer_DataType, &IntInt_ExprInfo,
+		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListStr_Code
 		Operator_TokenType, OneWord_Multiple,
 		"=", "AssignList$", "LET",
-		Reference_Flag, 4, String_DataType, &StrStr_ExprInfo
+		Reference_Flag, 4, String_DataType, &StrStr_ExprInfo,
+		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignKeepStr_Code
 		Operator_TokenType, OneWord_Multiple,

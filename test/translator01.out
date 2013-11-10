@@ -1,54 +1,54 @@
 
 Input: A=3
-Output: TEST:A<ref> 3 Assign 
+Output: A = 3 
 
 Input: A,B=3
-Output: TEST:A<ref> B<ref> 3 AssignList 
+Output: A, B = 3 
 
 Input: A=B=3
-Output: TEST:A<ref> B 3 = CvtDbl Assign 
+Output: A = B = 3 
 
 Input: A=(B)=3
-Output: TEST:A<ref> B')' 3 = CvtDbl Assign 
+Output: A = (B) = 3 
 
 Input: A=(B=3)
-Output: TEST:A<ref> B 3 =')' CvtDbl Assign 
+Output: A = (B = 3) 
 
 Input: A,B=(C=3)
-Output: TEST:A<ref> B<ref> C 3 =')' CvtDbl AssignList 
+Output: A, B = (C = 3) 
 
 Input: A,B=C=4
-Output: TEST:A<ref> B<ref> C 4 = CvtDbl AssignList 
+Output: A, B = C = 4 
 
 Input: A(B,C)=D
-Output: TEST:B CvtInt C CvtInt A(<ref> D Assign 
+Output: A(B, C) = D 
 
 Input: A(B,C),E=D
-Output: TEST:B CvtInt C CvtInt A(<ref> E<ref> D AssignList 
+Output: A(B, C), E = D 
 
 Input: E,A(B,C)=D
-Output: TEST:E<ref> B CvtInt C CvtInt A(<ref> D AssignList 
+Output: E, A(B, C) = D 
 
 Input: E,A(B,C),F=D
-Output: TEST:E<ref> B CvtInt C CvtInt A(<ref> F<ref> D AssignList 
+Output: E, A(B, C), F = D 
 
 Input: A(B,(C))=D
-Output: TEST:B CvtInt C')' CvtInt A(<ref> D Assign 
+Output: A(B, (C)) = D 
 
 Input: A(B+C)=D
-Output: TEST:B C + CvtInt A(<ref> D Assign 
+Output: A(B + C) = D 
 
 Input: A(B=C)=D
-Output: TEST:B C = A(<ref> D Assign 
+Output: A(B = C) = D 
 
 Input: A(B+C,D=E)=F
-Output: TEST:B C + CvtInt D E = A(<ref> F Assign 
+Output: A(B + C, D = E) = F 
 
 Input: A(B,C)=D(E)
-Output: TEST:B CvtInt C CvtInt A(<ref> E CvtInt D( Assign 
+Output: A(B, C) = D(E) 
 
 Input: A(B,C),D(E)=INT(F)+Function(G)+Array(H)
-Output: TEST:B CvtInt C CvtInt A(<ref> E CvtInt D(<ref> F INT( G<ref> Function([10:G<ref>] + H CvtInt Array( + AssignList 
+Output: A(B, C), D(E) = INT(F) + Function(G) + Array(H) 
 
 Input: A=B,C=4
           ^-- expected operator or end-of-statement

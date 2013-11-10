@@ -1,54 +1,54 @@
 
 Input: Z = not A < 5.0 = B > 2.0
-Output: TEST:Z<ref> A 5.0 < B 2.0 > =% NOT CvtDbl Assign 
+Output: Z = NOT A < 5.0 = B > 2.0 
 
 Input: Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2
-Output: TEST:Z%<ref> A% 5% <% NOT B% 2% >% AND C% 1% <% D% 2% <>% AND OR Assign% 
+Output: Z% = NOT A% < 5 AND B% > 2 OR C% < 1 AND D% <> 2 
 
 Input: Z$=STR$(VAL("1.23"))
-Output: TEST:Z$<ref> "1.23" VAL( STR$( Assign$ 
+Output: Z$ = STR$(VAL("1.23")) 
 
 Input: Z$=MID$(A$+B$,(C%+5)*D%,4)+" Test"
-Output: TEST:Z$<ref> A$ B$ +$ C% 5% +% D% *% 4% MID3$( " Test" +$ Assign$ 
+Output: Z$ = MID$(A$ + B$, (C% + 5) * D%, 4) + " Test" 
 
 Input: Z% = (a$ = "this" + "test")
-Output: TEST:Z%<ref> a$ "this" "test" +$ =$')' Assign% 
+Output: Z% = (a$ = "this" + "test") 
 
 Input: Z = A% + B
-Output: TEST:Z<ref> A% B +%1 Assign 
+Output: Z = A% + B 
 
 Input: Z = A + B%
-Output: TEST:Z<ref> A B% +%2 Assign 
+Output: Z = A + B% 
 
 Input: Z% = A% + B%
-Output: TEST:Z%<ref> A% B% +% Assign% 
+Output: Z% = A% + B% 
 
 Input: Z = A% + B% + C
-Output: TEST:Z<ref> A% B% +% C +%1 Assign 
+Output: Z = A% + B% + C 
 
 Input: Z = A% - B
-Output: TEST:Z<ref> A% B -%1 Assign 
+Output: Z = A% - B 
 
 Input: Z = A - B%
-Output: TEST:Z<ref> A B% -%2 Assign 
+Output: Z = A - B% 
 
 Input: Z% = A% - B%
-Output: TEST:Z%<ref> A% B% -% Assign% 
+Output: Z% = A% - B% 
 
 Input: Z = A% - B% * C
-Output: TEST:Z<ref> A% B% C *%1 -%1 Assign 
+Output: Z = A% - B% * C 
 
 Input: Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D)
-Output: TEST:Z<ref> A% ABS%( B% SGN%( +% C ABS( D SGN( * +%1 Assign 
+Output: Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D) 
 
 Input: Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)
-Output: TEST:Z<ref> A% Neg% ABS%( B% Neg% SGN%( +% C Neg ABS( D Neg SGN( * +%1 Assign 
+Output: Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D) 
 
 Input: Z$ = STR$(A) + STR$(A%)
-Output: TEST:Z$<ref> A STR$( A% STR%$( +$ Assign$ 
+Output: Z$ = STR$(A) + STR$(A%) 
 
 Input: Z = A% + B * C ^ D
-Output: TEST:Z<ref> A% B C D ^ * +%1 Assign 
+Output: Z = A% + B * C ^ D 
 
 Input: Z = A$ + B
                 ^-- expected string expression

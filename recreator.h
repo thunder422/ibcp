@@ -51,12 +51,25 @@ public:
 	void push(QString string, int precedence = HighestPrecedence,
 		bool unaryOperator = false);
 	QString pop(void);
-	const StackItem &top(void) const;
-	void topAppend(QString string);
-	void append(QString string);
+	const StackItem &top(void) const
+	{
+		return m_stack.top();
+	}
+	void topAppend(QString string)
+	{
+		m_stack.top().string.append(string);
+	}
+	void append(QString string)
+	{
+		m_output.append(string);
+	}
 	QString popWithParens(bool addParens, int *precedence = NULL,
 		bool *unaryOperator = NULL);
 	void pushWithOperands(QString &name, int count);
+	bool stackIsEmpty(void) const
+	{
+		return m_stack.isEmpty();
+	}
 
 	const Table &table(void) const
 	{
