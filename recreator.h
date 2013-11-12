@@ -71,6 +71,24 @@ public:
 		return m_stack.isEmpty();
 	}
 
+	// separator access functions
+	QChar separator(void) const
+	{
+		return m_separator;
+	}
+	bool separatorIsSet(void) const
+	{
+		return !m_separator.isNull();
+	}
+	void clearSeparator(void)
+	{
+		m_separator = QChar::Null;
+	}
+	void setSeparator(QChar separator)
+	{
+		m_separator = separator;
+	}
+
 	const Table &table(void) const
 	{
 		return m_table;
@@ -79,6 +97,7 @@ public:
 private:
 	Table &m_table;					// reference to table instance
 	QStack<StackItem> m_stack;		// holding string stack
+	QChar m_separator;				// current separator character
 	QString m_output;				// output string
 };
 

@@ -227,4 +227,49 @@ void assignRecreate(Recreator &recreator, RpnItem *rpnItem)
 }
 
 
+// function to recreate string and sub-string assignment statements
+void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QString string;
+
+	// check if this first assign code
+	if (!recreator.separatorIsSet())
+	{
+		string = ' ' + recreator.table().name(Assign_Code) + ' ';
+		recreator.setSeparator(',');
+	}
+	else  // continuation of assignment list
+	{
+		string = recreator.separator() + ' ';
+	}
+	string.append(recreator.pop());
+
+	Code code = rpnItem->token()->code();
+	if (recreator.table().hasFlag(code, SubStr_Flag))
+	{
+		// for sub-string assignments, get original sub-string function code
+		Code subStrCode = recreator.table().secondAssociatedCode(code);
+		QString name = recreator.table().name(subStrCode);
+		int count = recreator.table().operandCount(subStrCode);
+		recreator.pushWithOperands(name, count);
+	}
+
+	// deterine if assignment is an assignment keep code
+	// (only assignment keep codes have second associated index of zero)
+	if (recreator.table().secondAssociatedIndex(code) == 0)
+	{
+		// for keep codes, append string so far to reference string on stack
+		recreator.topAppend(string);
+	}
+	else
+	{
+		// end of statement, append reference and string so far
+		letRecreate(recreator, rpnItem->token());
+		recreator.append(recreator.pop());
+		recreator.append(string);
+		recreator.clearSeparator();  // for next command
+	}
+}
+
+
 // end: let.cpp

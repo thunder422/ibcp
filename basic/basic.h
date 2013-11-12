@@ -137,6 +137,7 @@ void blankRecreate(Recreator &recreator, RpnItem *rpnItem);
 void constStrRecreate(Recreator &recreator, RpnItem *rpnItem);
 
 void assignRecreate(Recreator &recreator, RpnItem *rpnItem);
+void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem);
 
 
 #endif // BASIC_H
