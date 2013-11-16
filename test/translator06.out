@@ -1,48 +1,48 @@
 
 Input: PRINT A;B%;C$
-Output: TEST:A PrintDbl B% PrintInt C$ PrintStr PRINT 
+Output: PRINT A; B%; C$ 
 
 Input: PRINT A;B%;C$;
-Output: TEST:A PrintDbl B% PrintInt C$ PrintStr ; 
+Output: PRINT A; B%; C$; 
 
 Input: PRINT A,B%,C$
-Output: TEST:A PrintDbl , B% PrintInt , C$ PrintStr PRINT 
+Output: PRINT A, B%, C$ 
 
 Input: PRINT A,B%,C$,
-Output: TEST:A PrintDbl , B% PrintInt , C$ PrintStr , PRINT 
+Output: PRINT A, B%, C$, 
 
 Input: PRINT A+B; C%+D%; E$+F$; MID$(E$,1); LEFT$(E$+F$,5)
-Output: TEST:A B + PrintDbl C% D% +% PrintInt E$ F$ +$ PrintStr E$ 1% MID2$( PrintStr E$ F$ +$ 5% LEFT$( PrintStr PRINT 
+Output: PRINT A + B; C% + D%; E$ + F$; MID$(E$, 1); LEFT$(E$ + F$, 5) 
 
 Input: PRINT "Test:"; TAB(10); A%; SPC(5); B
-Output: TEST:"Test:" PrintStr 10% TAB( A% PrintInt 5% SPC( B PrintDbl PRINT 
+Output: PRINT "Test:"; TAB(10); A%; SPC(5); B 
 
 Input: PRINT "Test:"; TAB(10); A; LOG(5); B
-Output: TEST:"Test:" PrintStr 10% TAB( A PrintDbl 5 LOG( PrintDbl B PrintDbl PRINT 
+Output: PRINT "Test:"; TAB(10); A; LOG(5); B 
 
 Input: PRINT A; TAB(10)
-Output: TEST:A PrintDbl 10% TAB( PRINT 
+Output: PRINT A; TAB(10) 
 
 Input: PRINT A; TAB(10);
-Output: TEST:A PrintDbl 10% TAB( ; 
+Output: PRINT A; TAB(10); 
 
 Input: PRINT A; SPC(10)
-Output: TEST:A PrintDbl 10% SPC( PRINT 
+Output: PRINT A; SPC(10) 
 
 Input: PRINT A; SPC(10);
-Output: TEST:A PrintDbl 10% SPC( ; 
+Output: PRINT A; SPC(10); 
 
 Input: PRINT ,,A
-Output: TEST:, , A PrintDbl PRINT 
+Output: PRINT ,, A 
 
 Input: PRINT ,,A,
-Output: TEST:, , A PrintDbl , PRINT 
+Output: PRINT ,, A, 
 
 Input: PRINT A,,B
-Output: TEST:A PrintDbl , , B PrintDbl PRINT 
+Output: PRINT A,, B 
 
 Input: PRINT A,,B,
-Output: TEST:A PrintDbl , , B PrintDbl , PRINT 
+Output: PRINT A,, B, 
 
 Input: PRINT A;;B
                ^-- expected expression, print function or end-of-statement
@@ -54,7 +54,7 @@ Input: PRINT;
             ^-- expected expression, comma, print function or end-of-statement
 
 Input: PRINT,
-Output: TEST:, PRINT 
+Output: PRINT , 
 
 Input: PRINT C(A,,B)
                  ^-- expected numeric expression

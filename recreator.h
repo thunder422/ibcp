@@ -80,6 +80,10 @@ public:
 	{
 		return !m_separator.isNull();
 	}
+	bool separatorIsSet(QChar separator) const
+	{
+		return m_separator == separator;
+	}
 	void clearSeparator(void)
 	{
 		m_separator = QChar::Null;

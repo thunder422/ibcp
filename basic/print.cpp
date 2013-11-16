@@ -22,6 +22,8 @@
 //
 //	2013-08-03	initial version
 
+#include "basic/basic.h"
+#include "recreator.h"
 #include "table.h"
 #include "token.h"
 #include "translator.h"
@@ -132,6 +134,94 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 			? ExpSemiCommaOrEnd_TokenStatus : ExpOpSemiCommaOrEnd_TokenStatus;
 	}
 	return Done_TokenStatus;
+}
+
+
+// function to recreate the print item code
+void printItemRecreate(Recreator &recreator, RpnItem *)
+{
+	QString string;
+
+	if (recreator.separatorIsSet())
+	{
+		// append the previous separator
+		string = recreator.separator();
+
+		if (!recreator.separatorIsSet(' '))
+		{
+			// if it is not a space (comma) then append a space
+			string.append(' ');
+		}
+	}
+	// pop the string on top of the stack and append it to the string
+	string.append(recreator.pop());
+
+	if (recreator.stackIsEmpty())
+	{
+		// if nothing else on the stack then push the string
+		recreator.push(string);
+	}
+	else  // append the string to the string on top of the stack
+	{
+		recreator.topAppend(string);
+	}
+
+	recreator.setSeparator(';');  // set separator for next item
+}
+
+
+// function to recreate the print comma code
+void printCommaRecreate(Recreator &recreator, RpnItem *)
+{
+	QString string;
+
+	// get string on top of the stack if there is one
+	if (!recreator.stackIsEmpty())
+	{
+		string = recreator.pop();
+	}
+
+	// append comma to string and push it back to the stack
+	string.append(',');
+	recreator.push(string);
+
+	// set separator to space (used to not add spaces 'between' commas)
+	recreator.setSeparator(' ');
+}
+
+
+// function to recreate a print function code
+void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	// process as internal function first then as an item
+	internalFunctionRecreate(recreator, rpnItem);
+	printItemRecreate(recreator, rpnItem);
+}
+
+
+// function to recreate the print semicolon code
+void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	// push string on top of stack with final semicolon then recreate command
+	recreator.push(recreator.pop() + ';');
+	printRecreate(recreator, rpnItem);
+}
+
+
+// function to recreate the print code
+void printRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	// append PRINT keyword
+	recreator.append(recreator.table().name(Print_Code));
+
+	// if stack is not empty then append space with string on top of stack
+	if (!recreator.stackIsEmpty())
+	{
+		recreator.append(" ");
+		recreator.append(recreator.pop());
+	}
+
+	recreator.clearSeparator();  // clear separator for next command
 }
 
 

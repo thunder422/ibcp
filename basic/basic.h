@@ -139,5 +139,11 @@ void constStrRecreate(Recreator &recreator, RpnItem *rpnItem);
 void assignRecreate(Recreator &recreator, RpnItem *rpnItem);
 void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem);
 
+void printItemRecreate(Recreator &recreator, RpnItem *rpnItem);
+void printCommaRecreate(Recreator &recreator, RpnItem *rpnItem);
+void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
+void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem);
+void printRecreate(Recreator &recreator, RpnItem *rpnItem);
+
 
 #endif // BASIC_H

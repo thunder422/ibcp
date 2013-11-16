@@ -314,7 +314,7 @@ static TableEntry tableEntries[] =
 		Command_TokenType, OneWord_Multiple,
 		"PRINT", NULL, NULL,
 		Null_Flag, 4, None_DataType, NULL,
-		printTranslate
+		printTranslate, NULL, NULL, NULL, printRecreate
 	},
 	{	// Input_Code
 		Command_TokenType, TwoWord_Multiple,
@@ -600,13 +600,13 @@ static TableEntry tableEntries[] =
 		IntFuncP_TokenType, OneWord_Multiple,
 		"TAB(", NULL, NULL,
 		Print_Flag, 2, None_DataType, &Int_ExprInfo,
-		NULL, NULL, NULL, NULL, internalFunctionRecreate
+		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Spc_Code
 		IntFuncP_TokenType, OneWord_Multiple,
 		"SPC(", NULL, NULL,
 		Print_Flag, 2, None_DataType, &Int_ExprInfo,
-		NULL, NULL, NULL, NULL, internalFunctionRecreate
+		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Asc_Code
 		IntFuncP_TokenType, OneWord_Multiple,
@@ -828,12 +828,14 @@ static TableEntry tableEntries[] =
 	{	// Comma_Code
 		Operator_TokenType, OneChar_Multiple,
 		",", NULL, NULL,
-		Null_Flag, 6, None_DataType
+		Null_Flag, 6, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, printCommaRecreate
 	},
 	{	// SemiColon_Code
 		Operator_TokenType, OneChar_Multiple,
 		";", NULL, NULL,
-		Null_Flag, 6, None_DataType
+		Null_Flag, 6, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, printSemicolonRecreate
 	},
 	{	// Colon_Code
 		Operator_TokenType, OneChar_Multiple,
@@ -1290,17 +1292,20 @@ static TableEntry tableEntries[] =
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "PrintDbl", NULL,
 		Print_Flag | UseConstAsIs_Flag, 2, None_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Print))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Print)),
+		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// PrintInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "PrintInt", NULL,
-		Print_Flag, 2, None_DataType, &Int_ExprInfo
+		Print_Flag, 2, None_DataType, &Int_ExprInfo,
+		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// PrintStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "PrintStr", NULL,
-		Print_Flag, 2, None_DataType, &Str_ExprInfo
+		Print_Flag, 2, None_DataType, &Str_ExprInfo,
+		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// InputBegin_Code
 		IntFuncN_TokenType, OneWord_Multiple,
