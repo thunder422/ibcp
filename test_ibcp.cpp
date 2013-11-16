@@ -50,33 +50,32 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 	name[OptExpression] = "expression";
 	name[OptTranslator] = "translator";
 	name[OptEncoder] = "encoder";
+	name[OptRecreator] = "recreator";
 
 	// get base file name of program from first argument
 	m_programName = QFileInfo(args.at(0)).baseName();
 
 	// scan arguments for test options (ignore others)
 	m_option = OptNone;
+	m_recreate = false;
 	switch (args.count())
 	{
 	case 2:
 		if (isOption(args.at(1), "-tp", OptParser, name[OptParser])
 			|| isOption(args.at(1), "-te", OptExpression, name[OptExpression])
 			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator])
-			|| isOption(args.at(1), "-tc", OptEncoder, name[OptEncoder]))
+			|| isOption(args.at(1), "-tc", OptEncoder, name[OptEncoder])
+			|| isOption(args.at(1), "-tr", OptRecreator, name[OptRecreator]))
 		{
 			break;
 		}
 		// not one of the above options, fall through
 	case 3:
-		if (args.at(1) == "-t")
-		{
-			m_recreate = false;
-		}
-		else if (args.at(1) == "-to")
+		if (args.at(1) == "-to")
 		{
 			m_recreate = true;
 		}
-		else
+		else if (args.at(1) != "-t")
 		{
 			break;  // no test option found
 		}
@@ -92,7 +91,7 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 			m_testFileName = args.at(2);
 			QString baseName = QFileInfo(m_testFileName).baseName();
 
-			for (int i = OptFirst; i < OptSizeOf; i++)
+			for (int i = OptFirst; i < OptNumberOf; i++)
 			{
 				// check beginning of file name
 				if (baseName.startsWith(name[i], Qt::CaseInsensitive))
@@ -156,7 +155,8 @@ bool Tester::isOption(const QString &arg, const QString &exp,
 QStringList Tester::options(void)
 {
 	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
-		<< "-te" << "-tt" << "-tc" << QString("-to <%1>").arg(tr("test_file"));
+		<< "-te" << "-tt" << "-tc" << "-tr"
+		<< QString("-to <%1>").arg(tr("test_file"));
 }
 
 
@@ -249,6 +249,9 @@ bool Tester::run(CommandLine *commandLine)
 		case OptEncoder:
 			encodeInput(inputLine);
 			break;
+		case OptRecreator:
+			recreateInput(inputLine);
+			break;
 		}
 		// report any token leaks and extra token deletes
 		// FIXME temporary disable for encoder testing since program model
@@ -305,7 +308,8 @@ void Tester::parseInput(const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-void Tester::translateInput(const QString &testInput, bool exprMode)
+RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
+	const char *header)
 {
 	RpnList *rpnList = m_translator->translate(testInput, exprMode
 		? Translator::Expression_TestMode : Translator::Yes_TestMode);
@@ -313,6 +317,8 @@ void Tester::translateInput(const QString &testInput, bool exprMode)
 	{
 		printError(rpnList->errorColumn(), rpnList->errorLength(),
 			rpnList->errorMessage());
+		delete rpnList;
+		return NULL;
 	}
 	else  // no error, translate line and if selected recreate it
 	{
@@ -326,9 +332,30 @@ void Tester::translateInput(const QString &testInput, bool exprMode)
 		{
 			output = rpnList->text();
 		}
+		if (header == NULL)
+		{
+			header = "Output";
+			delete rpnList;
+			rpnList = NULL;
+		}
+		m_cout << header << ": " << output << ' ' << endl;
+		return rpnList;
+	}
+}
+
+
+// function to parse an input line, translate to an RPN list,
+// recreate the line and output the resulting recreated text
+void Tester::recreateInput(const QString &testInput)
+{
+	RpnList *rpnList = translateInput(testInput, false, "Tokens");
+	if (rpnList != NULL)
+	{
+		// recreate text from rpn list
+		QString output = m_recreator->recreate(rpnList);
+		delete rpnList;
 		m_cout << "Output: " << output << ' ' << endl;
 	}
-	delete rpnList;
 }
 
 

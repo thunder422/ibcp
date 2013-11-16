@@ -69,6 +69,8 @@ private:
 		OptExpression,
 		OptTranslator,
 		OptEncoder,
+		OptNumberOf,
+		OptRecreator,
 		OptSizeOf,
 		OptError = OptSizeOf
 	};
@@ -76,7 +78,9 @@ private:
 	bool isOption(const QString &arg, const QString &exp,
 		enum Option option, QString name);
 	void parseInput(const QString &testInput);
-	void translateInput(const QString &testInput, bool exprMode);
+	RpnList *translateInput(const QString &testInput, bool exprMode,
+		const char *header = NULL);
+	void recreateInput(const QString &testInput);
 	void encodeInput(QString &testInput);
 	void printInput(const QString &inputLine)
 	{
