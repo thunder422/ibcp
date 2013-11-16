@@ -39,7 +39,11 @@
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
-Tester::Tester(const QStringList &args)
+Tester::Tester(const QStringList &args, QTextStream &cout) :
+	m_cout(cout),
+	m_translator(new Translator),
+	m_programUnit(new ProgramModel),
+	m_recreator(new Recreator)
 {
 	QString name[OptSizeOf];
 	name[OptParser] = "parser";
@@ -126,9 +130,17 @@ Tester::Tester(const QStringList &args)
 }
 
 
+Tester::~Tester(void)
+{
+	delete m_translator;
+	delete m_programUnit;
+	delete m_recreator;
+}
+
+
 // function to see if argument is expected option
 bool Tester::isOption(const QString &arg, const QString &exp,
-	enum Option option, QString name, bool newTrans)
+	enum Option option, QString name)
 {
 	if (arg == exp)
 	{
@@ -148,7 +160,7 @@ QStringList Tester::options(void)
 }
 
 
-bool Tester::run(QTextStream &cout, CommandLine *commandLine)
+bool Tester::run(CommandLine *commandLine)
 {
 	QFile file;
 	QTextStream input(&file);
@@ -172,37 +184,33 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 
 	if (inputMode)
 	{
-		cout << endl;
+		m_cout << endl;
 
 		const char *copyright = commandLine->copyrightStatement();
 		QString line = tr(copyright).arg(commandLine->programName())
 			.arg(commandLine->copyrightYear());
-		cout << line << endl;
+		m_cout << line << endl;
 
 		const char **warranty = commandLine->warrantyStatement();
 		for (int i = 0; warranty[i]; i++)
 		{
 			QString line = tr(warranty[i]);
-			cout << line << endl;
+			m_cout << line << endl;
 		}
 
-		cout << endl << tr("Table initialization successful.") << endl;
+		m_cout << endl << tr("Table initialization successful.") << endl;
 	}
-
-	Translator translator;
-	ProgramModel programUnit;  // creates its own translator instance
-	Recreator recreator;
 
 	if (inputMode)
 	{
-		cout << endl << tr("Testing %1...").arg(m_testName);
+		m_cout << endl << tr("Testing %1...").arg(m_testName);
 	}
 
 	for (int lineno = 1;; lineno++)
 	{
 		if (inputMode)
 		{
-			cout << endl << tr("Input: ") << flush;
+			m_cout << endl << tr("Input: ") << flush;
 			inputLine = input.readLine();
 			if (inputLine.isEmpty() || inputLine[0] == '\n')
 			{
@@ -223,23 +231,23 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 			}
 			if (m_option != OptEncoder)
 			{
-				printInput(cout, inputLine);
+				printInput(inputLine);
 			}
 		}
 
 		switch (m_option)
 		{
 		case OptParser:
-			parseInput(cout, inputLine);
+			parseInput(inputLine);
 			break;
 		case OptExpression:
-			translateInput(cout, translator, recreator, inputLine, true);
+			translateInput(inputLine, true);
 			break;
 		case OptTranslator:
-			translateInput(cout, translator, recreator, inputLine, false);
+			translateInput(inputLine, false);
 			break;
 		case OptEncoder:
-			encodeInput(cout, &programUnit, inputLine);
+			encodeInput(inputLine);
 			break;
 		}
 		// report any token leaks and extra token deletes
@@ -255,19 +263,19 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 		file.close();
 		if (m_option != OptParser)
 		{
-			cout << endl;  // not for parser testing
+			m_cout << endl;  // not for parser testing
 		}
 	}
 
 	if (m_option == OptEncoder)
 	{
 		// for encoder testing, output program lines
-		cout << "Program:" << endl;
-		for (int i = 0; i < programUnit.rowCount(); i++)
+		m_cout << "Program:" << endl;
+		for (int i = 0; i < m_programUnit->rowCount(); i++)
 		{
-			cout << i << ": " << programUnit.debugText(i, true) << endl;
+			m_cout << i << ": " << m_programUnit->debugText(i, true) << endl;
 		}
-		cout << programUnit.dictionariesDebugText();
+		m_cout << m_programUnit->dictionariesDebugText();
 	}
 
 	return true;
@@ -275,7 +283,7 @@ bool Tester::run(QTextStream &cout, CommandLine *commandLine)
 
 
 // function to parse an input line and print the resulting tokens
-void Tester::parseInput(QTextStream &cout, const QString &testInput)
+void Tester::parseInput(const QString &testInput)
 {
 	Parser parser;
 	Token *token;
@@ -284,7 +292,7 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 	parser.setInput(QString(testInput));
 	do {
 		token = parser.token();
-		more = printToken(cout, token, true);
+		more = printToken(token, true);
 		if (more && token->isCode(EOL_Code))
 		{
 			more = false;
@@ -297,14 +305,13 @@ void Tester::parseInput(QTextStream &cout, const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-void Tester::translateInput(QTextStream &cout, Translator &translator,
-	Recreator &recreator, const QString &testInput, bool exprMode)
+void Tester::translateInput(const QString &testInput, bool exprMode)
 {
-	RpnList *rpnList = translator.translate(testInput, exprMode
+	RpnList *rpnList = m_translator->translate(testInput, exprMode
 		? Translator::Expression_TestMode : Translator::Yes_TestMode);
 	if (rpnList->hasError())
 	{
-		printError(cout, rpnList->errorColumn(), rpnList->errorLength(),
+		printError(rpnList->errorColumn(), rpnList->errorLength(),
 			rpnList->errorMessage());
 	}
 	else  // no error, translate line and if selected recreate it
@@ -313,13 +320,13 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 		if (m_recreate)
 		{
 			// recreate text from rpn list
-			output = recreator.recreate(rpnList, exprMode);
+			output = m_recreator->recreate(rpnList, exprMode);
 		}
 		else
 		{
 			output = rpnList->text();
 		}
-		cout << "Output: " << output << ' ' << endl;
+		m_cout << "Output: " << output << ' ' << endl;
 	}
 	delete rpnList;
 }
@@ -327,8 +334,7 @@ void Tester::translateInput(QTextStream &cout, Translator &translator,
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-void Tester::encodeInput(QTextStream &cout, ProgramModel *programUnit,
-	QString &testInput)
+void Tester::encodeInput(QString &testInput)
 {
 	// parse beginning of line for line number program operation
 	Operation operation = Change_Operation;
@@ -361,35 +367,35 @@ void Tester::encodeInput(QTextStream &cout, ProgramModel *programUnit,
 		{
 			// no number at beginning, insert at end of program
 			operation = Insert_Operation;
-			lineIndex = programUnit->rowCount();
+			lineIndex = m_programUnit->rowCount();
 		}
 		else if (operation == Insert_Operation)
 		{
 			// no number at beginning, insert at end of program
-			lineIndex = programUnit->rowCount();
+			lineIndex = m_programUnit->rowCount();
 		}
 		else  // no line index number after + or -
 		{
-			printInput(cout, testInput);
-			cout << QString("        ^-- expected line index number") << endl;
+			printInput(testInput);
+			m_cout << QString("        ^-- expected line index number") << endl;
 			return;
 		}
 	}
 	else
 	{
-		if (lineIndex > programUnit->rowCount()
+		if (lineIndex > m_programUnit->rowCount()
 			|| operation != Insert_Operation
-			&& lineIndex == programUnit->rowCount())
+			&& lineIndex == m_programUnit->rowCount())
 		{
-			printInput(cout, testInput);
-			cout << QString("       %1^-- line index number out of range")
+			printInput(testInput);
+			m_cout << QString("       %1^-- line index number out of range")
 				.arg(operation == Change_Operation ? "" : " ") << endl;
 			return;
 		}
 		if (operation == Remove_Operation && pos < testInput.length())
 		{
-			printInput(cout, testInput);
-			cout << QString(" ").repeated(7 + pos)
+			printInput(testInput);
+			m_cout << QString(" ").repeated(7 + pos)
 				<< QString("^-- no statement expected with remove line")
 				<< endl;
 			return;
@@ -405,41 +411,41 @@ void Tester::encodeInput(QTextStream &cout, ProgramModel *programUnit,
 	// call update with arguments dependent on operation
 	if (operation == Remove_Operation)
 	{
-		programUnit->update(lineIndex, 1, 0, QStringList());
+		m_programUnit->update(lineIndex, 1, 0, QStringList());
 	}
 	else  // Change_Operation or Insert_Operation
 	{
-		programUnit->update(lineIndex, 0, operation == Insert_Operation ? 1 : 0,
-			QStringList() << testInput);
+		m_programUnit->update(lineIndex, 0,
+			operation == Insert_Operation ? 1 : 0, QStringList() << testInput);
 	}
 
-	const ErrorItem *errorItem = programUnit->lineError(lineIndex);
+	const ErrorItem *errorItem = m_programUnit->lineError(lineIndex);
 	// only output line if no operation/line number or has an error
 	if (pos == 0 || errorItem != NULL)
 	{
-		printInput(cout, testInput);
+		printInput(testInput);
 		if (errorItem != NULL)
 		{
-			printError(cout, errorItem->column(), errorItem->length(),
+			printError(errorItem->column(), errorItem->length(),
 				errorItem->message());
 		}
 		else  // get text of encoded line and output it
 		{
-			cout << "Output: " << programUnit->debugText(lineIndex) << endl;
+			m_cout << "Output: " << m_programUnit->debugText(lineIndex) << endl;
 		}
 	}
 }
 
 
 // function to print the contents of a token
-bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
+bool Tester::printToken(Token *token, bool tab)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
 
 	if (token->isType(Error_TokenType))
 	{
-		printError(cout, token->column(), token->length(), token->string());
+		printError(token->column(), token->length(), token->string());
 		return false;
 	}
 	QString info("  ");
@@ -454,68 +460,68 @@ bool Tester::printToken(QTextStream &cout, Token *token, bool tab)
 	}
 	if (tab)
 	{
-		cout << '\t';
+		m_cout << '\t';
 	}
-	cout << qSetFieldWidth(2) << right << token->column() << qSetFieldWidth(0)
+	m_cout << qSetFieldWidth(2) << right << token->column() << qSetFieldWidth(0)
 		<< left << ": " << qSetFieldWidth(10) << tokentype_name[token->type()]
 		<< qSetFieldWidth(0) << info;
 	switch (token->type())
 	{
 	case DefFuncN_TokenType:
 	case NoParen_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0) << " |" << token->string() << '|';
 		break;
 	case DefFuncP_TokenType:
 	case Paren_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0) << " |" << token->string() << "(|";
 		break;
 	case Constant_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0);
 		switch (token->dataType(true))
 		{
 		case Integer_DataType:
-			cout << ' ' << token->valueInt();
+			m_cout << ' ' << token->valueInt();
 			if (token->hasSubCode(Double_SubCode))
 			{
-				cout << "," << token->value();
+				m_cout << "," << token->value();
 			}
-			cout << " |" << token->string() << '|';
+			m_cout << " |" << token->string() << '|';
 			break;
 		case Double_DataType:
-			cout << ' ' << token->value() << " |" << token->string() << '|';
+			m_cout << ' ' << token->value() << " |" << token->string() << '|';
 			break;
 		case String_DataType:
-			cout << " |" << token->string() << '|';
+			m_cout << " |" << token->string() << '|';
 			break;
 		}
 		break;
 	case Operator_TokenType:
 	case IntFuncN_TokenType:
 	case IntFuncP_TokenType:
-		cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
 			<< qSetFieldWidth(0);
 		// fall thru
 	case Command_TokenType:
-		cout << " " << code_name[token->code()];
+		m_cout << " " << code_name[token->code()];
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
-			cout << " |" << token->string() << '|';
+			m_cout << " |" << token->string() << '|';
 		}
 		break;
 	default:
 		// nothing more to output
 		break;
 	}
-	cout << endl;
+	m_cout << endl;
 	return true;
 }
 
 
 // function to print a token with an error
-void Tester::printError(QTextStream &cout, int column, int length,
+void Tester::printError(int column, int length,
 	const QString &error)
 {
 	if (length < 0)  // alternate column?
@@ -523,7 +529,7 @@ void Tester::printError(QTextStream &cout, int column, int length,
 		column = -length;
 		length	= 1;
 	}
-	cout << QString(" ").repeated(7 + column) << QString("^").repeated(length)
+	m_cout << QString(" ").repeated(7 + column) << QString("^").repeated(length)
 		<< "-- " << error << endl;
 }
 

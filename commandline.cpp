@@ -68,16 +68,17 @@ CommandLine::CommandLine(const QStringList &args)
 		return;
 	}
 
-	Tester tester(args);
+	Tester tester(args, cout());
 	if (tester.hasError())
 	{
+		coutClose();  // close stdout
 		cout(stderr) << tester.errorMessage() << endl;
 		m_returnCode = 1;
 		return;
 	}
 	else if (tester.hasOption())
 	{
-		if (tester.run(cout(), this))
+		if (tester.run(this))
 		{
 			m_returnCode = 0;
 		}

@@ -28,6 +28,8 @@
 #include <QCoreApplication>
 #include <QStringList>
 
+class QTextStream;
+
 class CommandLine;
 class Token;
 class Recreator;
@@ -41,11 +43,11 @@ class Tester
 	Q_DECLARE_TR_FUNCTIONS(Test)
 
 public:
-	explicit Tester(const QStringList &args);
-	~Tester(void) {}
+	explicit Tester(const QStringList &args, QTextStream &cout);
+	~Tester(void);
 
 	static QStringList options(void);
-	bool run(QTextStream &cout, CommandLine *commandLine);
+	bool run(CommandLine *commandLine);
 	bool hasOption(void) const  // has a test option been specified?
 	{
 		return m_option != OptNone;
@@ -72,27 +74,28 @@ private:
 	};
 
 	bool isOption(const QString &arg, const QString &exp,
-		enum Option option, QString name, bool newTrans = false);
-	void parseInput(QTextStream &cout, const QString &testInput);
-	void translateInput(QTextStream &cout, Translator &translator,
-		Recreator &recreator, const QString &testInput, bool exprMode);
-	void encodeInput(QTextStream &cout, ProgramModel *programModel,
-		QString &testInput);
-	void printInput(QTextStream &cout, const QString &inputLine)
+		enum Option option, QString name);
+	void parseInput(const QString &testInput);
+	void translateInput(const QString &testInput, bool exprMode);
+	void encodeInput(QString &testInput);
+	void printInput(const QString &inputLine)
 	{
 		// no 'tr()' for this string - must match expected results file
-		cout << endl << "Input: " << inputLine << endl;
+		m_cout << endl << "Input: " << inputLine << endl;
 	}
-	bool printToken(QTextStream &cout, Token *token, bool tab);
-	void printError(QTextStream &cout, int column, int length,
-		const QString &error);
+	bool printToken(Token *token, bool tab);
+	void printError(int column, int length, const QString &error);
 
-	QString m_programName;		// name of program
-	int m_option;				// selection option
-	bool m_recreate;			// recreate testing
-	QString m_testName;			// name of test
-	QString m_testFileName;		// name of test file (OptFile only)
-	QString m_errorMessage;		// message if error occurred
+	QString m_programName;			// name of program
+	int m_option;					// selection option
+	bool m_recreate;				// recreate testing
+	QString m_testName;				// name of test
+	QString m_testFileName;			// name of test file (OptFile only)
+	QTextStream &m_cout;			// reference to output device
+	Translator *m_translator;		// program line translator instance
+	ProgramModel *m_programUnit; 	// program unit (has translator instance)
+	Recreator *m_recreator;			// token list recreator instance
+	QString m_errorMessage;			// message if error occurred
 };
 
 
