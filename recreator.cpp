@@ -156,18 +156,23 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
 	int precedence = recreator.table().precedence(rpnItem->token()->code());
 
+	// get string of operand from stack
+	// (add parens if item on top of the stack is not a unary operator
+	// and operator precendence is higher than the operand)
+	QString operand = recreator.popWithParens(!recreator.top().unaryOperator
+		&& precedence > recreator.top().precedence);
+
 	// get string for operator
 	QString string = recreator.table().name(rpnItem->token());
-	// if operator is a plain word operator, then need to add a space
-	if (rpnItem->token()->code() < EndPlainWord_Code)
+	// if operator is a plain word operator or operand is a number,
+	//  then need to add a space
+	if (rpnItem->token()->code() < EndPlainWord_Code
+		|| operand.at(0).isDigit() || operand.at(0) == '.')
 	{
 		string.append(' ');
 	}
 	// append operand and push to holding stack
-	// (add parens if item on top of the stack is not a unary operator
-	// and operator precendence is higher than the operand)
-	string.append(recreator.popWithParens(!recreator.top().unaryOperator
-		&& precedence > recreator.top().precedence));
+	string.append(operand);
 
 	// push operator expression back to stack with precedence of operator
 	recreator.push(string, precedence, true);
@@ -181,8 +186,10 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 	int precedence = recreator.table().precedence(rpnItem->token()->code());
 
 	// get string of second operand
-	// (add parens if operator precedence is higher than or same as operand)
-	string = recreator.popWithParens(precedence >= recreator.top().precedence);
+	// (add parens if operator precedence is higher than or same as operand
+	// and operand is not a unary operator)
+	string = recreator.popWithParens(precedence >= recreator.top().precedence
+		&& !recreator.top().unaryOperator);
 
 	// get string of operator with spaces, append to first operand
 	// (add parens if operator precendence is higher than the operand)

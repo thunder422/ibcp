@@ -315,8 +315,8 @@ Input: MID$(A$+B$,
               ^-- expected comma
 
 Input: A(INT(B+C))=4
-Output: TEST:B C + INT( CvtInt A(<ref> 4 Assign 
+Output: A(INT(B + C)) = 4 
 
 Input: MID$(A$,LEFT$(B$,1)<C$)=D$
-Output: TEST:A$<ref> B$ 1% LEFT$( C$ <$ D$ AssignMid2 
+Output: MID$(A$, LEFT$(B$, 1) < C$) = D$ 
 

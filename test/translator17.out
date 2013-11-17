@@ -1,172 +1,172 @@
 
 Input: A=4+B
-Output: TEST:A<ref> 4 B + Assign 
+Output: A = 4 + B 
 
 Input: A=4.0+B
-Output: TEST:A<ref> 4.0 B + Assign 
+Output: A = 4.0 + B 
 
 Input: A=4e40+B
-Output: TEST:A<ref> 4e40 B + Assign 
+Output: A = 4e40 + B 
 
 Input: A=B+4
-Output: TEST:A<ref> B 4 + Assign 
+Output: A = B + 4 
 
 Input: A=B+4.0
-Output: TEST:A<ref> B 4.0 + Assign 
+Output: A = B + 4.0 
 
 Input: A=B+4e40
-Output: TEST:A<ref> B 4e40 + Assign 
+Output: A = B + 4e40 
 
 Input: A%=4+B%
-Output: TEST:A%<ref> 4% B% +% Assign% 
+Output: A% = 4 + B% 
 
 Input: A%=4.0+B%
-Output: TEST:A%<ref> 4.0% B% +% Assign% 
+Output: A% = 4.0 + B% 
 
 Input: A%=4e40+B%
-Output: TEST:A%<ref> 4e40 B% +%2 CvtInt Assign% 
+Output: A% = 4e40 + B% 
 
 Input: A%=B%+4
-Output: TEST:A%<ref> B% 4% +% Assign% 
+Output: A% = B% + 4 
 
 Input: A%=B%+4.0
-Output: TEST:A%<ref> B% 4.0% +% Assign% 
+Output: A% = B% + 4.0 
 
 Input: A%=B%+4e40
-Output: TEST:A%<ref> B% 4e40 +%1 CvtInt Assign% 
+Output: A% = B% + 4e40 
 
 Input: A$="4"+B$
-Output: TEST:A$<ref> "4" B$ +$ Assign$ 
+Output: A$ = "4" + B$ 
 
 Input: A$=B$+"4"
-Output: TEST:A$<ref> B$ "4" +$ Assign$ 
+Output: A$ = B$ + "4" 
 
 Input: A%=4\B
-Output: TEST:A%<ref> 4 B \ Assign% 
+Output: A% = 4 \ B 
 
 Input: A%=4.0\B
-Output: TEST:A%<ref> 4.0 B \ Assign% 
+Output: A% = 4.0 \ B 
 
 Input: A%=4e40\B
-Output: TEST:A%<ref> 4e40 B \ Assign% 
+Output: A% = 4e40 \ B 
 
 Input: A%=B\4
-Output: TEST:A%<ref> B 4 \ Assign% 
+Output: A% = B \ 4 
 
 Input: A%=B\4.0
-Output: TEST:A%<ref> B 4.0 \ Assign% 
+Output: A% = B \ 4.0 
 
 Input: A%=B\4e40
-Output: TEST:A%<ref> B 4e40 \ Assign% 
+Output: A% = B \ 4e40 
 
 Input: A%=4 AND B%
-Output: TEST:A%<ref> 4% B% AND Assign% 
+Output: A% = 4 AND B% 
 
 Input: A%=4.0 AND B%
-Output: TEST:A%<ref> 4.0% B% AND Assign% 
+Output: A% = 4.0 AND B% 
 
 Input: A%=4e40 AND B%
           ^^^^-- expected valid integer constant
 
 Input: A%=B% AND 4
-Output: TEST:A%<ref> B% 4% AND Assign% 
+Output: A% = B% AND 4 
 
 Input: A%=B% AND 4.0
-Output: TEST:A%<ref> B% 4.0% AND Assign% 
+Output: A% = B% AND 4.0 
 
 Input: A%=B% AND 4e40
                  ^^^^-- expected valid integer constant
 
 Input: A=- 4
-Output: TEST:A<ref> 4% Neg% CvtDbl Assign 
+Output: A = - 4 
 
 Input: A=- 4.0
-Output: TEST:A<ref> 4.0 Neg Assign 
+Output: A = - 4.0 
 
 Input: A=- 4e40
-Output: TEST:A<ref> 4e40 Neg Assign 
+Output: A = - 4e40 
 
 Input: A%=- 4
-Output: TEST:A%<ref> 4% Neg% Assign% 
+Output: A% = - 4 
 
 Input: A%=- 4.0
-Output: TEST:A%<ref> 4.0 Neg CvtInt Assign% 
+Output: A% = - 4.0 
 
 Input: A%=- 4e40
-Output: TEST:A%<ref> 4e40 Neg CvtInt Assign% 
+Output: A% = - 4e40 
 
 Input: A%=NOT 4
-Output: TEST:A%<ref> 4% NOT Assign% 
+Output: A% = NOT 4 
 
 Input: A%=NOT 4.0
-Output: TEST:A%<ref> 4.0% NOT Assign% 
+Output: A% = NOT 4.0 
 
 Input: A%=NOT 4e40
               ^^^^-- expected valid integer constant
 
 Input: A=ABS(4)
-Output: TEST:A<ref> 4% ABS%( CvtDbl Assign 
+Output: A = ABS(4) 
 
 Input: A=ABS(4.0)
-Output: TEST:A<ref> 4.0 ABS( Assign 
+Output: A = ABS(4.0) 
 
 Input: A=ABS(4e40)
-Output: TEST:A<ref> 4e40 ABS( Assign 
+Output: A = ABS(4e40) 
 
 Input: A$=STR$(4)
-Output: TEST:A$<ref> 4% STR%$( Assign$ 
+Output: A$ = STR$(4) 
 
 Input: A$=STR$(4.0)
-Output: TEST:A$<ref> 4.0 STR$( Assign$ 
+Output: A$ = STR$(4.0) 
 
 Input: A$=STR$(4e40)
-Output: TEST:A$<ref> 4e40 STR$( Assign$ 
+Output: A$ = STR$(4e40) 
 
 Input: A$=CHR$(4)
-Output: TEST:A$<ref> 4% CHR$( Assign$ 
+Output: A$ = CHR$(4) 
 
 Input: A$=CHR$(4.0)
-Output: TEST:A$<ref> 4.0% CHR$( Assign$ 
+Output: A$ = CHR$(4.0) 
 
 Input: A$=CHR$(4e40)
                ^^^^-- expected valid integer constant
 
 Input: A=4
-Output: TEST:A<ref> 4 Assign 
+Output: A = 4 
 
 Input: A=4.0
-Output: TEST:A<ref> 4.0 Assign 
+Output: A = 4.0 
 
 Input: A=4e40
-Output: TEST:A<ref> 4e40 Assign 
+Output: A = 4e40 
 
 Input: A$="4"
-Output: TEST:A$<ref> "4" Assign$ 
+Output: A$ = "4" 
 
 Input: A%=4
-Output: TEST:A%<ref> 4% Assign% 
+Output: A% = 4 
 
 Input: A%=4.0
-Output: TEST:A%<ref> 4.0% Assign% 
+Output: A% = 4.0 
 
 Input: A%=4e40
           ^^^^-- expected valid integer constant
 
 Input: A=4^B
-Output: TEST:A<ref> 4 B ^ Assign 
+Output: A = 4 ^ B 
 
 Input: A=4.0^B
-Output: TEST:A<ref> 4.0 B ^ Assign 
+Output: A = 4.0 ^ B 
 
 Input: A=4e40^B
-Output: TEST:A<ref> 4e40 B ^ Assign 
+Output: A = 4e40 ^ B 
 
 Input: A=B^4
-Output: TEST:A<ref> B 4% ^* Assign 
+Output: A = B ^ 4 
 
 Input: A=B^4.0
-Output: TEST:A<ref> B 4.0 ^ Assign 
+Output: A = B ^ 4.0 
 
 Input: A=B^4e40
-Output: TEST:A<ref> B 4e40 ^ Assign 
+Output: A = B ^ 4e40 
 

@@ -15,7 +15,7 @@ Input: Z = A <> B$
                 ^^-- expected numeric expression
 
 Input: Z = A <> B$ < C$
-Output: TEST:Z<ref> A B$ C$ <$ <>%2 CvtDbl Assign 
+Output: Z = A <> B$ < C$ 
 
 Input: Z = A + B$ + C$
                ^^-- expected numeric expression
@@ -30,13 +30,13 @@ Input: Z = A < B$ + C%
                     ^^-- expected string expression
 
 Input: Z = A <> B$ + C$ < D$
-Output: TEST:Z<ref> A B$ C$ +$ D$ <$ <>%2 CvtDbl Assign 
+Output: Z = A <> B$ + C$ < D$ 
 
 Input: Z = A + B$ + C$ < D$
                ^^-- expected numeric expression
 
 Input: Z = A + (B$ + C$ < D$)
-Output: TEST:Z<ref> A B$ C$ +$ D$ <$ +%2 Assign 
+Output: Z = A + (B$ + C$ < D$) 
 
 Input: Z$ = A$ + B$ + C%
                       ^^-- expected string expression
@@ -51,13 +51,13 @@ Input: A$=RIGHT$(B,2) = C$
                  ^-- expected string expression
 
 Input: Z=MID$(A$,2) < "B"
-Output: TEST:Z<ref> A$ 2% MID2$( "B" <$ CvtDbl Assign 
+Output: Z = MID$(A$, 2) < "B" 
 
 Input: Z=MID$(A$,2) = B$
-Output: TEST:Z<ref> A$ 2% MID2$( B$ =$ CvtDbl Assign 
+Output: Z = MID$(A$, 2) = B$ 
 
 Input: Z(INT(A+B))=C
-Output: TEST:A B + INT( CvtInt Z(<ref> C Assign 
+Output: Z(INT(A + B)) = C 
 
 Input: Z(A$)=C
          ^^-- expected numeric expression
@@ -66,16 +66,16 @@ Input: Z(A)=Y(A$)
               ^^-- expected numeric expression
 
 Input: Z(A),Y(A)=X(A)
-Output: TEST:A CvtInt Z(<ref> A CvtInt Y(<ref> A CvtInt X( AssignList 
+Output: Z(A), Y(A) = X(A) 
 
 Input: Z(A,Y(B))=X(A)
-Output: TEST:A CvtInt B CvtInt Y( CvtInt Z(<ref> A CvtInt X( Assign 
+Output: Z(A, Y(B)) = X(A) 
 
 Input: Z%(A%),Y%(A%)=X%(A%)
-Output: TEST:A% Z%(<ref> A% Y%(<ref> A% X%( AssignList% 
+Output: Z%(A%), Y%(A%) = X%(A%) 
 
 Input: Z$(A%),Y$(A%)=X$(A%)
-Output: TEST:A% Z$(<ref> A% Y$(<ref> A% X$( AssignList$ 
+Output: Z$(A%), Y$(A%) = X$(A%) 
 
 Input: TAB(10)=A
        ^^^^-- expected command
@@ -135,37 +135,37 @@ Input: MID$(+A$,4)=B$
             ^-- expected string variable
 
 Input: FNA=B
-Output: TEST:FNA<ref> B Assign 
+Output: FNA = B 
 
 Input: FNA(I)=B
           ^-- expected equal or comma for assignment
 
 Input: LET FNA=B
-Output: TEST:FNA<ref> B Assign'LET' 
+Output: LET FNA = B 
 
 Input: LET FNA(I)=B
               ^-- expected equal or comma for assignment
 
 Input: C,FNA=B
-Output: TEST:C<ref> FNA<ref> B AssignList 
+Output: C, FNA = B 
 
 Input: C,FNA(I)=B
             ^-- expected equal or comma for assignment
 
 Input: LET C,FNA=B
-Output: TEST:C<ref> FNA<ref> B AssignList'LET' 
+Output: LET C, FNA = B 
 
 Input: LET C,FNA(I)=B
                 ^-- expected equal or comma for assignment
 
 Input: C,FNA,D=B
-Output: TEST:C<ref> FNA<ref> D<ref> B AssignList 
+Output: C, FNA, D = B 
 
 Input: C,FNA(I),D=B
             ^-- expected equal or comma for assignment
 
 Input: LET C,FNA,D=B
-Output: TEST:C<ref> FNA<ref> D<ref> B AssignList'LET' 
+Output: LET C, FNA, D = B 
 
 Input: LET C,FNA(I),D=B
                 ^-- expected equal or comma for assignment

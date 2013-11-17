@@ -41,7 +41,7 @@ do
 	base=${input##*/}
 	output=${base%.dat}.txt
 	./ibcp -t $input >$output
-	diff -wq $dir$output $output >/dev/null
+	diff -q $dir$output $output >/dev/null
 	if [ $? -eq 0 ]
 	then
 		echo Test File $base... OK
@@ -55,7 +55,7 @@ do
 	base=${input##*/}
 	output=${base%.dat}.out
 	./ibcp -to $input >$output
-	diff -wq $dir$output $output >/dev/null
+	diff -q $dir$output $output >/dev/null
 	if [ $? -eq 0 ]
 	then
 		echo Recreate Test File $base... OK

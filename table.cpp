@@ -1022,7 +1022,7 @@ static TableEntry tableEntries[] =
 	{	// NegInt_Code
 		Operator_TokenType, OneChar_Multiple,
 		"-", "Neg%", NULL,
-		Null_Flag, 40, Integer_DataType,
+		Null_Flag, 48, Integer_DataType,
 		new ExprInfo(NegInt_Code, Operands(Int)),
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
