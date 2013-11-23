@@ -259,4 +259,22 @@ void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
 }
 
 
+// function to do nothing (for hidden codes)
+void remRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QString string = recreator.table().name(rpnItem->token());
+	QString remark = rpnItem->token()->string();
+	if (remark.at(0).isLower())
+	{
+		string = string.toLower();
+	}
+	if (rpnItem->token()->isCode(RemOp_Code) && !recreator.isEmpty())
+	{
+		// FLAG option: space before rem operator (default=yes)
+		recreator.append(" ");
+	}
+	recreator.append(string + remark);
+}
+
+
 // end: recreator.cpp

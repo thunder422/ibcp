@@ -1,45 +1,48 @@
 
 Input: REM This is a comment
-Output: TEST:REM| This is a comment| 
+Output: REM This is a comment 
 
 Input: REM"Space not required if followed by non-alpha numeric"
-Output: TEST:REM|"Space not required if followed by non-alpha numeric"| 
+Output: REM"Space not required if followed by non-alpha numeric" 
 
 Input: REM+Same here
-Output: TEST:REM|+Same here| 
+Output: REM+Same here 
 
 Input: REM'and here
-Output: TEST:REM|'and here| 
+Output: REM'and here 
 
 Input: REMARK This should also be a comment
-Output: TEST:REM|ARK This should also be a comment| 
+Output: REMARK This should also be a comment 
+
+Input: remark an all lower case comment
+Output: remark an all lower case comment 
 
 Input: REM           Comment with spaces
-Output: TEST:REM|           Comment with spaces| 
+Output: REM           Comment with spaces 
 
 Input: 'operator form of REM at beginning of line
-Output: TEST:'|operator form of REM at beginning of line| 
+Output: 'operator form of REM at beginning of line 
 
 Input: A=3'assign A
-Output: TEST:A<ref> 3 Assign '|assign A| 
+Output: A = 3 'assign A 
 
 Input: A=3 'assign A
-Output: TEST:A<ref> 3 Assign '|assign A| 
+Output: A = 3 'assign A 
 
 Input: A=3 ' assign A
-Output: TEST:A<ref> 3 Assign '| assign A| 
+Output: A = 3 ' assign A 
 
 Input: PRINT A 'output value
-Output: TEST:A PrintDbl PRINT '|output value| 
+Output: PRINT A 'output value 
 
 Input: PRINT A+3 'comment
-Output: TEST:A 3 + PrintDbl PRINT '|comment| 
+Output: PRINT A + 3 'comment 
 
 Input: PRINT A+3;'comment
-Output: TEST:A 3 + PrintDbl ; '|comment| 
+Output: PRINT A + 3; 'comment 
 
 Input: INPUT A'get value from user
-Output: TEST:InputParse InputBegin A<ref> InputAssign INPUT '|get value from user| 
+Output: INPUT A 'get value from user 
 
 Input: A'bad comment
         ^-- expected equal or comma for assignment

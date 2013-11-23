@@ -7,6 +7,7 @@ REM"Space not required if followed by non-alpha numeric"
 REM+Same here
 REM'and here
 REMARK This should also be a comment
+remark an all lower case comment
 REM           Comment with spaces
 
 'operator form of REM at beginning of line

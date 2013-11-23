@@ -344,7 +344,7 @@ static TableEntry tableEntries[] =
 		Command_TokenType, OneWord_Multiple,
 		"REM", NULL, NULL,
 		Null_Flag, 4, None_DataType, NULL,
-		NULL, remEncode, remOperandText, remRemove
+		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	{	// If_Code
 		Command_TokenType, OneWord_Multiple,
@@ -846,7 +846,7 @@ static TableEntry tableEntries[] =
 		Operator_TokenType, OneChar_Multiple,
 		"'", NULL, NULL,
 		EndStmt_Flag, 2, None_DataType, NULL,
-		NULL, remEncode, remOperandText, remRemove
+		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	//*****************
 	//   END SYMBOLS

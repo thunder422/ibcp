@@ -14,6 +14,9 @@ Output: REM|'and here|
 Input: REMARK This should also be a comment
 Output: REM|ARK This should also be a comment| 
 
+Input: remark an all lower case comment
+Output: REM|ark an all lower case comment| 
+
 Input: REM           Comment with spaces
 Output: REM|           Comment with spaces| 
 

@@ -70,6 +70,10 @@ public:
 	{
 		return m_stack.isEmpty();
 	}
+	bool isEmpty(void)
+	{
+		return m_output.isEmpty();
+	}
 
 	// separator access functions
 	QChar separator(void) const
