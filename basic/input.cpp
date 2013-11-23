@@ -22,6 +22,7 @@
 //
 //	2013-08-17	initial version
 
+#include "recreator.h"
 #include "table.h"
 #include "token.h"
 #include "translator.h"
@@ -142,6 +143,46 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 	}
 
 	return Done_TokenStatus;
+}
+
+
+// function to recreate the input begin string code (for INPUT PROMPT)
+void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	recreator.setSeparator(rpnItem->token()->hasSubCode(Option_SubCode)
+		? ',' : ';');
+}
+
+
+// function to recreate an input assign type code
+void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	QString string;
+
+	if (recreator.separatorIsSet())
+	{
+		// if there is a separator,
+		// then append top string to previous string with separator between
+		string = recreator.pop();
+		// FLAG option: space after comma (default=yes)
+		recreator.topAppend(recreator.separator() + ' ' + string);
+	}
+	recreator.setSeparator(',');  // set separator for next reference
+}
+
+
+// function to recreate the input command code
+void inputRecreate(Recreator &recreator, RpnItem *rpnItem)
+{
+	recreator.append(recreator.table().name(rpnItem->token()));
+	// FLAG option: all spaces after commands (default=yes)
+	recreator.append(" ");
+	recreator.append(recreator.pop());
+	if (rpnItem->token()->hasSubCode(Option_SubCode))
+	{
+		recreator.append(";");
+	}
+	recreator.clearSeparator();
 }
 
 

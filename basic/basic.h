@@ -145,5 +145,9 @@ void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
 void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem);
 void printRecreate(Recreator &recreator, RpnItem *rpnItem);
 
+void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem);
+void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem);
+void inputRecreate(Recreator &recreator, RpnItem *rpnItem);
+
 
 #endif // BASIC_H

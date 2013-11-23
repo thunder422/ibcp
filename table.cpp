@@ -320,14 +320,14 @@ static TableEntry tableEntries[] =
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", NULL, "Keep",
 		Null_Flag, 4, None_DataType, NULL,
-		inputTranslate
+		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// InputPrompt_Code
 		Command_TokenType, TwoWord_Multiple,
 		"INPUT", "PROMPT", "Keep",
 		Null_Flag, 4, String_DataType, NULL,
-		inputTranslate
+		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// Dim_Code
@@ -1310,46 +1310,53 @@ static TableEntry tableEntries[] =
 	{	// InputBegin_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputBegin", NULL,
-		Null_Flag, 2, None_DataType
+		Null_Flag, 2, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputBeginStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputBeginStr", "Question",
-		Null_Flag, 2, None_DataType,
-		new ExprInfo(Null_Code, Operands(Str))
+		Null_Flag, 2, None_DataType, new ExprInfo(Null_Code, Operands(Str)),
+		NULL, NULL, NULL, NULL, inputPromptBeginRecreate
 	},
 	{	// InputAssign_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputAssign", NULL,
 		Reference_Flag, 2, None_DataType,
-		new ExprInfo(Null_Code, Operands(Dbl), AssocCode2(InputAssign, 2))
+		new ExprInfo(Null_Code, Operands(Dbl), AssocCode2(InputAssign, 2)),
+		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputAssignInt", NULL,
 		Reference_Flag, 2, None_DataType,
-		new ExprInfo(Null_Code, Operands(Int), AssocCode(InputAssignInt))
+		new ExprInfo(Null_Code, Operands(Int), AssocCode(InputAssignInt)),
+		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputAssignStr", NULL,
 		Reference_Flag, 2, None_DataType,
-		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputAssignStr))
+		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputAssignStr)),
+		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputParse_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputParse", NULL,
-		Null_Flag, 2, None_DataType
+		Null_Flag, 2, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseInt_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputParseInt", NULL,
-		Null_Flag, 2, None_DataType
+		Null_Flag, 2, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseStr_Code
 		IntFuncN_TokenType, OneWord_Multiple,
 		NULL, "InputParseStr", NULL,
-		Null_Flag, 2, None_DataType
+		Null_Flag, 2, None_DataType, NULL,
+		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// Const_Code
 		Constant_TokenType, OneWord_Multiple,
@@ -1885,7 +1892,13 @@ Code Table::cvtCode(Token *token, DataType dataType) const
 // function to return text for an command, operator or function code in a token
 QString Table::name(Token *token) const
 {
-	return name(token->code());
+	TableEntry &entry = m_entry[token->code()];
+	QString string = entry.name;
+	if (entry.multiple == TwoWord_Multiple && !entry.name2.isEmpty())
+	{
+		string += ' ' + entry.name2;
+	}
+	return string;
 }
 
 
