@@ -79,7 +79,7 @@ void Dictionary::remove(quint16 index)
 		m_keyHash.remove(m_keyList.at(index));  // remove key/index from map
 		m_keyList[index].clear();
 		m_freeStack.push(index);
-    }
+	}
 }
 
 

@@ -159,7 +159,7 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 			.arg(errorItem.length()).arg(errorItem.message()));
 	}
 
-    return string;
+	return string;
 }
 
 

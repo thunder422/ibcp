@@ -35,9 +35,9 @@ Parser::Parser(void) :
 
 // function to get a token at the current position
 //
-//     - a pointer to the token is returned
-//     - the token must be deallocated when it is no longer needed
-//     - the token may contain an error message if an error was found
+//   - a pointer to the token is returned
+//   - the token must be deallocated when it is no longer needed
+//   - the token may contain an error message if an error was found
 
 Token *Parser::token(bool operandState)
 {
@@ -65,9 +65,9 @@ Token *Parser::token(bool operandState)
 // parenthesis.  The internal function, defined function or identifier
 // will have a data type
 //
-//     - returns false if no identifier (position not changed)
-//     - returns true if there is and token is filled
-//     - returns true for errors setting special error token
+//   - returns false if no identifier (position not changed)
+//   - returns true if there is and token is filled
+//   - returns true for errors setting special error token
 
 bool Parser::getIdentifier(void)
 {
@@ -191,10 +191,10 @@ bool Parser::getIdentifier(void)
 
 // function to get a word at the position specified
 //
-//     - returns -1 if there is not an identifier at point
-//     - returns index to character after identifier
-//     - returns data type found or None if none was found
-//     - returns flag if opening parenthesis at end of identifier
+//   - returns -1 if there is not an identifier at point
+//   - returns index to character after identifier
+//   - returns data type found or None if none was found
+//   - returns flag if opening parenthesis at end of identifier
 
 int Parser::scanWord(int pos, DataType &dataType, bool &paren)
 {
@@ -246,9 +246,9 @@ int Parser::scanWord(int pos, DataType &dataType, bool &paren)
 
 // function to skip white space at the specified position
 //
-//     - for now the only white space is a space character
-//     - returns pointer to next non-white space character
-//     - if no white space found then argument is returned
+//   - for now the only white space is a space character
+//   - returns pointer to next non-white space character
+//   - if no white space found then argument is returned
 
 void Parser::skipWhitespace(void)
 {
@@ -265,12 +265,12 @@ void Parser::skipWhitespace(void)
 // it will be returned as an integer, otherwise is will be returned as a
 // double.
 //
-//     - numbers starting with zero must be followed by a decimal point
-//     - returns false if no number (position not changed)
-//     - returns true if there is and token is filled
-//     - returns true for errors and special error token is set
-//     - string of the number is converted to a value
-//     - string of the number is saved so it can be later reproduced
+//   - numbers starting with zero must be followed by a decimal point
+//   - returns false if no number (position not changed)
+//   - returns true if there is and token is filled
+//   - returns true for errors and special error token is set
+//   - string of the number is converted to a value
+//   - string of the number is saved so it can be later reproduced
 
 bool Parser::getNumber(void)
 {
@@ -396,7 +396,7 @@ bool Parser::getNumber(void)
 	}
 	// pos pointing to first character that is not part of constant
 	bool ok;
-    int len = pos - m_pos;
+	int len = pos - m_pos;
 	QString numStr = m_input.mid(m_pos, len);
 
 	// save string of number so it later can be reproduced
@@ -455,11 +455,11 @@ bool Parser::getNumber(void)
 // function to get string constant at the current position if there is
 // a double quote at current position.
 //
-//     - strings constants start and end with a double quote
-//     - returns false if no string (position not changed)
-//     - returns true if there is and token is filled
-//     - copy string into token without surrounding quotes
-//     - returns true for errors and special error token is set
+//   - strings constants start and end with a double quote
+//   - returns false if no string (position not changed)
+//   - returns true if there is and token is filled
+//   - copy string into token without surrounding quotes
+//   - returns true for errors and special error token is set
 
 bool Parser::getString(void)
 {
@@ -499,9 +499,9 @@ bool Parser::getString(void)
 // (though the data type from the Table entry is returned, it will usually br
 // None).
 //
-//     - returns false if no operator (position not changed)
-//     - returns true if there is and token is filled
-//     - returns true for errors setting special error token
+//   - returns false if no operator (position not changed)
+//   - returns true if there is and token is filled
+//   - returns true for errors setting special error token
 
 bool Parser::getOperator(void)
 {

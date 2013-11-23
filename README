@@ -65,8 +65,8 @@ constants.  Program lines are encoded and stored into program from where
 there are retrieved.
 
 The recreator converts a reverse polish notation token list back into
-BASIC program source code.  Currently only the recreation of expressions
-is supported.
+BASIC program source code.  All of the initial set of supported commands
+are recreated.
 
 
 Building The Program

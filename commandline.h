@@ -34,7 +34,7 @@ class CommandLine
 	Q_DECLARE_TR_FUNCTIONS(CommandLine)
 
 public:
-    explicit CommandLine(const QStringList &args);
+	explicit CommandLine(const QStringList &args);
 	~CommandLine();
 
 	bool processed(void) const  // if processed then exit program

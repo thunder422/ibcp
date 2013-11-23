@@ -38,7 +38,7 @@ const char *CommandLine::s_warrantyStatement[] = {
 	QT_TR_NOOP("This program comes with ABSOLUTELY NO WARRANTY."),
 	QT_TR_NOOP("This is free software, and you are welcome to"),
 	QT_TR_NOOP("redistribute it under certain conditions."),
-    NULL
+	NULL
 };
 
 

@@ -18,7 +18,7 @@ Input: INPUT PROMPT "Enter Number: "; N%
 Output: INPUT PROMPT "Enter Number: "; N% 
 
 Input: INPUT PROMPT A$+":"; A
-Output: INPUT PROMPT A$+":"; A 
+Output: INPUT PROMPT A$ + ":"; A 
 
 Input: INPUT PROMPT "Two Values", A, B;
 Output: INPUT PROMPT "Two Values", A, B; 

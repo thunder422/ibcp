@@ -221,8 +221,8 @@ void EditBox::goNextError(void)
 		errIndex++;
 	}
 	if (errIndex >= m_errors.count())  // past last error?
-    {
-        errIndex = 0;
+	{
+		errIndex = 0;
 		if (m_errors.count() == 1 && lineNumber() == m_errors.at(0).lineNumber()
 			&& column() >= m_errors.at(0).column()
 			&& column() < m_errors.at(0).column() + m_errors.at(0).length()
@@ -233,7 +233,7 @@ void EditBox::goNextError(void)
 		{
 			return;
 		}
-    }
+	}
 	moveCursorToError(errIndex);
 }
 
@@ -253,8 +253,8 @@ void EditBox::goPrevError(void)
 		errIndex--;
 	}
 	if (errIndex < 0)
-    {
-        errIndex = m_errors.count() - 1;
+	{
+		errIndex = m_errors.count() - 1;
 		if (m_errors.count() == 1
 			&& lineNumber() == m_errors.at(errIndex).lineNumber()
 			&& column() == m_errors.at(errIndex).column()
@@ -265,7 +265,7 @@ void EditBox::goPrevError(void)
 		{
 			return;
 		}
-    }
+	}
 	moveCursorToError(errIndex);
 }
 
@@ -274,11 +274,11 @@ void EditBox::goPrevError(void)
 
 void EditBox::moveCursorToError(int errIndex)
 {
-    ErrorItem error = m_errors.at(errIndex);
-    QTextBlock block = document()->findBlockByLineNumber(error.lineNumber());
-    QTextCursor cursor = textCursor();
-    cursor.setPosition(block.position() + error.column());
-    setTextCursor(cursor);
+	ErrorItem error = m_errors.at(errIndex);
+	QTextBlock block = document()->findBlockByLineNumber(error.lineNumber());
+	QTextCursor cursor = textCursor();
+	cursor.setPosition(block.position() + error.column());
+	setTextCursor(cursor);
 }
 
 

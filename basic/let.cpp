@@ -207,7 +207,7 @@ void letRecreate(Recreator &recreator, Token *token)
 }
 
 
-// function to recreate a list assignment statement
+// function to recreate assignment and list assignment statements
 void assignRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
 	QStack<QString> stack;

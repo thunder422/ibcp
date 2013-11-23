@@ -48,6 +48,7 @@ public:
 
 	QString recreate(RpnList *rpnList, bool exprMode = false);
 
+	// holding stack access functions
 	void push(QString string, int precedence = HighestPrecedence,
 		bool unaryOperator = false);
 	QString pop(void);
@@ -59,10 +60,6 @@ public:
 	{
 		m_stack.top().string.append(string);
 	}
-	void append(QString string)
-	{
-		m_output.append(string);
-	}
 	QString popWithParens(bool addParens, int *precedence = NULL,
 		bool *unaryOperator = NULL);
 	void pushWithOperands(QString &name, int count);
@@ -70,13 +67,19 @@ public:
 	{
 		return m_stack.isEmpty();
 	}
-	bool isEmpty(void)
+
+	// output string access functions
+	void append(const QString &string)
+	{
+		m_output.append(string);
+	}
+	bool outputIsEmpty(void)
 	{
 		return m_output.isEmpty();
 	}
-	QChar last(void)
+	QChar outputLastChar(void)
 	{
-		return isEmpty() ? QChar::Null : m_output.at(m_output.length() - 1);
+		return m_output.at(m_output.length() - 1);
 	}
 
 	// separator access functions
@@ -101,6 +104,7 @@ public:
 		m_separator = separator;
 	}
 
+	// table instance access function
 	const Table &table(void) const
 	{
 		return m_table;

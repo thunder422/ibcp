@@ -91,7 +91,7 @@ void Recreator::push(QString string, int precedence, bool unaryOperator)
 // function to pop the string on holding stack top, optional return precedence
 QString Recreator::pop(void)
 {
-    return m_stack.isEmpty() ? "<Empty>" : m_stack.pop().string;
+	return m_stack.isEmpty() ? "<Empty>" : m_stack.pop().string;
 }
 
 
@@ -275,8 +275,8 @@ void remRecreate(Recreator &recreator, RpnItem *rpnItem)
 	{
 		string = string.toLower();
 	}
-	if (rpnItem->token()->isCode(RemOp_Code) && !recreator.isEmpty()
-		&& recreator.last() != ' ')
+	if (rpnItem->token()->isCode(RemOp_Code) && !recreator.outputIsEmpty()
+		&& recreator.outputLastChar() != ' ')
 	{
 		// FLAG option: space before rem operator (default=yes)
 		recreator.append(" ");

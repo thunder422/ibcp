@@ -42,9 +42,9 @@ public:
 	~Translator(void);
 
 	enum TestMode {
-		No_TestMode,
-		Expression_TestMode,
-		Yes_TestMode,
+		No_TestMode,				// do normal translation
+		Expression_TestMode,		// translate as expression only
+		Yes_TestMode,				// don't set code size after translation
 		sizeof_TestMode
 	};
 

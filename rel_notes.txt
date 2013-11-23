@@ -20,7 +20,6 @@ see <http://www.gnu.org/licenses/>.
 
 Planned Roadmap (updated 2013-11-09):
 
-	Implement Recreator (commands)
 	Implement Decoder (internal code to RPN list)
 	Integrate Recreator to GUI (update Edit Box)
 	Implement Recreator source formating preferences
@@ -31,6 +30,15 @@ Planned Roadmap (updated 2013-11-09):
 	Implement DEF FN command
 	Implement DO-WHILE-UNTIL-LOOP commands
 	To be defined...
+
+
+Release 0.6.1 (2013-11-23)
+
+	Project developmental release - the recreation of rpn lists has
+	been completed for all of the initially supported commands (LET,
+	PRINT, INPUT and REM).
+
+	  - new interactive recreator test mode (-tr)
 
 
 Release 0.6.0 (2013-11-09)

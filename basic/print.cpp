@@ -147,9 +147,11 @@ void printItemRecreate(Recreator &recreator, RpnItem *)
 		// append the previous separator
 		string = recreator.separator();
 
+		// FLAG option: space between print commas (default=no)
 		if (!recreator.separatorIsSet(' '))
 		{
 			// if it is not a space (comma) then append a space
+			// FLAG option: space after print semicolons (default=yes)
 			string.append(' ');
 		}
 	}
@@ -182,6 +184,7 @@ void printCommaRecreate(Recreator &recreator, RpnItem *)
 	}
 
 	// append comma to string and push it back to the stack
+	// FLAG option: space after print commas (default=no)
 	string.append(',');
 	recreator.push(string);
 
@@ -217,6 +220,7 @@ void printRecreate(Recreator &recreator, RpnItem *rpnItem)
 	// if stack is not empty then append space with string on top of stack
 	if (!recreator.stackIsEmpty())
 	{
+		// FLAG option: all spaces after commands (default=yes)
 		recreator.append(" ");
 		recreator.append(recreator.pop());
 	}
