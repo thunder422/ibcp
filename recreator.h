@@ -74,6 +74,10 @@ public:
 	{
 		return m_output.isEmpty();
 	}
+	QChar last(void)
+	{
+		return isEmpty() ? QChar::Null : m_output.at(m_output.length() - 1);
+	}
 
 	// separator access functions
 	QChar separator(void) const

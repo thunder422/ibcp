@@ -58,6 +58,13 @@ QString Recreator::recreate(RpnList *rpnList, bool exprMode)
 		{
 			parenRecreate(*this, rpnItem);
 		}
+		if (rpnItem->token()->hasSubCode(Colon_SubCode))
+		{
+			// FLAG option: spaces before colons (default=no)
+			append(":");
+			// FLAG option: spaces after colons (default=yes)
+			append(" ");
+		}
 	}
 	if (exprMode)
 	{
@@ -268,7 +275,8 @@ void remRecreate(Recreator &recreator, RpnItem *rpnItem)
 	{
 		string = string.toLower();
 	}
-	if (rpnItem->token()->isCode(RemOp_Code) && !recreator.isEmpty())
+	if (rpnItem->token()->isCode(RemOp_Code) && !recreator.isEmpty()
+		&& recreator.last() != ' ')
 	{
 		// FLAG option: space before rem operator (default=yes)
 		recreator.append(" ");

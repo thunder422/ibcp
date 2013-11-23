@@ -1,42 +1,42 @@
 
 Input: A=SQR(17):PRINT A
-Output: TEST:A<ref> 17 SQR( Assign':' A PrintDbl PRINT 
+Output: A = SQR(17): PRINT A 
 
 Input: PRINT A:PRINT B
-Output: TEST:A PrintDbl PRINT':' B PrintDbl PRINT 
+Output: PRINT A: PRINT B 
 
 Input: PRINT A;:PRINT B
-Output: TEST:A PrintDbl ;':' B PrintDbl PRINT 
+Output: PRINT A;: PRINT B 
 
 Input: INPUT A:PRINT A
-Output: TEST:InputParse InputBegin A<ref> InputAssign INPUT':' A PrintDbl PRINT 
+Output: INPUT A: PRINT A 
 
 Input: A,B,C=5.0:INPUT D
-Output: TEST:A<ref> B<ref> C<ref> 5.0 AssignList':' InputParse InputBegin D<ref> InputAssign INPUT 
+Output: A, B, C = 5.0: INPUT D 
 
 Input: A$,LEFT$(B$,1),MID$(C$,2,3)="A":PRINT A$
-Output: TEST:A$<ref> B$<ref> 1% C$<ref> 2% 3% "A" AssignKeepMid3 AssignKeepLeft Assign$':' A$ PrintStr PRINT 
+Output: A$, LEFT$(B$, 1), MID$(C$, 2, 3) = "A": PRINT A$ 
 
 Input: INPUT PROMPT "Number",A:PRINT A
-Output: TEST:"Number" InputParse InputBeginStr'Question' A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 
+Output: INPUT PROMPT "Number", A: PRINT A 
 
 Input: INPUT PROMPT "Number";A:PRINT A
-Output: TEST:"Number" InputParse InputBeginStr A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 
+Output: INPUT PROMPT "Number"; A: PRINT A 
 
 Input: INPUT PROMPT "Number:";A:PRINT A
-Output: TEST:"Number:" InputParse InputBeginStr A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 
+Output: INPUT PROMPT "Number:"; A: PRINT A 
 
 Input: INPUT A;:PRINT A
-Output: TEST:InputParse InputBegin A<ref> InputAssign INPUT'Keep:' A PrintDbl PRINT 
+Output: INPUT A;: PRINT A 
 
 Input: PRINT A:REM output A
-Output: TEST:A PrintDbl PRINT':' REM| output A| 
+Output: PRINT A: REM output A 
 
 Input: PRINT A:'output A:test
-Output: TEST:A PrintDbl PRINT':' '|output A:test| 
+Output: PRINT A: 'output A:test 
 
 Input: INPUT A;:R=SQR(A):PRINT"Sqrt(";A;")=";R
-Output: TEST:InputParse InputBegin A<ref> InputAssign INPUT'Keep:' R<ref> A SQR( Assign':' "Sqrt(" PrintStr A PrintDbl ")=" PrintStr R PrintDbl PRINT 
+Output: INPUT A;: R = SQR(A): PRINT "Sqrt("; A; ")="; R 
 
 Input: :
        ^-- expected command
