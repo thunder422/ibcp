@@ -117,12 +117,6 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 				m_errorMessage = QString("%1: cannot use -to with %2 files")
 					.arg(m_programName).arg(name[OptParser]);
 			}
-			else if (m_option == OptEncoder && m_recreate)
-			{
-				m_option = OptError;
-				m_errorMessage = QString("%1: using -to with %2 files not yet "
-					"implemented").arg(m_programName).arg(name[OptEncoder]);
-			}
 		}
 	}
 	// ignore non-test or invalid test options
@@ -279,6 +273,15 @@ bool Tester::run(CommandLine *commandLine)
 			m_cout << i << ": " << m_programUnit->debugText(i, true) << endl;
 		}
 		m_cout << m_programUnit->dictionariesDebugText();
+
+		if (m_recreate)
+		{
+			m_cout << endl << "Output:" << endl;
+			for (int i = 0; i < m_programUnit->rowCount(); i++)
+			{
+				m_cout << i << ": " << m_programUnit->lineText(i) << endl;
+			}
+		}
 	}
 
 	return true;

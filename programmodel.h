@@ -35,6 +35,7 @@
 #include "errorlist.h"
 #include "basic/basic.h"
 
+class Recreator;
 class RpnList;
 class Table;
 class Translator;
@@ -48,6 +49,10 @@ public:
 	Code instructionCode(void) const
 	{
 		return (Code)(m_word & ProgramMask_Code);
+	}
+	int instructionSubCode(void) const
+	{
+		return m_word & ProgramMask_SubCode;
 	}
 	bool instructionHasSubCode(int subCode) const
 	{
@@ -213,6 +218,7 @@ public:
 	}
 	QString debugText(int lineIndex, bool fullInfo = false) const;
 	QString dictionariesDebugText(void);
+	QString lineText(int lineIndex);
 
 signals:
 	void lineCountChanged(int newLineCount);
@@ -271,9 +277,11 @@ private:
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
 	ProgramCode encode(RpnList *input);
 	void dereference(const LineInfo &lineInfo);
+	RpnList *decode(const LineInfo &lineInfo);
 
 	Table &m_table;						// reference to the table object
-	Translator *m_translator;			// program line translator instance
+	Translator *m_translator;			// program unit translator instance
+	Recreator *m_recreator;				// program unit recreator instance
 
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list

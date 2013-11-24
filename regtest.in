@@ -50,7 +50,7 @@ do
 	fi
 done
 
-for input in ${dir}expression*.dat ${dir}translator*.dat
+for input in ${dir}expression*.dat ${dir}translator*.dat ${dir}encoder*.dat
 do
 	base=${input##*/}
 	output=${base%.dat}.out

@@ -1,0 +1,94 @@
+
+Input: LET'error!
+          ^-- expected item for assignment
+
+Program:
+0: [0-1] 0:REM 1:|0: This is a sample program|
+1: [2-6] 0:VarRef 1:|0:A| 2:Const 3:|0:5| 4:Assign
+2: [7-10] 0:Var 1:|0:A| 2:PrintDbl 3:PRINT
+3: [11-21] 0:VarRefInt 1:|0:B%| 2:Var 3:|0:A| 4:Const 5:|1:6| 6:+ 7:CvtInt 8:Assign%':' 9:REM 10:|6: replaced with larger line|
+4: [22-25] 0:VarInt 1:|0:B%| 2:PrintInt 3:PRINT
+5: [26-31] 0:VarRefStr 1:|2:D$| 2:VarInt 3:|0:B%| 4:STR%$( 5:Assign$
+6: [32]
+7: [32-37] 0:VarStr 1:|2:D$| 2:PrintStr 3:PRINT 4:' 5:|2: something useful|
+8: [38-62] 0:ConstStr 1:|1:Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|3:N%| 6:InputAssignInt 7:PROMPT':' 8:VarRef 9:|1:E| 10:VarInt 11:|3:N%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|3:N%| 17:PrintInt 18:, 19:Var 20:|1:E| 21:PrintDbl 22:PRINT 23:' 24:|7: replaced with same size line|
+9: [63]
+10: [63-73] 0:VarRefStr 1:|1:A$| 2:VarInt 3:|0:B%| 4:ConstInt 5:|2:48| 6:+% 7:CHR$( 8:Assign$ 9:' 10:|1: replaced with smaller line|
+11: [74-85] 0:Var 1:|0:A| 2:PrintDbl 3:, 4:Var 5:|2:B| 6:PrintDbl 7:, 8:Var 9:|3:C| 10:PrintDbl 11:PRINT
+12: [86-97] 0:VarRefStr 1:|1:A$| 2:ConstStr 3:|0:Test| 4:VarInt 5:|0:B%| 6:ConstInt 7:|2:48| 8:+% 9:CHR$( 10:+$ 11:Assign$
+13: [98-104] 0:VarInt 1:|0:B%| 2:PrintInt 3:VarStr 4:|1:A$| 5:PrintStr 6:PRINT
+14: [105-105] 0:PRINT
+15: [106-107] 0:' 1:|3:reuse some constants, have some new constants|
+16: [108-115] 0:VarRefInt 1:|2:C%| 2:VarInt 3:|0:B%| 4:ConstInt 5:|1:6| 6:+% 7:Assign%
+17: [116-117] 0:REM 1:|4: reuse previous double constant as double|
+18: [118-125] 0:VarRefInt 1:|1:D%| 2:VarInt 3:|2:C%| 4:ConstInt 5:|0:5| 6:+% 7:Assign%
+19: [126] ERROR 3:1 expected item for assignment
+20: [126-137] 0:ConstStr 1:|0:Test| 2:PrintStr 3:, 4:VarInt 5:|2:C%| 6:PrintInt 7:, 8:ConstStr 9:|2:5| 10:PrintStr 11:PRINT
+21: [138-146] 0:ConstStr 1:|3:Quote"Test| 2:PrintStr 3:VarInt 4:|1:D%| 5:PrintInt 6:PRINT 7:' 8:|8: replace last line with larger line|
+
+Remarks:
+0: 1 | This is a sample program|
+1: 1 | replaced with smaller line|
+2: 1 | something useful|
+3: 1 |reuse some constants, have some new constants|
+4: 1 | reuse previous double constant as double|
+6: 1 | replaced with larger line|
+7: 1 | replaced with same size line|
+8: 1 | replace last line with larger line|
+Free: 5
+
+Number Constants:
+0: 2 |5|
+1: 2 |6|
+2: 2 |48|
+Free: none
+
+String Constants:
+0: 2 |Test|
+1: 1 |Enter:|
+2: 1 |5|
+3: 1 |Quote"Test|
+Free: none
+
+Double Variables:
+0: 4 |A|
+1: 2 |E|
+2: 1 |B|
+3: 1 |C|
+Free: none
+
+Integer Variables:
+0: 7 |B%|
+1: 2 |D%|
+2: 3 |C%|
+3: 3 |N%|
+Free: none
+
+String Variables:
+1: 3 |A$|
+2: 2 |D$|
+Free: 0
+
+Output:
+0: REM This is a sample program
+1: A = 5
+2: PRINT A
+3: B% = A + 6: REM replaced with larger line
+4: PRINT B%
+5: D$ = STR$(B%)
+6: 
+7: PRINT D$ ' something useful
+8: INPUT PROMPT "Enter:"; N%: LET E = SQR(N%): PRINT N%, E ' replaced with same size line
+9: 
+10: A$ = CHR$(B% + 48) ' replaced with smaller line
+11: PRINT A, B, C
+12: A$ = "Test" + CHR$(B% + 48)
+13: PRINT B%; A$
+14: PRINT
+15: 'reuse some constants, have some new constants
+16: C% = B% + 6
+17: REM reuse previous double constant as double
+18: D% = C% + 5
+19: 
+20: PRINT "Test", C%, "5"
+21: PRINT "Quote""Test"; D% ' replace last line with larger line

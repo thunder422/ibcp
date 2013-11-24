@@ -23,6 +23,7 @@
 //	2013-03-15	initial version
 
 #include "programmodel.h"
+#include "recreator.h"
 #include "rpnlist.h"
 #include "table.h"
 #include "translator.h"
@@ -83,7 +84,8 @@ QString ProgramWord::operandDebugText(QString text) const
 ProgramModel::ProgramModel(QObject *parent) :
 	QAbstractListModel(parent),
 	m_table(Table::instance()),
-	m_translator(new Translator)
+	m_translator(new Translator),
+	m_recreator(new Recreator)
 {
 	m_remDictionary = new Dictionary;
 	m_constNumDictionary = new InfoDictionary<ConstNumInfo>;
@@ -98,6 +100,7 @@ ProgramModel::ProgramModel(QObject *parent) :
 ProgramModel::~ProgramModel(void)
 {
 	delete m_translator;
+	delete m_recreator;
 
 	delete m_remDictionary;
 	delete m_constNumDictionary;
@@ -174,6 +177,17 @@ QString ProgramModel::dictionariesDebugText(void)
 	string.append(m_varDblDictionary->debugText("Double Variables"));
 	string.append(m_varIntDictionary->debugText("Integer Variables"));
 	string.append(m_varStrDictionary->debugText("String Variables"));
+	return string;
+}
+
+
+// function to return text for a given program line
+QString ProgramModel::lineText(int lineIndex)
+{
+	LineInfo &lineInfo = m_lineInfo[lineIndex];
+	RpnList *rpnList = decode(lineInfo);
+	QString string = m_recreator->recreate(rpnList);
+	delete rpnList;
 	return string;
 }
 
@@ -484,7 +498,30 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 			remove(this, line[++i].operand());
 		}
 	}
-
 }
+
+
+// function to decode a program line into an RPN list
+RpnList *ProgramModel::decode(const LineInfo &lineInfo)
+{
+	RpnList *rpnList = new RpnList;
+	ProgramWord *line = m_code.data() + lineInfo.offset;
+	for (int i = 0; i < lineInfo.size; i++)
+	{
+		Token *token = new Token;
+		token->setCode(line[i].instructionCode());
+		token->addSubCode(line[i].instructionSubCode());
+
+		OperandTextFunction operandText
+			= m_table.operandTextFunction(token->code());
+		if (operandText != NULL)
+		{
+			token->setString(operandText(this, line[++i].operand()));
+		}
+		rpnList->append(token);
+	}
+	return rpnList;
+}
+
 
 // end: programmodel.cpp

@@ -41,7 +41,7 @@ del parser*.txt expression*.txt translator*.txt encoder*.txt
 for %%i in (test/parser*.dat test/expression*.dat test/translator*.dat test/encoder*.dat) do (
 	ibcp -t test\%%i >%%~ni.txt
 )
-for %%i in (test/expression*.dat test/translator*.dat) do (
+for %%i in (test/expression*.dat test/translator*.dat test/encoder*.dat) do (
 	ibcp -to test\%%i >%%~ni.out
 )
 comp test\parser*.txt parser*.txt
@@ -50,3 +50,4 @@ comp test\translator*.txt translator*.txt
 comp test\encoder*.txt encoder*.txt
 comp test\expression*.out expression*.out
 comp test\translator*.out translator*.out
+comp test\encoder*.out encoder*.out
