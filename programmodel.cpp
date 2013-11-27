@@ -109,12 +109,6 @@ ProgramModel::~ProgramModel(void)
 	delete m_varDblDictionary;
 	delete m_varIntDictionary;
 	delete m_varStrDictionary;
-
-	// REMOVE need to delete all of the stored translated line lists
-	for (int i = 0; i < m_lineInfo.count(); i++)
-	{
-		delete m_lineInfo.at(i).rpnList;
-	}
 }
 
 
@@ -299,9 +293,12 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	if (operation == Change_Operation)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
-		if (*rpnList == *lineInfo.rpnList)
+		RpnList *currentRpnList = decode(lineInfo);
+		bool same = *rpnList == *currentRpnList;
+		delete currentRpnList;
+		if (same)
 		{
-			delete rpnList;
+			delete rpnList;  // not needed
 			return false;  // line not changed; nothing more to do here
 		}
 
@@ -310,10 +307,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			lineCode = encode(rpnList);
 		}
-
-		// REMOVE replace rpn list with the new list
-		delete lineInfo.rpnList;
-		lineInfo.rpnList = rpnList;
+		delete rpnList;  // no longer needed
 
 		updateError(lineNumber, lineInfo, errorItem, false);
 
@@ -326,7 +320,6 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	else if (operation == Insert_Operation)
 	{
 		LineInfo lineInfo;
-		lineInfo.rpnList = rpnList;  // REMOVE replace rpn list
 		lineInfo.errIndex = -1;
 
 		updateError(lineNumber, lineInfo, errorItem, true);
@@ -336,6 +329,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			lineCode = encode(rpnList);
 		}
+		delete rpnList;  // no longer needed
 
 		// find offset to insert line
 		if (lineNumber < m_lineInfo.count())
@@ -358,9 +352,6 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 
 		removeError(lineNumber, lineInfo, true);
-
-		// REMOVE delete rpn list
-		delete lineInfo.rpnList;
 
 		// derefence old line and remove from code
 		dereference(lineInfo);

@@ -471,7 +471,7 @@ bool Token::operator==(const Token &other) const
 	}
 	else
 	{
-		return m_string.compare(other.m_string) == 0;
+		return m_string.compare(other.m_string, Qt::CaseInsensitive) == 0;
 	}
 }
 

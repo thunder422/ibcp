@@ -231,7 +231,6 @@ public slots:
 private:
 	struct LineInfo
 	{
-		RpnList *rpnList;				// REMOVE pointer to rpn list
 		int offset;						// offset of line in program
 		int size;						// size of line in program
 		int errIndex;					// index to error list
