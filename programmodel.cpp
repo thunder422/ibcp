@@ -302,6 +302,10 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 			return false;  // line not changed; nothing more to do here
 		}
 
+		// derefence old line
+		// (line gets deleted if new line has an error)
+		dereference(lineInfo);
+
 		// line is different, encode it if there was no translation error
 		if (errorItem.isEmpty())
 		{
@@ -311,9 +315,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 
 		updateError(lineNumber, lineInfo, errorItem, false);
 
-		// derefence old line and replace with new line
-		// (line gets deleted if new line has an error)
-		dereference(lineInfo);
+		// replace with new line
 		m_code.replaceLine(lineInfo.offset, lineInfo.size, lineCode);
 		m_lineInfo.replace(lineNumber, lineCode.size());
 	}
