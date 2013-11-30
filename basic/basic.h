@@ -39,47 +39,42 @@ class RpnItem;
 
 // constant definitions
 
-class ConstNumInfo
+class ConstNumInfo : public AbstractInfo
 {
 public:
-	ConstNumInfo(void);
-	ConstNumInfo(Token *token);
+	void addElement(void);
+	void setElement(int index, Token *token);
 
-	double value(void) const
+	double *array(void)
 	{
-		return m_value;
+		return m_value.data();
 	}
-	int valueInt(void) const
+	int *arrayInt(void)
 	{
-		return m_valueInt;
-	}
-
-private:
-	double m_value;
-	int m_valueInt;
-};
-
-
-class ConstStrInfo
-{
-public:
-	ConstStrInfo(void);
-	ConstStrInfo(Token *token);
-
-	QString *value(void) const
-	{
-		return m_value;
+		return m_valueInt.data();
 	}
 
 private:
-	QString *m_value;
+	QVector<double> m_value;				// vector of double values
+	QVector<int> m_valueInt;				// vector of integer values
 };
 
 
-class ConstStrDictionary : public InfoDictionary<ConstStrInfo>
+class ConstStrInfo : public AbstractInfo
 {
 public:
-	~ConstStrDictionary(void);
+	~ConstStrInfo(void);
+	void addElement(void);
+	void setElement(int index, Token *token);
+	void clearElement(int index);
+
+	QString **array(void)
+	{
+		return m_value.data();
+	}
+
+private:
+	QVector<QString *> m_value;				// vector of string instances
 };
 
 

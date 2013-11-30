@@ -26,6 +26,13 @@
 #include "token.h"
 
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                            DICTIONARY FUNCTIONS                            //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
 Dictionary::Dictionary(void)
 {
 }
@@ -72,14 +79,16 @@ quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
 }
 
 
-void Dictionary::remove(quint16 index)
+int Dictionary::remove(quint16 index)
 {
 	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
 	{
 		m_keyHash.remove(m_keyList.at(index));  // remove key/index from map
 		m_keyList[index].clear();
 		m_freeStack.push(index);
+		return true;
 	}
+	return false;
 }
 
 
@@ -117,6 +126,53 @@ QString Dictionary::debugText(const QString header)
 	}
 	string.append("\n");
 	return string;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                      INFORMATION DICTIONARY FUNCTIONS                      //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+// constructor function - save the information instance pointer
+InfoDictionary::InfoDictionary(AbstractInfo *info) :
+	m_info(info)
+{
+
+}
+
+
+// function to possibly add a new dictionary entry and return its index
+quint16 InfoDictionary::add(Token *token, Qt::CaseSensitivity cs)
+{
+	EntryType returnNewEntry;
+	int index = Dictionary::add(token, cs, &returnNewEntry);
+	if (returnNewEntry == New_Entry)
+	{
+		// a new entry was added to the dictionary
+		// so add a new element to the additional information
+		m_info->addElement();
+	}
+	if (returnNewEntry != Exists_Entry)
+	{
+		// for a new entry or a reused entry,
+		// set the additional information from the token
+		m_info->setElement(index, token);
+	}
+	return index;
+}
+
+
+// function to remove an entry from the dictionary
+void InfoDictionary::remove(quint16 index)
+{
+	if (Dictionary::remove(index))
+	{
+		// clear the additional information if the entry was removed
+		m_info->clearElement(index);
+	}
 }
 
 

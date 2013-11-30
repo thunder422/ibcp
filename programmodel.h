@@ -174,11 +174,11 @@ public:
 		return m_remDictionary;
 	}
 
-	InfoDictionary<ConstNumInfo> *constNumDictionary(void) const
+	InfoDictionary *constNumDictionary(void) const
 	{
 		return m_constNumDictionary;
 	}
-	InfoDictionary<ConstStrInfo> *constStrDictionary(void) const
+	InfoDictionary *constStrDictionary(void) const
 	{
 		return m_constStrDictionary;
 	}
@@ -289,8 +289,10 @@ private:
 
 	// pointers to the global program dictionaries
 	Dictionary *m_remDictionary;
-	InfoDictionary<ConstNumInfo> *m_constNumDictionary;
-	ConstStrDictionary *m_constStrDictionary;
+	ConstNumInfo *m_constNumInfo;		// additional info for number constants
+	InfoDictionary *m_constNumDictionary;
+	ConstStrInfo *m_constStrInfo;		// additional info for string constants
+	InfoDictionary *m_constStrDictionary;
 
 	// pointers to the local unit dictionaries
 	Dictionary *m_varDblDictionary;

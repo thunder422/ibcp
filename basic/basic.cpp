@@ -48,15 +48,16 @@ void remRemove(ProgramModel *programUnit, quint16 operand)
 
 // CONSTANT FUNCTIONS
 
-ConstNumInfo::ConstNumInfo(void)
+void ConstNumInfo::addElement()
 {
-	// default constructor needed for QVector
+	m_value.resize(m_value.size() + 1);
+	m_valueInt.resize(m_valueInt.size() + 1);
 }
 
-ConstNumInfo::ConstNumInfo(Token *token)
+void ConstNumInfo::setElement(int index, Token *token)
 {
-	m_value = token->value();
-	m_valueInt = token->valueInt();
+	m_value[index] = token->value();
+	m_valueInt[index] = token->valueInt();
 }
 
 quint16 constNumEncode(ProgramModel *programUnit, Token *token)
@@ -76,21 +77,27 @@ void constNumRemove(ProgramModel *programUnit, quint16 operand)
 }
 
 
-ConstStrInfo::ConstStrInfo(void)
+void ConstStrInfo::addElement(void)
 {
-	// default constructor needed for QVector
+	m_value.append(new QString);
 }
 
-ConstStrInfo::ConstStrInfo(Token *token)
+
+void ConstStrInfo::setElement(int index, Token *token)
 {
-	m_value = new QString(token->string());
+	*m_value[index] = token->string();
 }
 
-ConstStrDictionary::~ConstStrDictionary(void)
+void ConstStrInfo::clearElement(int index)
 {
-	for (int i = 0; i < m_info.count(); i++)
+	m_value[index]->clear();
+}
+
+ConstStrInfo::~ConstStrInfo(void)
+{
+	for (int i = 0; i < m_value.count(); i++)
 	{
-		delete m_info.at(i).value();
+		delete m_value.at(i);
 	}
 }
 

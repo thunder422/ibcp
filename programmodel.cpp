@@ -88,8 +88,10 @@ ProgramModel::ProgramModel(QObject *parent) :
 	m_recreator(new Recreator)
 {
 	m_remDictionary = new Dictionary;
-	m_constNumDictionary = new InfoDictionary<ConstNumInfo>;
-	m_constStrDictionary = new ConstStrDictionary;
+	m_constNumInfo = new ConstNumInfo;
+	m_constNumDictionary = new InfoDictionary(m_constNumInfo);
+	m_constStrInfo = new ConstStrInfo;
+	m_constStrDictionary = new InfoDictionary(m_constStrInfo);
 
 	m_varDblDictionary = new Dictionary;
 	m_varIntDictionary = new Dictionary;
@@ -104,7 +106,9 @@ ProgramModel::~ProgramModel(void)
 
 	delete m_remDictionary;
 	delete m_constNumDictionary;
+	delete m_constNumInfo;
 	delete m_constStrDictionary;
+	delete m_constStrInfo;
 
 	delete m_varDblDictionary;
 	delete m_varIntDictionary;

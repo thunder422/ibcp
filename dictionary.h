@@ -47,7 +47,7 @@ public:
 
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
 		EntryType *returnNewEntry = NULL);
-	void remove(quint16 index);
+	int remove(quint16 index);
 	QString string(int index) const
 	{
 		return m_keyList.at(index);
@@ -62,28 +62,26 @@ private:
 };
 
 
-template <class Info>
-// Info class must have Info(Token *token) constructor
+// interface class for info dictionary
+class AbstractInfo
+{
+public:
+	virtual void addElement(void) {}
+	virtual void setElement(int index, Token *token) {}
+	virtual void clearElement(int index) {}
+};
+
+
 class InfoDictionary : public Dictionary
 {
 public:
-	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive)
-	{
-		EntryType returnNewEntry;
-		int index = Dictionary::add(token, cs, &returnNewEntry);
-		if (returnNewEntry == New_Entry)
-		{
-			m_info.append(Info(token));
-		}
-		else if (returnNewEntry == Reused_Entry)
-		{
-			m_info[index] = Info(token);
-		}
-		return index;
-	}
+	InfoDictionary(AbstractInfo *info);
+
+	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+	void remove(quint16 index);
 
 protected:
-	QVector<Info> m_info;				// additional dictionary information
+	AbstractInfo *m_info;				// pointer to additional information
 };
 
 
