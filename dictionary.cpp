@@ -137,10 +137,15 @@ QString Dictionary::debugText(const QString header)
 
 
 // constructor function - save the information instance pointer
-InfoDictionary::InfoDictionary(AbstractInfo *info) :
-	m_info(info)
+InfoDictionary::InfoDictionary(void) :
+	m_info(NULL)
 {
 
+}
+
+InfoDictionary::~InfoDictionary(void)
+{
+	delete m_info;
 }
 
 

@@ -289,10 +289,8 @@ private:
 
 	// pointers to the global program dictionaries
 	Dictionary *m_remDictionary;
-	ConstNumInfo *m_constNumInfo;		// additional info for number constants
-	InfoDictionary *m_constNumDictionary;
-	ConstStrInfo *m_constStrInfo;		// additional info for string constants
-	InfoDictionary *m_constStrDictionary;
+	ConstNumDictionary *m_constNumDictionary;
+	ConstStrDictionary *m_constStrDictionary;
 
 	// pointers to the local unit dictionaries
 	Dictionary *m_varDblDictionary;

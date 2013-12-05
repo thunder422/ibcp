@@ -66,6 +66,7 @@ private:
 class AbstractInfo
 {
 public:
+	virtual ~AbstractInfo(void) {}
 	virtual void addElement(void) {}
 	virtual void setElement(int index, Token *token) {}
 	virtual void clearElement(int index) {}
@@ -75,7 +76,8 @@ public:
 class InfoDictionary : public Dictionary
 {
 public:
-	InfoDictionary(AbstractInfo *info);
+	InfoDictionary(void);
+	~InfoDictionary(void);
 
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	void remove(quint16 index);

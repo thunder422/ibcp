@@ -59,6 +59,24 @@ private:
 	QVector<int> m_valueInt;				// vector of integer values
 };
 
+class ConstNumDictionary : public InfoDictionary
+{
+public:
+	ConstNumDictionary(void)
+	{
+		m_info = new ConstNumInfo;
+	}
+
+	double *array(void)
+	{
+		return ((ConstNumInfo *)m_info)->array();
+	}
+	int *arrayInt(void)
+	{
+		return ((ConstNumInfo *)m_info)->arrayInt();
+	}
+};
+
 
 class ConstStrInfo : public AbstractInfo
 {
@@ -75,6 +93,20 @@ public:
 
 private:
 	QVector<QString *> m_value;				// vector of string instances
+};
+
+class ConstStrDictionary : public InfoDictionary
+{
+public:
+	ConstStrDictionary(void)
+	{
+		m_info = new ConstStrInfo;
+	}
+
+	QString **array(void)
+	{
+		return ((ConstStrInfo *)m_info)->array();
+	}
 };
 
 
