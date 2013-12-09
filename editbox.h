@@ -33,13 +33,15 @@
 
 class QEvent;
 
+class ProgramModel;
+
 
 class EditBox : public QPlainTextEdit
 {
 	Q_OBJECT
 
 public:
-	explicit EditBox(QWidget *parent = 0);
+	explicit EditBox(ProgramModel *programUnit, QWidget *parent = 0);
 	void remove(void);
 	void paste(QClipboard::Mode mode = QClipboard::Clipboard);
 	void selectAll(void);
@@ -89,6 +91,7 @@ private:
 	void moveCursorToError(int errIndex);
 	const QTextEdit::ExtraSelection extraSelection(const ErrorItem &errorItem);
 
+	ProgramModel *m_programUnit;	// pointer to program unit being edited
 	int m_modifiedLine;				// current line that has been modified
 	bool m_modifiedLineIsNew;		// modified line is a new line flag
 	int m_modifiedLineOffset;		// compensate for lines inserted/deleted

@@ -59,6 +59,13 @@ MainWindow::MainWindow(QWidget *parent) :
 		this, SLOT(programOpen(const QString)));
 	settingsRestore();
 
+	//================
+	// SETUP PROGRAM
+	//================
+
+	// setup program model (connect to edit box changes)
+	m_programModel = new ProgramModel(this);
+
 	// TODO settings will eventually have info about edit boxes that were open
 	// TODO that will need to be restored, for now there is a single edit box
 
@@ -67,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	//==================
 
 	// create the starting program edit box
-	m_editBox = new EditBox(this);
+	m_editBox = new EditBox(m_programModel, this);
 	setCentralWidget(m_editBox);
 	m_statusReady = false;
 
@@ -108,16 +115,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_editBox->addActions(actions);
 	m_editBox->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-	//==============================================
-	// SETUP PROGRAM MODEL, LINE DELEGATE AND VIEW
-	//==============================================
-
-	// setup program model (connect to edit box changes)
-	m_programModel = new ProgramModel(this);
-	connect(m_editBox, SIGNAL(linesChanged(int, int, int, QStringList)),
-		m_programModel, SLOT(update(int, int, int, QStringList)));
-	connect(m_programModel, SIGNAL(errorListChanged(ErrorList)),
-		m_editBox, SLOT(updateErrors(ErrorList)));
+	//========================================
+	//  SETUP PROGRAM LINE DELEGATE AND VIEW
+	//========================================
 
 	// setup program line delegate (connect to model line count changes)
 	m_programLineDelegate = new ProgramLineDelegate(EditBox::BaseLineNumber,
@@ -130,9 +130,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->programView->setModel(m_programModel);
 	ui->programView->setFont(m_editBox->font());
 
-	//=================
-	//  SETUP PROGRAM
-	//=================
+	//================
+	//  LOAD PROGRAM
+	//================
 
 	// if a file name was specified on the command line
 	// then it overrides the restored program

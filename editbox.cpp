@@ -32,10 +32,12 @@
 
 #include "editbox.h"
 #include "errorlist.h"
+#include "programmodel.h"
 
 
-EditBox::EditBox(QWidget *parent) :
+EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	QPlainTextEdit(parent),
+	m_programUnit(programUnit),
 	m_modifiedLine(-1),
 	m_modifiedLineIsNew(false),
 	m_lineCount(0),
@@ -54,6 +56,14 @@ EditBox::EditBox(QWidget *parent) :
 
 	// connect to catch cursor position changes
 	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(cursorMoved()));
+
+	// connect to catch line changes
+	connect(this, SIGNAL(linesChanged(int, int, int, QStringList)),
+		m_programUnit, SLOT(update(int, int, int, QStringList)));
+
+	// connect to catch program errors list changes
+	connect(m_programUnit, SIGNAL(errorListChanged(ErrorList)),
+		this, SLOT(updateErrors(ErrorList)));
 
 	// create line number area width and connect signal to update it
 	m_lineNumberWidget = new LineNumberWidget(this);
