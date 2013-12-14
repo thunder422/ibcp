@@ -158,7 +158,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	statusBarCreate();
 
 	m_guiActive = true;
-	statusBarUpdate();
+	statusBarUpdate("");
 }
 
 
@@ -199,8 +199,8 @@ void MainWindow::statusBarCreate(void)
 	statusBar()->addWidget(m_statusPositionLabel);
 	statusBar()->addWidget(m_statusMessageLabel, 1);
 
-	connect(m_editBox, SIGNAL(cursorChanged()),
-		this, SLOT(statusBarUpdate()));
+	connect(m_editBox, SIGNAL(cursorChanged(QString)),
+		this, SLOT(statusBarUpdate(QString)));
 
 	m_statusReady = true;
 }
@@ -208,11 +208,11 @@ void MainWindow::statusBarCreate(void)
 
 // function to update the status bar
 
-void MainWindow::statusBarUpdate(void)
+void MainWindow::statusBarUpdate(const QString &message)
 {
 	m_statusPositionLabel->setText(QString(" %1:%2 ")
 		.arg(m_editBox->lineNumber()).arg(m_editBox->column() + 1));
-	m_statusMessageLabel->setText(m_editBox->message());
+	m_statusMessageLabel->setText(message);
 }
 
 

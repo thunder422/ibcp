@@ -59,7 +59,7 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void statusBarUpdate(void);
+	void statusBarUpdate(const QString &message);
 	void on_actionNew_triggered(void);
 	void on_actionOpen_triggered(void);
 	void on_actionClearRecent_triggered(void);

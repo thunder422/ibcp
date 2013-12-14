@@ -218,11 +218,23 @@ public:
 	}
 	QString debugText(int lineIndex, bool fullInfo = false) const;
 	QString dictionariesDebugText(void);
+
+	// program model access functions
 	QString lineText(int lineIndex);
+	void lineEdited(int lineNumber, int column, bool atLineEnd, int charsAdded,
+		int charsRemoved);
+
+	// error access functions
+	bool errorFindNext(int &lineNumber, int &column, bool &wrapped) const;
+	bool errorFindPrev(int &lineNumber, int &column, bool &wrapped) const;
+	QString errorMessage(int lineNumber) const;
 
 signals:
 	void lineCountChanged(int newLineCount);
-	void errorListChanged(const ErrorList &errorList);
+	void errorInserted(int errIndex, const ErrorItem &errorItem);
+	void errorChanged(int errIndex, const ErrorItem &errorItem);
+	void errorRemoved(int errIndex);
+	void errorListChanged(void);
 
 public slots:
 	void update(int lineNumber, int linesDeleted, int linesInserted,

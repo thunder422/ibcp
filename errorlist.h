@@ -110,29 +110,17 @@ public:
 	void decrementLineNumber(int index);
 	void moveColumn(int index, int chars);
 
-	void resetChange(void)
+	bool hasChanged(void)
 	{
-		m_changeIndexStart = m_changeIndexEnd = -1;
-	}
-	bool hasChanged(void) const
-	{
-		return m_changeIndexStart != -1;
-	}
-	int changeIndexStart(void) const
-	{
-		return m_changeIndexStart;
-	}
-	int changeIndexEnd(void) const
-	{
-		return m_changeIndexEnd;
+		bool changed = m_changed;
+		m_changed = false;  // reset after read
+		return changed;
 	}
 
 private:
 	void setChangeIndex(int index, Operation operation);
 
-	int m_changeIndexStart;				// start index of change
-	int m_changeIndexEnd;				// end index of change
-	QList<Operation> m_changeList;		// list of changes
+	bool m_changed;						// error list changed
 };
 
 #endif // ERRORLIST_H

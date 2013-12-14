@@ -44,7 +44,8 @@ ErrorItem::ErrorItem(Type type, int lineNumber, int column, int length,
 }
 
 
-ErrorList::ErrorList(void)
+ErrorList::ErrorList(void) :
+	m_changed(false)
 {
 }
 
@@ -100,7 +101,7 @@ int ErrorList::findIndex(int lineNumber) const
 void ErrorList::insert(int index, const ErrorItem &value)
 {
 	QList<ErrorItem>::insert(index, value);
-	setChangeIndex(index, Insert_Operation);
+	m_changed = true;
 }
 
 
@@ -108,7 +109,7 @@ void ErrorList::insert(int index, const ErrorItem &value)
 void ErrorList::removeAt(int index)
 {
 	QList<ErrorItem>::removeAt(index);
-	setChangeIndex(index, Remove_Operation);
+	m_changed = true;
 }
 
 
@@ -116,7 +117,7 @@ void ErrorList::removeAt(int index)
 void ErrorList::replace(int index, const ErrorItem &value)
 {
 	QList<ErrorItem>::replace(index, value);
-	setChangeIndex(index, Change_Operation);
+	m_changed = true;
 }
 
 
@@ -124,7 +125,7 @@ void ErrorList::replace(int index, const ErrorItem &value)
 void ErrorList::incrementLineNumber(int index)
 {
 	(*this)[index].incrementLineNumber();
-	setChangeIndex(index, Change_Operation);
+	m_changed = true;
 }
 
 
@@ -132,25 +133,7 @@ void ErrorList::incrementLineNumber(int index)
 void ErrorList::decrementLineNumber(int index)
 {
 	(*this)[index].decrementLineNumber();
-	setChangeIndex(index, Change_Operation);
-}
-
-
-// function to the change index if not already set
-void ErrorList::setChangeIndex(int index, Operation operation)
-{
-	if (m_changeIndexStart == -1)
-	{
-		m_changeIndexStart = index;
-	}
-	if (operation == Remove_Operation)
-	{
-		index--;
-	}
-	if (m_changeIndexEnd == -1 || m_changeIndexEnd < index)
-	{
-		m_changeIndexEnd = index;
-	}
+	m_changed = true;
 }
 
 
@@ -158,7 +141,7 @@ void ErrorList::setChangeIndex(int index, Operation operation)
 void ErrorList::moveColumn(int index, int chars)
 {
 	(*this)[index].moveColumn(chars);
-	setChangeIndex(index, Change_Operation);
+	m_changed = true;
 }
 
 

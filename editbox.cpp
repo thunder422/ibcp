@@ -61,9 +61,21 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	connect(this, SIGNAL(linesChanged(int, int, int, QStringList)),
 		m_programUnit, SLOT(update(int, int, int, QStringList)));
 
-	// connect to catch program errors list changes
-	connect(m_programUnit, SIGNAL(errorListChanged(ErrorList)),
-		this, SLOT(updateErrors(ErrorList)));
+	// connect to catch when an error has been inserted
+	connect(m_programUnit, SIGNAL(errorInserted(int, ErrorItem)),
+		this, SLOT(errorInserted(int, ErrorItem)));
+
+	// connect to catch when an error has been changed
+	connect(m_programUnit, SIGNAL(errorChanged(int, ErrorItem)),
+		this, SLOT(errorChanged(int, ErrorItem)));
+
+	// connect to catch when an error has been removed
+	connect(m_programUnit, SIGNAL(errorRemoved(int)),
+		this, SLOT(errorRemoved(int)));
+
+	// connect to catch when the errors list changes are finished
+	connect(m_programUnit, SIGNAL(errorListChanged()),
+		this, SLOT(errorListChanged()));
 
 	// create line number area width and connect signal to update it
 	m_lineNumberWidget = new LineNumberWidget(this);
@@ -221,30 +233,20 @@ void EditBox::selectAll(void)
 
 void EditBox::goNextError(void)
 {
-	int errIndex = m_errors.find(lineNumber());
-	if (errIndex >= m_errors.count()
-		|| lineNumber() > m_errors.at(errIndex).lineNumber()
-		|| lineNumber() == m_errors.at(errIndex).lineNumber()
-		&& column() >= m_errors.at(errIndex).column())
+	int lineNum = lineNumber();
+	int col = column();
+	bool wrapped;
+	if (m_programUnit->errorFindNext(lineNum, col, wrapped))
 	{
-		// past current error, go to next error
-		errIndex++;
-	}
-	if (errIndex >= m_errors.count())  // past last error?
-	{
-		errIndex = 0;
-		if (m_errors.count() == 1 && lineNumber() == m_errors.at(0).lineNumber()
-			&& column() >= m_errors.at(0).column()
-			&& column() < m_errors.at(0).column() + m_errors.at(0).length()
-			|| QMessageBox::question(this, "Next Error",
-			"No more errors in program,\nmove to first error?",
+		if (wrapped && QMessageBox::question(this, "Next Error",
+			"At last error in program,\nmove to first error?",
 			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
 			!= QMessageBox::Yes)
 		{
 			return;
 		}
+		moveCursorToLineColumn(lineNum, col);
 	}
-	moveCursorToError(errIndex);
 }
 
 
@@ -252,42 +254,30 @@ void EditBox::goNextError(void)
 
 void EditBox::goPrevError(void)
 {
-	int errIndex = m_errors.find(lineNumber());
-	if (errIndex >= m_errors.count()
-		|| lineNumber() < m_errors.at(errIndex).lineNumber()
-		|| lineNumber() == m_errors.at(errIndex).lineNumber()
-		&& column() < m_errors.at(errIndex).column()
-		+ m_errors.at(errIndex).length())
+	int lineNum = lineNumber();
+	int col = column();
+	bool wrapped;
+	if (m_programUnit->errorFindPrev(lineNum, col, wrapped))
 	{
-		// before current error, go to previous error
-		errIndex--;
-	}
-	if (errIndex < 0)
-	{
-		errIndex = m_errors.count() - 1;
-		if (m_errors.count() == 1
-			&& lineNumber() == m_errors.at(errIndex).lineNumber()
-			&& column() == m_errors.at(errIndex).column()
-			|| QMessageBox::question(this, "Previous Error",
-			"No more errors in program,\nmove to last error?",
+		if (wrapped && QMessageBox::question(this, "Previous Error",
+			"At first error in program,\nmove to last error?",
 			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
 			!= QMessageBox::Yes)
 		{
 			return;
 		}
+		moveCursorToLineColumn(lineNum, col);
 	}
-	moveCursorToError(errIndex);
 }
 
 
 // function to move cursor to an error
 
-void EditBox::moveCursorToError(int errIndex)
+void EditBox::moveCursorToLineColumn(int lineNum, int col)
 {
-	ErrorItem error = m_errors.at(errIndex);
-	QTextBlock block = document()->findBlockByLineNumber(error.lineNumber());
+	QTextBlock block = document()->findBlockByLineNumber(lineNum);
 	QTextCursor cursor = textCursor();
-	cursor.setPosition(block.position() + error.column());
+	cursor.setPosition(block.position() + col);
 	setTextCursor(cursor);
 }
 
@@ -443,35 +433,10 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		}
 		m_lineCount = newLineCount;
 	}
-	else  // single line modified, reset error if line has an error
+	else  // single line modified, inform program unit to possible handle error
 	{
-		int errIndex = m_errors.findIndex(changeLine);
-		if (errIndex != -1)
-		{
-			int errCol = m_errors.at(errIndex).column();
-			int errLen = m_errors.at(errIndex).length();
-			int col = cursor.positionInBlock();
-			if (col - charsAdded <= errCol + errLen)
-			{
-				// cursor is within or before error
-				if (cursor.atBlockEnd() && col + charsRemoved >= errCol
-					|| col - charsAdded + charsRemoved > errCol)
-				{
-					// cursor and error at end of line or cursor is within error
-					// remove error
-					m_errors.resetChange();
-					m_errors.removeAt(errIndex);
-				}
-				else  // cursor is before error, update error
-				{
-					m_errors.resetChange();
-					m_errors.moveColumn(errIndex, charsAdded - charsRemoved);
-				}
-				updateErrors(m_errors);
-				// cause error message to be removed from status line
-				emit cursorChanged();
-			}
-		}
+		m_programUnit->lineEdited(changeLine, cursor.positionInBlock(),
+			cursor.atBlockEnd(), charsAdded, charsRemoved);
 	}
 	m_modifiedLine = m_modifiedLine == -2 ? -1 : cursor.blockNumber();
 }
@@ -481,34 +446,17 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void EditBox::cursorMoved(void)
 {
-	if (!m_cursorValid)
+	if (!m_cursorValid)  // waiting for cursor to be valid?
 	{
-		m_cursorValid = true;
-		updateErrors(m_errors);
+		m_cursorValid = true;  // cursor is now valid
+		errorListChanged();
 	}
 	if (m_modifiedLine >= 0 && m_modifiedLine != textCursor().blockNumber())
 	{
 		// there is a modified line and cursor moved from that line
 		captureModifiedLine();
 	}
-	emit cursorChanged();
-}
-
-
-// function to get error message for current line
-//
-//   - default to no message if current line does not have error
-
-const QString EditBox::message(void) const
-{
-	// look for an error message for current line
-	int errIndex = m_errors.findIndex(lineNumber());
-	QString message;
-	if (errIndex != -1)
-	{
-		message = m_errors.at(errIndex).message();
-	}
-	return message;
+	emit cursorChanged(m_programUnit->errorMessage(lineNumber()));
 }
 
 
@@ -546,94 +494,73 @@ void EditBox::captureModifiedLine(int offset)
 }
 
 
-// function to update errors when program error list changes
-void EditBox::updateErrors(const ErrorList &errors)
+// slot function informing that the error list has changed
+void EditBox::errorListChanged(void)
 {
-	bool wasEmpty;
-	int inserted;
-	int removed;
-	int changed;
-	int start;
-	int end;
-	int i;
-
-	m_errors = errors;
 	if (!m_cursorValid)
 	{
 		return;  // wait until cursor is valid
 	}
 
-	wasEmpty = m_extraSelections.isEmpty();
-	inserted = errors.size() - m_extraSelections.size();
-	if (inserted > 0)
+	if (!m_errors.isEmpty())
 	{
-		removed = 0;
-	}
-	else
-	{
-		removed = -inserted;
-		inserted = 0;
-	}
-
-	if (errors.size() == 0)
-	{
-		start = 0;
-		end = 0;
-		changed = 0;
-	}
-	else
-	{
-		start = errors.changeIndexStart();
-		end = errors.changeIndexEnd();
-		changed = end - start + 1 - inserted;
-		if (start + changed > errors.size())
+		// insert errors now that text cursor is valid
+		for (int i = 0; i < m_errors.count(); i++)
 		{
-			changed = errors.size() - start;
+			errorInserted(i, m_errors.at(i));
 		}
+		m_errors.clear();
 	}
 
-	for (i = start; --changed >= 0; i++)
-	{
-		m_extraSelections.replace(i, extraSelection(errors.at(i)));
-	}
-	while (--inserted >= 0)
-	{
-		m_extraSelections.insert(i, extraSelection(errors.at(i)));
-		i++;
-	}
-	while (--removed >= 0)
-	{
-		m_extraSelections.removeAt(i);
-	}
 	setExtraSelections(m_extraSelections);
-
-	if (wasEmpty != m_extraSelections.isEmpty())
-	{
-		emit errorsAvailable(!m_extraSelections.isEmpty());
-	}
+	emit errorsAvailable(!m_extraSelections.isEmpty());
 }
 
 
-// function to convert an error item to an extra selection
-const QTextEdit::ExtraSelection
-	EditBox::extraSelection(const ErrorItem &errorItem)
+// slot function informing that an error has been inserted
+void EditBox::errorInserted(int errIndex, const ErrorItem &errorItem)
 {
+	if (!m_cursorValid)
+	{
+		// during initial load of program, the text cursor is not valid,
+		// so the errors need to be saved until the text cursor is valid
+		// (this works because errors are in order during initial load)
+		m_errors.append(errorItem);
+		return;
+	}
 	QTextEdit::ExtraSelection selection;
-	QColor lineColor;
-	QTextBlock block;
 
-	int column = errorItem.column();
-	int length = errorItem.length();
-	lineColor = QColor(Qt::red).lighter(150);
-	selection.format.setBackground(lineColor);
+	selection.format.setBackground(QColor(Qt::red).lighter(150));
 
-	block = document()->findBlockByLineNumber(errorItem.lineNumber());
 	selection.cursor = textCursor();
-	selection.cursor.setPosition(block.position() + column);
-	selection.cursor.movePosition(QTextCursor::NextCharacter,
-		QTextCursor::KeepAnchor, length);
+	setCursorFromError(selection.cursor, errorItem);
 
-	return selection;
+	m_extraSelections.insert(errIndex, selection);
+}
+
+
+// slot function informing that an error has been changed
+void EditBox::errorChanged(int errIndex, const ErrorItem &errorItem)
+{
+	setCursorFromError(m_extraSelections[errIndex].cursor, errorItem);
+}
+
+
+// slot function informing that an error has been removed
+void EditBox::errorRemoved(int errIndex)
+{
+	m_extraSelections.removeAt(errIndex);
+}
+
+
+// slot function informing that an error has been changed
+void EditBox::setCursorFromError(QTextCursor &cursor,
+	const ErrorItem &errorItem)
+{
+	cursor.setPosition(document()->findBlockByLineNumber(errorItem.lineNumber())
+		.position() + errorItem.column());
+	cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor,
+		errorItem.length());
 }
 
 

@@ -57,7 +57,6 @@ public:
 	{
 		return textCursor().positionInBlock();
 	}
-	const QString message(void) const;
 
 	int lineNumberWidgetWidth(void);
 	void lineNumberWidgetPaint(QPaintEvent *event);
@@ -73,23 +72,27 @@ protected:
 signals:
 	void linesChanged(int lineNumber, int linesDeleted, int linesInserted,
 		QStringList lines);
-	void cursorChanged(void);
+	void cursorChanged(const QString &message);
 	void errorsAvailable(bool available);
 
 public slots:
 	void documentChanged(int position, int charsRemoved, int charsAdded);
 	void cursorMoved(void);
-	void updateErrors(const ErrorList &errors);
 	void setPlainText(const QString &text);
 
 private slots:
+	void errorListChanged(void);
+	void errorInserted(int errIndex, const ErrorItem &errorItem);
+	void errorChanged(int errIndex, const ErrorItem &errorItem);
+	void errorRemoved(int errIndex);
+
 	void lineNumberWidgetUpdateWidth(void);
 	void lineNumberWidgetUpdate(const QRect &rect, int dy);
 
 private:
 	bool pasteSelection(const QPoint &pos = QPoint());
-	void moveCursorToError(int errIndex);
-	const QTextEdit::ExtraSelection extraSelection(const ErrorItem &errorItem);
+	void moveCursorToLineColumn(int lineNum, int col);
+	void setCursorFromError(QTextCursor &cursor, const ErrorItem &errorItem);
 
 	ProgramModel *m_programUnit;	// pointer to program unit being edited
 	int m_modifiedLine;				// current line that has been modified
@@ -98,9 +101,9 @@ private:
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
 	int m_lineCount;				// total document line count
 	QList<QTextEdit::ExtraSelection>
-		m_extraSelections;			// error highlight extra selections
+		m_extraSelections;			// error highlight extra selections list
 	bool m_cursorValid;				// flag for when text cursor is valid
-	ErrorList m_errors;				// list of errors from the program model
+	QList<ErrorItem> m_errors;		// list of errors during startup
 };
 
 

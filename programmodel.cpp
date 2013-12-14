@@ -221,7 +221,6 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	int i;
 	int oldCount = m_lineInfo.count();
 	int count = lines.count();
-	m_errors.resetChange();
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
@@ -264,8 +263,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 
 	if (m_errors.hasChanged())
 	{
-		// emit error list if changed
-		emit errorListChanged(m_errors);
+		emit errorListChanged();
 	}
 }
 
@@ -381,6 +379,7 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 		{
 			// replace current error
 			m_errors.replace(lineInfo.errIndex, errorItem);
+			emit errorChanged(lineInfo.errIndex, errorItem);
 			return;  // nothing more to do
 		}
 	}
@@ -392,6 +391,7 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	{
 		// insert new error into error list
 		m_errors.insert(errIndex, errorItem);
+		emit errorInserted(errIndex, errorItem);
 
 		lineInfo.errIndex = errIndex++;
 	}
@@ -408,6 +408,40 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 		{
 			// adjust error line number for inserted line
 			m_errors.incrementLineNumber(errIndex);
+			emit errorChanged(errIndex, m_errors.at(errIndex));
+		}
+	}
+}
+
+
+// function to process a line that has been edited
+void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
+	int charsAdded, int charsRemoved)
+{
+	int errIndex = m_errors.findIndex(lineNumber);
+	if (errIndex != -1)  // line has error?
+	{
+		int errColumn = m_errors.at(errIndex).column();
+		int errLength = m_errors.at(errIndex).length();
+
+		if (column - charsAdded <= errColumn + errLength)
+		{
+			// change is within or before error
+			if (atLineEnd && column + charsRemoved >= errColumn
+				|| column - charsAdded + charsRemoved > errColumn)
+			{
+				// change and error at end of line or change is within error
+				// remove error
+				LineInfo &lineInfo = m_lineInfo[lineNumber];
+				removeError(lineNumber, lineInfo, false);
+			}
+			else  // cursor is before error, move error column
+			{
+				m_errors.moveColumn(errIndex, charsAdded - charsRemoved);
+				emit errorChanged(errIndex, m_errors.at(errIndex));
+			}
+			m_errors.hasChanged();  // clear changed flag
+			emit errorListChanged();
 		}
 	}
 }
@@ -420,12 +454,13 @@ void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 	int errIndex;
 	bool hadError;
 
-	if (lineInfo.errIndex != -1)
+	if (lineInfo.errIndex != -1)  // has error?
 	{
 		errIndex = lineInfo.errIndex;
 
 		// remove error (for changed line with no error or deleted line)
 		m_errors.removeAt(errIndex);
+		emit errorRemoved(errIndex);
 
 		lineInfo.errIndex = -1;
 		hadError = true;
@@ -453,8 +488,92 @@ void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 		{
 			// adjust error line number for deleted line
 			m_errors.decrementLineNumber(errIndex);
+			emit errorChanged(errIndex, m_errors.at(errIndex));
 		}
 	}
+}
+
+
+// function to find the next error from a given line number and column
+//
+//   - returns the line number and column of the next error
+//   - returns whether the next error is the first error (wrapped)
+//   - returns true upon success, false if already at single error
+
+bool ProgramModel::errorFindNext(int &lineNumber, int &column, bool &wrapped)
+	const
+{
+	wrapped = false;
+	int errIndex = m_errors.find(lineNumber);
+	if (errIndex >= m_errors.count()
+		|| lineNumber > m_errors.at(errIndex).lineNumber()
+		|| lineNumber == m_errors.at(errIndex).lineNumber()
+		&& column >= m_errors.at(errIndex).column())
+	{
+		// past current error, go to next error
+		errIndex++;
+	}
+	if (errIndex >= m_errors.count())  // past last error?
+	{
+		errIndex = 0;
+		// check if already at the single error in the program
+		if (m_errors.count() == 1 && lineNumber == m_errors.at(0).lineNumber()
+			&& column >= m_errors.at(0).column()
+			&& column < m_errors.at(0).column() + m_errors.at(0).length())
+		{
+			return false;
+		}
+		wrapped = true;
+	}
+	lineNumber = m_errors.at(errIndex).lineNumber();
+	column = m_errors.at(errIndex).column();
+	return true;
+}
+
+
+// function to find the previous error from a given line number and column
+//
+//   - returns the line number and column of the previous error
+//   - returns whether the previous error is the last error (wrapped)
+//   - returns true upon success, false if already at begin of single error
+
+bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
+	const
+{
+	wrapped = false;
+	int errIndex = m_errors.find(lineNumber);
+	if (errIndex >= m_errors.count()
+		|| lineNumber < m_errors.at(errIndex).lineNumber()
+		|| lineNumber == m_errors.at(errIndex).lineNumber()
+		&& column < m_errors.at(errIndex).column()
+		+ m_errors.at(errIndex).length())
+	{
+		// before current error, go to previous error
+		errIndex--;
+	}
+	if (errIndex < 0)  // past first error?
+	{
+		errIndex = m_errors.count() - 1;
+		// check if already at beginning of single error in the program
+		if (m_errors.count() == 1
+			&& lineNumber == m_errors.at(errIndex).lineNumber()
+			&& column == m_errors.at(errIndex).column())
+		{
+			return false;
+		}
+		wrapped = true;
+	}
+	lineNumber = m_errors.at(errIndex).lineNumber();
+	column = m_errors.at(errIndex).column();
+	return true;
+}
+
+
+// function to return error message for a line (blank if no error)
+QString ProgramModel::errorMessage(int lineNumber) const
+{
+	int errIndex = m_errors.findIndex(lineNumber);
+	return errIndex == -1 ? QString() : m_errors.at(errIndex).message();
 }
 
 
