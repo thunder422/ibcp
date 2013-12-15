@@ -70,8 +70,6 @@ protected:
 	void resizeEvent(QResizeEvent *event);
 
 signals:
-	void linesChanged(int lineNumber, int linesDeleted, int linesInserted,
-		QStringList lines);
 	void cursorChanged(const QString &message);
 	void errorsAvailable(bool available);
 

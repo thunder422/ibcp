@@ -50,6 +50,10 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	font.setStyleHint(QFont::Monospace);
 	setFont(font);
 
+	//========================
+	//  INTERNAL CONNECTIONS
+	//========================
+
 	// connect to catch specific document changes
 	connect(document(), SIGNAL(contentsChange(int, int, int)),
 		this, SLOT(documentChanged(int, int, int)));
@@ -57,9 +61,9 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	// connect to catch cursor position changes
 	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(cursorMoved()));
 
-	// connect to catch line changes
-	connect(this, SIGNAL(linesChanged(int, int, int, QStringList)),
-		m_programUnit, SLOT(update(int, int, int, QStringList)));
+	//============================
+	//  FROM PROGRAM CONNECTIONS
+	//============================
 
 	// connect to catch when an error has been inserted
 	connect(m_programUnit, SIGNAL(errorInserted(int, ErrorItem)),
@@ -77,9 +81,14 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	connect(m_programUnit, SIGNAL(errorListChanged()),
 		this, SLOT(errorListChanged()));
 
+	//======================
+	//  LINE NUMBER WIDGET
+	//======================
+
 	// create line number area width and connect signal to update it
 	m_lineNumberWidget = new LineNumberWidget(this);
 
+	// connect signals to line number widget functions
 	connect(this, SIGNAL(blockCountChanged(int)),
 		this, SLOT(lineNumberWidgetUpdateWidth()));
 	connect(this, SIGNAL(updateRequest(QRect, int)),
@@ -291,7 +300,7 @@ void EditBox::resetModified(void)
 }
 
 
-// function to detect lines changed when the document was changed
+// slot function to detect lines changed when the document was changed
 //
 //   - determines the number of lines that were modified
 //   - determines the net line count changed of the document
@@ -429,7 +438,8 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 						+ i).text();
 				}
 			}
-			emit linesChanged(changeLine, linesDeleted, linesInserted, lines);
+			m_programUnit->update(changeLine, linesDeleted, linesInserted,
+				lines);
 		}
 		m_lineCount = newLineCount;
 	}
@@ -442,7 +452,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 }
 
 
-// function to check if cursor was moved from the modified line
+// slot function to check if cursor was moved from the modified line
 
 void EditBox::cursorMoved(void)
 {
@@ -460,7 +470,7 @@ void EditBox::cursorMoved(void)
 }
 
 
-// overloaded function to set plain text of the document
+// overloaded slot function to set plain text of the document
 
 void EditBox::setPlainText(const QString &text)
 {
@@ -476,7 +486,7 @@ void EditBox::captureModifiedLine(int offset)
 {
 	if (m_modifiedLine >= 0)
 	{
-		emit linesChanged(m_modifiedLine, 0, m_modifiedLineIsNew ? 1 : 0,
+		m_programUnit->update(m_modifiedLine, 0, m_modifiedLineIsNew ? 1 : 0,
 			QStringList() << document()->findBlockByNumber(m_modifiedLine
 			+ offset).text());
 
@@ -579,7 +589,7 @@ int EditBox::lineNumberWidgetWidth(void)
 }
 
 
-// function to update the line number area width based on the maximum line
+// slot function to update the line number area width based on the maximum line
 
 void EditBox::lineNumberWidgetUpdateWidth(void)
 {
@@ -587,7 +597,7 @@ void EditBox::lineNumberWidgetUpdateWidth(void)
 }
 
 
-// function to update the line number area when display update requested
+// slot function to update the line number area when display update requested
 
 void EditBox::lineNumberWidgetUpdate(const QRect &rect, int dy)
 {
