@@ -38,7 +38,7 @@ Recreator::Recreator(void) :
 // function to recreate original program text from an rpn list
 QString Recreator::recreate(RpnList *rpnList, bool exprMode)
 {
-	m_output.clear();
+	m_output = "";
 	for (int i = 0; i < rpnList->count(); i++)
 	{
 		RpnItem *rpnItem = rpnList->at(i);

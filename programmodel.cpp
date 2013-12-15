@@ -178,11 +178,16 @@ QString ProgramModel::dictionariesDebugText(void)
 // function to return text for a given program line
 QString ProgramModel::lineText(int lineIndex)
 {
+	QString string;
+
 	LineInfo &lineInfo = m_lineInfo[lineIndex];
-	RpnList *rpnList = decode(lineInfo);
-	QString string = m_recreator->recreate(rpnList);
-	delete rpnList;
-	return string;
+	if (lineInfo.errIndex == -1)
+	{
+		RpnList *rpnList = decode(lineInfo);
+		string = m_recreator->recreate(rpnList);
+		delete rpnList;
+	}
+	return string;  // return null string if line has error
 }
 
 
@@ -292,30 +297,30 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 		RpnList *currentRpnList = decode(lineInfo);
-		bool same = *rpnList == *currentRpnList;
+		bool changed = *rpnList != *currentRpnList;
 		delete currentRpnList;
-		if (same)
+		if (changed)
 		{
-			delete rpnList;  // not needed
-			return false;  // line not changed; nothing more to do here
+			// derefence old line
+			// (line gets deleted if new line has an error)
+			dereference(lineInfo);
+
+			// line is different, encode it if there was no translation error
+			if (errorItem.isEmpty())
+			{
+				lineCode = encode(rpnList);
+			}
+
+			updateError(lineNumber, lineInfo, errorItem, false);
+
+			// replace with new line
+			m_code.replaceLine(lineInfo.offset, lineInfo.size, lineCode);
+			m_lineInfo.replace(lineNumber, lineCode.size());
 		}
 
-		// derefence old line
-		// (line gets deleted if new line has an error)
-		dereference(lineInfo);
-
-		// line is different, encode it if there was no translation error
-		if (errorItem.isEmpty())
-		{
-			lineCode = encode(rpnList);
-		}
+		emit programChange(lineNumber);
 		delete rpnList;  // no longer needed
-
-		updateError(lineNumber, lineInfo, errorItem, false);
-
-		// replace with new line
-		m_code.replaceLine(lineInfo.offset, lineInfo.size, lineCode);
-		m_lineInfo.replace(lineNumber, lineCode.size());
+		return changed;
 	}
 	else if (operation == Insert_Operation)
 	{
@@ -346,6 +351,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		m_code.insertLine(lineInfo.offset, lineCode);
 
 		m_lineInfo.insert(lineNumber, lineInfo);
+		emit programChange(lineNumber);
 	}
 	else if (operation == Remove_Operation)
 	{

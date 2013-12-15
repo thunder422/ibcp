@@ -231,6 +231,7 @@ public:
 
 signals:
 	void lineCountChanged(int newLineCount);
+	void programChange(int lineNumber);
 	void errorInserted(int errIndex, const ErrorItem &errorItem);
 	void errorChanged(int errIndex, const ErrorItem &errorItem);
 	void errorRemoved(int errIndex);

@@ -41,7 +41,8 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	m_modifiedLine(-1),
 	m_modifiedLineIsNew(false),
 	m_lineCount(0),
-	m_cursorValid(false)
+	m_cursorValid(false),
+	m_recreatingLine(false)
 {
 	// set the edit box to a fixed width font
 	QFont font = this->font();
@@ -64,6 +65,10 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	//============================
 	//  FROM PROGRAM CONNECTIONS
 	//============================
+
+	// connect to catch program line changes
+	connect(m_programUnit, SIGNAL(programChange(int)),
+		this, SLOT(programChanged(int)));
 
 	// connect to catch when an error has been inserted
 	connect(m_programUnit, SIGNAL(errorInserted(int, ErrorItem)),
@@ -308,6 +313,11 @@ void EditBox::resetModified(void)
 
 void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 {
+	if (m_recreatingLine)
+	{
+		return;  // change due to recreated line, ignore
+	}
+
 	int linesInserted = 0;
 	int linesDeleted = 0;
 	QStringList lines;
@@ -456,6 +466,10 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void EditBox::cursorMoved(void)
 {
+	if (m_recreatingLine)
+	{
+		return;  // ignore cursor movements when recreating line
+	}
 	if (!m_cursorValid)  // waiting for cursor to be valid?
 	{
 		m_cursorValid = true;  // cursor is now valid
@@ -477,6 +491,32 @@ void EditBox::setPlainText(const QString &text)
 	// invalidate cursor until text is set
 	m_cursorValid = false;
 	QPlainTextEdit::setPlainText(text);
+}
+
+
+// function to received program model line changes
+void EditBox::programChanged(int lineNumber)
+{
+	QString lineText = m_programUnit->lineText(lineNumber);
+	if (lineText.isNull())  // line has error?
+	{
+		return;  // don't do anything
+	}
+	if (!m_cursorValid)
+	{
+		return;  // FIXME can't replace lines until cursor is valid
+	}
+
+	QTextCursor cursor = textCursor();
+	cursor.setPosition(document()->findBlockByLineNumber(lineNumber)
+		.position());
+	cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+
+	// prevent document changed and cursor moved signals
+	// from being processed before replacing line text
+	m_recreatingLine = true;
+	cursor.insertText(lineText);
+	m_recreatingLine = false;
 }
 
 
