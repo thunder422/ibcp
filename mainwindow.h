@@ -29,6 +29,7 @@
 #include <QMainWindow>
 
 #include "editbox.h"
+#include "program.h"
 #include "programlinedelegate.h"
 
 namespace Ui {
@@ -96,8 +97,8 @@ private:
 	int m_returnCode;
 	CommandLine *m_commandLine;
 
+	Program m_program;
 	EditBox *m_editBox;
-	QString m_curProgram;
 	RecentFiles *m_recentPrograms;
 	QString m_curDirectory;
 	ProgramModel *m_programModel;

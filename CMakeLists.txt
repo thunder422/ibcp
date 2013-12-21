@@ -159,6 +159,7 @@ set(ibcp_SOURCES
 	main.cpp
 	mainwindow.cpp
 	parser.cpp
+	program.cpp
 	programlinedelegate.cpp
 	programmodel.cpp
 	recentfiles.cpp
@@ -174,6 +175,7 @@ set(ibcp_SOURCES
 set(ibcp_MOC_SOURCES
 	editbox.h
 	mainwindow.h
+	program.h
 	programlinedelegate.h
 	programmodel.h
 	recentfiles.h

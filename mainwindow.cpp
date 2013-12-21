@@ -143,14 +143,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	else
 	{
 		// make sure window title is set before continuing
-		setCurProgram(m_curProgram);
+		setCurProgram(m_program.fileName());
 	}
 
 	// load program if one was saved or specified on command line
-	if (!m_curProgram.isEmpty()						// load a program?
-			&& (!QFile::exists(m_curProgram)		// program not found?
-			|| !programLoad(m_curProgram))			// program not loaded?
-			&& m_commandLine->fileName().isEmpty())	// no program argument
+	if (!m_program.fileName().isEmpty()					// load a program?
+			&& (!QFile::exists(m_program.fileName())	// program not found?
+			|| !programLoad(m_program.fileName()))		// program not loaded?
+			&& m_commandLine->fileName().isEmpty())		// no program argument
 	{
 		setCurProgram("");  // clear program path that was restored/set
 		// TODO should an warning message be issued here?
@@ -267,13 +267,13 @@ void MainWindow::on_actionClearRecent_triggered(void)
 
 bool MainWindow::on_actionSave_triggered(void)
 {
-	if (m_curProgram.isEmpty())
+	if (m_program.fileName().isEmpty())
 	{
 		return on_actionSaveAs_triggered();
 	}
 	else
 	{
-		return programSave(m_curProgram);
+		return programSave(m_program.fileName());
 	}
 }
 
@@ -285,8 +285,8 @@ bool MainWindow::on_actionSave_triggered(void)
 
 bool MainWindow::on_actionSaveAs_triggered(void)
 {
-	QString programPath = m_curProgram;
-	if (m_curProgram.isEmpty())
+	QString programPath = m_program.fileName();
+	if (programPath.isEmpty())
 	{
 		programPath = m_curDirectory;
 	}
@@ -419,11 +419,11 @@ void MainWindow::on_actionAboutQt_triggered(void)
 // function the sets the current program path and sets the window title
 void MainWindow::setCurProgram(const QString &programPath)
 {
-	m_curProgram = programPath;
+	m_program.setFileName(programPath);
 	QString program = tr("Untitled");
-	if (!m_curProgram.isEmpty())
+	if (!m_program.fileName().isEmpty())
 	{
-		program = m_recentPrograms->addFile(m_curProgram);
+		program = m_recentPrograms->addFile(m_program.fileName());
 	}
 	setWindowTitle(tr("%1[*] - %2").arg(program).arg(tr("IBCP")));
 }
@@ -522,10 +522,9 @@ bool MainWindow::programSave(const QString &programPath)
 }
 
 
-// names of the settings for the program
+// names of the settings for the application
 const char *geometrySettingsName = "geometry";
 const char *windowStateSettingsName = "windowState";
-const char *curProgramSettingsName = "curProgram";
 const char *curDirectorySettingsName = "curDirectory";
 
 
@@ -540,7 +539,7 @@ void MainWindow::settingsRestore(void)
 	restoreGeometry(settings.value(geometrySettingsName).toByteArray());
 	restoreState(settings.value(windowStateSettingsName).toByteArray());
 	m_recentPrograms->restore(settings);
-	m_curProgram = settings.value(curProgramSettingsName).toString();
+	m_program.settingsRestore(settings);
 	m_curDirectory = settings.value(curDirectorySettingsName, ".").toString();
 }
 
@@ -553,7 +552,7 @@ void MainWindow::settingsSave(void)
 	settings.setValue(geometrySettingsName, saveGeometry());
 	settings.setValue(windowStateSettingsName, saveState());
 	m_recentPrograms->save(settings);
-	settings.setValue(curProgramSettingsName, m_curProgram);
+	m_program.settingsSave(settings);
 	settings.setValue(curDirectorySettingsName, m_curDirectory);
 }
 
