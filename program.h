@@ -29,6 +29,8 @@
 
 class QSettings;
 
+class ProgramModel;
+
 
 class Program : public QObject
 {
@@ -49,6 +51,10 @@ public:
 	{
 		m_fileName = fileName;
 	}
+	ProgramModel *unit(void)
+	{
+		return m_unit;
+	}
 
 signals:
 
@@ -56,7 +62,7 @@ public slots:
 
 private:
 	QString m_fileName;						// file name of current program
-
+	ProgramModel *m_unit;					// program unit for main routine
 };
 
 

@@ -25,11 +25,14 @@
 #include <QSettings>
 
 #include "program.h"
+#include "programmodel.h"
 
 
 Program::Program(QObject *parent) :
 	QObject(parent)
 {
+	// create empty program unit for main routine
+	m_unit = new ProgramModel(this);
 }
 
 

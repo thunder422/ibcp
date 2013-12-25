@@ -59,13 +59,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		this, SLOT(programOpen(const QString)));
 	settingsRestore();
 
-	//================
-	// SETUP PROGRAM
-	//================
-
-	// setup program model (connect to edit box changes)
-	m_programModel = new ProgramModel(this);
-
 	// TODO settings will eventually have info about edit boxes that were open
 	// TODO that will need to be restored, for now there is a single edit box
 
@@ -74,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	//==================
 
 	// create the starting program edit box
-	m_editBox = new EditBox(m_programModel, this);
+	m_editBox = new EditBox(m_program.unit(), this);
 	setCentralWidget(m_editBox);
 	m_statusReady = false;
 
@@ -122,12 +115,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	// setup program line delegate (connect to model line count changes)
 	m_programLineDelegate = new ProgramLineDelegate(EditBox::BaseLineNumber,
 		ui->programView, this);
-	connect(m_programModel, SIGNAL(lineCountChanged(int)),
+	connect(m_program.unit(), SIGNAL(lineCountChanged(int)),
 		m_programLineDelegate, SLOT(lineNumberWidthUpdate(int)));
 
 	// setup program view
 	ui->programView->setItemDelegate(m_programLineDelegate);
-	ui->programView->setModel(m_programModel);
+	ui->programView->setModel(m_program.unit());
 	ui->programView->setFont(m_editBox->font());
 
 	//================

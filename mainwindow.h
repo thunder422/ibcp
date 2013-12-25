@@ -101,7 +101,6 @@ private:
 	EditBox *m_editBox;
 	RecentFiles *m_recentPrograms;
 	QString m_curDirectory;
-	ProgramModel *m_programModel;
 	ProgramLineDelegate *m_programLineDelegate;
 	bool m_statusReady;
 	QLabel *m_statusPositionLabel;
