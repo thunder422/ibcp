@@ -39,6 +39,7 @@ class Program : public QObject
 public:
 	explicit Program(QObject *parent = 0);
 
+	void clear(void);
 	void settingsRestore(QSettings &settings);
 	void settingsSave(QSettings &settings);
 

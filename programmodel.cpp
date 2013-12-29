@@ -218,6 +218,25 @@ int ProgramModel::rowCount(const QModelIndex &parent) const
 }
 
 
+// function to reset to contents of the program model
+void ProgramModel::clear(void)
+{
+	m_lineInfo.clear();
+	m_code.clear();
+	m_errors.clear();
+
+	m_remDictionary->clear();
+	m_constNumDictionary->clear();
+	m_constStrDictionary->clear();
+
+	m_varDblDictionary->clear();
+	m_varIntDictionary->clear();
+	m_varStrDictionary->clear();
+
+	emit programCleared();
+}
+
+
 // slot function to receive program updates
 
 void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,

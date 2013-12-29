@@ -42,6 +42,7 @@ class RpnItem;
 class ConstNumInfo : public AbstractInfo
 {
 public:
+	void clear(void);
 	void addElement(void);
 	void setElement(int index, Token *token);
 
@@ -82,6 +83,7 @@ class ConstStrInfo : public AbstractInfo
 {
 public:
 	~ConstStrInfo(void);
+	void clear(void);
 	void addElement(void);
 	void setElement(int index, Token *token);
 	void clearElement(int index);

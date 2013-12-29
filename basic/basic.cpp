@@ -48,7 +48,13 @@ void remRemove(ProgramModel *programUnit, quint16 operand)
 
 // CONSTANT FUNCTIONS
 
-void ConstNumInfo::addElement()
+void ConstNumInfo::clear(void)
+{
+	m_value.clear();
+	m_valueInt.clear();
+}
+
+void ConstNumInfo::addElement(void)
 {
 	m_value.resize(m_value.size() + 1);
 	m_valueInt.resize(m_valueInt.size() + 1);
@@ -77,11 +83,15 @@ void constNumRemove(ProgramModel *programUnit, quint16 operand)
 }
 
 
+void ConstStrInfo::clear(void)
+{
+	m_value.clear();
+}
+
 void ConstStrInfo::addElement(void)
 {
 	m_value.append(new QString);
 }
-
 
 void ConstStrInfo::setElement(int index, Token *token)
 {

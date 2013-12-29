@@ -77,6 +77,7 @@ public slots:
 	void documentChanged(int position, int charsRemoved, int charsAdded);
 	void cursorMoved(void);
 	void setPlainText(const QString &text);
+	void clear(void);
 	void programChanged(int lineNumber);
 
 private slots:
@@ -103,7 +104,7 @@ private:
 		m_extraSelections;			// error highlight extra selections list
 	bool m_cursorValid;				// flag for when text cursor is valid
 	QList<ErrorItem> m_errors;		// list of errors during startup
-	bool m_recreatingLine;			// change due to recreated text flag
+	bool m_ignoreChange;			// ignore change signal flag
 };
 
 

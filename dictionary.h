@@ -45,6 +45,7 @@ public:
 		sizeof_Entry
 	};
 
+	void clear(void);
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
 		EntryType *returnNewEntry = NULL);
 	int remove(quint16 index);
@@ -67,6 +68,7 @@ class AbstractInfo
 {
 public:
 	virtual ~AbstractInfo(void) {}
+	virtual void clear(void) {}
 	virtual void addElement(void) {}
 	virtual void setElement(int index, Token *token) {}
 	virtual void clearElement(int index) {}
@@ -79,6 +81,7 @@ public:
 	InfoDictionary(void);
 	~InfoDictionary(void);
 
+	void clear(void);
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	void remove(quint16 index);
 

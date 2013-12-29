@@ -215,9 +215,12 @@ void MainWindow::statusBarUpdate(const QString &message)
 
 void MainWindow::on_actionNew_triggered(void)
 {
+	programCaptureEditChanges();
+
 	if (isOkToContinue())
 	{
-		m_editBox->clear();
+		// TODO remove all edit boxes except main edit box
+		m_program.clear();
 		setWindowModified(false);
 		setCurProgram("");
 	}
@@ -497,8 +500,7 @@ bool MainWindow::programSave(const QString &programPath)
 {
 	QFile file(programPath);
 
-	// make sure any current modified line is emitted from the edit box
-	m_editBox->captureModifiedLine();
+	programCaptureEditChanges();
 
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 	{
@@ -512,6 +514,15 @@ bool MainWindow::programSave(const QString &programPath)
 	setCurProgram(programPath);
 	statusBar()->showMessage(tr("Program saved"), 2000);
 	return true;
+}
+
+
+// function to capture any edit box changed for modified lines
+void MainWindow::programCaptureEditChanges(void)
+{
+	// make sure any current modified line is emitted from the edit box
+	m_editBox->captureModifiedLine();
+	// TODO this will need to loop through all open edit boxes
 }
 
 

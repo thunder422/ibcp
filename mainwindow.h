@@ -87,6 +87,7 @@ private:
 
 	bool programLoad(const QString &programPath);
 	bool programSave(const QString &programPath);
+	void programCaptureEditChanges(void);
 
 	void settingsRestore(void);
 	void settingsSave(void);

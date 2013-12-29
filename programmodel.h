@@ -168,6 +168,7 @@ public:
 	~ProgramModel(void);
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	void clear(void);
 
 	Dictionary *remDictionary(void) const
 	{
@@ -231,6 +232,7 @@ public:
 
 signals:
 	void lineCountChanged(int newLineCount);
+	void programCleared(void);
 	void programChange(int lineNumber);
 	void errorInserted(int errIndex, const ErrorItem &errorItem);
 	void errorChanged(int errIndex, const ErrorItem &errorItem);

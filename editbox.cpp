@@ -42,7 +42,7 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	m_modifiedLineIsNew(false),
 	m_lineCount(0),
 	m_cursorValid(false),
-	m_recreatingLine(false)
+	m_ignoreChange(false)
 {
 	// set the edit box to a fixed width font
 	QFont font = this->font();
@@ -65,6 +65,10 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	//============================
 	//  FROM PROGRAM CONNECTIONS
 	//============================
+
+	// connect to catch when program is cleared
+	connect(m_programUnit, SIGNAL(programCleared()),
+		this, SLOT(clear()));
 
 	// connect to catch program line changes
 	connect(m_programUnit, SIGNAL(programChange(int)),
@@ -313,7 +317,7 @@ void EditBox::resetModified(void)
 
 void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 {
-	if (m_recreatingLine)
+	if (m_ignoreChange)
 	{
 		return;  // change due to recreated line, ignore
 	}
@@ -466,7 +470,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 void EditBox::cursorMoved(void)
 {
-	if (m_recreatingLine)
+	if (m_ignoreChange)
 	{
 		return;  // ignore cursor movements when recreating line
 	}
@@ -494,6 +498,15 @@ void EditBox::setPlainText(const QString &text)
 }
 
 
+// overloaded slot function to clear text of the document
+void EditBox::clear()
+{
+	m_ignoreChange = true;
+	QPlainTextEdit::clear();
+	m_ignoreChange = false;
+}
+
+
 // function to received program model line changes
 void EditBox::programChanged(int lineNumber)
 {
@@ -514,9 +527,9 @@ void EditBox::programChanged(int lineNumber)
 
 	// prevent document changed and cursor moved signals
 	// from being processed before replacing line text
-	m_recreatingLine = true;
+	m_ignoreChange = true;
 	cursor.insertText(lineText);
-	m_recreatingLine = false;
+	m_ignoreChange = false;
 }
 
 

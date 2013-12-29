@@ -40,6 +40,14 @@ Program::Program(QObject *parent) :
 const char *curProgramSettingsName = "curProgram";
 
 
+// function to clear the current program
+void Program::clear(void)
+{
+	// TODO delete all but main program unit, which gets cleared
+	m_unit->clear();
+}
+
+
 // function to restore the settings saved the last time the program was run
 void Program::settingsRestore(QSettings &settings)
 {

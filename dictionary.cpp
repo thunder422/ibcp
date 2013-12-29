@@ -38,6 +38,15 @@ Dictionary::Dictionary(void)
 }
 
 
+void Dictionary::clear(void)
+{
+	m_freeStack.clear();
+	m_keyList.clear();
+	m_keyHash.clear();
+	m_useCount.clear();
+}
+
+
 quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
 	Dictionary::EntryType *returnNewEntry)
 {
@@ -146,6 +155,14 @@ InfoDictionary::InfoDictionary(void) :
 InfoDictionary::~InfoDictionary(void)
 {
 	delete m_info;
+}
+
+
+// function to reset the dictionary
+void InfoDictionary::clear(void)
+{
+	m_info->clear();
+	Dictionary::clear();
 }
 
 
