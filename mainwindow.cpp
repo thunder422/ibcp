@@ -59,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent) :
 		this, SLOT(programOpen(const QString)));
 	settingsRestore();
 
+	statusBarCreate();
+
 	// TODO settings will eventually have info about edit boxes that were open
 	// TODO that will need to be restored, for now there is a single edit box
 
@@ -69,7 +71,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	// create the starting program edit box
 	m_editBox = new EditBox(m_program.unit(), this);
 	setCentralWidget(m_editBox);
-	m_statusReady = false;
 
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		this, SLOT(setWindowModified(bool)));
@@ -91,6 +92,9 @@ MainWindow::MainWindow(QWidget *parent) :
 		ui->actionGoNextError, SLOT(setEnabled(bool)));
 	connect(m_editBox, SIGNAL(errorsAvailable(bool)),
 		ui->actionGoPrevError, SLOT(setEnabled(bool)));
+
+	connect(m_editBox, SIGNAL(cursorChanged(QString)),
+		this, SLOT(statusBarUpdate(QString)));
 
 	// create actions for edit box context menu
 	QList<QAction *> actions;
@@ -148,7 +152,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		setCurProgram("");  // clear program path that was restored/set
 		// TODO should an warning message be issued here?
 	}
-	statusBarCreate();
 
 	m_guiActive = true;
 	statusBarUpdate("");
@@ -191,11 +194,6 @@ void MainWindow::statusBarCreate(void)
 
 	statusBar()->addWidget(m_statusPositionLabel);
 	statusBar()->addWidget(m_statusMessageLabel, 1);
-
-	connect(m_editBox, SIGNAL(cursorChanged(QString)),
-		this, SLOT(statusBarUpdate(QString)));
-
-	m_statusReady = true;
 }
 
 
@@ -481,10 +479,7 @@ bool MainWindow::programLoad(const QString &programPath)
 	setWindowModified(false);
 
 	setCurProgram(programPath);
-	if (m_statusReady)
-	{
-		statusBar()->showMessage(tr("Program loaded"), 2000);
-	}
+	statusBar()->showMessage(tr("Program loaded"), 2000);
 	return true;
 }
 

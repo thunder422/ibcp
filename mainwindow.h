@@ -103,7 +103,6 @@ private:
 	RecentFiles *m_recentPrograms;
 	QString m_curDirectory;
 	ProgramLineDelegate *m_programLineDelegate;
-	bool m_statusReady;
 	QLabel *m_statusPositionLabel;
 	QLabel *m_statusMessageLabel;
 };
