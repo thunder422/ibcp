@@ -81,6 +81,7 @@ private slots:
 
 private:
 	void statusBarCreate(void);
+	void editBoxSetActive(EditBox *editBox);
 
 	bool isOkToContinue(void);
 	void setCurProgram(const QString &programPath);
@@ -105,6 +106,8 @@ private:
 	ProgramLineDelegate *m_programLineDelegate;
 	QLabel *m_statusPositionLabel;
 	QLabel *m_statusMessageLabel;
+	QList<QAction *> m_contextActions;
 };
+
 
 #endif // MAINWINDOW_H

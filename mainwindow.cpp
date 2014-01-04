@@ -61,6 +61,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	statusBarCreate();
 
+	// create actions for edit box context menu
+	m_contextActions.append(ui->actionUndo);
+	m_contextActions.append(ui->actionRedo);
+	m_contextActions.append(new QAction(this));
+	m_contextActions.last()->setSeparator(true);
+	m_contextActions.append(ui->actionCut);
+	m_contextActions.append(ui->actionCopy);
+	m_contextActions.append(ui->actionPaste);
+	m_contextActions.append(ui->actionDelete);
+	m_contextActions.append(new QAction(this));
+	m_contextActions.last()->setSeparator(true);
+	m_contextActions.append(ui->actionSelectAll);
+
 	// TODO settings will eventually have info about edit boxes that were open
 	// TODO that will need to be restored, for now there is a single edit box
 
@@ -77,40 +90,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_editBox->document(), SIGNAL(modificationChanged(bool)),
 		ui->actionSave, SLOT(setEnabled(bool)));
 
-	// connect available signals to the appropriate edit actions
-	connect(m_editBox, SIGNAL(undoAvailable(bool)),
-		ui->actionUndo, SLOT(setEnabled(bool)));
-	connect(m_editBox, SIGNAL(redoAvailable(bool)),
-		ui->actionRedo, SLOT(setEnabled(bool)));
-	connect(m_editBox, SIGNAL(copyAvailable(bool)),
-		ui->actionCut, SLOT(setEnabled(bool)));
-	connect(m_editBox, SIGNAL(copyAvailable(bool)),
-		ui->actionCopy, SLOT(setEnabled(bool)));
-	connect(m_editBox, SIGNAL(copyAvailable(bool)),
-		ui->actionDelete, SLOT(setEnabled(bool)));
-	connect(m_editBox, SIGNAL(errorsAvailable(bool)),
-		ui->actionGoNextError, SLOT(setEnabled(bool)));
-	connect(m_editBox, SIGNAL(errorsAvailable(bool)),
-		ui->actionGoPrevError, SLOT(setEnabled(bool)));
-
-	connect(m_editBox, SIGNAL(cursorChanged(QString)),
-		this, SLOT(statusBarUpdate(QString)));
-
-	// create actions for edit box context menu
-	QList<QAction *> actions;
-	actions.append(ui->actionUndo);
-	actions.append(ui->actionRedo);
-	actions.append(new QAction(m_editBox));
-	actions.last()->setSeparator(true);
-	actions.append(ui->actionCut);
-	actions.append(ui->actionCopy);
-	actions.append(ui->actionPaste);
-	actions.append(ui->actionDelete);
-	actions.append(new QAction(m_editBox));
-	actions.last()->setSeparator(true);
-	actions.append(ui->actionSelectAll);
-	m_editBox->addActions(actions);
-	m_editBox->setContextMenuPolicy(Qt::ActionsContextMenu);
+	editBoxSetActive(m_editBox);
 
 	//========================================
 	//  SETUP PROGRAM LINE DELEGATE AND VIEW
@@ -203,6 +183,44 @@ void MainWindow::statusBarUpdate(const QString &message)
 	m_statusPositionLabel->setText(QString(" %1:%2 ")
 		.arg(m_editBox->lineNumber()).arg(m_editBox->column() + 1));
 	m_statusMessageLabel->setText(message);
+}
+
+
+// function to set an edit box active
+void MainWindow::editBoxSetActive(EditBox *editBox)
+{
+	// TODO first disconnect signals and remove actions from current edit box
+#if 0
+	m_editBox->disconnect();
+	QList<QAction *>actions = m_editBox->actions();
+	foreach(QAction *action, actions)
+	{
+		m_editBox->removeAction(action);
+	}
+#endif
+
+	// connect available signals to the appropriate edit actions
+	connect(editBox, SIGNAL(undoAvailable(bool)),
+		ui->actionUndo, SLOT(setEnabled(bool)));
+	connect(editBox, SIGNAL(redoAvailable(bool)),
+		ui->actionRedo, SLOT(setEnabled(bool)));
+	connect(editBox, SIGNAL(copyAvailable(bool)),
+		ui->actionCut, SLOT(setEnabled(bool)));
+	connect(editBox, SIGNAL(copyAvailable(bool)),
+		ui->actionCopy, SLOT(setEnabled(bool)));
+	connect(editBox, SIGNAL(copyAvailable(bool)),
+		ui->actionDelete, SLOT(setEnabled(bool)));
+	connect(editBox, SIGNAL(errorsAvailable(bool)),
+		ui->actionGoNextError, SLOT(setEnabled(bool)));
+	connect(editBox, SIGNAL(errorsAvailable(bool)),
+		ui->actionGoPrevError, SLOT(setEnabled(bool)));
+
+	connect(editBox, SIGNAL(cursorChanged(QString)),
+		this, SLOT(statusBarUpdate(QString)));
+
+	// set context actions for edit box context menu
+	editBox->addActions(m_contextActions);
+	editBox->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
 
