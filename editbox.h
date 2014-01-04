@@ -61,10 +61,6 @@ public:
 	int lineNumberWidgetWidth(void);
 	void lineNumberWidgetPaint(QPaintEvent *event);
 
-	enum {
-		BaseLineNumber = 0			// number of first line
-	};
-
 protected:
 	void keyPressEvent(QKeyEvent *event);
 	void resizeEvent(QResizeEvent *event);

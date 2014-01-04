@@ -117,7 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	//========================================
 
 	// setup program line delegate (connect to model line count changes)
-	m_programLineDelegate = new ProgramLineDelegate(EditBox::BaseLineNumber,
+	m_programLineDelegate = new ProgramLineDelegate(BaseLineNumber,
 		ui->programView, this);
 	connect(m_program.unit(), SIGNAL(lineCountChanged(int)),
 		m_programLineDelegate, SLOT(lineNumberWidthUpdate(int)));
@@ -125,7 +125,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	// setup program view
 	ui->programView->setItemDelegate(m_programLineDelegate);
 	ui->programView->setModel(m_program.unit());
-	ui->programView->setFont(m_editBox->font());
 
 	//================
 	//  LOAD PROGRAM
