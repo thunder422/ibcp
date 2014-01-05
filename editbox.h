@@ -99,7 +99,6 @@ private:
 	QList<QTextEdit::ExtraSelection>
 		m_extraSelections;			// error highlight extra selections list
 	bool m_cursorValid;				// flag for when text cursor is valid
-	QList<ErrorItem> m_errors;		// list of errors during startup
 	bool m_ignoreChange;			// ignore change signal flag
 };
 

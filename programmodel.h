@@ -224,6 +224,14 @@ public:
 	QString lineText(int lineIndex);
 	void lineEdited(int lineNumber, int column, bool atLineEnd, int charsAdded,
 		int charsRemoved);
+	int errorCount(void) const
+	{
+		return m_errors.count();
+	}
+	const ErrorItem &errorItem(int errIndex) const
+	{
+		return m_errors.at(errIndex);
+	}
 
 	// error access functions
 	bool errorFindNext(int &lineNumber, int &column, bool &wrapped) const;

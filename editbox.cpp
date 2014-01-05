@@ -477,6 +477,12 @@ void EditBox::cursorMoved(void)
 	if (!m_cursorValid)  // waiting for cursor to be valid?
 	{
 		m_cursorValid = true;  // cursor is now valid
+
+		// now retrieve any errors from program unit
+		for (int i = 0; i < m_programUnit->errorCount(); i++)
+		{
+			errorInserted(i, m_programUnit->errorItem(i));
+		}
 		errorListChanged();
 	}
 	if (m_modifiedLine >= 0 && m_modifiedLine != textCursor().blockNumber())
@@ -564,16 +570,6 @@ void EditBox::errorListChanged(void)
 		return;  // wait until cursor is valid
 	}
 
-	if (!m_errors.isEmpty())
-	{
-		// insert errors now that text cursor is valid
-		for (int i = 0; i < m_errors.count(); i++)
-		{
-			errorInserted(i, m_errors.at(i));
-		}
-		m_errors.clear();
-	}
-
 	setExtraSelections(m_extraSelections);
 	emit errorsAvailable(!m_extraSelections.isEmpty());
 }
@@ -584,10 +580,6 @@ void EditBox::errorInserted(int errIndex, const ErrorItem &errorItem)
 {
 	if (!m_cursorValid)
 	{
-		// during initial load of program, the text cursor is not valid,
-		// so the errors need to be saved until the text cursor is valid
-		// (this works because errors are in order during initial load)
-		m_errors.append(errorItem);
 		return;
 	}
 	QTextEdit::ExtraSelection selection;
