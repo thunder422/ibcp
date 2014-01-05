@@ -293,7 +293,7 @@ void EditBox::goPrevError(void)
 
 void EditBox::moveCursorToLineColumn(int lineNum, int col)
 {
-	QTextBlock block = document()->findBlockByLineNumber(lineNum);
+	QTextBlock block = document()->findBlockByNumber(lineNum);
 	QTextCursor cursor = textCursor();
 	cursor.setPosition(block.position() + col);
 	setTextCursor(cursor);
@@ -521,8 +521,7 @@ void EditBox::programChanged(int lineNumber)
 	}
 
 	QTextCursor cursor = textCursor();
-	cursor.setPosition(document()->findBlockByLineNumber(lineNumber)
-		.position());
+	cursor.setPosition(document()->findBlockByNumber(lineNumber).position());
 	cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
 
 	// prevent document changed and cursor moved signals
@@ -620,7 +619,7 @@ void EditBox::errorRemoved(int errIndex)
 void EditBox::setCursorFromError(QTextCursor &cursor,
 	const ErrorItem &errorItem)
 {
-	cursor.setPosition(document()->findBlockByLineNumber(errorItem.lineNumber())
+	cursor.setPosition(document()->findBlockByNumber(errorItem.lineNumber())
 		.position() + errorItem.column());
 	cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor,
 		errorItem.length());
