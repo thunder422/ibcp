@@ -238,7 +238,7 @@ void ProgramModel::clear(void)
 
 
 // slot function to receive program updates
-
+//   - if lineNumber == 1 then append line to end of program
 void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	QStringList lines)
 {
@@ -269,12 +269,21 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	}
 	else if (linesInserted > 0)
 	{
-		// insert new lines into the program
+		Operation operation;
+		if (lineNumber == -1)  // append to end of program?
+		{
+			lineNumber = oldCount;
+			operation = Append_Operation;
+		}
+		else  // insert new lines into the program
+		{
+			operation = Insert_Operation;
+		}
 		int lastLineNumber = lineNumber + linesInserted - 1;
 		beginInsertRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (i < count)
 		{
-			updateLine(Insert_Operation, lineNumber++, lines.at(i++));
+			updateLine(operation, lineNumber++, lines.at(i++));
 		}
 		endInsertRows();
 	}
@@ -341,7 +350,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		delete rpnList;  // no longer needed
 		return changed;
 	}
-	else if (operation == Insert_Operation)
+	else if (operation == Append_Operation || operation == Insert_Operation)
 	{
 		LineInfo lineInfo;
 		lineInfo.errIndex = -1;

@@ -29,13 +29,6 @@
 #include <QString>
 
 
-enum Operation
-{
-	Insert_Operation,
-	Change_Operation,
-	Remove_Operation
-};
-
 // class for holding details for an error of a program line
 class ErrorItem
 {
@@ -118,9 +111,8 @@ public:
 	}
 
 private:
-	void setChangeIndex(int index, Operation operation);
-
 	bool m_changed;						// error list changed
 };
+
 
 #endif // ERRORLIST_H

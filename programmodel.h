@@ -41,6 +41,15 @@ class Table;
 class Translator;
 
 
+enum Operation
+{
+	Append_Operation,
+	Insert_Operation,
+	Change_Operation,
+	Remove_Operation
+};
+
+
 // class for holding and accessing a program word
 class ProgramWord
 {
