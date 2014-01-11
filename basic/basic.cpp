@@ -42,7 +42,7 @@ const QString remOperandText(const ProgramModel *programUnit, quint16 operand)
 
 void remRemove(ProgramModel *programUnit, quint16 operand)
 {
-	programUnit->remDictionary()->remove(operand);
+	programUnit->remDictionary()->remove(operand, Qt::CaseSensitive);
 }
 
 
@@ -125,7 +125,7 @@ const QString constStrOperandText(const ProgramModel *programUnit,
 
 void constStrRemove(ProgramModel *programUnit, quint16 operand)
 {
-	programUnit->constStrDictionary()->remove(operand);
+	programUnit->constStrDictionary()->remove(operand, Qt::CaseSensitive);
 }
 
 void constStrRecreate(Recreator &recreator, RpnItem *rpnItem)

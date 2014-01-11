@@ -88,11 +88,16 @@ quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
 }
 
 
-int Dictionary::remove(quint16 index)
+int Dictionary::remove(quint16 index, Qt::CaseSensitivity cs)
 {
 	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
 	{
-		m_keyHash.remove(m_keyList.at(index));  // remove key/index from map
+		QString hashKey = m_keyList.at(index);
+		if (cs == Qt::CaseInsensitive)
+		{
+			hashKey = hashKey.toUpper();
+		}
+		m_keyHash.remove(hashKey);  // remove key/index from hash map
 		m_keyList[index].clear();
 		m_freeStack.push(index);
 		return true;
@@ -188,9 +193,9 @@ quint16 InfoDictionary::add(Token *token, Qt::CaseSensitivity cs)
 
 
 // function to remove an entry from the dictionary
-void InfoDictionary::remove(quint16 index)
+void InfoDictionary::remove(quint16 index, Qt::CaseSensitivity cs)
 {
-	if (Dictionary::remove(index))
+	if (Dictionary::remove(index, cs))
 	{
 		// clear the additional information if the entry was removed
 		m_info->clearElement(index);

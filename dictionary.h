@@ -48,7 +48,7 @@ public:
 	void clear(void);
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
 		EntryType *returnNewEntry = NULL);
-	int remove(quint16 index);
+	int remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	QString string(int index) const
 	{
 		return m_keyList.at(index);
@@ -83,7 +83,7 @@ public:
 
 	void clear(void);
 	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
-	void remove(quint16 index);
+	void remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 
 protected:
 	AbstractInfo *m_info;				// pointer to additional information
