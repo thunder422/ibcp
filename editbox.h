@@ -93,7 +93,6 @@ private:
 	ProgramModel *m_programUnit;	// pointer to program unit being edited
 	int m_modifiedLine;				// current line that has been modified
 	bool m_modifiedLineIsNew;		// modified line is a new line flag
-	int m_modifiedLineOffset;		// compensate for lines inserted/deleted
 	QWidget *m_lineNumberWidget;	// widget to display line numbers
 	int m_lineCount;				// total document line count
 	QList<QTextEdit::ExtraSelection>

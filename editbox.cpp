@@ -509,6 +509,10 @@ void EditBox::clear()
 {
 	m_ignoreChange = true;
 	QPlainTextEdit::clear();
+	m_extraSelections.clear();
+	m_lineCount = 0;
+	m_modifiedLine = -1;
+	m_modifiedLineIsNew = false;
 	m_ignoreChange = false;
 }
 
