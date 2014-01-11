@@ -187,7 +187,11 @@ QString ProgramModel::lineText(int lineIndex)
 		string = m_recreator->recreate(rpnList);
 		delete rpnList;
 	}
-	return string;  // return null string if line has error
+	else  // line has error, return original text
+	{
+		string = lineInfo.text;
+	}
+	return string;
 }
 
 
@@ -337,6 +341,11 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 			if (errorItem.isEmpty())
 			{
 				lineCode = encode(rpnList);
+				lineInfo.text.clear();
+			}
+			else  // else store line text for error line
+			{
+				lineInfo.text = line;
 			}
 
 			updateError(lineNumber, lineInfo, errorItem, false);
@@ -346,7 +355,10 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 			m_lineInfo.replace(lineNumber, lineCode.size());
 		}
 
-		emit programChange(lineNumber);
+		if (errorItem.isEmpty())
+		{
+			emit programChange(lineNumber);  // only for non-error lines
+		}
 		delete rpnList;  // no longer needed
 		return changed;
 	}
@@ -361,6 +373,10 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		if (errorItem.isEmpty())
 		{
 			lineCode = encode(rpnList);
+		}
+		else  // else store line text for error line
+		{
+			lineInfo.text = line;
 		}
 		delete rpnList;  // no longer needed
 
@@ -379,7 +395,11 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		m_code.insertLine(lineInfo.offset, lineCode);
 
 		m_lineInfo.insert(lineNumber, lineInfo);
-		emit programChange(lineNumber);
+		if (operation == Append_Operation || errorItem.isEmpty())
+		{
+			// only for appended lines or lines with no errors
+			emit programChange(lineNumber);
+		}
 	}
 	else if (operation == Remove_Operation)
 	{

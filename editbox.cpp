@@ -521,10 +521,6 @@ void EditBox::clear()
 void EditBox::programChanged(int lineNumber)
 {
 	QString lineText = m_programUnit->lineText(lineNumber);
-	if (lineText.isNull())  // line has error?
-	{
-		return;  // don't do anything
-	}
 	if (!m_cursorValid)
 	{
 		return;  // FIXME can't replace lines until cursor is valid

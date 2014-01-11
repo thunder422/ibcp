@@ -266,6 +266,7 @@ private:
 		int offset;						// offset of line in program
 		int size;						// size of line in program
 		int errIndex;					// index to error list
+		QString text;					// text of line when line has error
 	};
 	class LineInfoList : public QList<LineInfo>
 	{
