@@ -89,6 +89,6 @@ Output:
 16: C% = B% + 6
 17: REM reuse previous double constant as double
 18: D% = C% + 5
-19: 
+19: LET'error!
 20: PRINT "Test", C%, "5"
 21: PRINT "Quote""Test"; D% ' replace last line with larger line
