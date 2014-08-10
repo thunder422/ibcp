@@ -191,8 +191,7 @@ BEGIN {
 		printf "\n" > "codes.txt"
 		for (i = 0; i < n; i++)
 		{
-			# 2010-04-28: added -d to ignore "_" in codes names
-			printf "%s = %d\n", c[i], i | "sort -d >> codes.txt"
+			printf "%s = %d\n", c[i], i | "sort >> codes.txt"
 		}
 
 		# output summary
