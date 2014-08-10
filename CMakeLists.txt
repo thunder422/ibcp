@@ -88,9 +88,12 @@ endif (GIT_FOUND)
 message(STATUS "Build version: ${ibcp_RELEASE_STRING}")
 
 # find awk executable
-find_program (PROGRAM_AWK awk)
+find_program (PROGRAM_AWK gawk)
 if (NOT PROGRAM_AWK)
-	message(FATAL_ERROR "required 'awk' program was not found")
+	find_program (PROGRAM_AWK awk)
+	if (NOT PROGRAM_AWK)
+		message(FATAL_ERROR "required 'awk' program was not found")
+	endif (NOT PROGRAM_AWK)
 endif (NOT PROGRAM_AWK)
 
 # configure a header file to pass some of the CMake settings to the source code
@@ -201,11 +204,37 @@ file(GLOB other_files
 list(SORT other_files)
 list(APPEND other_files LICENSE README rel_notes.txt)
 
+# convert path to DOS style for MinGW generator
+function (ConvertPath output input)
+	if ("${CMAKE_GENERATOR}" STREQUAL "MinGW Makefiles")
+		string(REPLACE "/" "\\" work ${input})
+		set(${output} "\"${work}\"" PARENT_SCOPE)
+	else ()
+		set(${output} ${input} PARENT_SCOPE)
+	endif ()
+endfunction (ConvertPath output input)
+
+# set make test directory command and copy command
+if ("${CMAKE_GENERATOR}" STREQUAL "MinGW Makefiles")
+	ConvertPath(TEST_DIR ${PROJECT_BINARY_DIR}/test)
+	set(MAKE_TESTDIR_CMD "if")
+	set(MAKE_TESTDIR_OPT "")
+	set(MAKE_TESTDIR_ARG "not exist ${TEST_DIR} md ${TEST_DIR}")
+	set(COPY_COMMAND "copy")
+else ()
+	set(MAKE_TESTDIR_CMD "mkdir")
+	set(MAKE_TESTDIR_OPT "-p")
+	set(MAKE_TESTDIR_ARG "${PROJECT_BINARY_DIR}/test")
+	set(COPY_COMMAND "cp")
+endif ()
+
+# create custom commands for test files
 foreach(file ${other_files})
+	ConvertPath(src_file ${PROJECT_SOURCE_DIR}/${file})
+	ConvertPath(dst_file ${PROJECT_BINARY_DIR}/${file})
 	add_custom_command(OUTPUT ${file}
-		COMMAND mkdir -p ${PROJECT_BINARY_DIR}/test
-		COMMAND cp ${PROJECT_SOURCE_DIR}/${file}
-			${PROJECT_BINARY_DIR}/${file}
+		COMMAND ${MAKE_TESTDIR_CMD} ${MAKE_TESTDIR_OPT} ${MAKE_TESTDIR_ARG}
+		COMMAND ${COPY_COMMAND} ${src_file} ${dst_file}
 		MAIN_DEPENDENCY ${file}
 	)
 endforeach(file ${other_files})
