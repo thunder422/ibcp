@@ -218,6 +218,8 @@ QVariant ProgramModel::data(const QModelIndex &index, int role) const
 
 int ProgramModel::rowCount(const QModelIndex &parent) const
 {
+	Q_UNUSED(parent)
+
 	return m_lineInfo.count();
 }
 
@@ -481,7 +483,7 @@ void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
 		if (column - charsAdded <= errColumn + errLength)
 		{
 			// change is within or before error
-			if (atLineEnd && column + charsRemoved >= errColumn
+			if ((atLineEnd && column + charsRemoved >= errColumn)
 				|| column - charsAdded + charsRemoved > errColumn)
 			{
 				// change and error at end of line or change is within error
@@ -561,8 +563,8 @@ bool ProgramModel::errorFindNext(int &lineNumber, int &column, bool &wrapped)
 	int errIndex = m_errors.find(lineNumber);
 	if (errIndex >= m_errors.count()
 		|| lineNumber > m_errors.at(errIndex).lineNumber()
-		|| lineNumber == m_errors.at(errIndex).lineNumber()
-		&& column >= m_errors.at(errIndex).column())
+		|| (lineNumber == m_errors.at(errIndex).lineNumber()
+		&& column >= m_errors.at(errIndex).column()))
 	{
 		// past current error, go to next error
 		errIndex++;
@@ -598,9 +600,9 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 	int errIndex = m_errors.find(lineNumber);
 	if (errIndex >= m_errors.count()
 		|| lineNumber < m_errors.at(errIndex).lineNumber()
-		|| lineNumber == m_errors.at(errIndex).lineNumber()
+		|| (lineNumber == m_errors.at(errIndex).lineNumber()
 		&& column < m_errors.at(errIndex).column()
-		+ m_errors.at(errIndex).length())
+		+ m_errors.at(errIndex).length()))
 	{
 		// before current error, go to previous error
 		errIndex--;

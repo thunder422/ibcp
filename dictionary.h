@@ -70,8 +70,15 @@ public:
 	virtual ~AbstractInfo(void) {}
 	virtual void clear(void) {}
 	virtual void addElement(void) {}
-	virtual void setElement(int index, Token *token) {}
-	virtual void clearElement(int index) {}
+	virtual void setElement(int index, Token *token)
+	{
+		Q_UNUSED(index)
+		Q_UNUSED(token)
+	}
+	virtual void clearElement(int index)
+	{
+		Q_UNUSED(index)
+	}
 };
 
 

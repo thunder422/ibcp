@@ -40,7 +40,7 @@ inline Code operator ++(Code &code)
 	return code = code + 1;
 }
 
-inline Code operator ++(Code &code, int postfix)
+inline Code operator ++(Code &code, int)
 {
 	return code = code + 1;
 }

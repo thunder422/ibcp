@@ -214,6 +214,8 @@ void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem)
 // function to recreate the print code
 void printRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
+	Q_UNUSED(rpnItem)
+
 	// append PRINT keyword
 	recreator.append(recreator.table().name(Print_Code));
 

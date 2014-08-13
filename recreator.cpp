@@ -211,6 +211,8 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 // function to surround item on top of the holding stack with parentheses
 void parenRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
+	Q_UNUSED(rpnItem)
+
 	int precedence;
 	bool unaryOperator;
 
@@ -262,7 +264,8 @@ void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
 // function to do nothing (for hidden codes)
 void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
-
+	Q_UNUSED(recreator)
+	Q_UNUSED(rpnItem)
 }
 
 

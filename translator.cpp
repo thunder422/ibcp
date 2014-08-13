@@ -585,15 +585,15 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 	token->addSubCode(UnUsed_SubCode);
 	if (token->isType(Error_TokenType))
 	{
-		if (!operand && token->dataType() == Double_DataType
+		if ((!operand && token->dataType() == Double_DataType)
 			|| dataType == String_DataType)
 		{
 			// only do this for non-operand number constant errors
 			token->setLength(1);  // just point to first character
 			token->setDataType(None_DataType);  // indicate not a number error
 		}
-		if (operand && (token->dataType() != Double_DataType
-			&& dataType != None_DataType || dataType == String_DataType))
+		if (operand && ((token->dataType() != Double_DataType
+			&& dataType != None_DataType) || dataType == String_DataType))
 		{
 			// non-number constant error, return expected expression error
 			return expectedErrStatus(dataType);
@@ -1175,7 +1175,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		// is higher than or same as (popped tokens only) the operator
 		int precedence = m_table.precedence(token);
 		if (m_lastPrecedence > precedence
-			|| !popped && m_lastPrecedence == precedence)
+			|| (!popped && m_lastPrecedence == precedence))
 		{
 			Token *lastToken = m_output->last()->token();
 			if (!lastToken->hasSubCode(Paren_SubCode))

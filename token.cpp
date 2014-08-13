@@ -365,7 +365,8 @@ QString Token::text(bool withIndex)
 			case String_DataType:
 				string += '"' + m_string + '"';
 				break;
-
+            default:
+                break;
 			}
 		}
 		break;

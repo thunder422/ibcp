@@ -157,6 +157,8 @@ void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem)
 // function to recreate an input assign type code
 void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem)
 {
+	Q_UNUSED(rpnItem)
+
 	QString string;
 
 	if (recreator.separatorIsSet())

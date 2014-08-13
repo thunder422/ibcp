@@ -381,8 +381,8 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 			bool changeLineIsNew = m_modifiedLineIsNew;
 
 			// check if last line is new before linesModified is changed
-			if (linesModified == netLineCount && !changeAtLineBegin
-				|| cursor.atBlockEnd() && netLineCount > 0)
+			if ((linesModified == netLineCount && !changeAtLineBegin)
+				|| (cursor.atBlockEnd() && netLineCount > 0))
 			{
 				m_modifiedLineIsNew = true;
 			}

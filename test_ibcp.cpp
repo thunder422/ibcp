@@ -219,7 +219,7 @@ bool Tester::run(CommandLine *commandLine)
 			}
 			inputLine = input.readLine();
 			if (inputLine[0] == '#'
-				|| m_option != OptEncoder && inputLine.isEmpty())
+				|| (m_option != OptEncoder && inputLine.isEmpty()))
 			{
 				continue;  // skip blank and comment lines
 			}
@@ -414,8 +414,8 @@ void Tester::encodeInput(QString &testInput)
 	else
 	{
 		if (lineIndex > m_programUnit->rowCount()
-			|| operation != Insert_Operation
-			&& lineIndex == m_programUnit->rowCount())
+			|| (operation != Insert_Operation
+			&& lineIndex == m_programUnit->rowCount()))
 		{
 			printInput(testInput);
 			m_cout << QString("       %1^-- line index number out of range")
@@ -526,6 +526,8 @@ bool Tester::printToken(Token *token, bool tab)
 		case String_DataType:
 			m_cout << " |" << token->string() << '|';
 			break;
+		default:
+		    break;
 		}
 		break;
 	case Operator_TokenType:

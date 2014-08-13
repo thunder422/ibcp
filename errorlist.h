@@ -63,7 +63,7 @@ public:
 	{
 		m_lineNumber--;
 	}
-	int moveColumn(int chars)
+	void moveColumn(int chars)
 	{
 		m_column += chars;
 	}

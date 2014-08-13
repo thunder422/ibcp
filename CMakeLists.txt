@@ -25,6 +25,8 @@ project(ibcp)
 
 cmake_minimum_required(VERSION 2.8)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic-errors")
+
 # prevent in source directory builds
 if (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 	message(FATAL_ERROR

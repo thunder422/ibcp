@@ -69,7 +69,7 @@ public:
 	}
 	void setInstruction(Code code, unsigned subCode)
 	{
-		m_word = (unsigned)code | subCode & ProgramMask_SubCode;
+		m_word = (unsigned)code | (subCode & ProgramMask_SubCode);
 	}
 	QString instructionDebugText(void) const;
 
