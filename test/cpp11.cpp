@@ -1,5 +1,8 @@
 #include <iostream>
 
+// test enum class
+enum class Test {First, Second, Third};
+
 int main()
 {
 	// test initializers
@@ -15,4 +18,12 @@ int main()
 	pi = &i;
 
 	std::cout << d << a[1] << *pi << std::endl;
+
+	// test enum class
+	Test e {Test::Second};
+
+	if (e != Test::Third)
+	{
+		std::cout << "enum class works\n";
+	}
 }
