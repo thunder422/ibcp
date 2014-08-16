@@ -25,6 +25,8 @@
 #ifndef IBCP_H
 #define IBCP_H
 
+#include <cstddef>
+
 // include auto-generated enumerations
 #include "autoenums.h"
 
@@ -72,8 +74,6 @@ enum DataType
 	// end of the actual execution data types
 	// the following data types are used internally for other uses
 	None_DataType,		// indicates none of the above data types
-	// number of actual execution data types
-	numberof_DataType = None_DataType,
 	Number_DataType,	// either Double or Integer
 	Any_DataType,		// any type (Double, Integer or String)
 	sizeof_DataType
@@ -96,6 +96,17 @@ enum SubCode
 
 	// code program mask
 	ProgramMask_Code	= 0x000003FF	// mask for actual program codes
+};
+
+
+// provide generic hash for enum class with std::unordered_map
+struct EnumClassHash
+{
+    template <typename T>
+    std::size_t operator()(T t) const
+    {
+        return static_cast<std::size_t>(t);
+    }
 };
 
 

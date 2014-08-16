@@ -142,8 +142,8 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	while (!done);
 
 	// get expression for value to assign
-	if ((status = translator.getExpression(token,
-		translator.equivalentDataType(dataType))) != Done_TokenStatus)
+	if ((status = translator.getExpression(token, dataType))
+		!= Done_TokenStatus)
 	{
 		if (status == Parser_TokenStatus && token->isDataType(None_DataType))
 		{

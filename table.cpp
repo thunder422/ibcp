@@ -22,6 +22,8 @@
 //
 //	2010-02-18	initial version
 
+#include <unordered_map>
+
 #include <QChar>
 #include <QString>
 
@@ -1618,10 +1620,10 @@ Table::Table(TableEntry *entry, int entryCount) :
 				Num_BitMask = Dbl_BitMask | Int_BitMask,
 				Any_BitMask = Num_BitMask | Str_BitMask
 			};
-			int bitMaskDataType[numberof_DataType] = {
-				Dbl_BitMask,	// Double
-				Int_BitMask,	// Integer
-				Str_BitMask		// String
+			std::unordered_map<DataType, int, EnumClassHash> bitMaskDataType {
+				{Double_DataType,  Dbl_BitMask},
+				{Integer_DataType, Int_BitMask},
+				{String_DataType,  Str_BitMask}
 			};
 
 			// set expected data type (start with data type of last operand)

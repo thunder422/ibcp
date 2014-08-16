@@ -73,7 +73,6 @@ public:
 		Token **first = NULL, Token **last = NULL);
 
 	// Public Support Functions
-	static DataType equivalentDataType(DataType dataType);
 	static TokenStatus expectedErrStatus(DataType dataType,
 		Reference reference = None_Reference);
 

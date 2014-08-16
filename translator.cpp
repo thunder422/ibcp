@@ -1232,20 +1232,6 @@ Token *Translator::doneStackPopErrorToken(void)
 }
 
 
-// function to return equivalent data type for data type
-// (really to convert the various string data types to String_DataType)
-DataType Translator::equivalentDataType(DataType dataType)
-{
-	static DataType equivalent[numberof_DataType] = {
-		Double_DataType,	// Double
-		Integer_DataType,	// Integer
-		String_DataType		// String
-	};
-
-	return equivalent[dataType];
-}
-
-
 // function to return the token error status for an expected data type
 // and reference type
 TokenStatus Translator::expectedErrStatus(DataType dataType,
