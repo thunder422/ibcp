@@ -42,59 +42,6 @@ const int MaxAssocCodes = 3;
 	// for the code (no code currently has more the 3 total codes)
 
 
-// array of conversion codes [have data type] [need data type]
-static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
-	{	// have Double,    need:
-		Null_Code,		// Double
-		CvtInt_Code,	// Integer
-		Invalid_Code,	// String
-		Null_Code,		// None
-		Null_Code,		// Number
-		Null_Code		// Any
-	},
-	{	// have Integer,   need:
-		CvtDbl_Code,	// Double
-		Null_Code,		// Integer
-		Invalid_Code,	// String
-		Null_Code,		// None
-		Null_Code,		// Number
-		Null_Code		// Any
-	},
-	{	// have String,    need:
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Null_Code,		// String
-		Null_Code,		// None
-		Invalid_Code,	// Number
-		Null_Code		// Any
-	},
-	{	// have None,      need:  (print functions have this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Null_Code,		// None (print function allowed if needed None)
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	},
-	{	// have Number,    need:  (will not have any of this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// None
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	},
-	{	// have Any,       need:  (will not have any of this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// None
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	}
-};
-
-
 // expression information for operators and internal functions
 struct ExprInfo
 {
@@ -1964,9 +1911,49 @@ Token *Table::newToken(Code code)
 }
 
 // function to get convert code needed to convert token to data type
-Code Table::cvtCode(Token *token, DataType dataType) const
+Code Table::convertCode(Token *haveToken, DataType needDataType) const
 {
-	return cvtCodeHaveNeed[token->dataType()][dataType];
+	switch (haveToken->dataType())
+	{
+	case Double_DataType:
+		switch (needDataType)
+		{
+		case Integer_DataType:
+			return CvtInt_Code;		// convert Double to Integer
+		case String_DataType:
+			return Invalid_Code;	// can't convert Double to String
+		default:
+			return Null_Code;		// no conversion needed
+		}
+	case Integer_DataType:
+		switch (needDataType)
+		{
+		case Double_DataType:
+			return CvtDbl_Code;		// convert Integer to Double
+		case String_DataType:
+			return Invalid_Code;	// can't convert Integer to String
+		default:
+			return Null_Code;		// no conversion needed
+		}
+	case String_DataType:
+		switch (needDataType)
+		{
+		case String_DataType:
+		case None_DataType:
+		case Any_DataType:
+			return Null_Code;		// print function allowed if needed None
+		default:
+			return Invalid_Code;	// conversion from string no allowed
+		}
+	case None_DataType:
+		// print function allowed if needed none,
+		// else conversion from none not allowed
+		return needDataType == None_DataType ? Null_Code : Invalid_Code;
+
+	default:
+		// Number, Any (will not have any of this data type)
+		return Invalid_Code;
+	}
 }
 
 
@@ -2026,7 +2013,7 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 	}
 
 	// get a conversion code if no associated code was found
-	Code cvtCode = cvtCodeHaveNeed[operandToken->dataType()][expectedDataType];
+	Code cvtCode = convertCode(operandToken, expectedDataType);
 
 	// did not find an associated code, return conversion code
 	if (cvtCode == Invalid_Code)

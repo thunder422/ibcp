@@ -129,7 +129,7 @@ public:
 	DataType expectedDataType(Token *token) const;
 	void setToken(Token *token, Code code);
 	Token *newToken(Code code);
-	Code cvtCode(Token *token, DataType dataType) const;
+	Code convertCode(Token *haveToken, DataType needDataType) const;
 	Code findCode(Token *token, Token *operandToken, int operandIndex = 0);
 	bool setTokenCode(Token *token, Code code, DataType dataType,
 		int operandIndex);

@@ -349,14 +349,14 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			{
 				// add convert code if needed or report error
 				Token *doneToken = m_doneStack.top().rpnItem->token();
-				Code cvt_code = m_table.cvtCode(doneToken, dataType);
-				if (cvt_code == Invalid_Code)
+				Code cvtCode = m_table.convertCode(doneToken, dataType);
+				if (cvtCode == Invalid_Code)
 				{
 					delete token;  // delete terminating token
 					token = doneStackPopErrorToken();
 					status = expectedErrStatus(dataType);
 				}
-				else if (cvt_code != Null_Code)
+				else if (cvtCode != Null_Code)
 				{
 					if (doneToken->isType(Constant_TokenType))
 					{
@@ -371,7 +371,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 					}
 					else  // append hidden conversion code
 					{
-						m_output->append(m_table.newToken(cvt_code));
+						m_output->append(m_table.newToken(cvtCode));
 					}
 				}
 			}
@@ -563,7 +563,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	}
 	// for reference, check data type
 	if (reference != None_Reference
-		&& m_table.cvtCode(token, dataType) != Null_Code)
+		&& m_table.convertCode(token, dataType) != Null_Code)
 	{
 		token = doneStackPopErrorToken();
 		return expectedErrStatus(dataType, reference);
@@ -1237,46 +1237,46 @@ Token *Translator::doneStackPopErrorToken(void)
 TokenStatus Translator::expectedErrStatus(DataType dataType,
 	Reference reference)
 {
-	static TokenStatus tokenStatus[sizeof_DataType][sizeof_Reference] = {
-		{	// Double
-			ExpNumExpr_TokenStatus,		// None
-			ExpDblVar_TokenStatus,		// Variable
-			ExpDblVar_TokenStatus,		// VarDefFn
-			ExpDblVar_TokenStatus		// All
-		},
-		{	// Integer
-			ExpNumExpr_TokenStatus,		// None
-			ExpIntVar_TokenStatus,		// Variable
-			ExpIntVar_TokenStatus,		// VarDefFn
-			ExpIntVar_TokenStatus		// All
-		},
-		{	// String
-			ExpStrExpr_TokenStatus,		// None
-			ExpStrVar_TokenStatus,		// Variable
-			ExpStrVar_TokenStatus,		// VarDefFn
-			ExpStrItem_TokenStatus		// All
-		},
-		{	// None
-			ExpExpr_TokenStatus,		// None
-			ExpAssignItem_TokenStatus,	// Variable
-			ExpAssignItem_TokenStatus,	// VarDefFn
-			ExpAssignItem_TokenStatus	// All
-		},
-		{	// Number
-			ExpNumExpr_TokenStatus,		// None
-			BUG_InvalidDataType,		// Variable
-			BUG_InvalidDataType,		// VarDefFn
-			BUG_InvalidDataType			// All
-		},
-		{	// Any
-			ExpExpr_TokenStatus,		// None
-			ExpVar_TokenStatus,			// Variable
-			ExpAssignItem_TokenStatus,	// VarDefFn
-			ExpAssignItem_TokenStatus	// All
+	switch (dataType)
+	{
+	case Double_DataType:
+		return reference == None_Reference
+			? ExpNumExpr_TokenStatus : ExpDblVar_TokenStatus;
+	case Integer_DataType:
+		return reference == None_Reference
+			? ExpNumExpr_TokenStatus : ExpIntVar_TokenStatus;
+	case String_DataType:
+		switch (reference)
+		{
+		case None_Reference:
+			return ExpStrExpr_TokenStatus;
+		case Variable_Reference:
+		case VarDefFn_Reference:
+			return ExpStrVar_TokenStatus;
+		case All_Reference:
+			return ExpStrItem_TokenStatus;
 		}
-	};
-
-	return tokenStatus[dataType][reference];
+	case None_DataType:
+		return reference == None_Reference
+			? ExpExpr_TokenStatus : ExpAssignItem_TokenStatus;
+	case Number_DataType:
+		return reference == None_Reference
+			? ExpNumExpr_TokenStatus : BUG_InvalidDataType;
+	case Any_DataType:
+		switch (reference)
+		{
+		case None_Reference:
+			return ExpExpr_TokenStatus;
+		case Variable_Reference:
+			return ExpVar_TokenStatus;
+		case VarDefFn_Reference:
+		case All_Reference:
+			return ExpAssignItem_TokenStatus;
+		}
+	default:
+		break;
+	}
+	return BUG_InvalidDataType;  // won't get here
 }
 
 

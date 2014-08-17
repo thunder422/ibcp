@@ -75,8 +75,7 @@ enum DataType
 	// the following data types are used internally for other uses
 	None_DataType,		// indicates none of the above data types
 	Number_DataType,	// either Double or Integer
-	Any_DataType,		// any type (Double, Integer or String)
-	sizeof_DataType
+	Any_DataType 		// any type (Double, Integer or String)
 };
 
 
