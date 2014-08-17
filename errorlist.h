@@ -33,7 +33,7 @@
 class ErrorItem
 {
 public:
-	enum Type
+	enum class Type
 	{
 		None,
 		Input,
@@ -45,9 +45,9 @@ public:
 
 	bool isEmpty(void) const
 	{
-		return m_type == None;
+		return m_type == Type::None;
 	}
-	enum Type type(void) const
+	Type type(void) const
 	{
 		return m_type;
 	}
@@ -81,7 +81,7 @@ public:
 	}
 
 private:
-	enum Type m_type;				// type of error
+	Type m_type;					// type of error
 	int m_lineNumber;				// line number of error
 	int m_column;					// column of error
 	int m_length;					// length of error

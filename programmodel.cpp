@@ -254,7 +254,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
-		if (updateLine(Change_Operation, lineNumber, lines.at(i)))
+		if (updateLine(Operation::Change, lineNumber, lines.at(i)))
 		{
 			// need to emit signal that data changed
 			QModelIndex index = this->index(lineNumber);
@@ -269,7 +269,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		beginRemoveRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (--linesDeleted >= 0)
 		{
-			updateLine(Remove_Operation, lineNumber);
+			updateLine(Operation::Remove, lineNumber);
 		}
 		endRemoveRows();
 	}
@@ -279,11 +279,11 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		if (lineNumber == -1)  // append to end of program?
 		{
 			lineNumber = oldCount;
-			operation = Append_Operation;
+			operation = Operation::Append;
 		}
 		else  // insert new lines into the program
 		{
-			operation = Insert_Operation;
+			operation = Operation::Insert;
 		}
 		int lastLineNumber = lineNumber + linesInserted - 1;
 		beginInsertRows(QModelIndex(), lineNumber, lastLineNumber);
@@ -314,20 +314,20 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	ProgramCode lineCode;
 	ErrorItem errorItem;
 
-	if (operation != Remove_Operation)
+	if (operation != Operation::Remove)
 	{
 		// compile line
 		// if line has error, line code vector will be empty
 		rpnList = m_translator->translate(line);
 		if (rpnList->hasError())
 		{
-			errorItem = ErrorItem(ErrorItem::Input, lineNumber,
+			errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
 				rpnList->errorColumn(), rpnList->errorLength(),
 				rpnList->errorMessage());
 		}
 	}
 
-	if (operation == Change_Operation)
+	if (operation == Operation::Change)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 		RpnList *currentRpnList = decode(lineInfo);
@@ -364,7 +364,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		delete rpnList;  // no longer needed
 		return changed;
 	}
-	else if (operation == Append_Operation || operation == Insert_Operation)
+	else if (operation == Operation::Append || operation == Operation::Insert)
 	{
 		LineInfo lineInfo;
 		lineInfo.errIndex = -1;
@@ -397,13 +397,13 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		m_code.insertLine(lineInfo.offset, lineCode);
 
 		m_lineInfo.insert(lineNumber, lineInfo);
-		if (operation == Append_Operation || errorItem.isEmpty())
+		if (operation == Operation::Append || errorItem.isEmpty())
 		{
 			// only for appended lines or lines with no errors
 			emit programChange(lineNumber);
 		}
 	}
-	else if (operation == Remove_Operation)
+	else if (operation == Operation::Remove)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 

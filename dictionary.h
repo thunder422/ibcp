@@ -37,12 +37,11 @@ class Dictionary
 public:
 	Dictionary(void);
 
-	enum EntryType
+	enum class EntryType
 	{
-		New_Entry,
-		Reused_Entry,
-		Exists_Entry,
-		sizeof_Entry
+		New,
+		Reused,
+		Exists
 	};
 
 	void clear(void);

@@ -75,8 +75,8 @@ private:
 		OptError = OptSizeOf
 	};
 
-	bool isOption(const QString &arg, const QString &exp,
-		enum Option option, QString name);
+	bool isOption(const QString &arg, const QString &exp, Option option,
+		QString name);
 	void parseInput(const QString &testInput);
 	RpnList *translateInput(const QString &testInput, bool exprMode,
 		const char *header = NULL);

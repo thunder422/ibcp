@@ -64,21 +64,21 @@ quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
 			index = m_keyList.count();
 			m_keyList.append(token->string());
 			m_useCount.append(1);
-			newEntry = New_Entry;
+			newEntry = EntryType::New;
 		}
 		else  // use a previously freed index
 		{
 			index = m_freeStack.pop();
 			m_keyList[index] = token->string();
 			m_useCount[index] = 1;
-			newEntry = Reused_Entry;
+			newEntry = EntryType::Reused;
 		}
 		m_keyHash[hashKey] = index;  // save key/index in map
 	}
 	else  // string already present, update use count
 	{
 		m_useCount[index]++;
-		newEntry = Exists_Entry;
+		newEntry = EntryType::Exists;
 	}
 	if (returnNewEntry)
 	{
@@ -176,13 +176,13 @@ quint16 InfoDictionary::add(Token *token, Qt::CaseSensitivity cs)
 {
 	EntryType returnNewEntry;
 	int index = Dictionary::add(token, cs, &returnNewEntry);
-	if (returnNewEntry == New_Entry)
+	if (returnNewEntry == EntryType::New)
 	{
 		// a new entry was added to the dictionary
 		// so add a new element to the additional information
 		m_info->addElement();
 	}
-	if (returnNewEntry != Exists_Entry)
+	if (returnNewEntry != EntryType::Exists)
 	{
 		// for a new entry or a reused entry,
 		// set the additional information from the token

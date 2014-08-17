@@ -157,7 +157,7 @@ bool Parser::getIdentifier(void)
 	m_table.setToken(m_token, code);
 	m_token->setLength(len);
 
-	if (m_table.multiple(code) == OneWord_Multiple)
+	if (m_table.multiple(code) == Multiple::OneWord)
 	{
 		// identifier can only be a single word
 		return true;
@@ -517,7 +517,7 @@ bool Parser::getOperator(void)
 		m_token->setCode(code);
 		m_token->setLength(1);
 
-		if (m_table.multiple(code) == OneChar_Multiple)
+		if (m_table.multiple(code) == Multiple::OneChar)
 		{
 			// operator can only be a single character
 			m_pos++;  // move past operator

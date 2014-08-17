@@ -134,8 +134,8 @@ Tester::~Tester(void)
 
 
 // function to see if argument is expected option
-bool Tester::isOption(const QString &arg, const QString &exp,
-	enum Option option, QString name)
+bool Tester::isOption(const QString &arg, const QString &exp, Option option,
+	QString name)
 {
 	if (arg == exp)
 	{
@@ -317,7 +317,7 @@ RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
 	const char *header)
 {
 	RpnList *rpnList = m_translator->translate(testInput, exprMode
-		? Translator::Expression_TestMode : Translator::Yes_TestMode);
+		? Translator::TestMode::Expression : Translator::TestMode::Yes);
 	if (rpnList->hasError())
 	{
 		printError(rpnList->errorColumn(), rpnList->errorLength(),
@@ -369,18 +369,18 @@ void Tester::recreateInput(const QString &testInput)
 void Tester::encodeInput(QString &testInput)
 {
 	// parse beginning of line for line number program operation
-	Operation operation = Change_Operation;
+	Operation operation = Operation::Change;
 	int pos = 0;
 	if (pos < testInput.length())
 	{
 		if (testInput.at(pos) == '+')
 		{
-			operation = Insert_Operation;
+			operation = Operation::Insert;
 			pos++;
 		}
 		else if (testInput.at(pos) == '-')
 		{
-			operation = Remove_Operation;
+			operation = Operation::Remove;
 			pos++;
 		}
 	}
@@ -395,13 +395,13 @@ void Tester::encodeInput(QString &testInput)
 	}
 	if (digitCount == 0)  // no number at beginning?
 	{
-		if (operation == Change_Operation)
+		if (operation == Operation::Change)
 		{
 			// no number at beginning, insert at end of program
-			operation = Insert_Operation;
+			operation = Operation::Insert;
 			lineIndex = m_programUnit->rowCount();
 		}
-		else if (operation == Insert_Operation)
+		else if (operation == Operation::Insert)
 		{
 			// no number at beginning, insert at end of program
 			lineIndex = m_programUnit->rowCount();
@@ -416,15 +416,15 @@ void Tester::encodeInput(QString &testInput)
 	else
 	{
 		if (lineIndex > m_programUnit->rowCount()
-			|| (operation != Insert_Operation
+			|| (operation != Operation::Insert
 			&& lineIndex == m_programUnit->rowCount()))
 		{
 			printInput(testInput);
 			m_cout << QString("       %1^-- line index number out of range")
-				.arg(operation == Change_Operation ? "" : " ") << endl;
+				.arg(operation == Operation::Change ? "" : " ") << endl;
 			return;
 		}
-		if (operation == Remove_Operation && pos < testInput.length())
+		if (operation == Operation::Remove && pos < testInput.length())
 		{
 			printInput(testInput);
 			m_cout << QString(" ").repeated(7 + pos)
@@ -441,14 +441,14 @@ void Tester::encodeInput(QString &testInput)
 	testInput.remove(0, pos);  // remove operation, number and any spaces
 
 	// call update with arguments dependent on operation
-	if (operation == Remove_Operation)
+	if (operation == Operation::Remove)
 	{
 		m_programUnit->update(lineIndex, 1, 0, QStringList());
 	}
 	else  // Change_Operation or Insert_Operation
 	{
 		m_programUnit->update(lineIndex, 0,
-			operation == Insert_Operation ? 1 : 0, QStringList() << testInput);
+			operation == Operation::Insert ? 1 : 0, QStringList() << testInput);
 	}
 
 	const ErrorItem *errorItem = m_programUnit->lineError(lineIndex);

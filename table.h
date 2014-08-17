@@ -58,15 +58,14 @@ enum SearchType  // table search types
 
 
 // multiple word command or multiple character operator type
-enum Multiple
+enum class Multiple
 {
-	OneWord_Multiple,
-	OneChar_Multiple = OneWord_Multiple,
-	TwoWord_Multiple,
-	TwoChar_Multiple = TwoWord_Multiple,
-	ThreeWord_Multiple,
-	ThreeChar_Multiple = ThreeWord_Multiple,
-	sizeof_Multiple
+	OneWord,
+	OneChar = OneWord,
+	TwoWord,
+	TwoChar = TwoWord,
+	ThreeWord,
+	ThreeChar = ThreeWord
 };
 
 

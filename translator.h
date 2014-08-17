@@ -41,28 +41,27 @@ public:
 	explicit Translator(void);
 	~Translator(void);
 
-	enum TestMode {
-		No_TestMode,				// do normal translation
-		Expression_TestMode,		// translate as expression only
-		Yes_TestMode,				// don't set code size after translation
-		sizeof_TestMode
+	enum class TestMode {
+		No,				// do normal translation
+		Expression,		// translate as expression only
+		Yes				// don't set code size after translation
 	};
 
-	enum Reference {
-		None_Reference,
-		Variable_Reference,
-		VarDefFn_Reference,
-		All_Reference
+	enum class Reference {
+		None,
+		Variable,
+		VarDefFn,
+		All
 	};
 
 	// Main Function
-	RpnList *translate(const QString &input, TestMode testMode = No_TestMode);
+	RpnList *translate(const QString &input, TestMode testMode = TestMode::No);
 
 	// Get Functions
 	TokenStatus getCommands(Token *&token);
 	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
 	TokenStatus getOperand(Token *&token, DataType dataType,
-		Reference reference = None_Reference);
+		Reference reference = Reference::None);
 	TokenStatus getToken(Token *&token, DataType dataType = DataType{});
 
 	// Public Processing Functions
@@ -73,7 +72,7 @@ public:
 
 	// Public Support Functions
 	static TokenStatus expectedErrStatus(DataType dataType,
-		Reference reference = None_Reference);
+		Reference reference = Reference::None);
 
 	// Table Access Function
 	Table &table(void) const

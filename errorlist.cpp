@@ -28,7 +28,7 @@
 // constructor function to set null error item
 ErrorItem::ErrorItem(void)
 {
-	m_type = None;
+	m_type = Type::None;
 }
 
 

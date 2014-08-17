@@ -68,7 +68,7 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 
 	m_holdStack.push(m_table.newToken(Null_Code));
 
-	if (testMode == Expression_TestMode)
+	if (testMode == TestMode::Expression)
 	{
 		token = NULL;
 		status = getExpression(token, DataType::Any);
@@ -115,7 +115,7 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 				status = BUG_DoneStackNotEmpty;
 			}
 
-			if (testMode == No_TestMode
+			if (testMode == TestMode::No
 				&& !m_output->setCodeSize(m_table, token))
 			{
 				status = BUG_NotYetImplemented;
@@ -406,7 +406,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	if (token == NULL
 		&& (status = getToken(token, dataType)) != Good_TokenStatus)
 	{
-		if (reference == None_Reference)
+		if (reference == Reference::None)
 		{
 			// if parser error then caller needs to handle it
 			return status;
@@ -446,25 +446,25 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		{
 			m_table.setTokenCode(token, Const_Code);
 		}
-		if (reference != None_Reference)
+		if (reference != Reference::None)
 		{
 			return expectedErrStatus(dataType, reference);
 		}
 		break;  // go add token to output and push to done stack
 
 	case IntFuncN_TokenType:
-		if (reference != None_Reference)
+		if (reference != Reference::None)
 		{
 			return expectedErrStatus(dataType, reference);
 		}
 		break;  // go add token to output and push to done stack
 
 	case DefFuncN_TokenType:
-		if (reference == Variable_Reference)
+		if (reference == Reference::Variable)
 		{
 			return expectedErrStatus(dataType, reference);
 		}
-		if (reference != None_Reference)
+		if (reference != Reference::None)
 		{
 			token->setReference();
 		}
@@ -478,14 +478,14 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		// REMOVE for now assume a variable
 		// TODO first check if identifier is in function dictionary
 		// TODO only a function reference if name of current function
-		m_table.setTokenCode(token, reference == None_Reference
+		m_table.setTokenCode(token, reference == Reference::None
 			? Var_Code : VarRef_Code);
 		break;  // go add token to output and push to done stack
 
 	case IntFuncP_TokenType:
-		if (reference != None_Reference)
+		if (reference != Reference::None)
 		{
-			if (reference == All_Reference
+			if (reference == Reference::All
 				&& m_table.hasFlag(token, SubStr_Flag))
 			{
 				token->setReference();
@@ -512,11 +512,11 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		break;
 
 	case DefFuncP_TokenType:
-		if (reference == Variable_Reference)
+		if (reference == Reference::Variable)
 		{
 			return expectedErrStatus(dataType, reference);
 		}
-		else if (reference != None_Reference)
+		else if (reference != Reference::None)
 		{
 			// NOTE these are allowed in the DEF command
 			// just point to the open parentheses of the token
@@ -538,7 +538,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		break;
 
 	case Paren_TokenType:
-		if (reference != None_Reference)
+		if (reference != Reference::None)
 		{
 			token->setReference();
 		}
@@ -562,7 +562,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		m_doneStack.push(m_output->append(token));
 	}
 	// for reference, check data type
-	if (reference != None_Reference
+	if (reference != Reference::None
 		&& m_table.convertCode(token, dataType) != Null_Code)
 	{
 		token = doneStackPopErrorToken();
@@ -673,7 +673,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 		{
 			// sub-string assignment, look for reference operand
 			expectedDataType = DataType::String;
-			status = getOperand(token, expectedDataType, VarDefFn_Reference);
+			status = getOperand(token, expectedDataType, Reference::VarDefFn);
 			if (status == Good_TokenStatus)
 			{
 				if ((status = getToken(token)) == Good_TokenStatus)
@@ -1240,37 +1240,37 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 	switch (dataType)
 	{
 	case DataType::Double:
-		return reference == None_Reference
+		return reference == Reference::None
 			? ExpNumExpr_TokenStatus : ExpDblVar_TokenStatus;
 	case DataType::Integer:
-		return reference == None_Reference
+		return reference == Reference::None
 			? ExpNumExpr_TokenStatus : ExpIntVar_TokenStatus;
 	case DataType::String:
 		switch (reference)
 		{
-		case None_Reference:
+		case Reference::None:
 			return ExpStrExpr_TokenStatus;
-		case Variable_Reference:
-		case VarDefFn_Reference:
+		case Reference::Variable:
+		case Reference::VarDefFn:
 			return ExpStrVar_TokenStatus;
-		case All_Reference:
+		case Reference::All:
 			return ExpStrItem_TokenStatus;
 		}
 	case DataType::None:
-		return reference == None_Reference
+		return reference == Reference::None
 			? ExpExpr_TokenStatus : ExpAssignItem_TokenStatus;
 	case DataType::Number:
-		return reference == None_Reference
+		return reference == Reference::None
 			? ExpNumExpr_TokenStatus : BUG_InvalidDataType;
 	case DataType::Any:
 		switch (reference)
 		{
-		case None_Reference:
+		case Reference::None:
 			return ExpExpr_TokenStatus;
-		case Variable_Reference:
+		case Reference::Variable:
 			return ExpVar_TokenStatus;
-		case VarDefFn_Reference:
-		case All_Reference:
+		case Reference::VarDefFn:
+		case Reference::All:
 			return ExpAssignItem_TokenStatus;
 		}
 	}

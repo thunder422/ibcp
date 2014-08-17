@@ -55,7 +55,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	do
 	{
 		if ((status = translator.getOperand(token, dataType,
-			Translator::All_Reference)) != Good_TokenStatus)
+			Translator::Reference::All)) != Good_TokenStatus)
 		{
 			if (token->column() > column)
 			{

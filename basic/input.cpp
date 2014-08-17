@@ -78,7 +78,7 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 		// get variable reference
 		token = NULL;
 		if ((status = translator.getOperand(token, DataType::Any,
-			Translator::Variable_Reference)) != Good_TokenStatus)
+			Translator::Reference::Variable)) != Good_TokenStatus)
 		{
 			break;
 		}

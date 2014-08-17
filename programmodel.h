@@ -41,12 +41,12 @@ class Table;
 class Translator;
 
 
-enum Operation
+enum class Operation
 {
-	Append_Operation,
-	Insert_Operation,
-	Change_Operation,
-	Remove_Operation
+	Append,
+	Insert,
+	Change,
+	Remove
 };
 
 
