@@ -90,7 +90,7 @@ BEGIN {
 	}
 
 	find_enum(path "token.h", "enum TokenType", "_TokenType", "tokentype");
-	find_enum(path "ibcp.h", "enum DataType", "_DataType", "datatype");
+	generate_map(path "ibcp.h", "enum class DataType", "DataType", "datatype");
 }
 
 function find_enum(header_file, start, enum, name)
@@ -126,6 +126,47 @@ function find_enum(header_file, start, enum, name)
 				printf "\n};\n" > output
 				type_enum = 0
 				c = ""
+			}
+		}
+	}
+}
+
+function generate_map(header_file, start, enum, name)
+{
+	type_enum = 0
+	sep = "\n\t"
+	while ((getline line < header_file) > 0)
+	{
+		if (type_enum == 0)
+		{
+			if (line ~ start)
+			{
+				# found start of token types
+				printf "\nstd::unordered_map<%s, QString, EnumClassHash> " \
+					"%s_name {", enum, name > output
+				type_enum = 1
+			}
+		}
+		else if (type_enum)
+		{
+			if (line ~ /};/)
+			{
+				# found end of enum
+				printf "\n};\n" > output
+				type_enum = 0
+			} else {
+				nf = split(line, field)
+				if (field[1] != "{" && field[1] != "//")
+				{
+					if (field[1] ~ /,/)
+					{
+						len = length(field[1])
+						field[1] = substr(field[1], 1, len - 1)
+					}
+					printf "%s{%s::%s, \"%s\"}", sep, enum, field[1], field[1] \
+						> output
+					sep = ",\n\t"
+				}
 			}
 		}
 	}

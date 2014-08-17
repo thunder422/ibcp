@@ -63,19 +63,18 @@ enum {
 
 
 // data type of operands
-enum DataType
+enum class DataType
 {
-	No_DataType = -1,
 	// actual execution data types must be listed first
 	// since they will also be used for indexes
-	Double_DataType,
-	Integer_DataType,
-	String_DataType,
+	Double = 1,
+	Integer,
+	String,
 	// end of the actual execution data types
 	// the following data types are used internally for other uses
-	None_DataType,		// indicates none of the above data types
-	Number_DataType,	// either Double or Integer
-	Any_DataType 		// any type (Double, Integer or String)
+	None,		// indicates none of the above data types
+	Number,		// either Double or Integer
+	Any 		// any type (Double, Integer or String)
 };
 
 

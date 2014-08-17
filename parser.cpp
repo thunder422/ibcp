@@ -53,7 +53,7 @@ Token *Parser::token(bool operandState)
 	if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		m_token->setError(tr("unrecognizable character"), None_DataType);
+		m_token->setError(tr("unrecognizable character"), DataType::None);
 	}
 	return m_token;  // token may contain an error
 }
@@ -118,7 +118,7 @@ bool Parser::getIdentifier(void)
 	{
 		search = ParenWord_SearchType;
 	}
-	else if (dataType != None_DataType)
+	else if (dataType != DataType::None)
 	{
 		search = DataTypeWord_SearchType;
 	}
@@ -167,7 +167,7 @@ bool Parser::getIdentifier(void)
 	skipWhitespace();
 	pos = scanWord(m_pos, dataType, paren);
 	int len2 = pos - m_pos;
-	if (dataType != None_DataType || paren
+	if (dataType != DataType::None || paren
 		|| (code = m_table.search(m_input.midRef(word1, len),
 		m_input.midRef(m_pos, len2))) == Invalid_Code)
 	{
@@ -213,19 +213,19 @@ int Parser::scanWord(int pos, DataType &dataType, bool &paren)
 	switch (m_input[pos].unicode())
 	{
 	case '%':
-		dataType = Integer_DataType;
+		dataType = DataType::Integer;
 		pos++;
 		break;
 	case '$':
-		dataType = String_DataType;
+		dataType = DataType::String;
 		pos++;
 		break;
 	case '#':
-		dataType = Double_DataType;
+		dataType = DataType::Double;
 		pos++;
 		break;
 	default:
-		dataType = None_DataType;
+		dataType = DataType::None;
 	}
 
 	// see if there is an opening parenthesis
@@ -415,7 +415,7 @@ bool Parser::getNumber(void)
 		m_token->setValue(numBytes.toInt(&ok));
 		if (ok)
 		{
-			m_token->setDataType(Integer_DataType);
+			m_token->setDataType(DataType::Integer);
 			// convert to double in case double is needed
 			m_token->setValue((double)m_token->valueInt());
 			return true;
@@ -435,7 +435,7 @@ bool Parser::getNumber(void)
 	if (m_token->value() > (double)INT_MIN - 0.5
 		&& m_token->value() < (double)INT_MAX + 0.5)
 	{
-		m_token->setDataType(Integer_DataType);
+		m_token->setDataType(DataType::Integer);
 		// convert to integer in case integer is needed
 		m_token->setValue((int)m_token->value());
 		if (decimal)  // decimal point or exponent?
@@ -446,7 +446,7 @@ bool Parser::getNumber(void)
 	}
 	else  // number can't be converted to integer
 	{
-		m_token->setDataType(Double_DataType);
+		m_token->setDataType(DataType::Double);
 	}
 	return true;
 }
@@ -485,7 +485,7 @@ bool Parser::getString(void)
 		m_token->setString(len++, m_input[pos++]);  // copy char into string
 	}
 	m_token->setType(Constant_TokenType);
-	m_token->setDataType(String_DataType);
+	m_token->setDataType(DataType::String);
 	m_token->setLength(pos - m_pos);
 	// advance position past end of string
 	m_pos = pos;

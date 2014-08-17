@@ -22,6 +22,8 @@
 //
 //	2010-03-01	initial version
 
+#include <unordered_map>
+
 #include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
@@ -512,7 +514,7 @@ bool Tester::printToken(Token *token, bool tab)
 			<< qSetFieldWidth(0);
 		switch (token->dataType(true))
 		{
-		case Integer_DataType:
+		case DataType::Integer:
 			m_cout << ' ' << token->valueInt();
 			if (token->hasSubCode(Double_SubCode))
 			{
@@ -520,10 +522,10 @@ bool Tester::printToken(Token *token, bool tab)
 			}
 			m_cout << " |" << token->string() << '|';
 			break;
-		case Double_DataType:
+		case DataType::Double:
 			m_cout << ' ' << token->value() << " |" << token->string() << '|';
 			break;
-		case String_DataType:
+		case DataType::String:
 			m_cout << " |" << token->string() << '|';
 			break;
 		default:

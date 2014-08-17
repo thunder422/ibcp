@@ -44,11 +44,11 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 	else  // InputPrompt_Code
 	{
 		token = NULL;
-		status = translator.getExpression(token, String_DataType);
+		status = translator.getExpression(token, DataType::String);
 		if (status != Done_TokenStatus)
 		{
 			if (status == Parser_TokenStatus
-				&& token->isDataType(None_DataType))
+				&& token->isDataType(DataType::None))
 			{
 				status = ExpSemiOrComma_TokenStatus;
 			}
@@ -77,7 +77,7 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 	{
 		// get variable reference
 		token = NULL;
-		if ((status = translator.getOperand(token, Any_DataType,
+		if ((status = translator.getOperand(token, DataType::Any,
 			Translator::Variable_Reference)) != Good_TokenStatus)
 		{
 			break;

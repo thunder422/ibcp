@@ -71,9 +71,9 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 	if (testMode == Expression_TestMode)
 	{
 		token = NULL;
-		status = getExpression(token, Any_DataType);
+		status = getExpression(token, DataType::Any);
 
-		if (status == Parser_TokenStatus && token->isDataType(None_DataType))
+		if (status == Parser_TokenStatus && token->isDataType(DataType::None))
 		{
 			status = ExpOpOrEnd_TokenStatus;
 		}
@@ -239,9 +239,9 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 
 			// get an expression and terminating token
 			token = NULL;
-			if (expectedDataType == None_DataType)
+			if (expectedDataType == DataType::None)
 			{
-				expectedDataType = Any_DataType;
+				expectedDataType = DataType::Any;
 			}
 			if ((status = getExpression(token, expectedDataType, level + 1))
 				!= Done_TokenStatus)
@@ -251,7 +251,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 					status = ExpBinOpOrParen_TokenStatus;
 				}
 				if (status == Parser_TokenStatus
-					&& token->isDataType(None_DataType))
+					&& token->isDataType(DataType::None))
 				{
 					status = ExpOpOrParen_TokenStatus;
 				}
@@ -304,8 +304,8 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			{
 				break;
 			}
-			else if (doneStackTopToken()->isDataType(None_DataType)
-				&& dataType != None_DataType)
+			else if (doneStackTopToken()->isDataType(DataType::None)
+				&& dataType != DataType::None)
 			{
 				// print functions are not allowed
 				token = doneStackPopErrorToken();
@@ -325,9 +325,9 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 				// if parser error then caller needs to handle it
 				break;
 			}
-			if (doneStackTopToken()->isDataType(None_DataType)
+			if (doneStackTopToken()->isDataType(DataType::None)
 				&& m_holdStack.top().token->isNull()
-				&& dataType == None_DataType)
+				&& dataType == DataType::None)
 			{
 				// for print functions return now with token as terminator
 				status = Done_TokenStatus;
@@ -361,8 +361,8 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 					if (doneToken->isType(Constant_TokenType))
 					{
 						// constants don't need conversion
-						if (dataType == Integer_DataType
-							&& doneToken->isDataType(Double_DataType))
+						if (dataType == DataType::Integer
+							&& doneToken->isDataType(DataType::Double))
 						{
 							delete token;  // delete terminating token
 							token = doneStackPopErrorToken();
@@ -425,7 +425,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	{
 	case Command_TokenType:
 	case Operator_TokenType:
-		if (dataType == None_DataType)
+		if (dataType == DataType::None)
 		{
 			// nothing is acceptable, this is terminating token
 			return Done_TokenStatus;
@@ -434,15 +434,15 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 
 	case Constant_TokenType:
 		// check if specific numeric data type requested
-		if ((dataType == Double_DataType || dataType == Integer_DataType)
-			&& token->isDataType(Integer_DataType))
+		if ((dataType == DataType::Double || dataType == DataType::Integer)
+			&& token->isDataType(DataType::Integer))
 		{
 			// for integer constants, force to desired data type
 			token->setDataType(dataType);
 			token->removeSubCode(Double_SubCode);
 		}
-		if (dataType == Double_DataType || dataType == Integer_DataType
-			|| dataType == String_DataType)
+		if (dataType == DataType::Double || dataType == DataType::Integer
+			|| dataType == DataType::String)
 		{
 			m_table.setTokenCode(token, Const_Code);
 		}
@@ -495,8 +495,8 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 				return expectedErrStatus(dataType, reference);
 			}
 		}
-		else if (token->isDataType(None_DataType)
-			&& dataType != None_DataType)
+		else if (token->isDataType(DataType::None)
+			&& dataType != DataType::None)
 		{
 			return expectedErrStatus(dataType);
 		}
@@ -580,20 +580,20 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 TokenStatus Translator::getToken(Token *&token, DataType dataType)
 {
 	// if data type is not none, then getting an operand token
-	bool operand = dataType != No_DataType;
+	bool operand = dataType != DataType{};
 	token = m_parser->token(operand);
 	token->addSubCode(UnUsed_SubCode);
 	if (token->isType(Error_TokenType))
 	{
-		if ((!operand && token->dataType() == Double_DataType)
-			|| dataType == String_DataType)
+		if ((!operand && token->dataType() == DataType::Double)
+			|| dataType == DataType::String)
 		{
 			// only do this for non-operand number constant errors
 			token->setLength(1);  // just point to first character
-			token->setDataType(None_DataType);  // indicate not a number error
+			token->setDataType(DataType::None);  // indicate not a number error
 		}
-		if (operand && ((token->dataType() != Double_DataType
-			&& dataType != None_DataType) || dataType == String_DataType))
+		if (operand && ((token->dataType() != DataType::Double
+			&& dataType != DataType::None) || dataType == DataType::String))
 		{
 			// non-number constant error, return expected expression error
 			return expectedErrStatus(dataType);
@@ -672,7 +672,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 		if (i == 0 && topToken->reference())
 		{
 			// sub-string assignment, look for reference operand
-			expectedDataType = String_DataType;
+			expectedDataType = DataType::String;
 			status = getOperand(token, expectedDataType, VarDefFn_Reference);
 			if (status == Good_TokenStatus)
 			{
@@ -702,7 +702,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 		if (status == Done_TokenStatus)
 		{
 			// check if associated code for function is needed
-			if (expectedDataType == Number_DataType)
+			if (expectedDataType == DataType::Number)
 			{
 				Token *doneToken = m_doneStack.top().rpnItem->token();
 				if (doneToken->dataType()
@@ -715,7 +715,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 				else if (doneToken->hasSubCode(Double_SubCode))
 				{
 					// change token (constant) from integer to double
-					doneToken->setDataType(Double_DataType);
+					doneToken->setDataType(DataType::Double);
 					doneToken->removeSubCode(Double_SubCode);
 				}
 				if (doneToken->isType(Constant_TokenType))
@@ -726,7 +726,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 		}
 		else if (status == Parser_TokenStatus)
 		{
-			if (token->isDataType(Double_DataType))
+			if (token->isDataType(DataType::Double))
 			{
 				return status;  // return parser error
 			}
@@ -835,14 +835,14 @@ TokenStatus Translator::processParenToken(Token *&token)
 	}
 	if (token->isType(Paren_TokenType) && (token->reference() || isArray))
 	{
-		dataType = Integer_DataType;  // array subscripts
+		dataType = DataType::Integer;  // array subscripts
 	}
 	else
 	{
 		// TODO with function dictionaries, get data type for argument
 		// TODO (move into loop below)
 		// TODO and check number of arguments
-		dataType = Any_DataType;  // function arguments
+		dataType = DataType::Any;  // function arguments
 	}
 	Token *topToken = token;
 
@@ -852,7 +852,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 		if ((status = getExpression(token, dataType)) != Done_TokenStatus)
 		{
 			if (status == Parser_TokenStatus
-				&& token->isDataType(None_DataType))
+				&& token->isDataType(DataType::None))
 			{
 				status = ExpOpCommaOrParen_TokenStatus;
 			}
@@ -866,7 +866,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 		// set reference for appropriate token types
 		if (topToken->isType(Paren_TokenType))
 		{
-			if (dataType == Integer_DataType)  // array subscript?
+			if (dataType == DataType::Integer)  // array subscript?
 			{
 				m_doneStack.drop();  // don't need item
 			}
@@ -891,7 +891,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 		else if (token->isCode(CloseParen_Code))
 		{
 			RpnItem **attached;
-			if (dataType == Integer_DataType)  // array subscript?
+			if (dataType == DataType::Integer)  // array subscript?
 			{
 				// don't save operands on array references
 				attached = NULL;
@@ -1137,7 +1137,7 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 	// no match found, report error
 	// use main code's expected data type for operand
 	// (if data type is No, then double constant can't be converted to integer)
-	TokenStatus status = topToken->isDataType(No_DataType)
+	TokenStatus status = topToken->isDataType(DataType{})
 		? ExpIntConst_TokenStatus : expectedErrStatus(topToken->dataType());
 
 	// change token to token with invalid data type and return error
@@ -1239,13 +1239,13 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 {
 	switch (dataType)
 	{
-	case Double_DataType:
+	case DataType::Double:
 		return reference == None_Reference
 			? ExpNumExpr_TokenStatus : ExpDblVar_TokenStatus;
-	case Integer_DataType:
+	case DataType::Integer:
 		return reference == None_Reference
 			? ExpNumExpr_TokenStatus : ExpIntVar_TokenStatus;
-	case String_DataType:
+	case DataType::String:
 		switch (reference)
 		{
 		case None_Reference:
@@ -1256,13 +1256,13 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 		case All_Reference:
 			return ExpStrItem_TokenStatus;
 		}
-	case None_DataType:
+	case DataType::None:
 		return reference == None_Reference
 			? ExpExpr_TokenStatus : ExpAssignItem_TokenStatus;
-	case Number_DataType:
+	case DataType::Number:
 		return reference == None_Reference
 			? ExpNumExpr_TokenStatus : BUG_InvalidDataType;
-	case Any_DataType:
+	case DataType::Any:
 		switch (reference)
 		{
 		case None_Reference:
@@ -1273,8 +1273,6 @@ TokenStatus Translator::expectedErrStatus(DataType dataType,
 		case All_Reference:
 			return ExpAssignItem_TokenStatus;
 		}
-	default:
-		break;
 	}
 	return BUG_InvalidDataType;  // won't get here
 }

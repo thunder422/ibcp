@@ -51,7 +51,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		delete commandToken;
 		hidden = false;
 	}
-	dataType = Any_DataType;
+	dataType = DataType::Any;
 	do
 	{
 		if ((status = translator.getOperand(token, dataType,
@@ -132,7 +132,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		letStack.push(token);  // save token
 
 		// get data type for assignment
-		if (dataType == Any_DataType)
+		if (dataType == DataType::Any)
 		{
 			dataType = token->dataType();
 		}
@@ -145,7 +145,7 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	if ((status = translator.getExpression(token, dataType))
 		!= Done_TokenStatus)
 	{
-		if (status == Parser_TokenStatus && token->isDataType(None_DataType))
+		if (status == Parser_TokenStatus && token->isDataType(DataType::None))
 		{
 			status = ExpOpOrEnd_TokenStatus;
 		}

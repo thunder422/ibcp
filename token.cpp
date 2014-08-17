@@ -289,10 +289,10 @@ void Token::initialize(void)
 void Token::setDataType(void)
 {
 	// only set to double if not an internal function
-	if (m_dataType == None_DataType && m_type != IntFuncP_TokenType)
+	if (m_dataType == DataType::None && m_type != IntFuncP_TokenType)
 	{
 		// TODO for now just set default to double
-		m_dataType = Double_DataType;
+		m_dataType = DataType::Double;
 	}
 }
 
@@ -353,16 +353,16 @@ QString Token::text(bool withIndex)
 			}
 			switch (m_dataType)
 			{
-			case Integer_DataType:
-			case Double_DataType:
+			case DataType::Integer:
+			case DataType::Double:
 				string += m_string;
-				if (m_dataType == Integer_DataType)
+				if (m_dataType == DataType::Integer)
 				{
 					string += "%";
 				}
 				break;
 
-			case String_DataType:
+			case DataType::String:
 				string += '"' + m_string + '"';
 				break;
             default:

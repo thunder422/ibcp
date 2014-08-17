@@ -114,7 +114,7 @@ public:
 	DataType dataType(bool actual = false) const
 	{
 		return !actual && hasSubCode(Double_SubCode)
-			? Double_DataType : m_dataType;
+			? DataType::Double : m_dataType;
 	}
 	void setDataType(DataType dataType)
 	{
@@ -223,7 +223,7 @@ public:
 	}
 
 	// set error functions
-	void setError(const QString &msg, DataType dataType = Double_DataType)
+	void setError(const QString &msg, DataType dataType = DataType::Double)
 	{
 		m_length = 1;
 		m_type = Error_TokenType;
@@ -234,14 +234,14 @@ public:
 	{
 		m_length = -column;  // assume length=1, specifies alternate column
 		m_type = Error_TokenType;
-		m_dataType = Double_DataType;
+		m_dataType = DataType::Double;
 		m_string = msg;
 	}
 	void setError(const QString &msg, int len)
 	{
 		m_length = len;
 		m_type = Error_TokenType;
-		m_dataType = Double_DataType;
+		m_dataType = DataType::Double;
 		m_string = msg;
 	}
 

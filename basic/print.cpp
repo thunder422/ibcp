@@ -40,11 +40,11 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 
 	forever
 	{
-		if ((status = translator.getExpression(token, None_DataType))
+		if ((status = translator.getExpression(token, DataType::None))
 			!= Done_TokenStatus)
 		{
 			if (status == Parser_TokenStatus
-				&& token->isDataType(None_DataType))
+				&& token->isDataType(DataType::None))
 			{
 				if (translator.doneStackEmpty())
 				{
@@ -52,7 +52,7 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 				}
 				// change parser error if not inside paren
 				else if (translator.doneStackTopToken()
-					->isDataType(None_DataType))
+					->isDataType(DataType::None))
 				{
 					status = ExpSemiCommaOrEnd_TokenStatus;
 				}
@@ -66,7 +66,7 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 
 		if (!translator.doneStackEmpty())
 		{
-			if (translator.doneStackTopToken()->isDataType(None_DataType))
+			if (translator.doneStackTopToken()->isDataType(DataType::None))
 			{
 				translator.doneStackDrop();  // print function
 				printFunction = true;

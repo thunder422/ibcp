@@ -63,7 +63,7 @@ public:
 	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
 	TokenStatus getOperand(Token *&token, DataType dataType,
 		Reference reference = None_Reference);
-	TokenStatus getToken(Token *&token, DataType dataType = No_DataType);
+	TokenStatus getToken(Token *&token, DataType dataType = DataType{});
 
 	// Public Processing Functions
 	TokenStatus processFinalOperand(Token *&token, Token *token2 = NULL,
