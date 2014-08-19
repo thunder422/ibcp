@@ -28,8 +28,24 @@
 
 
 // static token variables
-bool Token::s_paren[sizeof_TokenType];
-int Token::s_prec[sizeof_TokenType];
+std::unordered_map<Token::Type, bool, EnumClassHash> Token::s_hasParen {
+	{Type::IntFuncP, true},
+	{Type::DefFuncP, true},
+	{Type::Paren, true}
+};
+// set precedence for non-table token types
+std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
+	{Type::Command, -1},  // use table precedence if -1
+	{Type::Operator, -1},
+	{Type::IntFuncN, -1},
+	{Type::IntFuncP, -1},
+	// these tokens need to be lowest precedence but above Null_Code
+	{Type::Constant, 2},
+	{Type::DefFuncN, 2},
+	{Type::DefFuncP, 2},
+	{Type::NoParen, 2},
+	{Type::Paren, 2}
+};
 
 // token status message array
 //   (TokenStatus enumeration generated from names in comments
@@ -263,36 +279,61 @@ void Token::DeletedList::reportErrors(void)
 }
 
 
-// static function to initialize the static token data
-void Token::initialize(void)
-{
-	// set true for types that contain an opening parentheses
-	s_paren[IntFuncP_TokenType] = true;
-	s_paren[DefFuncP_TokenType] = true;
-	s_paren[Paren_TokenType] = true;
-
-	// set precedence for non-table token types
-	s_prec[Command_TokenType] = -1;  // use table precedence if -1
-	s_prec[Operator_TokenType] = -1;
-	s_prec[IntFuncN_TokenType] = -1;
-	s_prec[IntFuncP_TokenType] = -1;
-	// these tokens need to be lowest precedence but above Null_Code
-	s_prec[Constant_TokenType] = 2;
-	s_prec[DefFuncN_TokenType] = 2;
-	s_prec[DefFuncP_TokenType] = 2;
-	s_prec[NoParen_TokenType] = 2;
-	s_prec[Paren_TokenType] = 2;
-}
-
-
 // function to set the default data type of the token
 void Token::setDataType(void)
 {
 	// only set to double if not an internal function
-	if (m_dataType == DataType::None && m_type != IntFuncP_TokenType)
+	if (m_dataType == DataType::None && m_type != Type::IntFuncP)
 	{
 		// TODO for now just set default to double
 		m_dataType = DataType::Double;
+	}
+}
+
+
+// function to get convert code needed to convert token to data type
+Code Token::convertCode(DataType toDataType) const
+{
+	switch (dataType())
+	{
+	case DataType::Double:
+		switch (toDataType)
+		{
+		case DataType::Integer:
+			return CvtInt_Code;		// convert Double to Integer
+		case DataType::String:
+			return Invalid_Code;	// can't convert Double to String
+		default:
+			return Null_Code;		// no conversion needed
+		}
+	case DataType::Integer:
+		switch (toDataType)
+		{
+		case DataType::Double:
+			return CvtDbl_Code;		// convert Integer to Double
+		case DataType::String:
+			return Invalid_Code;	// can't convert Integer to String
+		default:
+			return Null_Code;		// no conversion needed
+		}
+	case DataType::String:
+		switch (toDataType)
+		{
+		case DataType::String:
+		case DataType::None:
+		case DataType::Any:
+			return Null_Code;		// print function allowed if needed None
+		default:
+			return Invalid_Code;	// conversion from string no allowed
+		}
+	case DataType::None:
+		// print function allowed if needed none,
+		// else conversion from none not allowed
+		return toDataType == DataType::None ? Null_Code : Invalid_Code;
+
+	default:
+		// Number, Any (will not have any of this data type)
+		return Invalid_Code;
 	}
 }
 
@@ -310,11 +351,11 @@ QString Token::text(bool withIndex)
 	}
 	switch (m_type)
 	{
-	case DefFuncN_TokenType:
+	case Type::DefFuncN:
 		string += m_string;
 		break;
 
-	case NoParen_TokenType:
+	case Type::NoParen:
 		if (withIndex)
 		{
 			string += table.debugName(m_code);
@@ -334,12 +375,12 @@ QString Token::text(bool withIndex)
 		}
 		break;
 
-	case DefFuncP_TokenType:
-	case Paren_TokenType:
+	case Type::DefFuncP:
+	case Type::Paren:
 		string += m_string + '(';
 		break;
 
-	case Constant_TokenType:
+	case Type::Constant:
 		if (withIndex)
 		{
 			string += table.debugName(m_code);
@@ -371,7 +412,7 @@ QString Token::text(bool withIndex)
 		}
 		break;
 
-	case Operator_TokenType:
+	case Type::Operator:
 		if (isCode(RemOp_Code))
 		{
 			string += table.name(m_code);
@@ -383,8 +424,8 @@ QString Token::text(bool withIndex)
 		}
 		break;
 
-	case IntFuncN_TokenType:
-	case IntFuncP_TokenType:
+	case Type::IntFuncN:
+	case Type::IntFuncP:
 		string += table.debugName(m_code);
 		if (withIndex && table.hasOperand(m_code))
 		{
@@ -392,7 +433,7 @@ QString Token::text(bool withIndex)
 		}
 		break;
 
-	case Command_TokenType:
+	case Type::Command:
 		if (isCode(Rem_Code))
 		{
 			string += table.name(m_code);

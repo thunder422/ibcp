@@ -164,7 +164,7 @@ add_custom_command(OUTPUT test_names.h
 	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/test_names.awk
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY test_names.awk
-	DEPENDS table.cpp token.h ibcp.h
+	DEPENDS table.cpp
 )
 
 # list the main program sources

@@ -25,6 +25,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <unordered_map>
+
 #include <QCoreApplication>
 #include <QStack>
 #include <QString>
@@ -33,28 +35,27 @@
 #include "ibcp.h"
 
 
-// changes to TokenType may require changes to ibcp.cpp: Token::initialize()
-enum TokenType
-{
-	Command_TokenType,
-	Operator_TokenType,
-	IntFuncN_TokenType,
-	IntFuncP_TokenType,
-	Constant_TokenType,
-	DefFuncN_TokenType,
-	DefFuncP_TokenType,
-	NoParen_TokenType,
-	Paren_TokenType,
-	Error_TokenType,
-	sizeof_TokenType
-};
-
-
 class Token
 {
 	Q_DECLARE_TR_FUNCTIONS(Token)
 
 public:
+	// changes to Type may require changes to initializers
+	// for s_hasParen and s_precedence maps
+	enum class Type
+	{
+		Command,
+		Operator,
+		IntFuncN,
+		IntFuncP,
+		Constant,
+		DefFuncN,
+		DefFuncP,
+		NoParen,
+		Paren,
+		Error
+	};
+
 	explicit Token(int column = -1)
 	{
 		m_column = column;
@@ -97,15 +98,15 @@ public:
 	}
 
 	// type access functions
-	TokenType type(void) const
+	Type type(void) const
 	{
 		return m_type;
 	}
-	void setType(TokenType type)
+	void setType(Type type)
 	{
 		m_type = type;
 	}
-	bool isType(TokenType type) const
+	bool isType(Type type) const
 	{
 		return type == m_type;
 	}
@@ -226,21 +227,21 @@ public:
 	void setError(const QString &msg, DataType dataType = DataType::Double)
 	{
 		m_length = 1;
-		m_type = Error_TokenType;
+		m_type = Type::Error;
 		m_dataType = dataType;
 		m_string = msg;
 	}
 	void setError(int column, const QString  &msg)
 	{
 		m_length = -column;  // assume length=1, specifies alternate column
-		m_type = Error_TokenType;
+		m_type = Type::Error;
 		m_dataType = DataType::Double;
 		m_string = msg;
 	}
 	void setError(const QString &msg, int len)
 	{
 		m_length = len;
-		m_type = Error_TokenType;
+		m_type = Type::Error;
 		m_dataType = DataType::Double;
 		m_string = msg;
 	}
@@ -248,11 +249,11 @@ public:
 	// token information functions
 	bool hasParen(void) const
 	{
-		return s_paren[m_type];
+		return s_hasParen[m_type];
 	}
 	int precedence(void) const
 	{
-		return s_prec[m_type];
+		return s_precendence[m_type];
 	}
 	bool isNull(void) const
 	{
@@ -266,11 +267,13 @@ public:
 		return this;
 	}
 
+	// other functions
+	Code convertCode(DataType toDataType) const;
+
 	// recreate text for token
 	QString text(bool withIndex = false);
 
 	// static member functions
-	static void initialize(void);
 	static const QString message(TokenStatus status)
 	{
 		return s_messageArray[status];
@@ -285,8 +288,8 @@ private:
 	QString textOperand(bool withIndex);
 
 	// static members
-	static bool s_paren[sizeof_TokenType];
-	static int s_prec[sizeof_TokenType];
+	static std::unordered_map<Type, bool, EnumClassHash> s_hasParen;
+	static std::unordered_map<Type, int, EnumClassHash> s_precendence;
 	static const QString s_messageArray[sizeof_TokenStatus];
 
 	class FreeStack : public QStack<Token *>
@@ -316,7 +319,7 @@ private:
 	int m_id;				// private ID (index) for detecting token leaks
 	int m_column;			// start column of token
 	int m_length;			// length of token
-	TokenType m_type;		// type of the token
+	Type m_type;			// type of the token
 	DataType m_dataType;	// data type of token
 	QString m_string;		// pointer to string of token
 	Code m_code;			// internal code of token (index of TableEntry)

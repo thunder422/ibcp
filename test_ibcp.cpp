@@ -22,8 +22,6 @@
 //
 //	2010-03-01	initial version
 
-#include <unordered_map>
-
 #include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
@@ -469,13 +467,65 @@ void Tester::encodeInput(QString &testInput)
 }
 
 
+// function to convert data type enumerator to string
+static const char *dataTypeName(DataType dataType)
+{
+	switch (dataType)
+	{
+	case DataType::Double:
+		return "Double";
+	case DataType::Integer:
+		return "Integer";
+	case DataType::String:
+		return "String";
+	case DataType::None:
+		return "None";
+	case DataType::Number:
+		return "Number";
+	case DataType::Any:
+		return "Any";
+	}
+	return "";  // silence compiler warning (doesn't reach here at run-time)
+}
+
+
+// function to convert token type enumerator to string
+static const char *tokenTypeName(Token::Type type)
+{
+	switch (type)
+	{
+	case Token::Type::Command:
+		return "Command";
+	case Token::Type::Operator:
+		return "Operator";
+	case Token::Type::IntFuncN:
+		return "IntFuncN";
+	case Token::Type::IntFuncP:
+		return "IntFuncP";
+	case Token::Type::Constant:
+		return "Constant";
+	case Token::Type::DefFuncN:
+		return "DefFuncN";
+	case Token::Type::DefFuncP:
+		return "DefFuncP";
+	case Token::Type::NoParen:
+		return "NoParen";
+	case Token::Type::Paren:
+		return "Paren";
+	case Token::Type::Error:
+		return "Error";
+	}
+	return "";  // silence compiler warning (doesn't reach here at run-time)
+}
+
+
 // function to print the contents of a token
 bool Tester::printToken(Token *token, bool tab)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
 
-	if (token->isType(Error_TokenType))
+	if (token->isType(Token::Type::Error))
 	{
 		printError(token->column(), token->length(), token->string());
 		return false;
@@ -485,8 +535,8 @@ bool Tester::printToken(Token *token, bool tab)
 	{
 		info = "()";
 	}
-	else if (token->isType(Operator_TokenType)
-		|| token->isType(Command_TokenType))
+	else if (token->isType(Token::Type::Operator)
+		|| token->isType(Token::Type::Command))
 	{
 		info = "Op";
 	}
@@ -495,22 +545,22 @@ bool Tester::printToken(Token *token, bool tab)
 		m_cout << '\t';
 	}
 	m_cout << qSetFieldWidth(2) << right << token->column() << qSetFieldWidth(0)
-		<< left << ": " << qSetFieldWidth(10) << tokentype_name[token->type()]
+		<< left << ": " << qSetFieldWidth(10) << tokenTypeName(token->type())
 		<< qSetFieldWidth(0) << info;
 	switch (token->type())
 	{
-	case DefFuncN_TokenType:
-	case NoParen_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::DefFuncN:
+	case Token::Type::NoParen:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0) << " |" << token->string() << '|';
 		break;
-	case DefFuncP_TokenType:
-	case Paren_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::DefFuncP:
+	case Token::Type::Paren:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0) << " |" << token->string() << "(|";
 		break;
-	case Constant_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::Constant:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0);
 		switch (token->dataType(true))
 		{
@@ -532,13 +582,13 @@ bool Tester::printToken(Token *token, bool tab)
 		    break;
 		}
 		break;
-	case Operator_TokenType:
-	case IntFuncN_TokenType:
-	case IntFuncP_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::Operator:
+	case Token::Type::IntFuncN:
+	case Token::Type::IntFuncP:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0);
 		// fall thru
-	case Command_TokenType:
+	case Token::Type::Command:
 		m_cout << " " << code_name[token->code()];
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{

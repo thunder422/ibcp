@@ -100,13 +100,13 @@ bool Parser::getIdentifier(void)
 	{
 		if (paren)
 		{
-			m_token->setType(DefFuncP_TokenType);
+			m_token->setType(Token::Type::DefFuncP);
 			m_token->setString(m_input.mid(m_pos, len - 1));
 			m_token->setLength(len - 1);
 		}
 		else  // no parentheses
 		{
-			m_token->setType(DefFuncN_TokenType);
+			m_token->setType(Token::Type::DefFuncN);
 			m_token->setString(m_input.mid(m_pos, len));
 			m_token->setLength(len);
 		}
@@ -135,13 +135,13 @@ bool Parser::getIdentifier(void)
 		// whether opening parenthesis is present, and string of identifier
 		if (paren)
 		{
-			m_token->setType(Paren_TokenType);
+			m_token->setType(Token::Type::Paren);
 			m_token->setString(m_input.mid(m_pos, len - 1));
 			m_token->setLength(len - 1);
 		}
 		else
 		{
-			m_token->setType(NoParen_TokenType);
+			m_token->setType(Token::Type::NoParen);
 			m_token->setString(m_input.mid(m_pos, len));
 			m_token->setLength(len);
 		}
@@ -171,7 +171,7 @@ bool Parser::getIdentifier(void)
 		|| (code = m_table.search(m_input.midRef(word1, len),
 		m_input.midRef(m_pos, len2))) == Invalid_Code)
 	{
-		if (m_token->type() == Error_TokenType)
+		if (m_token->type() == Token::Type::Error)
 		{
 			// first word by itself is not valid
 			m_token->setString("Invalid Two Word Command");
@@ -404,7 +404,7 @@ bool Parser::getNumber(void)
 	m_token->setLength(len);
 	m_pos = pos;  // move to next character after constant
 
-	m_token->setType(Constant_TokenType);
+	m_token->setType(Token::Type::Constant);
 
 	// FIXME hack for memory issue reported against QString::toInt()/toDouble()
 	QByteArray numBytes;
@@ -484,7 +484,7 @@ bool Parser::getString(void)
 		}
 		m_token->setString(len++, m_input[pos++]);  // copy char into string
 	}
-	m_token->setType(Constant_TokenType);
+	m_token->setType(Token::Type::Constant);
 	m_token->setDataType(DataType::String);
 	m_token->setLength(pos - m_pos);
 	// advance position past end of string

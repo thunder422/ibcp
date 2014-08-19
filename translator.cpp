@@ -283,7 +283,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			// set highest precedence if not an operator on done stack top
 			// (no operators in the parentheses)
 			topToken = m_doneStack.top().rpnItem->token();
-			m_lastPrecedence = topToken->isType(Operator_TokenType)
+			m_lastPrecedence = topToken->isType(Token::Type::Operator)
 				? m_table.precedence(topToken) : HighestPrecedence;
 
 			// set pending parentheses token pointer
@@ -349,7 +349,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			{
 				// add convert code if needed or report error
 				Token *doneToken = m_doneStack.top().rpnItem->token();
-				Code cvtCode = m_table.convertCode(doneToken, dataType);
+				Code cvtCode = doneToken->convertCode(dataType);
 				if (cvtCode == Invalid_Code)
 				{
 					delete token;  // delete terminating token
@@ -358,7 +358,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 				}
 				else if (cvtCode != Null_Code)
 				{
-					if (doneToken->isType(Constant_TokenType))
+					if (doneToken->isType(Token::Type::Constant))
 					{
 						// constants don't need conversion
 						if (dataType == DataType::Integer
@@ -423,8 +423,8 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 
 	switch (token->type())
 	{
-	case Command_TokenType:
-	case Operator_TokenType:
+	case Token::Type::Command:
+	case Token::Type::Operator:
 		if (dataType == DataType::None)
 		{
 			// nothing is acceptable, this is terminating token
@@ -432,7 +432,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		}
 		return expectedErrStatus(dataType, reference);
 
-	case Constant_TokenType:
+	case Token::Type::Constant:
 		// check if specific numeric data type requested
 		if ((dataType == DataType::Double || dataType == DataType::Integer)
 			&& token->isDataType(DataType::Integer))
@@ -452,14 +452,14 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		}
 		break;  // go add token to output and push to done stack
 
-	case IntFuncN_TokenType:
+	case Token::Type::IntFuncN:
 		if (reference != Reference::None)
 		{
 			return expectedErrStatus(dataType, reference);
 		}
 		break;  // go add token to output and push to done stack
 
-	case DefFuncN_TokenType:
+	case Token::Type::DefFuncN:
 		if (reference == Reference::Variable)
 		{
 			return expectedErrStatus(dataType, reference);
@@ -474,7 +474,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		token->setDataType(dataType);
 		break;  // go add token to output and push to done stack
 
-	case NoParen_TokenType:
+	case Token::Type::NoParen:
 		// REMOVE for now assume a variable
 		// TODO first check if identifier is in function dictionary
 		// TODO only a function reference if name of current function
@@ -482,7 +482,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			? Var_Code : VarRef_Code);
 		break;  // go add token to output and push to done stack
 
-	case IntFuncP_TokenType:
+	case Token::Type::IntFuncP:
 		if (reference != Reference::None)
 		{
 			if (reference == Reference::All
@@ -511,7 +511,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		doneAppend = false;  // already appended
 		break;
 
-	case DefFuncP_TokenType:
+	case Token::Type::DefFuncP:
 		if (reference == Reference::Variable)
 		{
 			return expectedErrStatus(dataType, reference);
@@ -537,7 +537,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		doneAppend = false;  // already appended
 		break;
 
-	case Paren_TokenType:
+	case Token::Type::Paren:
 		if (reference != Reference::None)
 		{
 			token->setReference();
@@ -563,7 +563,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 	}
 	// for reference, check data type
 	if (reference != Reference::None
-		&& m_table.convertCode(token, dataType) != Null_Code)
+		&& token->convertCode(dataType) != Null_Code)
 	{
 		token = doneStackPopErrorToken();
 		return expectedErrStatus(dataType, reference);
@@ -583,7 +583,7 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 	bool operand = dataType != DataType{};
 	token = m_parser->token(operand);
 	token->addSubCode(UnUsed_SubCode);
-	if (token->isType(Error_TokenType))
+	if (token->isType(Token::Type::Error))
 	{
 		if ((!operand && token->dataType() == DataType::Double)
 			|| dataType == DataType::String)
@@ -626,7 +626,7 @@ TokenStatus Translator::processCommand(Token *&commandToken)
 	TranslateFunction translate;
 	Token *token;
 
-	if (commandToken->isType(Command_TokenType))
+	if (commandToken->isType(Token::Type::Command))
 	{
 		translate = m_table.translateFunction(commandToken->code());
 		token = NULL;  // force translate function to get a token
@@ -718,7 +718,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 					doneToken->setDataType(DataType::Double);
 					doneToken->removeSubCode(Double_SubCode);
 				}
-				if (doneToken->isType(Constant_TokenType))
+				if (doneToken->isType(Token::Type::Constant))
 				{
 					doneToken->setCode(Const_Code);
 				}
@@ -828,12 +828,12 @@ TokenStatus Translator::processParenToken(Token *&token)
 	// REMOVE for now assume functions start with an 'F'
 	// TODO temporary until array and functions are fully implemented
 	bool isArray;
-	if (token->isType(Paren_TokenType))
+	if (token->isType(Token::Type::Paren))
 	{
 		isArray = !token->string().startsWith('F', Qt::CaseInsensitive);
 		token->setCode(isArray ? Array_Code : Function_Code);
 	}
-	if (token->isType(Paren_TokenType) && (token->reference() || isArray))
+	if (token->isType(Token::Type::Paren) && (token->reference() || isArray))
 	{
 		dataType = DataType::Integer;  // array subscripts
 	}
@@ -864,7 +864,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 		}
 
 		// set reference for appropriate token types
-		if (topToken->isType(Paren_TokenType))
+		if (topToken->isType(Token::Type::Paren))
 		{
 			if (dataType == DataType::Integer)  // array subscript?
 			{
@@ -874,8 +874,8 @@ TokenStatus Translator::processParenToken(Token *&token)
 			{
 				Token *operandToken = m_doneStack.top().rpnItem->token();
 				// TODO may also need to check for DefFuncN type here
-				if ((operandToken->isType(NoParen_TokenType)
-					|| operandToken->isType(Paren_TokenType))
+				if ((operandToken->isType(Token::Type::NoParen)
+					|| operandToken->isType(Token::Type::Paren))
 					&& !operandToken->hasSubCode(Paren_SubCode))
 				{
 					operandToken->setReference();
@@ -1048,7 +1048,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 	}
 
 	DoneItem::deleteOpenParen(first);  // don't need first operand
-	if (token->isType(Operator_TokenType))
+	if (token->isType(Token::Type::Operator))
 	{
 		// set first token
 		// unary operator: unary operator token
@@ -1065,7 +1065,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 	RpnItem *rpnItem = m_output->append(token);
 
 	// push operator token to the done stack
-	if (token->isType(Operator_TokenType))
+	if (token->isType(Token::Type::Operator))
 	{
 		m_doneStack.push(rpnItem, first, last);
 	}
