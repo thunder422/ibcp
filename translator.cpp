@@ -60,7 +60,7 @@ Translator::~Translator(void)
 RpnList *Translator::translate(const QString &input, TestMode testMode)
 {
 	Token *token;
-	TokenStatus status;
+	Token::Status status;
 
 	m_parser->setInput(input);
 
@@ -73,16 +73,16 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 		token = NULL;
 		status = getExpression(token, DataType::Any);
 
-		if (status == Parser_TokenStatus && token->isDataType(DataType::None))
+		if (status == Token::Status::Parser && token->isDataType(DataType::None))
 		{
-			status = ExpOpOrEnd_TokenStatus;
+			status = Token::Status::ExpOpOrEnd;
 		}
-		else if (status == Done_TokenStatus)
+		else if (status == Token::Status::Done)
 		{
 			// pop final result off of done stack
 			if (m_doneStack.isEmpty())
 			{
-				status = BUG_DoneStackEmpty;
+				status = Token::Status::BUG_DoneStackEmpty;
 			}
 			else
 			{
@@ -96,7 +96,7 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 		status = getCommands(token);
 	}
 
-	if (status == Done_TokenStatus)
+	if (status == Token::Status::Done)
 	{
 		if (token->isCode(EOL_Code))
 		{
@@ -107,31 +107,31 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 
 			if (!m_holdStack.isEmpty())
 			{
-				status = BUG_HoldStackNotEmpty;
+				status = Token::Status::BUG_HoldStackNotEmpty;
 			}
 
 			if (!m_doneStack.isEmpty())
 			{
-				status = BUG_DoneStackNotEmpty;
+				status = Token::Status::BUG_DoneStackNotEmpty;
 			}
 
 			if (testMode == TestMode::No
 				&& !m_output->setCodeSize(m_table, token))
 			{
-				status = BUG_NotYetImplemented;
+				status = Token::Status::BUG_NotYetImplemented;
 			}
 		}
 		else
 		{
-			status = ExpOpOrEnd_TokenStatus;
+			status = Token::Status::ExpOpOrEnd;
 		}
 	}
 
-	if (status != Done_TokenStatus)
+	if (status != Token::Status::Done)
 	{
 		// error token is in the output list - don't delete it
 		m_output->setError(token);
-		m_output->setErrorMessage(status == Parser_TokenStatus
+		m_output->setErrorMessage(status == Token::Status::Parser
 			? token->string() : token->message(status));
 		if (token->hasSubCode(UnUsed_SubCode))
 		{
@@ -159,20 +159,20 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 //   - returns terminating token (end-of-line or unknown token)
 //   - caller determines validity of unknown token if returned
 
-TokenStatus Translator::getCommands(Token *&token)
+Token::Status Translator::getCommands(Token *&token)
 {
-	TokenStatus status;
+	Token::Status status;
 
 	forever
 	{
-		if ((status = getToken(token)) != Good_TokenStatus)
+		if ((status = getToken(token)) != Token::Status::Good)
 		{
-			return ExpCmd_TokenStatus;
+			return Token::Status::ExpCmd;
 		}
 
 		if (token->isCode(EOL_Code) && m_output->isEmpty())
 		{
-			return Done_TokenStatus;  // blank line allowed
+			return Token::Status::Done;  // blank line allowed
 		}
 
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
@@ -180,7 +180,7 @@ TokenStatus Translator::getCommands(Token *&token)
 			break;
 		}
 
-		if ((status = processCommand(token)) != Done_TokenStatus)
+		if ((status = processCommand(token)) != Token::Status::Done)
 		{
 			return status;
 		}
@@ -197,15 +197,15 @@ TokenStatus Translator::getCommands(Token *&token)
 		}
 		else  // unknown end statement token, return to caller
 		{
-			return Done_TokenStatus;
+			return Token::Status::Done;
 		}
 	}
 	m_output->append(token);  // Rem or RemOp token
-	if ((status = getToken(token)) != Good_TokenStatus)
+	if ((status = getToken(token)) != Token::Status::Good)
 	{
-		return BUG_UnexpToken;  // parser problem, should be EOL
+		return Token::Status::BUG_UnexpToken;  // parser problem, should be EOL
 	}
-	return Done_TokenStatus;
+	return Token::Status::Done;
 }
 
 
@@ -217,16 +217,16 @@ TokenStatus Translator::getCommands(Token *&token)
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the expression
 
-TokenStatus Translator::getExpression(Token *&token, DataType dataType,
+Token::Status Translator::getExpression(Token *&token, DataType dataType,
 	int level)
 {
-	TokenStatus status;
+	Token::Status status;
 	DataType expectedDataType = dataType;
 
 	forever
 	{
 		if (token == NULL
-			&& (status = getToken(token, expectedDataType)) != Good_TokenStatus)
+			&& (status = getToken(token, expectedDataType)) != Token::Status::Good)
 		{
 			break;
 		}
@@ -244,16 +244,16 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 				expectedDataType = DataType::Any;
 			}
 			if ((status = getExpression(token, expectedDataType, level + 1))
-				!= Done_TokenStatus)
+				!= Token::Status::Done)
 			{
 				if (m_table.isUnaryOperator(token))
 				{
-					status = ExpBinOpOrParen_TokenStatus;
+					status = Token::Status::ExpBinOpOrParen;
 				}
-				if (status == Parser_TokenStatus
+				if (status == Token::Status::Parser
 					&& token->isDataType(DataType::None))
 				{
-					status = ExpOpOrParen_TokenStatus;
+					status = Token::Status::ExpOpOrParen;
 				}
 				break;  // exit on error
 			}
@@ -261,7 +261,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			// check terminating token
 			if (!token->isCode(CloseParen_Code))
 			{
-				status = ExpOpOrParen_TokenStatus;
+				status = Token::Status::ExpOpOrParen;
 				break;
 			}
 
@@ -270,7 +270,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			if (!topToken->code() == OpenParen_Code)
 			{
 				// oops, no open parentheses (this should not happen)
-				return BUG_UnexpectedCloseParen;
+				return Token::Status::BUG_UnexpectedCloseParen;
 			}
 
 			// replace first and last operands of token on done stack
@@ -300,7 +300,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			}
 			// get operand
 			else if ((status = getOperand(token, expectedDataType))
-				!= Good_TokenStatus)
+				!= Token::Status::Good)
 			{
 				break;
 			}
@@ -320,7 +320,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 		if (token == NULL)
 		{
 			// get binary operator or end-of-expression token
-			if ((status = getToken(token)) != Good_TokenStatus)
+			if ((status = getToken(token)) != Token::Status::Good)
 			{
 				// if parser error then caller needs to handle it
 				break;
@@ -330,20 +330,20 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 				&& dataType == DataType::None)
 			{
 				// for print functions return now with token as terminator
-				status = Done_TokenStatus;
+				status = Token::Status::Done;
 				break;
 			}
 			// check for unary operator (token should be a binary operator)
 			if (m_table.isUnaryOperator(token))
 			{
-				status = ExpBinOpOrEnd_TokenStatus;
+				status = Token::Status::ExpBinOpOrEnd;
 				break;
 			}
 		}
 
 		// check for and process operator (unary or binary)
 		status = processOperator(token);
-		if (status == Done_TokenStatus)
+		if (status == Token::Status::Done)
 		{
 			if (level == 0)
 			{
@@ -366,7 +366,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 						{
 							delete token;  // delete terminating token
 							token = doneStackPopErrorToken();
-							status = ExpIntConst_TokenStatus;
+							status = Token::Status::ExpIntConst;
 						}
 					}
 					else  // append hidden conversion code
@@ -377,7 +377,7 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 			}
 			break;
 		}
-		else if (status != Good_TokenStatus)
+		else if (status != Token::Status::Good)
 		{
 			break;
 		}
@@ -396,22 +396,22 @@ TokenStatus Translator::getExpression(Token *&token, DataType dataType,
 //   - the data type argument is used for reporting the correct error when
 //     the token is not a valid operand token
 
-TokenStatus Translator::getOperand(Token *&token, DataType dataType,
+Token::Status Translator::getOperand(Token *&token, DataType dataType,
 	Reference reference)
 {
-	TokenStatus status;
+	Token::Status status;
 	bool doneAppend = true;
 
 	// get token if none was passed
 	if (token == NULL
-		&& (status = getToken(token, dataType)) != Good_TokenStatus)
+		&& (status = getToken(token, dataType)) != Token::Status::Good)
 	{
 		if (reference == Reference::None)
 		{
 			// if parser error then caller needs to handle it
 			return status;
 		}
-		if (status == Parser_TokenStatus)
+		if (status == Token::Status::Parser)
 		{
 			token->setLength(1);  // only report error at first char of token
 		}
@@ -428,7 +428,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		if (dataType == DataType::None)
 		{
 			// nothing is acceptable, this is terminating token
-			return Done_TokenStatus;
+			return Token::Status::Done;
 		}
 		return expectedErrStatus(dataType, reference);
 
@@ -500,7 +500,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		{
 			return expectedErrStatus(dataType);
 		}
-		if ((status = processInternalFunction(token)) != Good_TokenStatus)
+		if ((status = processInternalFunction(token)) != Token::Status::Good)
 		{
 			// drop and delete function token since it was not used
 			delete m_holdStack.pop().token;
@@ -522,9 +522,9 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 			// just point to the open parentheses of the token
 			token->addLengthToColumn();
 			token->setLength(1);
-			return ExpEqualOrComma_TokenStatus;
+			return Token::Status::ExpEqualOrComma;
 		}
-		if ((status = processParenToken(token)) != Good_TokenStatus)
+		if ((status = processParenToken(token)) != Token::Status::Good)
 		{
 			// drop and delete define function token since it was not used
 			delete m_holdStack.pop().token;
@@ -542,7 +542,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		{
 			token->setReference();
 		}
-		if ((status = processParenToken(token)) != Good_TokenStatus)
+		if ((status = processParenToken(token)) != Token::Status::Good)
 		{
 			// drop and delete parentheses token since it was not used
 			delete m_holdStack.pop().token;
@@ -552,7 +552,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		break;
 
 	default:
-		return BUG_NotYetImplemented;
+		return Token::Status::BUG_NotYetImplemented;
 	}
 
 	if (doneAppend)
@@ -568,7 +568,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 		token = doneStackPopErrorToken();
 		return expectedErrStatus(dataType, reference);
 	}
-	return Good_TokenStatus;
+	return Token::Status::Good;
 }
 
 
@@ -577,7 +577,7 @@ TokenStatus Translator::getOperand(Token *&token, DataType dataType,
 //   - data type argument determines if token to get is an operand
 //   - returns Parser_TokenStatus if the parser returned an error
 
-TokenStatus Translator::getToken(Token *&token, DataType dataType)
+Token::Status Translator::getToken(Token *&token, DataType dataType)
 {
 	// if data type is not none, then getting an operand token
 	bool operand = dataType != DataType{};
@@ -601,10 +601,10 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 		else
 		{
 			// caller needs to convert this error to the appropriate error
-			return Parser_TokenStatus;
+			return Token::Status::Parser;
 		}
 	}
-	return Good_TokenStatus;
+	return Token::Status::Good;
 }
 
 
@@ -621,7 +621,7 @@ TokenStatus Translator::getToken(Token *&token, DataType dataType)
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the command
 
-TokenStatus Translator::processCommand(Token *&commandToken)
+Token::Status Translator::processCommand(Token *&commandToken)
 {
 	TranslateFunction translate;
 	Token *token;
@@ -640,9 +640,9 @@ TokenStatus Translator::processCommand(Token *&commandToken)
 	}
 	if (translate == NULL)
 	{
-		return BUG_NotYetImplemented;
+		return Token::Status::BUG_NotYetImplemented;
 	}
-	TokenStatus status = (*translate)(*this, commandToken, token);
+	Token::Status status = (*translate)(*this, commandToken, token);
 	commandToken = token;
 	return status;
 }
@@ -653,9 +653,9 @@ TokenStatus Translator::processCommand(Token *&commandToken)
 //   - the token argument contains the internal function token
 //   - the token argument contains the token when an error is detected
 
-TokenStatus Translator::processInternalFunction(Token *&token)
+Token::Status Translator::processInternalFunction(Token *&token)
 {
-	TokenStatus status;
+	Token::Status status;
 	DataType expectedDataType;
 	bool unaryOperator = false;
 
@@ -674,15 +674,15 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 			// sub-string assignment, look for reference operand
 			expectedDataType = DataType::String;
 			status = getOperand(token, expectedDataType, Reference::VarDefFn);
-			if (status == Good_TokenStatus)
+			if (status == Token::Status::Good)
 			{
-				if ((status = getToken(token)) == Good_TokenStatus)
+				if ((status = getToken(token)) == Token::Status::Good)
 				{
-					status = Done_TokenStatus;
+					status = Token::Status::Done;
 				}
 				else
 				{
-					status = ExpComma_TokenStatus;
+					status = Token::Status::ExpComma;
 				}
 			}
 		}
@@ -699,7 +699,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 			status = getExpression(token, expectedDataType);
 		}
 
-		if (status == Done_TokenStatus)
+		if (status == Token::Status::Done)
 		{
 			// check if associated code for function is needed
 			if (expectedDataType == DataType::Number)
@@ -724,7 +724,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 				}
 			}
 		}
-		else if (status == Parser_TokenStatus)
+		else if (status == Token::Status::Parser)
 		{
 			if (token->isDataType(DataType::Double))
 			{
@@ -749,7 +749,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 				if (!m_table.hasFlag(code, Multiple_Flag))
 				{
 					// function doesn't have multiple entries
-					status = ExpOpOrParen_TokenStatus;
+					status = Token::Status::ExpOpOrParen;
 					break;
 				}
 				// move to next code; update code and last operand index
@@ -763,7 +763,7 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 		{
 			if (i < lastOperand)
 			{
-				status = ExpOpOrComma_TokenStatus;
+				status = Token::Status::ExpOpOrComma;
 				break;
 			}
 
@@ -778,30 +778,30 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 
 			m_holdStack.drop();
 			token = topToken;  // return original token
-			return Good_TokenStatus;
+			return Token::Status::Good;
 		}
 		// unexpected token, determine appropriate error
 		else
 		{
 			if (i == 0 && topToken->reference())
 			{
-				status = ExpComma_TokenStatus;
+				status = Token::Status::ExpComma;
 			}
 			else if (i < lastOperand)
 			{
-				status = unaryOperator ? ExpBinOpOrComma_TokenStatus
-					: ExpOpOrComma_TokenStatus;
+				status = unaryOperator ? Token::Status::ExpBinOpOrComma
+					: Token::Status::ExpOpOrComma;
 			}
 			else if (!m_table.hasFlag(code, Multiple_Flag))
 			{
 				// function doesn't have multiple entries
-				status = unaryOperator ? ExpBinOpOrParen_TokenStatus
-					: ExpOpOrParen_TokenStatus;
+				status = unaryOperator ? Token::Status::ExpBinOpOrParen
+					: Token::Status::ExpOpOrParen;
 			}
 			else
 			{
-				status = unaryOperator ? ExpBinOpCommaOrParen_TokenStatus
-					: ExpOpCommaOrParen_TokenStatus;
+				status = unaryOperator ? Token::Status::ExpBinOpCommaOrParen
+					: Token::Status::ExpOpCommaOrParen;
 			}
 			break;
 		}
@@ -815,9 +815,9 @@ TokenStatus Translator::processInternalFunction(Token *&token)
 //   - the token argument contains the token with parentheses
 //   - the token argument contains the token when an error is detected
 
-TokenStatus Translator::processParenToken(Token *&token)
+Token::Status Translator::processParenToken(Token *&token)
 {
-	TokenStatus status;
+	Token::Status status;
 
 	// push parentheses token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each operand
@@ -849,16 +849,16 @@ TokenStatus Translator::processParenToken(Token *&token)
 	for (int count = 1; ; count++)
 	{
 		token = NULL;
-		if ((status = getExpression(token, dataType)) != Done_TokenStatus)
+		if ((status = getExpression(token, dataType)) != Token::Status::Done)
 		{
-			if (status == Parser_TokenStatus
+			if (status == Token::Status::Parser
 				&& token->isDataType(DataType::None))
 			{
-				status = ExpOpCommaOrParen_TokenStatus;
+				status = Token::Status::ExpOpCommaOrParen;
 			}
 			else if (m_table.isUnaryOperator(token))
 			{
-				status = ExpBinOpCommaOrParen_TokenStatus;
+				status = Token::Status::ExpBinOpCommaOrParen;
 			}
 			return status;
 		}
@@ -915,11 +915,11 @@ TokenStatus Translator::processParenToken(Token *&token)
 
 			m_holdStack.drop();
 			token = topToken;  // return original token
-			return Good_TokenStatus;
+			return Token::Status::Good;
 		}
 		else  // unexpected token
 		{
-			return ExpOpCommaOrParen_TokenStatus;
+			return Token::Status::ExpOpCommaOrParen;
 		}
 	}
 }
@@ -940,7 +940,7 @@ TokenStatus Translator::processParenToken(Token *&token)
 //    - otherwise, the first operand of the operator is processed, which also
 //      handles pushing the operator to the hold stack
 
-TokenStatus Translator::processOperator(Token *&token)
+Token::Status Translator::processOperator(Token *&token)
 {
 	// determine precedence of incoming token
 	// (set highest precedence for unary operators,
@@ -957,10 +957,10 @@ TokenStatus Translator::processOperator(Token *&token)
 		checkPendingParen(topToken, true);
 
 		// change token operator code or insert conversion codes as needed
-		TokenStatus status = processFinalOperand(topToken,
+		Token::Status status = processFinalOperand(topToken,
 			m_holdStack.top().first, m_table.isUnaryOperator(topToken) ? 0 : 1);
 
-		if (status != Good_TokenStatus)
+		if (status != Token::Status::Good)
 		{
 			delete token;
 			token = topToken;  // return token with error
@@ -983,7 +983,7 @@ TokenStatus Translator::processOperator(Token *&token)
 		return processFirstOperand(token);
 	}
 
-	return Done_TokenStatus;  // otherwise, end of expression
+	return Token::Status::Done;  // otherwise, end of expression
 }
 
 
@@ -993,7 +993,7 @@ TokenStatus Translator::processOperator(Token *&token)
 //  - attaches first operand token from operand on top of done stack
 //  - no first operand token for unary operators
 
-TokenStatus Translator::processFirstOperand(Token *&token)
+Token::Status Translator::processFirstOperand(Token *&token)
 {
 	Token *first = NULL;		// first operand token
 
@@ -1002,8 +1002,8 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 	{
 		// changed token operator code or insert conversion codes as needed
 		Token *orgToken = token;
-		TokenStatus status = processDoneStackTop(token, 0, &first);
-		if (status != Good_TokenStatus)
+		Token::Status status = processDoneStackTop(token, 0, &first);
+		if (status != Token::Status::Good)
 		{
 			// check if different token has error
 			if (token != orgToken)
@@ -1017,7 +1017,7 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 	// push it onto the holding stack and attach first operand
 	m_holdStack.push(token, first);
 
-	return Good_TokenStatus;
+	return Token::Status::Good;
 }
 
 
@@ -1034,15 +1034,15 @@ TokenStatus Translator::processFirstOperand(Token *&token)
 //   - for operator, token2 is first operand of operator on hold stack
 //   - for internal code, token2 is NULL
 
-TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
+Token::Status Translator::processFinalOperand(Token *&token, Token *token2,
 	int operandIndex)
 {
 	Token *first;			// first operand token
 	Token *last;			// last operand token
 
-	TokenStatus status = processDoneStackTop(token, operandIndex, &first,
+	Token::Status status = processDoneStackTop(token, operandIndex, &first,
 		&last);
-	if (status != Good_TokenStatus)
+	if (status != Token::Status::Good)
 	{
 		return status;
 	}
@@ -1070,7 +1070,7 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 		m_doneStack.push(rpnItem, first, last);
 	}
 
-	return Good_TokenStatus;
+	return Token::Status::Good;
 }
 
 
@@ -1084,13 +1084,13 @@ TokenStatus Translator::processFinalOperand(Token *&token, Token *token2,
 //   - if no match found or conversion not possible, an error is returned
 //   - if conversion possible, a conversion code token is appended to output
 
-TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
+Token::Status Translator::processDoneStackTop(Token *&token, int operandIndex,
 	Token **first, Token **last)
 {
 	if (m_doneStack.isEmpty())
 	{
 		// oops, there should have been operands on done stack
-		return BUG_DoneStackEmptyFindCode;
+		return Token::Status::BUG_DoneStackEmptyFindCode;
 	}
 	Token *topToken = m_doneStack.top().rpnItem->token();
 	// get first and last operands for top token
@@ -1131,14 +1131,14 @@ TokenStatus Translator::processDoneStackTop(Token *&token, int operandIndex,
 			m_output->append(m_table.newToken(cvtCode));
 		}
 
-		return Good_TokenStatus;
+		return Token::Status::Good;
 	}
 
 	// no match found, report error
 	// use main code's expected data type for operand
 	// (if data type is No, then double constant can't be converted to integer)
-	TokenStatus status = topToken->isDataType(DataType{})
-		? ExpIntConst_TokenStatus : expectedErrStatus(topToken->dataType());
+	Token::Status status = topToken->isDataType(DataType{})
+		? Token::Status::ExpIntConst : expectedErrStatus(topToken->dataType());
 
 	// change token to token with invalid data type and return error
 	// report entire expression
@@ -1234,47 +1234,47 @@ Token *Translator::doneStackPopErrorToken(void)
 
 // function to return the token error status for an expected data type
 // and reference type
-TokenStatus Translator::expectedErrStatus(DataType dataType,
+Token::Status Translator::expectedErrStatus(DataType dataType,
 	Reference reference)
 {
 	switch (dataType)
 	{
 	case DataType::Double:
 		return reference == Reference::None
-			? ExpNumExpr_TokenStatus : ExpDblVar_TokenStatus;
+			? Token::Status::ExpNumExpr : Token::Status::ExpDblVar;
 	case DataType::Integer:
 		return reference == Reference::None
-			? ExpNumExpr_TokenStatus : ExpIntVar_TokenStatus;
+			? Token::Status::ExpNumExpr : Token::Status::ExpIntVar;
 	case DataType::String:
 		switch (reference)
 		{
 		case Reference::None:
-			return ExpStrExpr_TokenStatus;
+			return Token::Status::ExpStrExpr;
 		case Reference::Variable:
 		case Reference::VarDefFn:
-			return ExpStrVar_TokenStatus;
+			return Token::Status::ExpStrVar;
 		case Reference::All:
-			return ExpStrItem_TokenStatus;
+			return Token::Status::ExpStrItem;
 		}
 	case DataType::None:
 		return reference == Reference::None
-			? ExpExpr_TokenStatus : ExpAssignItem_TokenStatus;
+			? Token::Status::ExpExpr : Token::Status::ExpAssignItem;
 	case DataType::Number:
 		return reference == Reference::None
-			? ExpNumExpr_TokenStatus : BUG_InvalidDataType;
+			? Token::Status::ExpNumExpr : Token::Status::BUG_InvalidDataType;
 	case DataType::Any:
 		switch (reference)
 		{
 		case Reference::None:
-			return ExpExpr_TokenStatus;
+			return Token::Status::ExpExpr;
 		case Reference::Variable:
-			return ExpVar_TokenStatus;
+			return Token::Status::ExpVar;
 		case Reference::VarDefFn:
 		case Reference::All:
-			return ExpAssignItem_TokenStatus;
+			return Token::Status::ExpAssignItem;
 		}
 	}
-	return BUG_InvalidDataType;  // won't get here
+	return Token::Status::BUG_InvalidDataType;  // won't get here
 }
 
 

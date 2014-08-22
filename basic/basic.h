@@ -28,6 +28,7 @@
 #include <QString>
 
 #include "ibcp.h"
+#include "token.h"
 #include "dictionary.h"
 
 class Translator;
@@ -113,11 +114,11 @@ public:
 
 
 // translate functions
-TokenStatus inputTranslate(Translator &translator, Token *commandToken,
+Token::Status inputTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
-TokenStatus letTranslate(Translator &translator, Token *commandToken,
+Token::Status letTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
-TokenStatus printTranslate(Translator &translator, Token *commandToken,
+Token::Status printTranslate(Translator &translator, Token *commandToken,
 	Token *&token);
 
 

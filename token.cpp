@@ -47,152 +47,6 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 	{Type::Paren, 2}
 };
 
-// token status message array
-//   (TokenStatus enumeration generated from names in comments
-//   on the line before the line with the message string by enums.awk,
-//   extra lines starting with comments are ignored)
-const QString Token::s_messageArray[sizeof_TokenStatus] = {
-	// Null
-	tr("Null_TokenStatus (BUG)"),
-	// Good
-	tr("Good_TokenStatus (BUG)"),
-	// Done
-	tr("Done_TokenStatus (BUG)"),
-	// Parser
-	tr("Parser_TokenStatus (BUG)"),
-	// ExpCmd
-	tr("expected command"),
-	// ExpExpr
-	tr("expected expression"),
-	// ExpExprOrEnd
-	tr("expected expression or end-of-statement"),
-	// ExpOpOrEnd
-	tr("expected operator or end-of-statement"),
-	// ExpBinOpOrEnd
-	tr("expected binary operator or end-of-statement"),
-	// ExpEqualOrComma
-	tr("expected equal or comma for assignment"),
-	// ExpComma
-	tr("expected comma"),
-	// ExpAssignItem
-	tr("expected item for assignment"),
-	// ExpOpOrComma
-	tr("expected operator or comma"),
-	// ExpOpCommaOrParen
-	tr("expected operator, comma or closing parentheses"),
-	// ExpOpOrParen
-	tr("expected operator or closing parentheses"),
-	// ExpBinOpOrComma
-	tr("expected binary operator or comma"),
-	// ExpBinOpCommaOrParen
-	tr("expected binary operator, comma or closing parentheses"),
-	// ExpBinOpOrParen
-	tr("expected binary operator or closing parentheses"),
-	// ExpDouble
-	tr("expected double expression"),
-	// ExpInteger
-	tr("expected integer expression"),
-	// ExpString
-	tr("expected string expression (old)"),
-	// ExpNumExpr
-	tr("expected numeric expression"),
-	// ExpStrExpr
-	tr("expected string expression"),
-	// ExpSemiCommaOrEnd
-	tr("expected semicolon, comma or end-of-statement"),
-	// ExpCommaSemiOrEnd
-	tr("expected comma, semicolon or end-of-statement"),
-	// ExpSemiOrComma
-	tr("expected semicolon or comma"),
-	// ExpOpSemiOrComma
-	tr("expected operator, semicolon or comma"),
-	// ExpBinOpSemiOrComma
-	tr("expected binary operator, semicolon or comma"),
-	// ExpDblVar
-	tr("expected double variable"),
-	// ExpIntVar
-	tr("expected integer variable"),
-	// ExpStrVar
-	tr("expected string variable"),
-	// ExpVar
-	tr("expected variable"),
-	// ExpStrItem
-	tr("expected string item for assignment"),
-	// ExpEndStmt
-	tr("expected end-of-statement"),
-	// ExpExprPfnOrEnd
-	tr("expected expression, print function or end-of-statement"),
-	// ExpExprCommaPfnOrEnd
-	tr("expected expression, comma, print function or end-of-statement"),
-	// ExpOpSemiCommaOrEnd
-	tr("expected operator, semicolon, comma or end-of-statement"),
-	// ExpIntConst
-	tr("expected valid integer constant"),
-	// the following statuses used during development
-	// NotYetImplemented
-	tr("BUG: not yet implemented"),
-	// InvalidMode
-	tr("BUG: invalid mode"),
-	// HoldStackEmpty
-	tr("BUG: hold stack empty"),
-	// HoldStackNotEmpty
-	tr("BUG: hold stack not empty"),
-	// DoneStackNotEmpty
-	tr("BUG: done stack not empty"),
-	// DoneStackEmptyParen
-	tr("BUG: done stack empty - parentheses"),
-	// DoneStackEmptyOperands
-	tr("BUG: done stack empty - operands"),
-	// DoneStackEmptyOperands2
-	tr("BUG: done stack empty - operands 2"),
-	// DoneStackEmptyFindCode
-	tr("BUG: done stack empty - find code"),
-	// UnexpectedCloseParen
-	tr("BUG: unexpected closing parentheses"),
-	// UnexpectedToken
-	tr("BUG: unexpected token on hold stack"),
-	// DoneStackEmpty
-	tr("BUG: expected operand on done stack"),
-	// CmdStackNotEmpty
-	tr("BUG: command stack not empty"),
-	// CmdStackEmpty
-	tr("BUG: command stack empty"),
-	// CmdStackEmptyExpr
-	tr("BUG: command stack empty for command"),
-	// CmdStackEmptyCmd
-	tr("BUG: command stack empty for expression"),
-	// NoAssignListCode
-	tr("BUG: no assign list code found"),
-	// InvalidDataType
-	tr("BUG: invalid data type"),
-	// CountStackEmpty
-	tr("BUG: count stack empty"),
-	// UnexpParenExpr
-	tr("BUG: unexpected parentheses in expression"),
-	// UnexpToken
-	tr("BUG: unexpected token"),
-	// Debug1
-	tr("BUG: debug #1"),
-	// Debug2
-	tr("BUG: debug #2"),
-	// Debug3
-	tr("BUG: debug #3"),
-	// Debug4
-	tr("BUG: debug #4"),
-	// Debug5
-	tr("BUG: debug #5"),
-	// Debug6
-	tr("BUG: debug #6"),
-	// Debug7
-	tr("BUG: debug #7"),
-	// Debug8
-	tr("BUG: debug #8"),
-	// Debug9
-	tr("BUG: debug #9"),
-	// Debug
-	tr("BUG: debug")
-};
-
 Token::FreeStack Token::s_freeStack;	// stack of free tokens
 Token::UsedVector Token::s_used;		// vector of tokens currently in use
 Token::DeletedList Token::s_deleted;	// list of tokens deleted extra times
@@ -492,6 +346,120 @@ QString Token::textOperand(bool withIndex)
 		string = QString(" %1:").arg(m_index + 1);
 	}
 	return string + '|' + m_string + '|';
+}
+
+
+// function to convert token status enumerator to translated string
+const QString Token::message(Status status)
+{
+	switch (status)
+	{
+	case Status::Good:
+		return tr("Good_TokenStatus (BUG)");
+	case Status::Done:
+		return tr("Done_TokenStatus (BUG)");
+	case Status::Parser:
+		return tr("Parser_TokenStatus (BUG)");
+	case Status::ExpCmd:
+		return tr("expected command");
+	case Status::ExpExpr:
+		return tr("expected expression");
+	case Status::ExpExprOrEnd:
+		return tr("expected expression or end-of-statement");
+	case Status::ExpOpOrEnd:
+		return tr("expected operator or end-of-statement");
+	case Status::ExpBinOpOrEnd:
+		return tr("expected binary operator or end-of-statement");
+	case Status::ExpEqualOrComma:
+		return tr("expected equal or comma for assignment");
+	case Status::ExpComma:
+		return tr("expected comma");
+	case Status::ExpAssignItem:
+		return tr("expected item for assignment");
+	case Status::ExpOpOrComma:
+		return tr("expected operator or comma");
+	case Status::ExpOpCommaOrParen:
+		return tr("expected operator, comma or closing parentheses");
+	case Status::ExpOpOrParen:
+		return tr("expected operator or closing parentheses");
+	case Status::ExpBinOpOrComma:
+		return tr("expected binary operator or comma");
+	case Status::ExpBinOpCommaOrParen:
+		return tr("expected binary operator, comma or closing parentheses");
+	case Status::ExpBinOpOrParen:
+		return tr("expected binary operator or closing parentheses");
+	case Status::ExpNumExpr:
+		return tr("expected numeric expression");
+	case Status::ExpStrExpr:
+		return tr("expected string expression");
+	case Status::ExpSemiCommaOrEnd:
+		return tr("expected semicolon, comma or end-of-statement");
+	case Status::ExpCommaSemiOrEnd:
+		return tr("expected comma, semicolon or end-of-statement");
+	case Status::ExpSemiOrComma:
+		return tr("expected semicolon or comma");
+	case Status::ExpOpSemiOrComma:
+		return tr("expected operator, semicolon or comma");
+	case Status::ExpDblVar:
+		return tr("expected double variable");
+	case Status::ExpIntVar:
+		return tr("expected integer variable");
+	case Status::ExpStrVar:
+		return tr("expected string variable");
+	case Status::ExpVar:
+		return tr("expected variable");
+	case Status::ExpStrItem:
+		return tr("expected string item for assignment");
+	case Status::ExpEndStmt:
+		return tr("expected end-of-statement");
+	case Status::ExpExprPfnOrEnd:
+		return tr("expected expression, print function or end-of-statement");
+	case Status::ExpExprCommaPfnOrEnd:
+		return tr("expected expression, comma, print function or "
+			"end-of-statement");
+	case Status::ExpOpSemiCommaOrEnd:
+		return tr("expected operator, semicolon, comma or end-of-statement");
+	case Status::ExpIntConst:
+		return tr("expected valid integer constant");
+	// the following statuses used during development
+	case Status::BUG_NotYetImplemented:
+		return tr("BUG: not yet implemented");
+	case Status::BUG_HoldStackNotEmpty:
+		return tr("BUG: hold stack not empty");
+	case Status::BUG_DoneStackNotEmpty:
+		return tr("BUG: done stack not empty");
+	case Status::BUG_DoneStackEmptyFindCode:
+		return tr("BUG: done stack empty - find code");
+	case Status::BUG_UnexpectedCloseParen:
+		return tr("BUG: unexpected closing parentheses");
+	case Status::BUG_DoneStackEmpty:
+		return tr("BUG: expected operand on done stack");
+	case Status::BUG_InvalidDataType:
+		return tr("BUG: invalid data type");
+	case Status::BUG_UnexpToken:
+		return tr("BUG: unexpected token");
+	case Status::BUG_Debug1:
+		return tr("BUG: debug #1");
+	case Status::BUG_Debug2:
+		return tr("BUG: debug #2");
+	case Status::BUG_Debug3:
+		return tr("BUG: debug #3");
+	case Status::BUG_Debug4:
+		return tr("BUG: debug #4");
+	case Status::BUG_Debug5:
+		return tr("BUG: debug #5");
+	case Status::BUG_Debug6:
+		return tr("BUG: debug #6");
+	case Status::BUG_Debug7:
+		return tr("BUG: debug #7");
+	case Status::BUG_Debug8:
+		return tr("BUG: debug #8");
+	case Status::BUG_Debug9:
+		return tr("BUG: debug #9");
+	case Status::BUG_Debug:
+		return tr("BUG: debug");
+	}
+	return "";
 }
 
 

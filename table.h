@@ -75,7 +75,7 @@ class ProgramModel;
 class Recreator;
 class RpnItem;
 
-typedef TokenStatus (*TranslateFunction)(Translator &translator,
+typedef Token::Status (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
 typedef quint16 (*EncodeFunction)(ProgramModel *programUnit, Token *token);
 typedef const QString (*OperandTextFunction)(const ProgramModel *programUnit,

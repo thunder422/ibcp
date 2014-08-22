@@ -58,20 +58,21 @@ public:
 	RpnList *translate(const QString &input, TestMode testMode = TestMode::No);
 
 	// Get Functions
-	TokenStatus getCommands(Token *&token);
-	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
-	TokenStatus getOperand(Token *&token, DataType dataType,
+	Token::Status getCommands(Token *&token);
+	Token::Status getExpression(Token *&token, DataType dataType,
+		int level = 0);
+	Token::Status getOperand(Token *&token, DataType dataType,
 		Reference reference = Reference::None);
-	TokenStatus getToken(Token *&token, DataType dataType = DataType{});
+	Token::Status getToken(Token *&token, DataType dataType = DataType{});
 
 	// Public Processing Functions
-	TokenStatus processFinalOperand(Token *&token, Token *token2 = NULL,
+	Token::Status processFinalOperand(Token *&token, Token *token2 = NULL,
 		int operandIndex = 0);
-	TokenStatus processDoneStackTop(Token *&token, int operandIndex = 0,
+	Token::Status processDoneStackTop(Token *&token, int operandIndex = 0,
 		Token **first = NULL, Token **last = NULL);
 
 	// Public Support Functions
-	static TokenStatus expectedErrStatus(DataType dataType,
+	static Token::Status expectedErrStatus(DataType dataType,
 		Reference reference = Reference::None);
 
 	// Table Access Function
@@ -120,18 +121,18 @@ public:
 
 private:
 	// Private Processing Functions
-	TokenStatus processCommand(Token *&commandToken);
-	TokenStatus processInternalFunction(Token *&token);
-	TokenStatus processParenToken(Token *&token);
-	TokenStatus processOperator(Token *&token);
-	TokenStatus processFirstOperand(Token *&token);
+	Token::Status processCommand(Token *&commandToken);
+	Token::Status processInternalFunction(Token *&token);
+	Token::Status processParenToken(Token *&token);
+	Token::Status processOperator(Token *&token);
+	Token::Status processFirstOperand(Token *&token);
 
 	// Private Support Functions
 	void checkPendingParen(Token *token, bool popped);
 	void cleanUp(void);		// only called when error occurs
 
 	// Output List Function
-	TokenStatus outputAssignCodes(Token *&token);
+	Token::Status outputAssignCodes(Token *&token);
 
 	struct HoldItem
 	{
