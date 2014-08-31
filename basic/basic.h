@@ -25,6 +25,7 @@
 #ifndef BASIC_H
 #define BASIC_H
 
+#include <QSharedPointer>
 #include <QString>
 
 #include "ibcp.h"
@@ -36,6 +37,7 @@ class Token;
 class ProgramModel;
 class Recreator;
 class RpnItem;
+using RpnItemPtr = QSharedPointer<RpnItem>;
 
 
 // constant definitions
@@ -155,30 +157,30 @@ void varStrRemove(ProgramModel *programUnit, quint16 operand);
 
 
 // recreate functions
-void operandRecreate(Recreator &recreator, RpnItem *rpnItem);
-void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
-void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
-void parenRecreate(Recreator &recreator, RpnItem *rpnItem);
-void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void arrayRecreate(Recreator &recreator, RpnItem *rpnItem);
-void functionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void blankRecreate(Recreator &recreator, RpnItem *rpnItem);
-void remRecreate(Recreator &recreator, RpnItem *rpnItem);
-void constStrRecreate(Recreator &recreator, RpnItem *rpnItem);
+void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void assignRecreate(Recreator &recreator, RpnItem *rpnItem);
-void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem);
+void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void printItemRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printCommaRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printRecreate(Recreator &recreator, RpnItem *rpnItem);
+void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem);
-void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem);
-void inputRecreate(Recreator &recreator, RpnItem *rpnItem);
+void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
 
 #endif // BASIC_H

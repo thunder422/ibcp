@@ -770,8 +770,9 @@ Token::Status Translator::processInternalFunction(Token *&token)
 			m_doneStack.drop();  // remove from done stack (remove paren tokens)
 
 			// add token to output list if not sub-string assignment
-			RpnItem *rpnItem = topToken->reference()
-				? new RpnItem(topToken) : m_output->append(topToken);
+			RpnItemPtr rpnItem = topToken->reference()
+				? RpnItemPtr(new RpnItem(topToken))
+				: m_output->append(topToken);
 
 			// push internal function to done stack
 			m_doneStack.push(rpnItem, NULL, token);
@@ -890,28 +891,21 @@ Token::Status Translator::processParenToken(Token *&token)
 		}
 		else if (token->isCode(CloseParen_Code))
 		{
-			RpnItem **attached;
-			if (dataType == DataType::Integer)  // array subscript?
+			QList<RpnItemPtr> attached;
+			// save operands for storage in output list
+			while (--count >= 0)
 			{
-				// don't save operands on array references
-				attached = NULL;
-			}
-			else  // pop and save operands
-			{
-				attached = new RpnItem *[count];
-				// save operands for storage in output list
-				for (int i = count; --i >= 0;)
-				{
+				// if array subscript then apppend empty pointer
+				// else pop and append operands
+				attached.append(dataType == DataType::Integer
+					? RpnItemPtr{} : m_doneStack.pop());
 					// TODO will need to keep first/last operands for each
 					// TODO (in case expression needs to be reported as error)
 					// TODO (RpnItem should have DoneItem operands, not RpnItem)
-					attached[i] = m_doneStack.pop();
-				}
 			}
 
 			// add token to output list and push element pointer on done stack
-			m_doneStack.push(m_output->append(topToken, count, attached), NULL,
-				token);
+			m_doneStack.push(m_output->append(topToken, attached), NULL, token);
 
 			m_holdStack.drop();
 			token = topToken;  // return original token
@@ -1062,7 +1056,7 @@ Token::Status Translator::processFinalOperand(Token *&token, Token *token2,
 	}
 
 	// add token to output list
-	RpnItem *rpnItem = m_output->append(token);
+	RpnItemPtr rpnItem = m_output->append(token);
 
 	// push operator token to the done stack
 	if (token->isType(Token::Type::Operator))

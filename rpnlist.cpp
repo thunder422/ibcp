@@ -36,29 +36,24 @@ RpnList::~RpnList(void)
 QString RpnItem::text(bool withIndexes)
 {
 	QString string = m_token->text(withIndexes);
-	if (m_attached != NULL)
+	if (m_attached.count() > 0)
 	{
 		QChar separator('[');
-		for (int i = 0; i < m_attachedCount; i++)
+		foreach (RpnItemPtr rpnItem, m_attached)
 		{
-			string += separator + QString("%1:%2").arg(m_attached[i]->m_index)
-				.arg(m_attached[i]->m_token->text());
-			separator = ',';
+			if (rpnItem)
+			{
+				string += separator + QString("%1:%2").arg(rpnItem->m_index)
+					.arg(rpnItem->m_token->text());
+				separator = ',';
+			}
 		}
-		string += ']';
+		if (separator != '[')
+		{
+			string += ']';
+		}
 	}
 	return string;
-}
-
-
-// function to clear all of the RPN items from the list
-void RpnList::clear(void)
-{
-	while (!isEmpty())
-	{
-		// delete to free the RPN item that was in the list
-		delete takeLast();
-	}
 }
 
 
@@ -102,12 +97,12 @@ bool RpnList::operator==(const RpnList &other) const
 
 // function to create an rpn item for a token and append it to the list
 
-RpnItem *RpnList::append(Token *token, int attachedCount, RpnItem **attached)
+RpnItemPtr RpnList::append(Token *token, QList<RpnItemPtr> attached)
 {
 	token->removeSubCode(UnUsed_SubCode);  // mark as used
-	RpnItem *rpnItem = new RpnItem(token, attachedCount, attached);
+	RpnItemPtr rpnItem = RpnItemPtr{new RpnItem(token, attached)};
 	rpnItem->setIndex(count());
-	QList<RpnItem *>::append(rpnItem);
+	QList<RpnItemPtr>::append(rpnItem);
 	return rpnItem;
 }
 
@@ -117,7 +112,7 @@ RpnItem *RpnList::append(Token *token, int attachedCount, RpnItem **attached)
 
 void RpnList::insert(int index, Token *token)
 {
-	QList<RpnItem *>::insert(index, new RpnItem(token));
+	QList<RpnItemPtr>::insert(index, RpnItemPtr(new RpnItem(token)));
 	// update indexes of all list items after insert point
 	while (++index < count())
 	{

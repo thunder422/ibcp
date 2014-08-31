@@ -82,7 +82,7 @@ public:
 	}
 
 	// Done Stack Access Functions
-	RpnItem *doneStackPop(void)
+	RpnItemPtr doneStackPop(void)
 	{
 		return m_doneStack.pop();
 	}
@@ -109,10 +109,9 @@ public:
 	{
 		return m_output->last()->token();
 	}
-	RpnItem *outputAppend(Token *token, int attachedCount = 0,
-		RpnItem **attached = NULL)
+	RpnItemPtr outputAppend(Token *token)
 	{
-		return m_output->append(token, attachedCount, attached);
+		return m_output->append(token);
 	}
 	void outputInsert(int index, Token *token)
 	{

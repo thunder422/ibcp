@@ -128,7 +128,7 @@ void constStrRemove(ProgramModel *programUnit, quint16 operand)
 	programUnit->constStrDictionary()->remove(operand, Qt::CaseSensitive);
 }
 
-void constStrRecreate(Recreator &recreator, RpnItem *rpnItem)
+void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// change all double quote to two double qoutes and surround with quotes
 	QString string = rpnItem->token()->string();

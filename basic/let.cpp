@@ -95,7 +95,7 @@ Token::Status letTranslate(Translator &translator, Token *commandToken,
 			if (translator.table().hasFlag(translator.doneStackTopToken(),
 				SubStr_Flag))
 			{
-				delete translator.doneStackPop();
+				translator.doneStackPop();
 			}
 			return Token::Status::ExpEqualOrComma;
 		}
@@ -109,10 +109,9 @@ Token::Status letTranslate(Translator &translator, Token *commandToken,
 
 			// get sub-string function token from rpn item on top of stack
 			// (delete rpn item since it was not appended to output)
-			RpnItem *rpnItem = translator.doneStackPop();
+			RpnItemPtr rpnItem = translator.doneStackPop();
 			token = rpnItem->token();
 			rpnItem->setToken(NULL);  // prevent delete of token
-			delete rpnItem;
 
 			// change to assign sub-string code (first associated code)
 			translator.table().setToken(token,
@@ -210,7 +209,7 @@ void letRecreate(Recreator &recreator, Token *token)
 
 
 // function to recreate assignment and list assignment statements
-void assignRecreate(Recreator &recreator, RpnItem *rpnItem)
+void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QStack<QString> stack;
 
@@ -230,7 +229,7 @@ void assignRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate string and sub-string assignment statements
-void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem)
+void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString string;
 

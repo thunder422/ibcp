@@ -138,8 +138,10 @@ Token::Status printTranslate(Translator &translator, Token *commandToken,
 
 
 // function to recreate the print item code
-void printItemRecreate(Recreator &recreator, RpnItem *)
+void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
+	Q_UNUSED(rpnItem)
+
 	QString string;
 
 	if (recreator.separatorIsSet())
@@ -173,8 +175,10 @@ void printItemRecreate(Recreator &recreator, RpnItem *)
 
 
 // function to recreate the print comma code
-void printCommaRecreate(Recreator &recreator, RpnItem *)
+void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
+	Q_UNUSED(rpnItem)
+
 	QString string;
 
 	// get string on top of the stack if there is one
@@ -194,7 +198,7 @@ void printCommaRecreate(Recreator &recreator, RpnItem *)
 
 
 // function to recreate a print function code
-void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// process as internal function first then as an item
 	internalFunctionRecreate(recreator, rpnItem);
@@ -203,7 +207,7 @@ void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate the print semicolon code
-void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem)
+void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// push string on top of stack with final semicolon then recreate command
 	recreator.push(recreator.pop() + ';');
@@ -212,7 +216,7 @@ void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate the print code
-void printRecreate(Recreator &recreator, RpnItem *rpnItem)
+void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 

@@ -26,30 +26,26 @@
 #define RPNLIST_H
 
 #include <QList>
+#include <QSharedPointer>
 
 #include "token.h"
 
 class Table;
+class RpnItem;
+using RpnItemPtr = QSharedPointer<RpnItem>;
 
 
 // class for holding an item in the RPN output list
 class RpnItem
 {
 public:
-	RpnItem(Token *token, int attachedCount = 0, RpnItem **attached = NULL)
+	RpnItem(Token *token, QList<RpnItemPtr> attached = QList<RpnItemPtr>()) :
+		m_token{token}, m_index{-1}, m_attached{attached}
 	{
-		m_token = token;
-		m_index = -1;
-		m_attachedCount = attachedCount;
-		m_attached = attached;
 	}
 	~RpnItem()
 	{
 		delete m_token;
-		if (m_attachedCount > 0)
-		{
-			delete[] m_attached;
-		}
 	}
 
 	// access functions
@@ -77,18 +73,18 @@ public:
 
 	int attachedCount(void)
 	{
-		return m_attachedCount;
+		return m_attached.count();
 	}
-	RpnItem *attached(int index)
+	RpnItemPtr attached(int index)
 	{
-		return m_attached[index];
+		return m_attached.at(index);
 	}
 
 	QString text(bool withIndexes = false);
 	bool operator==(const RpnItem &other) const
 	{
 		return *m_token == *other.m_token
-			&& m_attachedCount == other.m_attachedCount;
+			&& m_attached.count() == other.m_attached.count();
 	}
 	bool operator!=(const RpnItem &other) const
 	{
@@ -96,20 +92,18 @@ public:
 	}
 
 private:
-	Token *m_token;				// pointer to token
-	int m_index;				// index within RPN list
-	int m_attachedCount;		// number of operands
-	RpnItem **m_attached;		// array of attached item pointers
+	Token *m_token;					// pointer to token
+	int m_index;					// index within RPN list
+	QList<RpnItemPtr> m_attached;	// array of attached item pointers
 };
 
 
 // class for holding a list of RPN items
-class RpnList : public QList<RpnItem *>
+class RpnList : public QList<RpnItemPtr>
 {
 public:
 	RpnList(void) : m_errorColumn(-1), m_errorLength(-1) {}
 	~RpnList(void);
-	void clear(void);
 	QString text(bool withIndexes = false);
 	bool operator==(const RpnList &other) const;
 	bool operator!=(const RpnList &other) const
@@ -117,8 +111,8 @@ public:
 		return !(*this == other);
 	}
 
-	RpnItem *append(Token *token, int attachedCount = 0,
-		RpnItem **attached = NULL);
+	RpnItemPtr append(Token *token,
+		QList<RpnItemPtr> attached = QList<RpnItemPtr>());
 	void insert(int index, Token *token);
 	int codeSize(void)
 	{

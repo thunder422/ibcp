@@ -25,16 +25,18 @@
 #ifndef DONESTACK_H
 #define DONESTACK_H
 
+#include <QSharedPointer>
 #include <QStack>
 
 class RpnItem;
+using RpnItemPtr = QSharedPointer<RpnItem>;
 class Token;
 
 
 class DoneItem
 {
 public:
-	RpnItem *rpnItem;			// pointer to RPN item
+	RpnItemPtr rpnItem;			// pointer to RPN item
 	Token *first;				// operator token's first operand pointer
 	Token *last;				// operator token's last operand pointer
 
@@ -72,7 +74,7 @@ class DoneStack : public QStack<DoneItem>
 {
 public:
 	// push new item with rpn item, first and last tokens
-	void push(RpnItem *rpnItem, Token *first = NULL, Token *last = NULL)
+	void push(RpnItemPtr rpnItem, Token *first = NULL, Token *last = NULL)
 	{
 		resize(size() + 1);
 		top().rpnItem = rpnItem;
@@ -82,7 +84,7 @@ public:
 
 	// pop the top item on stack (return its rpn item)
 	// (delete any parentheses that are present in the first/last tokens)
-	RpnItem *pop(void)
+	RpnItemPtr pop(void)
 	{
 		top().deleteOpenParen();
 		top().deleteCloseParen();

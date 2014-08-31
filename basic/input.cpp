@@ -147,7 +147,7 @@ Token::Status inputTranslate(Translator &translator, Token *commandToken,
 
 
 // function to recreate the input begin string code (for INPUT PROMPT)
-void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem)
+void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	recreator.setSeparator(rpnItem->token()->hasSubCode(Option_SubCode)
 		? ',' : ';');
@@ -155,7 +155,7 @@ void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate an input assign type code
-void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem)
+void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 
@@ -174,7 +174,7 @@ void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate the input command code
-void inputRecreate(Recreator &recreator, RpnItem *rpnItem)
+void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	recreator.append(recreator.table().name(rpnItem->token()));
 	// FLAG option: all spaces after commands (default=yes)
