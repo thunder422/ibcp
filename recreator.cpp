@@ -41,7 +41,7 @@ QString Recreator::recreate(RpnList *rpnList, bool exprMode)
 	m_output = "";
 	for (int i = 0; i < rpnList->count(); i++)
 	{
-		RpnItem *rpnItem = rpnList->at(i);
+		RpnItemPtr rpnItem = rpnList->at(i);
 		RecreateFunction recreate;
 		if (!rpnItem->token()->hasValidCode()
 			|| (recreate = m_table.recreateFunction(rpnItem->token()->code()))
@@ -152,14 +152,14 @@ void Recreator::pushWithOperands(QString &name, int count)
 
 
 // function to recreate an operand
-void operandRecreate(Recreator &recreator, RpnItem *rpnItem)
+void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// just push the string of the token
 	recreator.push(rpnItem->token()->string());
 }
 
 // function to recreate a unary operator
-void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
+void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	int precedence = recreator.table().precedence(rpnItem->token()->code());
 
@@ -187,7 +187,7 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate a binary operator
-void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
+void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString string;
 	int precedence = recreator.table().precedence(rpnItem->token()->code());
@@ -209,7 +209,7 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to surround item on top of the holding stack with parentheses
-void parenRecreate(Recreator &recreator, RpnItem *rpnItem)
+void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 
@@ -222,7 +222,7 @@ void parenRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate an internal function
-void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString name = recreator.table().name(rpnItem->token());
 	int count = recreator.table().operandCount(rpnItem->token());
@@ -231,7 +231,7 @@ void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate an array
-void arrayRecreate(Recreator &recreator, RpnItem *rpnItem)
+void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString name = rpnItem->token()->string();
 	name.append('(');  // add close paren since it is not stored with name
@@ -240,7 +240,7 @@ void arrayRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate an array
-void functionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString name = rpnItem->token()->string();
 	name.append('(');  // add close paren since it is not stored with name
@@ -249,7 +249,7 @@ void functionRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate an array
-void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString name = rpnItem->token()->string();
 	int count = rpnItem->attachedCount();
@@ -262,7 +262,7 @@ void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to do nothing (for hidden codes)
-void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
+void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(recreator)
 	Q_UNUSED(rpnItem)
@@ -270,7 +270,7 @@ void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to do nothing (for hidden codes)
-void remRecreate(Recreator &recreator, RpnItem *rpnItem)
+void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString string = recreator.table().name(rpnItem->token());
 	QString remark = rpnItem->token()->string();

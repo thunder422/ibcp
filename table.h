@@ -25,6 +25,8 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include <memory>
+
 #include <QStringList>
 
 #include "ibcp.h"
@@ -74,6 +76,7 @@ class Translator;
 class ProgramModel;
 class Recreator;
 class RpnItem;
+using RpnItemPtr = std::shared_ptr<RpnItem>;
 
 typedef Token::Status (*TranslateFunction)(Translator &translator,
 	Token *commandToken, Token *&token);
@@ -81,7 +84,7 @@ typedef quint16 (*EncodeFunction)(ProgramModel *programUnit, Token *token);
 typedef const QString (*OperandTextFunction)(const ProgramModel *programUnit,
 	quint16 operand);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
-typedef void (*RecreateFunction)(Recreator &recreator, RpnItem *rpnItem);
+typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 
 class Table
