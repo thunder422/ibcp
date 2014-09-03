@@ -22,6 +22,9 @@
 //
 //	2013-03-30	initial version
 
+#include <sstream>
+#include <unordered_map>
+
 #include "rpnlist.h"
 #include "table.h"
 
@@ -32,45 +35,41 @@ RpnList::~RpnList(void)
 }
 
 
-// function to recreate text (abbreviated contents) of item
-QString RpnItem::text(bool withIndexes)
+// function to recreate text (abbreviated contents) of list
+QString RpnList::text()
 {
-	QString string = m_token->text(withIndexes);
-	if (m_attached.size() > 0)
-	{
-		QChar separator('[');
-		foreach (RpnItemPtr rpnItem, m_attached)
-		{
-			if (rpnItem)
-			{
-				string += separator + QString("%1:%2").arg(rpnItem->m_index)
-					.arg(rpnItem->m_token->text());
-				separator = ',';
-			}
-		}
-		if (separator != '[')
-		{
-			string += ']';
-		}
-	}
-	return string;
-}
-
-
-// function to recreate text (abbreviated contents) of item
-QString RpnList::text(bool withIndexes)
-{
-	QString string;
+	std::stringstream ss;
+	std::unordered_map<RpnItemPtr, int> itemIndex;
+	int index {};
 
 	for (int i = 0; i < count(); i++)
 	{
 		if (i > 0)
 		{
-			string += ' ';
+			ss << ' ';
 		}
-		string += at(i)->text(withIndexes);
+		RpnItemPtr rpnItem = at(i);
+		itemIndex[rpnItem] = index++;
+		ss << rpnItem->token()->text().toStdString();
+		if (rpnItem->attachedCount() > 0)
+		{
+			char separator {'['};
+			for (auto item : rpnItem->attached())
+			{
+				if (item)
+				{
+					ss << separator << itemIndex[item] << ':'
+						<< item->token()->text().toStdString();
+					separator = ',';
+				}
+			}
+			if (separator != '[')
+			{
+				ss << ']';
+			}
+		}
 	}
-	return string;
+	return QString::fromStdString(ss.str());
 }
 
 // function to overload the comparison operator
@@ -101,7 +100,6 @@ RpnItemPtr RpnList::append(Token *token, RpnItemPtrVector attached)
 {
 	token->removeSubCode(UnUsed_SubCode);  // mark as used
 	RpnItemPtr rpnItem = RpnItemPtr{new RpnItem(token, attached)};
-	rpnItem->setIndex(count());
 	QList<RpnItemPtr>::append(rpnItem);
 	return rpnItem;
 }
@@ -113,11 +111,6 @@ RpnItemPtr RpnList::append(Token *token, RpnItemPtrVector attached)
 void RpnList::insert(int index, Token *token)
 {
 	QList<RpnItemPtr>::insert(index, RpnItemPtr(new RpnItem(token)));
-	// update indexes of all list items after insert point
-	while (++index < count())
-	{
-		at(index)->incrementIndex();
-	}
 }
 
 

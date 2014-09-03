@@ -43,7 +43,7 @@ class RpnItem
 {
 public:
 	RpnItem(Token *token, RpnItemPtrVector attached = RpnItemPtrVector{}) :
-		m_token{token}, m_index{-1}, m_attached{attached}
+		m_token{token}, m_attached{attached}
 	{
 	}
 	~RpnItem()
@@ -61,29 +61,15 @@ public:
 		m_token = token;
 	}
 
-	int index(void) const
-	{
-		return m_index;
-	}
-	void setIndex(int index)
-	{
-		m_index = index;
-	}
-	void incrementIndex(int increment = 1)
-	{
-		m_index += increment;
-	}
-
-	int attachedCount(void)
+	int attachedCount(void) const
 	{
 		return m_attached.size();
 	}
-	RpnItemPtr attached(int index)
+	const RpnItemPtrVector attached() const
 	{
-		return m_attached.at(index);
+		return m_attached;
 	}
 
-	QString text(bool withIndexes = false);
 	bool operator==(const RpnItem &other) const
 	{
 		return *m_token == *other.m_token
@@ -96,7 +82,6 @@ public:
 
 private:
 	Token *m_token;					// pointer to token
-	int m_index;					// index within RPN list
 	RpnItemPtrVector m_attached;	// array of attached item pointers
 };
 
@@ -107,7 +92,7 @@ class RpnList : public QList<RpnItemPtr>
 public:
 	RpnList(void) : m_errorColumn(-1), m_errorLength(-1) {}
 	~RpnList(void);
-	QString text(bool withIndexes = false);
+	QString text();
 	bool operator==(const RpnList &other) const;
 	bool operator!=(const RpnList &other) const
 	{
