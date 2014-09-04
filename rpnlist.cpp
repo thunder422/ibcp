@@ -50,7 +50,7 @@ QString RpnList::text()
 		}
 		RpnItemPtr rpnItem = at(i);
 		itemIndex[rpnItem] = index++;
-		ss << rpnItem->token()->text().toStdString();
+		ss << rpnItem->token()->text();
 		if (rpnItem->attachedCount() > 0)
 		{
 			char separator {'['};
@@ -59,7 +59,7 @@ QString RpnList::text()
 				if (item)
 				{
 					ss << separator << itemIndex[item] << ':'
-						<< item->token()->text().toStdString();
+						<< item->token()->text();
 					separator = ',';
 				}
 			}

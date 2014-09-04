@@ -25,6 +25,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <string>
 #include <unordered_map>
 
 #include <QCoreApplication>
@@ -327,7 +328,7 @@ public:
 	Code convertCode(DataType toDataType) const;
 
 	// recreate text for token
-	QString text(bool withIndex = false);
+	std::string text();
 
 	// static member functions
 	static const QString message(Status status);
@@ -338,8 +339,6 @@ public:
 	}
 
 private:
-	QString textOperand(bool withIndex);
-
 	// static members
 	static std::unordered_map<Type, bool, EnumClassHash> s_hasParen;
 	static std::unordered_map<Type, int, EnumClassHash> s_precendence;

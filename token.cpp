@@ -22,6 +22,8 @@
 //
 //	2012-11-03	initial version (parts removed from ibcp.cpp)
 
+#include <sstream>
+
 #include "ibcp.h"
 #include "token.h"
 #include "table.h"
@@ -95,7 +97,7 @@ void Token::UsedVector::reportErrors(void)
 				qCritical("Token Leaks:");
 				first = true;
 			}
-			qCritical("  %d: %s", i, qPrintable(s_used[i]->text()));
+			qCritical("  %d: %s", i, s_used[i]->text().c_str());
 			::operator delete(s_used[i]);
 			s_used[i] = NULL;
 		}
@@ -193,112 +195,88 @@ Code Token::convertCode(DataType toDataType) const
 
 
 // function to recreate text (abbreviated contents) of token
-QString Token::text(bool withIndex)
+std::string Token::text()
 {
 	Table &table = Table::instance();
-	QString string;
-	QString second;
+	std::stringstream ss;
+	bool second {};
 
-	if (withIndex)
-	{
-		string = QString("%1:").arg(m_index);
-	}
 	switch (m_type)
 	{
 	case Type::DefFuncN:
-		string += m_string;
+		ss << m_string.toStdString();
 		break;
 
 	case Type::NoParen:
-		if (withIndex)
+		if (m_code == Invalid_Code)
 		{
-			string += table.debugName(m_code);
-			second = textOperand(withIndex);
+			ss << '?';
 		}
-		else
+		ss << m_string.toStdString();
+		if (table.hasFlag(this, Reference_Flag))
 		{
-			if (m_code == Invalid_Code)
-			{
-				string += '?';
-			}
-			string += m_string;
-			if (table.hasFlag(this, Reference_Flag))
-			{
-				string += "<ref>";
-			}
+			ss << "<ref>";
 		}
 		break;
 
 	case Type::DefFuncP:
 	case Type::Paren:
-		string += m_string + '(';
+		ss << m_string.toStdString() << '(';
 		break;
 
 	case Type::Constant:
-		if (withIndex)
+		if (m_code == Invalid_Code)
 		{
-			string += table.debugName(m_code);
-			second = textOperand(withIndex);
+			ss << '?';
 		}
-		else
+		switch (m_dataType)
 		{
-			if (m_code == Invalid_Code)
+		case DataType::Integer:
+		case DataType::Double:
+			ss << m_string.toStdString();
+			if (m_dataType == DataType::Integer)
 			{
-				string += '?';
+				ss << "%";
 			}
-			switch (m_dataType)
-			{
-			case DataType::Integer:
-			case DataType::Double:
-				string += m_string;
-				if (m_dataType == DataType::Integer)
-				{
-					string += "%";
-				}
-				break;
+			break;
 
-			case DataType::String:
-				string += '"' + m_string + '"';
-				break;
-            default:
-                break;
-			}
+		case DataType::String:
+			ss << '"' << m_string.toStdString() << '"';
+			break;
+		default:
+			break;
 		}
 		break;
 
 	case Type::Operator:
 		if (isCode(RemOp_Code))
 		{
-			string += table.name(m_code);
-			second = textOperand(withIndex);
+			ss << table.name(m_code).toStdString();
+			second = true;
 		}
 		else
 		{
-			string += table.debugName(m_code);
+			ss << table.debugName(m_code).toStdString();
 		}
 		break;
 
 	case Type::IntFuncN:
 	case Type::IntFuncP:
-		string += table.debugName(m_code);
-		if (withIndex && table.hasOperand(m_code))
-		{
-			second += textOperand(withIndex);
-		}
+		ss << table.debugName(m_code).toStdString();
 		break;
 
 	case Type::Command:
 		if (isCode(Rem_Code))
 		{
-			string += table.name(m_code);
-			second = textOperand(withIndex);
+			ss << table.name(m_code).toStdString();
+			second = true;
 		}
 		else
 		{
-			string += table.name(m_code);
+			ss << table.name(m_code).toStdString();
 			if (table.name2(m_code) != NULL)
 			{
-				string += '-' + table.name2(m_code);
+				ss << '-' << table.name2(m_code).toStdString();
 			}
 		}
 		break;
@@ -309,43 +287,42 @@ QString Token::text(bool withIndex)
 	}
 	if (m_reference)
 	{
-		string += "<ref>";
+		ss << "<ref>";
 	}
 	if (hasSubCode(~(Used_SubCode | UnUsed_SubCode)))
 	{
-		string += '\'';
+		ss << '\'';
 		if (hasSubCode(Paren_SubCode))
 		{
-			string += ')';
+			ss << ')';
 		}
 		if (hasSubCode(Option_SubCode))
 		{
-			QString option = table.optionName(m_code);
-			string += option.isEmpty() ? "BUG" : option;
+			std::string option = table.optionName(m_code).toStdString();
+			if (option.empty())
+			{
+				ss << "BUG";
+			}
+			else
+			{
+				ss << option;
+			}
 		}
 		if (hasSubCode(Colon_SubCode))
 		{
-			string += ":";
+			ss << ':';
 		}
 		if (hasSubCode(Double_SubCode))
 		{
-			string += "Double";
+			ss << "Double";
 		}
-		string += '\'';
+		ss << '\'';
 	}
-	return string + second;
-}
-
-
-// function to get text of operand (with index if selected)
-QString Token::textOperand(bool withIndex)
-{
-	QString string;
-	if (withIndex)
+	if (second)
 	{
-		string = QString(" %1:").arg(m_index + 1);
+		ss << '|' << m_string.toStdString() << '|';
 	}
-	return string + '|' + m_string + '|';
+	return ss.str();
 }
 
 
@@ -533,7 +510,7 @@ void Token::operator delete(void *ptr)
 		if (s_used[token->m_id] == NULL)  // already deleted?
 		{
 			s_deleted.append(QString("%1: %2").arg(token->m_id)
-				.arg(token->text()));
+				.arg(QString::fromStdString(token->text())));
 		}
 		else  // mark token as unused and cache on free stack
 		{
