@@ -638,9 +638,9 @@ ProgramCode ProgramModel::encode(RpnList *input)
 {
 	ProgramCode programLine(input->codeSize());
 
-	for (int i = 0; i < input->count(); i++)
+	for (RpnItemPtr rpnItem : *input)
 	{
-		Token *token = input->at(i)->token();
+		Token *token = rpnItem->token();
 		programLine[token->index()].setInstruction(token->code(),
 			token->subCodes());
 		EncodeFunction encode = m_table.encodeFunction(token->code());

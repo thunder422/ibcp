@@ -41,19 +41,18 @@ QString RpnList::text()
 	std::unordered_map<RpnItemPtr, int> itemIndex;
 	int index {};
 
-	for (int i = 0; i < count(); i++)
+	for (RpnItemPtr rpnItem : *this)
 	{
-		if (i > 0)
+		if (ss.tellp() > 0)
 		{
 			ss << ' ';
 		}
-		RpnItemPtr rpnItem = at(i);
 		itemIndex[rpnItem] = index++;
 		ss << rpnItem->token()->text();
 		if (rpnItem->attachedCount() > 0)
 		{
 			char separator {'['};
-			for (auto item : rpnItem->attached())
+			for (RpnItemPtr item : rpnItem->attached())
 			{
 				if (item)
 				{
@@ -82,12 +81,14 @@ bool RpnList::operator==(const RpnList &other) const
 	{
 		return false;  // miscompare if lists are different sizes
 	}
-	for (int i = 0; i < count(); i++)
+	auto otherIterator = other.begin();
+	for (RpnItemPtr rpnItem : *this)
 	{
-		if (*m_list.at(i) != *other.at(i))
+		if (*rpnItem != **otherIterator)
 		{
 			return false;
 		}
+		++otherIterator;
 	}
 	return true;
 }
@@ -95,21 +96,11 @@ bool RpnList::operator==(const RpnList &other) const
 
 // function to create an rpn item for a token and append it to the list
 
-RpnItemPtr RpnList::append(Token *token, RpnItemPtrVector attached)
+RpnItemPtr RpnList::append(Token *token, RpnItemVector attached)
 {
 	token->removeSubCode(UnUsed_SubCode);  // mark as used
-	RpnItemPtr rpnItem = RpnItemPtr{new RpnItem(token, attached)};
-	m_list.append(rpnItem);
-	return rpnItem;
-}
-
-// function to create an rpn item for a token and insert it into the list
-//
-//   - the indexes of all items after the insertion point are incremented
-
-void RpnList::insert(int index, Token *token)
-{
-	m_list.insert(index, RpnItemPtr(new RpnItem(token)));
+	m_list.emplace_back(RpnItemPtr{new RpnItem{token, attached}});
+	return m_list.back();
 }
 
 
@@ -123,10 +114,10 @@ bool RpnList::setCodeSize(Table &table, Token *&token)
 {
 	// count number of program words needed
 	m_codeSize = 0;
-	for (int i = 0; i < count(); i++)
+	for (RpnItemPtr rpnItem : *this)
 	{
 		// assign position index to tokens (increment count for instruction)
-		token = at(i)->token();
+		token = rpnItem->token();
 		if (!token->hasValidCode())
 		{
 			return false;

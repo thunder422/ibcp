@@ -891,7 +891,7 @@ Token::Status Translator::processParenToken(Token *&token)
 		}
 		else if (token->isCode(CloseParen_Code))
 		{
-			RpnItemPtrVector attached;
+			RpnItemVector attached;
 			// save operands for storage in output list
 			while (--count >= 0)
 			{

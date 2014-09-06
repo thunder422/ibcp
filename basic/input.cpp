@@ -33,7 +33,6 @@ Token::Status inputTranslate(Translator &translator, Token *commandToken,
 	Token *&token)
 {
 	Token::Status status;
-	int indexBegin;
 	bool done;
 	Token *inputToken;
 
@@ -68,9 +67,8 @@ Token::Status inputTranslate(Translator &translator, Token *commandToken,
 		token->setCode(InputBeginStr_Code);
 	}
 
-	// save index where to insert input parse codes and append input begin
-	indexBegin = translator.outputCount();
-	translator.outputAppend(token);
+	// append input begin and save iterator where to insert input parse codes
+	auto insertPoint = translator.outputAppendIterator(token);
 
 	// loop to read input variables
 	do
@@ -121,9 +119,9 @@ Token::Status inputTranslate(Translator &translator, Token *commandToken,
 			break;
 		}
 
-		// create and insert input parse code at beginning
+		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
-		translator.outputInsert(indexBegin, translator.table()
+		insertPoint = translator.outputInsert(insertPoint, translator.table()
 			.newToken(translator.table()
 			.secondAssociatedCode(inputToken->code())));
 	}

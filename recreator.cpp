@@ -39,9 +39,8 @@ Recreator::Recreator(void) :
 QString Recreator::recreate(RpnList *rpnList, bool exprMode)
 {
 	m_output = "";
-	for (int i = 0; i < rpnList->count(); i++)
+	for (RpnItemPtr rpnItem : *rpnList)
 	{
-		RpnItemPtr rpnItem = rpnList->at(i);
 		RecreateFunction recreate;
 		if (!rpnItem->token()->hasValidCode()
 			|| (recreate = m_table.recreateFunction(rpnItem->token()->code()))

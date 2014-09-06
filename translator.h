@@ -113,9 +113,14 @@ public:
 	{
 		return m_output->append(token);
 	}
-	void outputInsert(int index, Token *token)
+	RpnItemList::iterator outputInsert(RpnItemList::iterator iterator,
+		Token *token)
 	{
-		return m_output->insert(index, token);
+		return m_output->insert(iterator, token);
+	}
+	RpnItemList::iterator outputAppendIterator(Token *token)
+	{
+		return m_output->appendIterator(token);
 	}
 
 private:

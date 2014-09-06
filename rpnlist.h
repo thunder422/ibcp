@@ -25,24 +25,24 @@
 #ifndef RPNLIST_H
 #define RPNLIST_H
 
+#include <list>
 #include <memory>
 #include <vector>
-
-#include <QList>
 
 #include "token.h"
 
 class Table;
 class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
-using RpnItemPtrVector = std::vector<RpnItemPtr>;
+using RpnItemVector = std::vector<RpnItemPtr>;
+using RpnItemList = std::list<RpnItemPtr>;
 
 
 // class for holding an item in the RPN output list
 class RpnItem
 {
 public:
-	RpnItem(Token *token, RpnItemPtrVector attached = RpnItemPtrVector{}) :
+	RpnItem(Token *token, RpnItemVector attached = RpnItemVector{}) :
 		m_token{token}, m_attached{attached}
 	{
 	}
@@ -65,7 +65,7 @@ public:
 	{
 		return m_attached.size();
 	}
-	const RpnItemPtrVector attached() const
+	const RpnItemVector attached() const
 	{
 		return m_attached;
 	}
@@ -82,7 +82,7 @@ public:
 
 private:
 	Token *m_token;					// pointer to token
-	RpnItemPtrVector m_attached;	// array of attached item pointers
+	RpnItemVector m_attached;		// array of attached item pointers
 };
 
 
@@ -99,6 +99,14 @@ public:
 		return !(*this == other);
 	}
 
+	RpnItemList::const_iterator begin() const
+	{
+		return m_list.begin();
+	}
+	RpnItemList::const_iterator end() const
+	{
+		return m_list.end();
+	}
 	int count() const
 	{
 		return m_list.size();
@@ -111,18 +119,21 @@ public:
 	{
 		return m_list.back()->token();
 	}
-	const RpnItemPtr &at(int index) const
-	{
-		return m_list.at(index);
-	}
 	void clear()
 	{
 		m_list.clear();
 	}
 
-	RpnItemPtr append(Token *token,
-		RpnItemPtrVector attached = RpnItemPtrVector{});
-	void insert(int index, Token *token);
+	RpnItemPtr append(Token *token, RpnItemVector attached = RpnItemVector{});
+	RpnItemList::iterator insert(RpnItemList::iterator iterator, Token *token)
+	{
+		return m_list.emplace(iterator, RpnItemPtr{new RpnItem{token}});
+	}
+	RpnItemList::iterator appendIterator(Token *token)
+	{
+		token->removeSubCode(UnUsed_SubCode);  // mark as used
+		return insert(m_list.end(), token);
+	}
 	int codeSize(void)
 	{
 		return m_codeSize;
@@ -157,7 +168,7 @@ public:
 	}
 
 private:
-	QList<RpnItemPtr> m_list;		// list of rpn items
+	RpnItemList m_list;				// list of rpn items
 	int m_codeSize;					// size of code required for list
 	int m_errorColumn;				// column of error that occurred
 	int m_errorLength;				// length of error that occurred
