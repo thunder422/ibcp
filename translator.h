@@ -107,7 +107,7 @@ public:
 	}
 	Token *outputLastToken(void) const
 	{
-		return m_output->last()->token();
+		return m_output->lastToken();
 	}
 	RpnItemPtr outputAppend(Token *token)
 	{

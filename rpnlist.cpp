@@ -31,7 +31,6 @@
 
 RpnList::~RpnList(void)
 {
-	clear();
 }
 
 
@@ -85,7 +84,7 @@ bool RpnList::operator==(const RpnList &other) const
 	}
 	for (int i = 0; i < count(); i++)
 	{
-		if (*at(i) != *other.at(i))
+		if (*m_list.at(i) != *other.at(i))
 		{
 			return false;
 		}
@@ -100,7 +99,7 @@ RpnItemPtr RpnList::append(Token *token, RpnItemPtrVector attached)
 {
 	token->removeSubCode(UnUsed_SubCode);  // mark as used
 	RpnItemPtr rpnItem = RpnItemPtr{new RpnItem(token, attached)};
-	QList<RpnItemPtr>::append(rpnItem);
+	m_list.append(rpnItem);
 	return rpnItem;
 }
 
@@ -110,7 +109,7 @@ RpnItemPtr RpnList::append(Token *token, RpnItemPtrVector attached)
 
 void RpnList::insert(int index, Token *token)
 {
-	QList<RpnItemPtr>::insert(index, RpnItemPtr(new RpnItem(token)));
+	m_list.insert(index, RpnItemPtr(new RpnItem(token)));
 }
 
 

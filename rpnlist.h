@@ -87,7 +87,7 @@ private:
 
 
 // class for holding a list of RPN items
-class RpnList : public QList<RpnItemPtr>
+class RpnList
 {
 public:
 	RpnList(void) : m_errorColumn(-1), m_errorLength(-1) {}
@@ -97,6 +97,27 @@ public:
 	bool operator!=(const RpnList &other) const
 	{
 		return !(*this == other);
+	}
+
+	int count() const
+	{
+		return m_list.size();
+	}
+	int empty() const
+	{
+		return m_list.empty();
+	}
+	Token *lastToken(void) const
+	{
+		return m_list.back()->token();
+	}
+	const RpnItemPtr &at(int index) const
+	{
+		return m_list.at(index);
+	}
+	void clear()
+	{
+		m_list.clear();
 	}
 
 	RpnItemPtr append(Token *token,
@@ -136,6 +157,7 @@ public:
 	}
 
 private:
+	QList<RpnItemPtr> m_list;		// list of rpn items
 	int m_codeSize;					// size of code required for list
 	int m_errorColumn;				// column of error that occurred
 	int m_errorLength;				// length of error that occurred

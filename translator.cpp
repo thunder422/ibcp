@@ -170,7 +170,7 @@ Token::Status Translator::getCommands(Token *&token)
 			return Token::Status::ExpCmd;
 		}
 
-		if (token->isCode(EOL_Code) && m_output->isEmpty())
+		if (token->isCode(EOL_Code) && m_output->empty())
 		{
 			return Token::Status::Done;  // blank line allowed
 		}
@@ -1171,7 +1171,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		if (m_lastPrecedence > precedence
 			|| (!popped && m_lastPrecedence == precedence))
 		{
-			Token *lastToken = m_output->last()->token();
+			Token *lastToken = m_output->lastToken();
 			if (!lastToken->hasSubCode(Paren_SubCode))
 			{
 				// mark last code for unnecessary parentheses
