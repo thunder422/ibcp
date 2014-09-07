@@ -55,7 +55,7 @@ public:
 	};
 
 	// Main Function
-	RpnList *translate(const QString &input, TestMode testMode = TestMode::No);
+	RpnList translate(const QString &input, TestMode testMode = TestMode::No);
 
 	// Get Functions
 	Token::Status getCommands(Token *&token);
@@ -103,24 +103,24 @@ public:
 	// Output List Access Functions
 	int outputCount(void) const
 	{
-		return m_output->count();
+		return m_output.count();
 	}
 	Token *outputLastToken(void) const
 	{
-		return m_output->lastToken();
+		return m_output.lastToken();
 	}
 	RpnItemPtr outputAppend(Token *token)
 	{
-		return m_output->append(token);
+		return m_output.append(token);
 	}
 	RpnItemList::iterator outputInsert(RpnItemList::iterator iterator,
 		Token *token)
 	{
-		return m_output->insert(iterator, token);
+		return m_output.insert(iterator, token);
 	}
 	RpnItemList::iterator outputAppendIterator(Token *token)
 	{
-		return m_output->appendIterator(token);
+		return m_output.appendIterator(token);
 	}
 
 private:
@@ -162,7 +162,7 @@ private:
 
 	Table &m_table;					// reference to the table instance
 	Parser *m_parser;				// pointer to parser instance
-	RpnList *m_output;				// pointer to RPN list output
+	RpnList m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack
 	DoneStack m_doneStack;			// items processed stack
 	Token *m_pendingParen;			// closing parentheses token is pending

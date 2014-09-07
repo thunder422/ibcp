@@ -36,10 +36,10 @@ Recreator::Recreator(void) :
 
 
 // function to recreate original program text from an rpn list
-QString Recreator::recreate(RpnList *rpnList, bool exprMode)
+QString Recreator::recreate(const RpnList &rpnList, bool exprMode)
 {
 	m_output = "";
-	for (RpnItemPtr rpnItem : *rpnList)
+	for (RpnItemPtr rpnItem : rpnList)
 	{
 		RecreateFunction recreate;
 		if (!rpnItem->token()->hasValidCode()

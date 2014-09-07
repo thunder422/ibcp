@@ -183,9 +183,8 @@ QString ProgramModel::lineText(int lineIndex)
 	LineInfo &lineInfo = m_lineInfo[lineIndex];
 	if (lineInfo.errIndex == -1)
 	{
-		RpnList *rpnList = decode(lineInfo);
+		RpnList rpnList {decode(lineInfo)};
 		string = m_recreator->recreate(rpnList);
-		delete rpnList;
 	}
 	else  // line has error, return original text
 	{
@@ -310,7 +309,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	const QString &line)
 {
-	RpnList *rpnList;
+	RpnList rpnList;
 	ProgramCode lineCode;
 	ErrorItem errorItem;
 
@@ -319,20 +318,19 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		// compile line
 		// if line has error, line code vector will be empty
 		rpnList = m_translator->translate(line);
-		if (rpnList->hasError())
+		if (rpnList.hasError())
 		{
 			errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
-				rpnList->errorColumn(), rpnList->errorLength(),
-				rpnList->errorMessage());
+				rpnList.errorColumn(), rpnList.errorLength(),
+				rpnList.errorMessage());
 		}
 	}
 
 	if (operation == Operation::Change)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
-		RpnList *currentRpnList = decode(lineInfo);
-		bool changed = *rpnList != *currentRpnList;
-		delete currentRpnList;
+		RpnList currentRpnList {decode(lineInfo)};
+		bool changed = rpnList != currentRpnList;
 		if (changed)
 		{
 			// derefence old line
@@ -361,7 +359,6 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			emit programChange(lineNumber);  // only for non-error lines
 		}
-		delete rpnList;  // no longer needed
 		return changed;
 	}
 	else if (operation == Operation::Append || operation == Operation::Insert)
@@ -380,7 +377,6 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			lineInfo.text = line;
 		}
-		delete rpnList;  // no longer needed
 
 		// find offset to insert line
 		if (lineNumber < m_lineInfo.count())
@@ -634,11 +630,11 @@ QString ProgramModel::errorMessage(int lineNumber) const
 
 
 // function to encode a translated RPN list
-ProgramCode ProgramModel::encode(RpnList *input)
+ProgramCode ProgramModel::encode(const RpnList &input)
 {
-	ProgramCode programLine(input->codeSize());
+	ProgramCode programLine(input.codeSize());
 
-	for (RpnItemPtr rpnItem : *input)
+	for (RpnItemPtr rpnItem : input)
 	{
 		Token *token = rpnItem->token();
 		programLine[token->index()].setInstruction(token->code(),
@@ -670,9 +666,9 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 
 
 // function to decode a program line into an RPN list
-RpnList *ProgramModel::decode(const LineInfo &lineInfo)
+RpnList ProgramModel::decode(const LineInfo &lineInfo)
 {
-	RpnList *rpnList = new RpnList;
+	RpnList rpnList;
 	ProgramWord *line = m_code.data() + lineInfo.offset;
 	for (int i = 0; i < lineInfo.size; i++)
 	{
@@ -686,7 +682,7 @@ RpnList *ProgramModel::decode(const LineInfo &lineInfo)
 		{
 			token->setString(operandText(this, line[++i].operand()));
 		}
-		rpnList->append(token);
+		rpnList.append(token);
 	}
 	return rpnList;
 }

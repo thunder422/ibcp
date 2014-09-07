@@ -311,17 +311,16 @@ void Tester::parseInput(const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
+RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 	const char *header)
 {
-	RpnList *rpnList = m_translator->translate(testInput, exprMode
-		? Translator::TestMode::Expression : Translator::TestMode::Yes);
-	if (rpnList->hasError())
+	RpnList rpnList {m_translator->translate(testInput, exprMode
+		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
+	if (rpnList.hasError())
 	{
-		printError(rpnList->errorColumn(), rpnList->errorLength(),
-			rpnList->errorMessage());
-		delete rpnList;
-		return NULL;
+		printError(rpnList.errorColumn(), rpnList.errorLength(),
+			rpnList.errorMessage());
+		rpnList.clear();  // return an empty list
 	}
 	else  // no error, translate line and if selected recreate it
 	{
@@ -333,17 +332,16 @@ RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
 		}
 		else
 		{
-			output = rpnList->text();
+			output = rpnList.text();
 		}
 		if (header == NULL)
 		{
 			header = "Output";
-			delete rpnList;
-			rpnList = NULL;
+			rpnList.clear();
 		}
 		m_cout << header << ": " << output << ' ' << endl;
-		return rpnList;
 	}
+	return rpnList;
 }
 
 
@@ -351,12 +349,11 @@ RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
 // recreate the line and output the resulting recreated text
 void Tester::recreateInput(const QString &testInput)
 {
-	RpnList *rpnList = translateInput(testInput, false, "Tokens");
-	if (rpnList != NULL)
+	RpnList rpnList {translateInput(testInput, false, "Tokens")};
+	if (!rpnList.empty())
 	{
 		// recreate text from rpn list
 		QString output = m_recreator->recreate(rpnList);
-		delete rpnList;
 		m_cout << "Output: " << output << ' ' << endl;
 	}
 }

@@ -307,9 +307,9 @@ private:
 	void updateError(int lineNumber, LineInfo &lineInfo,
 		const ErrorItem &errorItem, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
-	ProgramCode encode(RpnList *input);
+	ProgramCode encode(const RpnList &input);
 	void dereference(const LineInfo &lineInfo);
-	RpnList *decode(const LineInfo &lineInfo);
+	RpnList decode(const LineInfo &lineInfo);
 
 	Table &m_table;						// reference to the table object
 	Translator *m_translator;			// program unit translator instance

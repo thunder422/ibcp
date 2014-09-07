@@ -31,7 +31,6 @@
 Translator::Translator(void) :
 	m_table(Table::instance()),
 	m_parser(new Parser),
-	m_output(NULL),
 	m_pendingParen(NULL)
 {
 
@@ -57,14 +56,12 @@ Translator::~Translator(void)
 //     of translated line
 //   - allows for a special expression mode for testing
 
-RpnList *Translator::translate(const QString &input, TestMode testMode)
+RpnList Translator::translate(const QString &input, TestMode testMode)
 {
 	Token *token;
 	Token::Status status;
 
 	m_parser->setInput(input);
-
-	m_output = new RpnList;
 
 	m_holdStack.push(m_table.newToken(Null_Code));
 
@@ -116,7 +113,7 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 			}
 
 			if (testMode == TestMode::No
-				&& !m_output->setCodeSize(m_table, token))
+				&& !m_output.setCodeSize(m_table, token))
 			{
 				status = Token::Status::BUG_NotYetImplemented;
 			}
@@ -130,8 +127,8 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 	if (status != Token::Status::Done)
 	{
 		// error token is in the output list - don't delete it
-		m_output->setError(token);
-		m_output->setErrorMessage(status == Token::Status::Parser
+		m_output.setError(token);
+		m_output.setErrorMessage(status == Token::Status::Parser
 			? token->string() : token->message(status));
 		if (token->hasSubCode(UnUsed_SubCode))
 		{
@@ -139,9 +136,7 @@ RpnList *Translator::translate(const QString &input, TestMode testMode)
 		}
 		cleanUp();
 	}
-	RpnList *output = m_output;
-	m_output = NULL;
-	return output;
+	return std::move(m_output);
 }
 
 
@@ -170,7 +165,7 @@ Token::Status Translator::getCommands(Token *&token)
 			return Token::Status::ExpCmd;
 		}
 
-		if (token->isCode(EOL_Code) && m_output->empty())
+		if (token->isCode(EOL_Code) && m_output.empty())
 		{
 			return Token::Status::Done;  // blank line allowed
 		}
@@ -200,7 +195,7 @@ Token::Status Translator::getCommands(Token *&token)
 			return Token::Status::Done;
 		}
 	}
-	m_output->append(token);  // Rem or RemOp token
+	m_output.append(token);  // Rem or RemOp token
 	if ((status = getToken(token)) != Token::Status::Good)
 	{
 		return Token::Status::BUG_UnexpToken;  // parser problem, should be EOL
@@ -371,7 +366,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 					}
 					else  // append hidden conversion code
 					{
-						m_output->append(m_table.newToken(cvtCode));
+						m_output.append(m_table.newToken(cvtCode));
 					}
 				}
 			}
@@ -559,7 +554,7 @@ Token::Status Translator::getOperand(Token *&token, DataType dataType,
 	{
 		// add token directly to output list
 		// and push element pointer on done stack
-		m_doneStack.push(m_output->append(token));
+		m_doneStack.push(m_output.append(token));
 	}
 	// for reference, check data type
 	if (reference != Reference::None
@@ -771,8 +766,7 @@ Token::Status Translator::processInternalFunction(Token *&token)
 
 			// add token to output list if not sub-string assignment
 			RpnItemPtr rpnItem = topToken->reference()
-				? RpnItemPtr(new RpnItem(topToken))
-				: m_output->append(topToken);
+				? RpnItemPtr{new RpnItem{topToken}} : m_output.append(topToken);
 
 			// push internal function to done stack
 			m_doneStack.push(rpnItem, NULL, token);
@@ -905,7 +899,7 @@ Token::Status Translator::processParenToken(Token *&token)
 			}
 
 			// add token to output list and push element pointer on done stack
-			m_doneStack.push(m_output->append(topToken, attached), NULL, token);
+			m_doneStack.push(m_output.append(topToken, attached), NULL, token);
 
 			m_holdStack.drop();
 			token = topToken;  // return original token
@@ -1056,7 +1050,7 @@ Token::Status Translator::processFinalOperand(Token *&token, Token *token2,
 	}
 
 	// add token to output list
-	RpnItemPtr rpnItem = m_output->append(token);
+	RpnItemPtr rpnItem = m_output.append(token);
 
 	// push operator token to the done stack
 	if (token->isType(Token::Type::Operator))
@@ -1122,7 +1116,7 @@ Token::Status Translator::processDoneStackTop(Token *&token, int operandIndex,
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
 			// append token to end of output list (after operand)
-			m_output->append(m_table.newToken(cvtCode));
+			m_output.append(m_table.newToken(cvtCode));
 		}
 
 		return Token::Status::Good;
@@ -1171,7 +1165,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		if (m_lastPrecedence > precedence
 			|| (!popped && m_lastPrecedence == precedence))
 		{
-			Token *lastToken = m_output->lastToken();
+			Token *lastToken = m_output.lastToken();
 			if (!lastToken->hasSubCode(Paren_SubCode))
 			{
 				// mark last code for unnecessary parentheses
@@ -1180,7 +1174,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 			else   // already has parentheses sub-code set
 			{
 				// add dummy token
-				m_output->append(m_pendingParen);
+				m_output.append(m_pendingParen);
 				// reset pending token and return (don't delete token)
 				m_pendingParen = NULL;
 				return;
@@ -1296,7 +1290,7 @@ void Translator::cleanUp(void)
 	}
 
 	// clear the RPN output list of all items
-	m_output->clear();
+	m_output.clear();
 
 	// need to delete pending parentheses
 	if (m_pendingParen != NULL)

@@ -90,8 +90,31 @@ private:
 class RpnList
 {
 public:
-	RpnList(void) : m_errorColumn(-1), m_errorLength(-1) {}
+	RpnList(void) : m_errorColumn{-1}, m_errorLength{-1} {}
 	~RpnList(void);
+	RpnList(RpnList &&other) :
+		m_list{other.m_list},
+		m_codeSize{other.m_codeSize},
+		m_errorColumn{other.m_errorColumn},
+		m_errorLength{other.m_errorLength},
+		m_errorMessage{other.m_errorMessage}
+	{
+		other.m_list.clear();
+		other.m_codeSize = 0;
+		other.m_errorColumn = -1;
+		other.m_errorLength = -1;
+		other.m_errorMessage.clear();
+	}
+	RpnList &operator=(RpnList &&other)
+	{
+		std::swap(m_list, other.m_list);
+		std::swap(m_codeSize, other.m_codeSize);
+		std::swap(m_errorColumn, other.m_errorColumn);
+		std::swap(m_errorLength, other.m_errorLength);
+		std::swap(m_errorMessage, other.m_errorMessage);
+		return *this;
+	}
+
 	QString text();
 	bool operator==(const RpnList &other) const;
 	bool operator!=(const RpnList &other) const
@@ -134,7 +157,7 @@ public:
 		token->removeSubCode(UnUsed_SubCode);  // mark as used
 		return insert(m_list.end(), token);
 	}
-	int codeSize(void)
+	int codeSize(void) const
 	{
 		return m_codeSize;
 	}
