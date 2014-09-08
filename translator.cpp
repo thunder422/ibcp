@@ -63,7 +63,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 
 	m_parser->setInput(input);
 
-	m_holdStack.push(m_table.newToken(Null_Code));
+	m_holdStack.emplace(m_table.newToken(Null_Code));
 
 	if (testMode == TestMode::Expression)
 	{
@@ -100,9 +100,10 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 			delete token;  // delete EOL token
 
 			// pop and delete null token from top of stack
-			delete m_holdStack.pop().token;
+			delete m_holdStack.top().token;
+			m_holdStack.pop();
 
-			if (!m_holdStack.isEmpty())
+			if (!m_holdStack.empty())
 			{
 				status = Token::Status::BUG_HoldStackNotEmpty;
 			}
@@ -230,7 +231,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 		{
 			// push open parentheses onto hold stack to block waiting tokens
 			// during the processing of the expression inside the parentheses
-			m_holdStack.push(token);
+			m_holdStack.emplace(token);
 
 			// get an expression and terminating token
 			token = NULL;
@@ -261,7 +262,8 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 			}
 
 			// make sure holding stack contains the open parentheses
-			Token *topToken = m_holdStack.pop().token;
+			Token *topToken = m_holdStack.top().token;
+			m_holdStack.pop();
 			if (!topToken->code() == OpenParen_Code)
 			{
 				// oops, no open parentheses (this should not happen)
@@ -498,7 +500,8 @@ Token::Status Translator::getOperand(Token *&token, DataType dataType,
 		if ((status = processInternalFunction(token)) != Token::Status::Good)
 		{
 			// drop and delete function token since it was not used
-			delete m_holdStack.pop().token;
+			delete m_holdStack.top().token;
+			m_holdStack.pop();
 			return status;
 		}
 		// reset reference if it was set above, no longer needed
@@ -522,7 +525,8 @@ Token::Status Translator::getOperand(Token *&token, DataType dataType,
 		if ((status = processParenToken(token)) != Token::Status::Good)
 		{
 			// drop and delete define function token since it was not used
-			delete m_holdStack.pop().token;
+			delete m_holdStack.top().token;
+			m_holdStack.pop();
 			return status;
 		}
 		// TODO temporary until define functions are fully implemented
@@ -540,7 +544,8 @@ Token::Status Translator::getOperand(Token *&token, DataType dataType,
 		if ((status = processParenToken(token)) != Token::Status::Good)
 		{
 			// drop and delete parentheses token since it was not used
-			delete m_holdStack.pop().token;
+			delete m_holdStack.top().token;
+			m_holdStack.pop();
 			return status;
 		}
 		doneAppend = false;  // already appended
@@ -656,7 +661,7 @@ Token::Status Translator::processInternalFunction(Token *&token)
 
 	// push internal function token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each argument
-	m_holdStack.push(token);
+	m_holdStack.emplace(token);
 	Token *topToken = token;
 
 	Code code = token->code();
@@ -771,7 +776,7 @@ Token::Status Translator::processInternalFunction(Token *&token)
 			// push internal function to done stack
 			m_doneStack.push(rpnItem, NULL, token);
 
-			m_holdStack.drop();
+			m_holdStack.pop();
 			token = topToken;  // return original token
 			return Token::Status::Good;
 		}
@@ -816,7 +821,7 @@ Token::Status Translator::processParenToken(Token *&token)
 
 	// push parentheses token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each operand
-	m_holdStack.push(token);
+	m_holdStack.emplace(token);
 	// determine data type (number for subscripts, any for arguments)
 	DataType dataType;
 	// TODO need to check test mode once dictionaries are implemented
@@ -901,7 +906,7 @@ Token::Status Translator::processParenToken(Token *&token)
 			// add token to output list and push element pointer on done stack
 			m_doneStack.push(m_output.append(topToken, attached), NULL, token);
 
-			m_holdStack.drop();
+			m_holdStack.pop();
 			token = topToken;  // return original token
 			return Token::Status::Good;
 		}
@@ -960,7 +965,7 @@ Token::Status Translator::processOperator(Token *&token)
 		// it will be reset upon next open parentheses)
 		m_lastPrecedence = m_table.precedence(topToken->code());
 
-		m_holdStack.drop();
+		m_holdStack.pop();
 	}
 
 	checkPendingParen(token, false);
@@ -1003,7 +1008,7 @@ Token::Status Translator::processFirstOperand(Token *&token)
 	}
 
 	// push it onto the holding stack and attach first operand
-	m_holdStack.push(token, first);
+	m_holdStack.emplace(token, first);
 
 	return Token::Status::Good;
 }
@@ -1273,7 +1278,7 @@ Token::Status Translator::expectedErrStatus(DataType dataType,
 void Translator::cleanUp(void)
 {
 	// clean up from error
-	while (!m_holdStack.isEmpty())
+	while (!m_holdStack.empty())
 	{
 		// delete first token in command stack item
 		Token *token = m_holdStack.top().first;
@@ -1282,7 +1287,8 @@ void Translator::cleanUp(void)
 			DoneItem::deleteOpenParen(token);
 		}
 		// delete to free the token that was on the stack
-		delete m_holdStack.pop().token;
+		delete m_holdStack.top().token;
+		m_holdStack.pop();
 	}
 	while (!m_doneStack.isEmpty())
 	{

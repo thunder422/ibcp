@@ -25,6 +25,8 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
+#include <stack>
+
 #include <QList>
 #include <QStack>
 
@@ -140,25 +142,12 @@ private:
 
 	struct HoldItem
 	{
+		HoldItem(Token *t, Token *f = nullptr) : token{t}, first{f} {}
+
 		Token *token;				// token pointer on hold stack
 		Token *first;				// operator token's first operand pointer
 	};
-	class HoldStack : public QStack<HoldItem>
-	{
-	public:
-		// drop the top item on stack (pop with no return)
-		void drop(void)
-		{
-			resize(size() - 1);
-		}
-		// push new item with token and first token
-		void push(Token *token, Token *first = NULL)
-		{
-			resize(size() + 1);
-			top().token = token;
-			top().first = first;
-		}
-	};
+	using HoldStack = std::stack<HoldItem>;
 
 	Table &m_table;					// reference to the table instance
 	Parser *m_parser;				// pointer to parser instance
