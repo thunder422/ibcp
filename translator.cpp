@@ -271,7 +271,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 			}
 
 			// replace first and last operands of token on done stack
-			m_doneStack.replaceTopFirstLast(topToken, token);
+			m_doneStack.top().replaceFirstLast(topToken, token);
 
 			// mark close paren as used for last operand and pending paren
 			// (so it doesn't get deleted until it's not used anymore)

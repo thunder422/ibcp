@@ -41,6 +41,12 @@ public:
 	Token *first;				// operator token's first operand pointer
 	Token *last;				// operator token's last operand pointer
 
+	~DoneItem()
+	{
+		deleteOpenParen(first);
+		deleteCloseParen(last);
+	}
+
 	// delete token if is an open parentheses
 	static void deleteOpenParen(Token *token);
 	void deleteOpenParen(void)
@@ -55,18 +61,13 @@ public:
 		deleteCloseParen(last);
 	}
 
-	// replace first token (delete old token first if open parentheses)
-	void replaceFirst(Token *token)
+	// replace the item's first and last operand token
+	void replaceFirstLast(Token *_first, Token *_last)
 	{
 		deleteOpenParen(first);
-		first = token;
-	}
-
-	// replace last token (delete old token first if close parentheses)
-	void replaceLast(Token *token)
-	{
 		deleteCloseParen(last);
-		last = token;
+		first = _first;
+		last = _last;
 	}
 };
 
@@ -87,25 +88,16 @@ public:
 	// (delete any parentheses that are present in the first/last tokens)
 	RpnItemPtr pop(void)
 	{
-		top().deleteOpenParen();
-		top().deleteCloseParen();
-		return QStack::pop().rpnItem;
+		RpnItemPtr rpnItem = top().rpnItem;
+		drop();
+		return rpnItem;
 	}
 
 	// drop the top item on stack (pop with no return)
 	// (delete any parentheses that are present in the first/last tokens)
 	void drop(void)
 	{
-		top().deleteOpenParen();
-		top().deleteCloseParen();
 		resize(size() - 1);
-	}
-
-	// replace the top item's first and last operand token
-	void replaceTopFirstLast(Token *first, Token *last)
-	{
-		top().replaceFirst(first);
-		top().replaceLast(last);
 	}
 };
 

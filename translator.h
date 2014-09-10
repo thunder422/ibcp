@@ -142,7 +142,8 @@ private:
 
 	struct HoldItem
 	{
-		HoldItem(Token *t, Token *f = nullptr) : token{t}, first{f} {}
+		HoldItem(Token *_token, Token *_first = nullptr) : token{_token},
+			first{_first} {}
 
 		Token *token;				// token pointer on hold stack
 		Token *first;				// operator token's first operand pointer
