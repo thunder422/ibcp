@@ -26,8 +26,7 @@
 #define DONESTACK_H
 
 #include <memory>
-
-#include <QStack>
+#include <stack>
 
 class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
@@ -41,6 +40,12 @@ public:
 	Token *first;				// operator token's first operand pointer
 	Token *last;				// operator token's last operand pointer
 
+	DoneItem(RpnItemPtr _rpnItem) : rpnItem{_rpnItem}, first{nullptr},
+		last{nullptr} {}
+	DoneItem(RpnItemPtr _rpnItem, Token *_last) : rpnItem{_rpnItem},
+		first{nullptr}, last{_last} {}
+	DoneItem(RpnItemPtr _rpnItem, Token *_first, Token *_last) :
+		rpnItem{_rpnItem}, first{_first}, last{_last} {}
 	~DoneItem()
 	{
 		deleteOpenParen(first);
@@ -72,34 +77,7 @@ public:
 };
 
 
-class DoneStack : public QStack<DoneItem>
-{
-public:
-	// push new item with rpn item, first and last tokens
-	void push(RpnItemPtr rpnItem, Token *first = NULL, Token *last = NULL)
-	{
-		resize(size() + 1);
-		top().rpnItem = rpnItem;
-		top().first = first;
-		top().last = last;
-	}
-
-	// pop the top item on stack (return its rpn item)
-	// (delete any parentheses that are present in the first/last tokens)
-	RpnItemPtr pop(void)
-	{
-		RpnItemPtr rpnItem = top().rpnItem;
-		drop();
-		return rpnItem;
-	}
-
-	// drop the top item on stack (pop with no return)
-	// (delete any parentheses that are present in the first/last tokens)
-	void drop(void)
-	{
-		resize(size() - 1);
-	}
-};
+using DoneStack = std::stack<DoneItem>;
 
 
 #endif  // DONESTACK_H

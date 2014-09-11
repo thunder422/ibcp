@@ -25,10 +25,7 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
-#include <stack>
-
 #include <QList>
-#include <QStack>
 
 #include "donestack.h"
 #include "rpnlist.h"
@@ -86,11 +83,13 @@ public:
 	// Done Stack Access Functions
 	RpnItemPtr doneStackPop(void)
 	{
-		return m_doneStack.pop();
+		RpnItemPtr rpnItem = m_doneStack.top().rpnItem;
+		m_doneStack.pop();
+		return rpnItem;
 	}
 	void doneStackDrop(void)
 	{
-		 m_doneStack.drop();
+		 m_doneStack.pop();
 	}
 	Token *doneStackTopToken(void) const
 	{

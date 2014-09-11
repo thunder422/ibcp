@@ -77,14 +77,14 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 		else if (status == Token::Status::Done)
 		{
 			// pop final result off of done stack
-			if (m_doneStack.isEmpty())
+			if (m_doneStack.empty())
 			{
 				status = Token::Status::BUG_DoneStackEmpty;
 			}
 			else
 			{
 				// drop result (delete any paren tokens in first/last operands)
-				m_doneStack.drop();
+				m_doneStack.pop();
 			}
 		}
 	}
@@ -108,7 +108,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 				status = Token::Status::BUG_HoldStackNotEmpty;
 			}
 
-			if (!m_doneStack.isEmpty())
+			if (!m_doneStack.empty())
 			{
 				status = Token::Status::BUG_DoneStackNotEmpty;
 			}
@@ -559,7 +559,7 @@ Token::Status Translator::getOperand(Token *&token, DataType dataType,
 	{
 		// add token directly to output list
 		// and push element pointer on done stack
-		m_doneStack.push(m_output.append(token));
+		m_doneStack.emplace(m_output.append(token));
 	}
 	// for reference, check data type
 	if (reference != Reference::None
@@ -757,7 +757,7 @@ Token::Status Translator::processInternalFunction(Token *&token)
 				lastOperand = m_table.operandCount(code) - 1;
 			}
 			delete token;  // delete comma token, it's not needed
-			m_doneStack.drop();
+			m_doneStack.pop();
 		}
 		else if (token->isCode(CloseParen_Code))
 		{
@@ -767,14 +767,14 @@ Token::Status Translator::processInternalFunction(Token *&token)
 				break;
 			}
 
-			m_doneStack.drop();  // remove from done stack (remove paren tokens)
+			m_doneStack.pop();  // remove from done stack (remove paren tokens)
 
 			// add token to output list if not sub-string assignment
 			RpnItemPtr rpnItem = topToken->reference()
 				? RpnItemPtr{new RpnItem{topToken}} : m_output.append(topToken);
 
 			// push internal function to done stack
-			m_doneStack.push(rpnItem, NULL, token);
+			m_doneStack.emplace(rpnItem, token);
 
 			m_holdStack.pop();
 			token = topToken;  // return original token
@@ -868,7 +868,7 @@ Token::Status Translator::processParenToken(Token *&token)
 		{
 			if (dataType == DataType::Integer)  // array subscript?
 			{
-				m_doneStack.drop();  // don't need item
+				m_doneStack.pop();  // don't need item
 			}
 			else  // function argument
 			{
@@ -896,15 +896,22 @@ Token::Status Translator::processParenToken(Token *&token)
 			{
 				// if array subscript then apppend empty pointer
 				// else pop and append operands
-				attached.emplace_back(dataType == DataType::Integer
-					? RpnItemPtr{} : m_doneStack.pop());
+				if (dataType == DataType::Integer)
+				{
+					attached.emplace_back(RpnItemPtr{});
+				}
+				else
+				{
+					attached.emplace_back(m_doneStack.top().rpnItem);
+					m_doneStack.pop();
 					// TODO will need to keep first/last operands for each
 					// TODO (in case expression needs to be reported as error)
 					// TODO (RpnItem should have DoneItem operands, not RpnItem)
+				}
 			}
 
 			// add token to output list and push element pointer on done stack
-			m_doneStack.push(m_output.append(topToken, attached), NULL, token);
+			m_doneStack.emplace(m_output.append(topToken, attached), token);
 
 			m_holdStack.pop();
 			token = topToken;  // return original token
@@ -1060,7 +1067,7 @@ Token::Status Translator::processFinalOperand(Token *&token, Token *token2,
 	// push operator token to the done stack
 	if (token->isType(Token::Type::Operator))
 	{
-		m_doneStack.push(rpnItem, first, last);
+		m_doneStack.emplace(rpnItem, first, last);
 	}
 
 	return Token::Status::Good;
@@ -1080,7 +1087,7 @@ Token::Status Translator::processFinalOperand(Token *&token, Token *token2,
 Token::Status Translator::processDoneStackTop(Token *&token, int operandIndex,
 	Token **first, Token **last)
 {
-	if (m_doneStack.isEmpty())
+	if (m_doneStack.empty())
 	{
 		// oops, there should have been operands on done stack
 		return Token::Status::BUG_DoneStackEmptyFindCode;
@@ -1113,7 +1120,7 @@ Token::Status Translator::processDoneStackTop(Token *&token, int operandIndex,
 
 	if (cvtCode != Invalid_Code)
 	{
-		m_doneStack.drop();  // remove from done stack (remove paren tokens)
+		m_doneStack.pop();  // remove from done stack (remove paren tokens)
 
 		// is there an actual conversion code to insert?
 		if (cvtCode != Null_Code)
@@ -1220,7 +1227,7 @@ Token *Translator::doneStackPopErrorToken(void)
 	{
 		token->setThrough(m_doneStack.top().last);
 	}
-	m_doneStack.drop();  // (removes any paren tokens)
+	m_doneStack.pop();  // (removes any paren tokens)
 	return token;  // return error token
 }
 
@@ -1290,9 +1297,9 @@ void Translator::cleanUp(void)
 		delete m_holdStack.top().token;
 		m_holdStack.pop();
 	}
-	while (!m_doneStack.isEmpty())
+	while (!m_doneStack.empty())
 	{
-		m_doneStack.drop();  // remove from done stack (remove paren tokens)
+		m_doneStack.pop();
 	}
 
 	// clear the RPN output list of all items
