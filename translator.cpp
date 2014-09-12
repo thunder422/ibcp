@@ -31,7 +31,7 @@
 Translator::Translator(void) :
 	m_table(Table::instance()),
 	m_parser(new Parser),
-	m_pendingParen(NULL)
+	m_pendingParen(nullptr)
 {
 
 }
@@ -58,7 +58,7 @@ Translator::~Translator(void)
 
 RpnList Translator::translate(const QString &input, TestMode testMode)
 {
-	Token *token;
+	TokenPtr token;
 	Token::Status status;
 
 	m_parser->setInput(input);
@@ -67,10 +67,11 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 
 	if (testMode == TestMode::Expression)
 	{
-		token = NULL;
+		token = nullptr;
 		status = getExpression(token, DataType::Any);
 
-		if (status == Token::Status::Parser && token->isDataType(DataType::None))
+		if (status == Token::Status::Parser
+			&& token->isDataType(DataType::None))
 		{
 			status = Token::Status::ExpOpOrEnd;
 		}
@@ -155,7 +156,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 //   - returns terminating token (end-of-line or unknown token)
 //   - caller determines validity of unknown token if returned
 
-Token::Status Translator::getCommands(Token *&token)
+Token::Status Translator::getCommands(TokenPtr &token)
 {
 	Token::Status status;
 
@@ -213,7 +214,7 @@ Token::Status Translator::getCommands(Token *&token)
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the expression
 
-Token::Status Translator::getExpression(Token *&token, DataType dataType,
+Token::Status Translator::getExpression(TokenPtr &token, DataType dataType,
 	int level)
 {
 	Token::Status status;
@@ -221,8 +222,8 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 
 	forever
 	{
-		if (token == NULL
-			&& (status = getToken(token, expectedDataType)) != Token::Status::Good)
+		if (token == nullptr && (status = getToken(token, expectedDataType))
+			!= Token::Status::Good)
 		{
 			break;
 		}
@@ -234,7 +235,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 			m_holdStack.emplace(token);
 
 			// get an expression and terminating token
-			token = NULL;
+			token = nullptr;
 			if (expectedDataType == DataType::None)
 			{
 				expectedDataType = DataType::Any;
@@ -262,7 +263,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 			}
 
 			// make sure holding stack contains the open parentheses
-			Token *topToken = m_holdStack.top().token;
+			TokenPtr topToken = m_holdStack.top().token;
 			m_holdStack.pop();
 			if (!topToken->code() == OpenParen_Code)
 			{
@@ -286,7 +287,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 			// set pending parentheses token pointer
 			m_pendingParen = token;
 
-			token = NULL;  // get another token
+			token = nullptr;  // get another token
 		}
 		else
 		{
@@ -311,10 +312,10 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 			}
 			else
 			{
-				token = NULL;  // get another token
+				token = nullptr;  // get another token
 			}
 		}
-		if (token == NULL)
+		if (token == nullptr)
 		{
 			// get binary operator or end-of-expression token
 			if ((status = getToken(token)) != Token::Status::Good)
@@ -345,7 +346,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 			if (level == 0)
 			{
 				// add convert code if needed or report error
-				Token *doneToken = m_doneStack.top().rpnItem->token();
+				TokenPtr doneToken = m_doneStack.top().rpnItem->token();
 				Code cvtCode = doneToken->convertCode(dataType);
 				if (cvtCode == Invalid_Code)
 				{
@@ -381,7 +382,7 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 
 		// get operator's expected data type, reset token and loop back
 		expectedDataType = m_table.expectedDataType(token);
-		token = NULL;
+		token = nullptr;
 	}
 	return status;
 }
@@ -393,14 +394,14 @@ Token::Status Translator::getExpression(Token *&token, DataType dataType,
 //   - the data type argument is used for reporting the correct error when
 //     the token is not a valid operand token
 
-Token::Status Translator::getOperand(Token *&token, DataType dataType,
+Token::Status Translator::getOperand(TokenPtr &token, DataType dataType,
 	Reference reference)
 {
 	Token::Status status;
 	bool doneAppend = true;
 
 	// get token if none was passed
-	if (token == NULL
+	if (token == nullptr
 		&& (status = getToken(token, dataType)) != Token::Status::Good)
 	{
 		if (reference == Reference::None)
@@ -577,7 +578,7 @@ Token::Status Translator::getOperand(Token *&token, DataType dataType,
 //   - data type argument determines if token to get is an operand
 //   - returns Parser_TokenStatus if the parser returned an error
 
-Token::Status Translator::getToken(Token *&token, DataType dataType)
+Token::Status Translator::getToken(TokenPtr &token, DataType dataType)
 {
 	// if data type is not none, then getting an operand token
 	bool operand = dataType != DataType{};
@@ -621,21 +622,21 @@ Token::Status Translator::getToken(Token *&token, DataType dataType)
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the command
 
-Token::Status Translator::processCommand(Token *&commandToken)
+Token::Status Translator::processCommand(TokenPtr &commandToken)
 {
 	TranslateFunction translate;
-	Token *token;
+	TokenPtr token;
 
 	if (commandToken->isType(Token::Type::Command))
 	{
 		translate = m_table.translateFunction(commandToken->code());
-		token = NULL;  // force translate function to get a token
+		token = nullptr;  // force translate function to get a token
 	}
 	else  // assume an assignment statement
 	{
 		translate = m_table.translateFunction(Let_Code);
 		token = commandToken;
-		commandToken = NULL;
+		commandToken = nullptr;
 		// pass token onto let translate function
 	}
 	if (translate == NULL)
@@ -653,7 +654,7 @@ Token::Status Translator::processCommand(Token *&commandToken)
 //   - the token argument contains the internal function token
 //   - the token argument contains the token when an error is detected
 
-Token::Status Translator::processInternalFunction(Token *&token)
+Token::Status Translator::processInternalFunction(TokenPtr &token)
 {
 	Token::Status status;
 	DataType expectedDataType;
@@ -662,13 +663,13 @@ Token::Status Translator::processInternalFunction(Token *&token)
 	// push internal function token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each argument
 	m_holdStack.emplace(token);
-	Token *topToken = token;
+	TokenPtr topToken = token;
 
 	Code code = token->code();
 	int lastOperand = m_table.operandCount(code) - 1;
 	for (int i = 0; ; i++)
 	{
-		token = NULL;
+		token = nullptr;
 		if (i == 0 && topToken->reference())
 		{
 			// sub-string assignment, look for reference operand
@@ -704,7 +705,7 @@ Token::Status Translator::processInternalFunction(Token *&token)
 			// check if associated code for function is needed
 			if (expectedDataType == DataType::Number)
 			{
-				Token *doneToken = m_doneStack.top().rpnItem->token();
+				TokenPtr doneToken = m_doneStack.top().rpnItem->token();
 				if (doneToken->dataType()
 					!= m_table.operandDataType(topToken->code(), 0))
 				{
@@ -815,7 +816,7 @@ Token::Status Translator::processInternalFunction(Token *&token)
 //   - the token argument contains the token with parentheses
 //   - the token argument contains the token when an error is detected
 
-Token::Status Translator::processParenToken(Token *&token)
+Token::Status Translator::processParenToken(TokenPtr &token)
 {
 	Token::Status status;
 
@@ -844,11 +845,11 @@ Token::Status Translator::processParenToken(Token *&token)
 		// TODO and check number of arguments
 		dataType = DataType::Any;  // function arguments
 	}
-	Token *topToken = token;
+	TokenPtr topToken = token;
 
 	for (int count = 1; ; count++)
 	{
-		token = NULL;
+		token = nullptr;
 		if ((status = getExpression(token, dataType)) != Token::Status::Done)
 		{
 			if (status == Token::Status::Parser
@@ -872,7 +873,7 @@ Token::Status Translator::processParenToken(Token *&token)
 			}
 			else  // function argument
 			{
-				Token *operandToken = m_doneStack.top().rpnItem->token();
+				TokenPtr operandToken = m_doneStack.top().rpnItem->token();
 				// TODO may also need to check for DefFuncN type here
 				if ((operandToken->isType(Token::Type::NoParen)
 					|| operandToken->isType(Token::Type::Paren))
@@ -940,7 +941,7 @@ Token::Status Translator::processParenToken(Token *&token)
 //    - otherwise, the first operand of the operator is processed, which also
 //      handles pushing the operator to the hold stack
 
-Token::Status Translator::processOperator(Token *&token)
+Token::Status Translator::processOperator(TokenPtr &token)
 {
 	// determine precedence of incoming token
 	// (set highest precedence for unary operators,
@@ -950,7 +951,7 @@ Token::Status Translator::processOperator(Token *&token)
 
 	// process and drop unary or binary operators on hold stack
 	// while they have higher or same precedence as incoming token
-	Token *topToken;
+	TokenPtr topToken;
 	while (m_table.precedence(topToken = m_holdStack.top().token)
 		>= tokenPrecedence && m_table.isUnaryOrBinaryOperator(topToken))
 	{
@@ -993,15 +994,15 @@ Token::Status Translator::processOperator(Token *&token)
 //  - attaches first operand token from operand on top of done stack
 //  - no first operand token for unary operators
 
-Token::Status Translator::processFirstOperand(Token *&token)
+Token::Status Translator::processFirstOperand(TokenPtr &token)
 {
-	Token *first = NULL;		// first operand token
+	TokenPtr first {};		// first operand token
 
 	// check first operand of binary operators
 	if (!m_table.isUnaryOperator(token))
 	{
 		// changed token operator code or insert conversion codes as needed
-		Token *orgToken = token;
+		TokenPtr orgToken = token;
 		Token::Status status = processDoneStackTop(token, 0, &first);
 		if (status != Token::Status::Good)
 		{
@@ -1032,13 +1033,13 @@ Token::Status Translator::processFirstOperand(Token *&token)
 //	 - RPN item is pushed to done stack if operator
 //
 //   - for operator, token2 is first operand of operator on hold stack
-//   - for internal code, token2 is NULL
+//   - for internal code, token2 is nullptr
 
-Token::Status Translator::processFinalOperand(Token *&token, Token *token2,
+Token::Status Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 	int operandIndex)
 {
-	Token *first;			// first operand token
-	Token *last;			// last operand token
+	TokenPtr first;			// first operand token
+	TokenPtr last;			// last operand token
 
 	Token::Status status = processDoneStackTop(token, operandIndex, &first,
 		&last);
@@ -1084,35 +1085,35 @@ Token::Status Translator::processFinalOperand(Token *&token, Token *token2,
 //   - if no match found or conversion not possible, an error is returned
 //   - if conversion possible, a conversion code token is appended to output
 
-Token::Status Translator::processDoneStackTop(Token *&token, int operandIndex,
-	Token **first, Token **last)
+Token::Status Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
+	TokenPtr *first, TokenPtr *last)
 {
 	if (m_doneStack.empty())
 	{
 		// oops, there should have been operands on done stack
 		return Token::Status::BUG_DoneStackEmptyFindCode;
 	}
-	Token *topToken = m_doneStack.top().rpnItem->token();
+	TokenPtr topToken = m_doneStack.top().rpnItem->token();
 	// get first and last operands for top token
-	Token *localFirst = m_doneStack.top().first;
-	if (localFirst == NULL)
+	TokenPtr localFirst = m_doneStack.top().first;
+	if (localFirst == nullptr)
 	{
 		localFirst = topToken;  // first operand not set, set to operand token
 	}
-	if (first != NULL)  // requested by caller?
+	if (first != nullptr)  // requested by caller?
 	{
 		*first = localFirst;
-		m_doneStack.top().first = NULL;  // prevent deletion below
+		m_doneStack.top().first = nullptr;  // prevent deletion below
 	}
-	Token *localLast = m_doneStack.top().last;
-	if (localLast == NULL)
+	TokenPtr localLast = m_doneStack.top().last;
+	if (localLast == nullptr)
 	{
 		localLast = topToken;  // last operand not set, set to operand token
 	}
-	if (last != NULL)  // requested by caller?
+	if (last != nullptr)  // requested by caller?
 	{
 		*last = localLast;
-		m_doneStack.top().last = NULL;  // prevent deletion below
+		m_doneStack.top().last = nullptr;  // prevent deletion below
 	}
 
 	// see if main code's data type matches
@@ -1166,9 +1167,9 @@ Token::Status Translator::processDoneStackTop(Token *&token, int operandIndex,
 //   - token argument is token of operator to check against
 //   - popped argument indicates if token will be popped from the hold stack
 
-void Translator::checkPendingParen(Token *token, bool popped)
+void Translator::checkPendingParen(const TokenPtr &token, bool popped)
 {
-	if (m_pendingParen != NULL)  // is a closing parentheses token pending?
+	if (m_pendingParen != nullptr)  // is a closing parentheses token pending?
 	{
 		// may need to add a dummy token if the precedence of the last
 		// operator added within the last parentheses sub-expression
@@ -1177,7 +1178,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		if (m_lastPrecedence > precedence
 			|| (!popped && m_lastPrecedence == precedence))
 		{
-			Token *lastToken = m_output.lastToken();
+			TokenPtr lastToken = m_output.lastToken();
 			if (!lastToken->hasSubCode(Paren_SubCode))
 			{
 				// mark last code for unnecessary parentheses
@@ -1188,7 +1189,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 				// add dummy token
 				m_output.append(m_pendingParen);
 				// reset pending token and return (don't delete token)
-				m_pendingParen = NULL;
+				m_pendingParen = nullptr;
 				return;
 			}
 		}
@@ -1202,7 +1203,7 @@ void Translator::checkPendingParen(Token *token, bool popped)
 		{
 			delete m_pendingParen;  // release it's memory
 		}
-		m_pendingParen = NULL;  // reset pending token
+		m_pendingParen = nullptr;  // reset pending token
 	}
 }
 
@@ -1210,20 +1211,20 @@ void Translator::checkPendingParen(Token *token, bool popped)
 // function to pop the top item from the done stack and return the token
 // from the first to the last operand appropriate for an error token
 
-Token *Translator::doneStackPopErrorToken(void)
+TokenPtr Translator::doneStackPopErrorToken(void)
 {
-	Token *token = m_doneStack.top().first;
-	if (token == NULL)
+	TokenPtr token = m_doneStack.top().first;
+	if (token == nullptr)
 	{
 		// if no first operand token, set to token itself
 		token = m_doneStack.top().rpnItem->token();
 	}
 	else
 	{
-		m_doneStack.top().first = NULL;  // prevent delete when top dropped
+		m_doneStack.top().first = nullptr;  // prevent delete when top dropped
 	}
 	// if last operand token set, set error token through last token
-	if (m_doneStack.top().last != NULL)
+	if (m_doneStack.top().last != nullptr)
 	{
 		token->setThrough(m_doneStack.top().last);
 	}
@@ -1288,8 +1289,8 @@ void Translator::cleanUp(void)
 	while (!m_holdStack.empty())
 	{
 		// delete first token in command stack item
-		Token *token = m_holdStack.top().first;
-		if (token != NULL)
+		TokenPtr token = m_holdStack.top().first;
+		if (token != nullptr)
 		{
 			DoneItem::deleteOpenParen(token);
 		}
@@ -1306,10 +1307,10 @@ void Translator::cleanUp(void)
 	m_output.clear();
 
 	// need to delete pending parentheses
-	if (m_pendingParen != NULL)
+	if (m_pendingParen != nullptr)
 	{
 		delete m_pendingParen;
-		m_pendingParen = NULL;
+		m_pendingParen = nullptr;
 	}
 }
 

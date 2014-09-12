@@ -292,7 +292,7 @@ bool Tester::run(CommandLine *commandLine)
 void Tester::parseInput(const QString &testInput)
 {
 	Parser parser;
-	Token *token;
+	TokenPtr token;
 	bool more;
 
 	parser.setInput(QString(testInput));
@@ -517,7 +517,7 @@ static const char *tokenTypeName(Token::Type type)
 
 
 // function to print the contents of a token
-bool Tester::printToken(Token *token, bool tab)
+bool Tester::printToken(const TokenPtr &token, bool tab)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"

@@ -29,12 +29,12 @@
 
 
 // INPUT command translate function
-Token::Status inputTranslate(Translator &translator, Token *commandToken,
-	Token *&token)
+Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token)
 {
 	Token::Status status;
 	bool done;
-	Token *inputToken;
+	TokenPtr inputToken;
 
 	if (commandToken->isCode(Input_Code))
 	{

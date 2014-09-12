@@ -30,7 +30,7 @@
 
 // REM FUNCTIONS
 
-quint16 remEncode(ProgramModel *programUnit, Token *token)
+quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->remDictionary()->add(token, Qt::CaseSensitive);
 }
@@ -60,13 +60,13 @@ void ConstNumInfo::addElement(void)
 	m_valueInt.resize(m_valueInt.size() + 1);
 }
 
-void ConstNumInfo::setElement(int index, Token *token)
+void ConstNumInfo::setElement(int index, const TokenPtr &token)
 {
 	m_value[index] = token->value();
 	m_valueInt[index] = token->valueInt();
 }
 
-quint16 constNumEncode(ProgramModel *programUnit, Token *token)
+quint16 constNumEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->constNumDictionary()->add(token);
 }
@@ -93,7 +93,7 @@ void ConstStrInfo::addElement(void)
 	m_value.append(new QString);
 }
 
-void ConstStrInfo::setElement(int index, Token *token)
+void ConstStrInfo::setElement(int index, const TokenPtr &token)
 {
 	*m_value[index] = token->string();
 }
@@ -112,7 +112,7 @@ ConstStrInfo::~ConstStrInfo(void)
 }
 
 
-quint16 constStrEncode(ProgramModel *programUnit, Token *token)
+quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->constStrDictionary()->add(token, Qt::CaseSensitive);
 }
@@ -139,17 +139,17 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 // VARIABLE FUNCTIONS
 
-quint16 varDblEncode(ProgramModel *programUnit, Token *token)
+quint16 varDblEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varDblDictionary()->add(token);
 }
 
-quint16 varIntEncode(ProgramModel *programUnit, Token *token)
+quint16 varIntEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varIntDictionary()->add(token);
 }
 
-quint16 varStrEncode(ProgramModel *programUnit, Token *token)
+quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varStrDictionary()->add(token);
 }

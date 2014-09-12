@@ -45,7 +45,7 @@ public:
 		m_pos = 0;
 		m_operandState = false;
 	}
-	Token *token(bool operandState = false);
+	TokenPtr token(bool operandState = false);
 
 private:
 	// main functions
@@ -62,7 +62,7 @@ private:
 	Table &m_table;			// pointer to the table object
 	QString m_input;		// input line being parsed
 	int m_pos;				// index to current position in input string
-	Token *m_token;			// pointer to working token (to be returned)
+	TokenPtr m_token;		// pointer to working token (to be returned)
 	bool m_operandState;	// currently operand state flag (2011-03-27)
 };
 

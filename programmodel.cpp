@@ -636,7 +636,7 @@ ProgramCode ProgramModel::encode(const RpnList &input)
 
 	for (RpnItemPtr rpnItem : input)
 	{
-		Token *token = rpnItem->token();
+		TokenPtr token = rpnItem->token();
 		programLine[token->index()].setInstruction(token->code(),
 			token->subCodes());
 		EncodeFunction encode = m_table.encodeFunction(token->code());
@@ -672,7 +672,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 	ProgramWord *line = m_code.data() + lineInfo.offset;
 	for (int i = 0; i < lineInfo.size; i++)
 	{
-		Token *token = new Token;
+		TokenPtr token = new Token;
 		token->setCode(line[i].instructionCode());
 		token->addSubCode(line[i].instructionSubCode());
 

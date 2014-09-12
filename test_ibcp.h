@@ -32,6 +32,7 @@ class QTextStream;
 
 class CommandLine;
 class Token;
+using TokenPtr = Token *;
 class Recreator;
 class RpnItem;
 class RpnList;
@@ -87,7 +88,7 @@ private:
 		// no 'tr()' for this string - must match expected results file
 		m_cout << endl << "Input: " << inputLine << endl;
 	}
-	bool printToken(Token *token, bool tab);
+	bool printToken(const TokenPtr &token, bool tab);
 	void printError(int column, int length, const QString &error);
 
 	QString m_programName;			// name of program

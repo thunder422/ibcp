@@ -33,7 +33,7 @@
 //   - no action if first operand token pointer is not set
 //   - no action if first operand token is not an open parentheses token
 
-void DoneItem::deleteOpenParen(Token *token)
+void DoneItem::deleteOpenParen(TokenPtr token)
 {
 	if (token != NULL && token->isCode(OpenParen_Code))
 	{
@@ -51,7 +51,7 @@ void DoneItem::deleteOpenParen(Token *token)
 //     as a dummy parentheses token, then last operand flag is cleared
 //   - if closing parentheses token is not being used, then it is deleted
 
-void DoneItem::deleteCloseParen(Token *token)
+void DoneItem::deleteCloseParen(TokenPtr token)
 {
 	if (token != NULL && token->isCode(CloseParen_Code))
 	{

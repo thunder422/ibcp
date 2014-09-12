@@ -42,7 +42,7 @@ using RpnItemList = std::list<RpnItemPtr>;
 class RpnItem
 {
 public:
-	RpnItem(Token *token, RpnItemVector attached = RpnItemVector{}) :
+	RpnItem(TokenPtr token, RpnItemVector attached = RpnItemVector{}) :
 		m_token{token}, m_attached{attached}
 	{
 	}
@@ -52,11 +52,11 @@ public:
 	}
 
 	// access functions
-	Token *token(void)
+	TokenPtr token(void)
 	{
 		return m_token;
 	}
-	void setToken(Token *token)
+	void setToken(TokenPtr token)
 	{
 		m_token = token;
 	}
@@ -81,7 +81,7 @@ public:
 	}
 
 private:
-	Token *m_token;					// pointer to token
+	TokenPtr m_token;				// pointer to token
 	RpnItemVector m_attached;		// array of attached item pointers
 };
 
@@ -138,7 +138,7 @@ public:
 	{
 		return m_list.empty();
 	}
-	Token *lastToken(void) const
+	TokenPtr lastToken(void) const
 	{
 		return m_list.back()->token();
 	}
@@ -147,12 +147,12 @@ public:
 		m_list.clear();
 	}
 
-	RpnItemPtr append(Token *token, RpnItemVector attached = RpnItemVector{});
-	RpnItemList::iterator insert(RpnItemList::iterator iterator, Token *token)
+	RpnItemPtr append(TokenPtr token, RpnItemVector attached = RpnItemVector{});
+	RpnItemList::iterator insert(RpnItemList::iterator iterator, TokenPtr token)
 	{
 		return m_list.emplace(iterator, RpnItemPtr{new RpnItem{token}});
 	}
-	RpnItemList::iterator appendIterator(Token *token)
+	RpnItemList::iterator appendIterator(TokenPtr token)
 	{
 		token->removeSubCode(UnUsed_SubCode);  // mark as used
 		return insert(m_list.end(), token);
@@ -161,9 +161,9 @@ public:
 	{
 		return m_codeSize;
 	}
-	bool setCodeSize(Table &table, Token *&token);
+	bool setCodeSize(Table &table, TokenPtr &token);
 
-	void setError(Token *errorToken)
+	void setError(TokenPtr errorToken)
 	{
 		m_errorColumn = errorToken->column();
 		m_errorLength = errorToken->length();

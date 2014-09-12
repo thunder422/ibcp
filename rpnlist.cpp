@@ -96,7 +96,7 @@ bool RpnList::operator==(const RpnList &other) const
 
 // function to create an rpn item for a token and append it to the list
 
-RpnItemPtr RpnList::append(Token *token, RpnItemVector attached)
+RpnItemPtr RpnList::append(TokenPtr token, RpnItemVector attached)
 {
 	token->removeSubCode(UnUsed_SubCode);  // mark as used
 	m_list.emplace_back(RpnItemPtr{new RpnItem{token, attached}});
@@ -110,7 +110,7 @@ RpnItemPtr RpnList::append(Token *token, RpnItemVector attached)
 //   - sets code size required for encoded line
 //   - upon error returns token of code not yet implemented
 
-bool RpnList::setCodeSize(Table &table, Token *&token)
+bool RpnList::setCodeSize(Table &table, TokenPtr &token)
 {
 	// count number of program words needed
 	m_codeSize = 0;

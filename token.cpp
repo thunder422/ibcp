@@ -471,11 +471,11 @@ bool Token::operator==(const Token &other) const
 
 void *Token::operator new(size_t size)
 {
-	Token *token;
+	TokenPtr token;
 	if (s_freeStack.isEmpty())
 	{
 		// allocate the memory for the token
-		token = (Token *)::operator new(size);
+		token = (TokenPtr)::operator new(size);
 
 		// set index into used vector and add to vector
 		token->m_id = s_used.size();
@@ -505,7 +505,7 @@ void Token::operator delete(void *ptr)
 {
 	if (ptr != NULL)
 	{
-		Token *token = (Token *)ptr;
+		TokenPtr token = (TokenPtr)ptr;
 
 		if (s_used[token->m_id] == NULL)  // already deleted?
 		{

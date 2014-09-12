@@ -30,6 +30,7 @@
 #include <QStringList>
 
 class Token;
+using TokenPtr = Token *;
 
 
 class Dictionary
@@ -45,7 +46,8 @@ public:
 	};
 
 	void clear(void);
-	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
+	quint16 add(const TokenPtr &token,
+		Qt::CaseSensitivity cs = Qt::CaseInsensitive,
 		EntryType *returnNewEntry = NULL);
 	int remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	QString string(int index) const
@@ -69,7 +71,7 @@ public:
 	virtual ~AbstractInfo(void) {}
 	virtual void clear(void) {}
 	virtual void addElement(void) {}
-	virtual void setElement(int index, Token *token)
+	virtual void setElement(int index, const TokenPtr &token)
 	{
 		Q_UNUSED(index)
 		Q_UNUSED(token)
@@ -88,7 +90,8 @@ public:
 	~InfoDictionary(void);
 
 	void clear(void);
-	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+	quint16 add(const TokenPtr &token,
+		Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	void remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 
 protected:

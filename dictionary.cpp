@@ -47,7 +47,7 @@ void Dictionary::clear(void)
 }
 
 
-quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
+quint16 Dictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs,
 	Dictionary::EntryType *returnNewEntry)
 {
 	EntryType newEntry;
@@ -172,7 +172,7 @@ void InfoDictionary::clear(void)
 
 
 // function to possibly add a new dictionary entry and return its index
-quint16 InfoDictionary::add(Token *token, Qt::CaseSensitivity cs)
+quint16 InfoDictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs)
 {
 	EntryType returnNewEntry;
 	int index = Dictionary::add(token, cs, &returnNewEntry);

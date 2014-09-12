@@ -29,8 +29,8 @@
 
 
 // LET command translate function
-Token::Status letTranslate(Translator &translator, Token *commandToken,
-	Token *&token)
+Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token)
 {
 	Token::Status status;
 	int column;
@@ -62,7 +62,7 @@ Token::Status letTranslate(Translator &translator, Token *commandToken,
 				return status;
 			}
 			// next token determines error
-			Token *nextToken;
+			TokenPtr nextToken;
 			if ((status = translator.getToken(nextToken))
 				!= Token::Status::Good)
 			{
@@ -153,7 +153,7 @@ Token::Status letTranslate(Translator &translator, Token *commandToken,
 		return status;
 	}
 
-	Token *letToken = letStack.pop();
+	TokenPtr letToken = letStack.pop();
 	if (!letStack.isEmpty())
 	{
 		if (haveSubStr)
@@ -199,7 +199,7 @@ Token::Status letTranslate(Translator &translator, Token *commandToken,
 
 
 // function to append LET keyword if the option sub-code is set
-void letRecreate(Recreator &recreator, Token *token)
+void letRecreate(Recreator &recreator, TokenPtr token)
 {
 	if (token->hasSubCode(Option_SubCode))
 	{

@@ -30,11 +30,11 @@
 
 
 // PRINT command translate function
-Token::Status printTranslate(Translator &translator, Token *commandToken,
-	Token *&token)
+Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token)
 {
 	Token::Status status;
-	Token *lastSemiColon = NULL;
+	TokenPtr lastSemiColon {};
 	bool separator = false;
 	bool printFunction = false;
 
@@ -73,7 +73,8 @@ Token::Status printTranslate(Translator &translator, Token *commandToken,
 			}
 			else  // append appropriate print code for done stack top item
 			{
-				Token *printToken = translator.table().newToken(PrintDbl_Code);
+				TokenPtr printToken
+					= translator.table().newToken(PrintDbl_Code);
 				translator.processFinalOperand(printToken);
 				printFunction = false;
 			}

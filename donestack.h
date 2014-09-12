@@ -31,20 +31,21 @@
 class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 class Token;
+using TokenPtr = Token *;
 
 
 class DoneItem
 {
 public:
 	RpnItemPtr rpnItem;			// pointer to RPN item
-	Token *first;				// operator token's first operand pointer
-	Token *last;				// operator token's last operand pointer
+	TokenPtr first;				// operator token's first operand pointer
+	TokenPtr last;				// operator token's last operand pointer
 
 	DoneItem(RpnItemPtr _rpnItem) : rpnItem{_rpnItem}, first{nullptr},
 		last{nullptr} {}
-	DoneItem(RpnItemPtr _rpnItem, Token *_last) : rpnItem{_rpnItem},
+	DoneItem(RpnItemPtr _rpnItem, TokenPtr _last) : rpnItem{_rpnItem},
 		first{nullptr}, last{_last} {}
-	DoneItem(RpnItemPtr _rpnItem, Token *_first, Token *_last) :
+	DoneItem(RpnItemPtr _rpnItem, TokenPtr _first, TokenPtr _last) :
 		rpnItem{_rpnItem}, first{_first}, last{_last} {}
 	~DoneItem()
 	{
@@ -53,21 +54,21 @@ public:
 	}
 
 	// delete token if is an open parentheses
-	static void deleteOpenParen(Token *token);
+	static void deleteOpenParen(TokenPtr token);
 	void deleteOpenParen(void)
 	{
 		deleteOpenParen(first);
 	}
 
 	// delete token if is a close parentheses
-	static void deleteCloseParen(Token *token);
+	static void deleteCloseParen(TokenPtr token);
 	void deleteCloseParen(void)
 	{
 		deleteCloseParen(last);
 	}
 
 	// replace the item's first and last operand token
-	void replaceFirstLast(Token *_first, Token *_last)
+	void replaceFirstLast(TokenPtr _first, TokenPtr _last)
 	{
 		deleteOpenParen(first);
 		deleteCloseParen(last);

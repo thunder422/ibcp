@@ -1836,7 +1836,7 @@ RecreateFunction Table::recreateFunction(Code code) const
 //=================================
 
 // returns the unary operator code (or Null_Code if none) for token code
-Code Table::unaryCode(Token *token) const
+Code Table::unaryCode(const TokenPtr &token) const
 {
 	if (token->isType(Token::Type::Operator))
 	{
@@ -1851,7 +1851,7 @@ Code Table::unaryCode(Token *token) const
 
 // returns whether the token contains a unary operator code
 // (convenience function to avoid confusion)
-bool Table::isUnaryOperator(Token *token) const
+bool Table::isUnaryOperator(const TokenPtr &token) const
 {
 	return token->isType(Token::Type::Operator)
 		? operandCount(token) == 1 : false;
@@ -1859,7 +1859,7 @@ bool Table::isUnaryOperator(Token *token) const
 
 // returns whether the token is a unary or binary operator
 // (token type must be operator and have operands)
-bool Table::isUnaryOrBinaryOperator(Token *token) const
+bool Table::isUnaryOrBinaryOperator(const TokenPtr &token) const
 {
 	return token->isType(Token::Type::Operator)
 		? operandCount(token) > 0 : false;
@@ -1869,7 +1869,7 @@ bool Table::isUnaryOrBinaryOperator(Token *token) const
 //
 //   - the precedence is obtained from the token
 //   - if this is -1 then the precedences if obtained for the token's code
-int Table::precedence(Token *token) const
+int Table::precedence(const TokenPtr &token) const
 {
 	int prec = token->precedence();
 	return prec != -1 ? prec : precedence(token->code());
@@ -1878,27 +1878,27 @@ int Table::precedence(Token *token) const
 // returns the flags of the code contained in a token
 //
 //   - returns Null_Flag is the token does not contain a code
-int Table::hasFlag(Token *token, int flag) const
+int Table::hasFlag(const TokenPtr &token, int flag) const
 {
 	// (invalid code tokens have no flags)
 	return token->hasValidCode() ? hasFlag(token->code(), flag) : 0;
 }
 
 // returns number of operands expected for code in token token
-int Table::operandCount(Token *token) const
+int Table::operandCount(const TokenPtr &token) const
 {
 	ExprInfo *exprInfo = m_entry[token->code()].exprInfo;
 	return exprInfo == NULL ? 0 : exprInfo->m_operandCount;
 }
 
 // returns the expected data type for last operand for operator token
-DataType Table::expectedDataType(Token *token) const
+DataType Table::expectedDataType(const TokenPtr &token) const
 {
 	return expectedDataType(token->code());
 }
 
 // function to set a token for a code (code, token type and data type)
-void Table::setToken(Token *token, Code code)
+void Table::setToken(TokenPtr &token, Code code)
 {
 	token->setCode(code);
 	token->setType(type(code));
@@ -1906,16 +1906,16 @@ void Table::setToken(Token *token, Code code)
 }
 
 // function to create a new token and initialize it for a code
-Token *Table::newToken(Code code)
+TokenPtr Table::newToken(Code code)
 {
-	Token *token = new Token;	// allocates and initializes base members
+	TokenPtr token = new Token;	// allocates and initializes base members
 	setToken(token, code);		// initializes code related members
 	return token;
 }
 
 
 // function to return text for an command, operator or function code in a token
-QString Table::name(Token *token) const
+QString Table::name(const TokenPtr &token) const
 {
 	TableEntry &entry = m_entry[token->code()];
 	QString string = entry.name;
@@ -1935,7 +1935,7 @@ QString Table::name(Token *token) const
 //   - if no associated code, returns possible conversion code for data type
 //   - if no associated code, returns expected data type
 
-Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
+Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 {
 	DataType expectedDataType = operandDataType(token->code(), operandIndex);
 
@@ -2009,7 +2009,7 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 //   - if there are no associated codes, or none is found, returns false
 //   - upon success, sets the code, type and data type of the token
 
-bool Table::setTokenCode(Token *token, Code code, DataType dataType,
+bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 	int operandIndex)
 {
 	// first check if data type already matches data type of code

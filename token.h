@@ -36,6 +36,10 @@
 #include "ibcp.h"
 
 
+class Token;
+using TokenPtr = Token *;
+
+
 class Token
 {
 	Q_DECLARE_TR_FUNCTIONS(Token)
@@ -318,7 +322,7 @@ public:
 	}
 
 	// set length to include second token
-	Token *setThrough(Token *token2)
+	TokenPtr setThrough(const TokenPtr &token2)
 	{
 		m_length = token2->m_column - m_column + token2->m_length;
 		return this;
@@ -343,14 +347,14 @@ private:
 	static std::unordered_map<Type, bool, EnumClassHash> s_hasParen;
 	static std::unordered_map<Type, int, EnumClassHash> s_precendence;
 
-	class FreeStack : public QStack<Token *>
+	class FreeStack : public QStack<TokenPtr>
 	{
 	public:
 		~FreeStack(void);
 	};
 	static FreeStack s_freeStack;
 
-	class UsedVector : public QVector<Token *>
+	class UsedVector : public QVector<TokenPtr>
 	{
 	public:
 		~UsedVector(void);
@@ -383,7 +387,7 @@ private:
 
 
 // stack to hold tokens
-class TokenStack : public QStack<Token *>
+class TokenStack : public QStack<TokenPtr>
 {
 public:
 	~TokenStack(void)

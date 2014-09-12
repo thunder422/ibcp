@@ -48,7 +48,7 @@ class ConstNumInfo : public AbstractInfo
 public:
 	void clear(void);
 	void addElement(void);
-	void setElement(int index, Token *token);
+	void setElement(int index, const TokenPtr &token);
 
 	double *array(void)
 	{
@@ -89,7 +89,7 @@ public:
 	~ConstStrInfo(void);
 	void clear(void);
 	void addElement(void);
-	void setElement(int index, Token *token);
+	void setElement(int index, const TokenPtr &token);
 	void clearElement(int index);
 
 	QString **array(void)
@@ -117,21 +117,21 @@ public:
 
 
 // translate functions
-Token::Status inputTranslate(Translator &translator, Token *commandToken,
-	Token *&token);
-Token::Status letTranslate(Translator &translator, Token *commandToken,
-	Token *&token);
-Token::Status printTranslate(Translator &translator, Token *commandToken,
-	Token *&token);
+Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token);
+Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token);
+Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token);
 
 
 // encode functions
-quint16 remEncode(ProgramModel *programUnit, Token *token);
-quint16 constNumEncode(ProgramModel *programUnit, Token *token);
-quint16 constStrEncode(ProgramModel *programUnit, Token *token);
-quint16 varDblEncode(ProgramModel *programUnit, Token *token);
-quint16 varIntEncode(ProgramModel *programUnit, Token *token);
-quint16 varStrEncode(ProgramModel *programUnit, Token *token);
+quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 constNumEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 varDblEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 varIntEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token);
 
 
 // operand text functions
