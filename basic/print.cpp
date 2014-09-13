@@ -34,7 +34,7 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
 	Token::Status status;
-	TokenPtr lastSemiColon {};
+	TokenPtr lastSemiColon;
 	bool separator = false;
 	bool printFunction = false;
 
@@ -68,7 +68,7 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 		{
 			if (translator.doneStackTopToken()->isDataType(DataType::None))
 			{
-				translator.doneStackDrop();  // print function
+				translator.doneStackPop();  // print function
 				printFunction = true;
 			}
 			else  // append appropriate print code for done stack top item
@@ -79,55 +79,47 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 				printFunction = false;
 			}
 			separator = true;
-			delete lastSemiColon;
-			lastSemiColon = NULL;
+			lastSemiColon.reset();
 		}
 
 		if (token->isCode(Comma_Code))
 		{
-			if (lastSemiColon != NULL)
+			if (lastSemiColon)
 			{
 				status = Token::Status::ExpExprPfnOrEnd;
 				break;
 			}
-			translator.outputAppend(token);
-			delete lastSemiColon;
-			lastSemiColon = NULL;
+			translator.outputAppend(std::move(token));
+			lastSemiColon.reset();
 		}
 		else if (token->isCode(SemiColon_Code))
 		{
 			if (!separator)
 			{
-				status = lastSemiColon == NULL
-					? Token::Status::ExpExprCommaPfnOrEnd
-					: Token::Status::ExpExprPfnOrEnd;
+				status = lastSemiColon ? Token::Status::ExpExprPfnOrEnd
+					: Token::Status::ExpExprCommaPfnOrEnd;
 				break;
 			}
-			delete lastSemiColon;
-			lastSemiColon = token;
+			lastSemiColon = std::move(token);
 		}
 		else  // some other token, maybe end-of-statement
 		{
 			break;  // exit loop
 		}
 		separator = false;
-		token = NULL;
 	}
 
 	if (status != Token::Status::Done)
 	{
-		delete lastSemiColon;
-		delete commandToken;
 		return status;
 	}
 
-	if (lastSemiColon != NULL)
+	if (lastSemiColon)
 	{
 		// append last semicolon token as command token
-		delete commandToken;
-		commandToken = lastSemiColon;
+		commandToken = std::move(lastSemiColon);
 	}
-	translator.outputAppend(commandToken);
+	translator.outputAppend(std::move(commandToken));
 
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{

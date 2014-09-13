@@ -42,7 +42,6 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	}
 	else  // InputPrompt_Code
 	{
-		token = NULL;
 		status = translator.getExpression(token, DataType::String);
 		if (status != Token::Status::Done)
 		{
@@ -51,30 +50,27 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 			{
 				status = Token::Status::ExpSemiOrComma;
 			}
-			delete commandToken;
 			return status;
 		}
-		translator.doneStackDrop();
+		translator.doneStackPop();
 		if (token->isCode(Comma_Code))
 		{
 			token->addSubCode(Option_SubCode);
 		}
 		else if (!token->isCode(SemiColon_Code))
 		{
-			delete commandToken;
 			return Token::Status::ExpOpSemiOrComma;
 		}
 		token->setCode(InputBeginStr_Code);
 	}
 
 	// append input begin and save iterator where to insert input parse codes
-	auto insertPoint = translator.outputAppendIterator(token);
+	auto insertPoint = translator.outputAppendIterator(std::move(token));
 
 	// loop to read input variables
 	do
 	{
 		// get variable reference
-		token = NULL;
 		if ((status = translator.getOperand(token, DataType::Any,
 			Translator::Reference::Variable)) != Token::Status::Good)
 		{
@@ -90,13 +86,13 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 		if (token->isCode(Comma_Code))
 		{
 			done = false;
-			inputToken = token;
+			inputToken = std::move(token);
 		}
 		else if (token->isCode(SemiColon_Code))
 		{
 			commandToken->addSubCode(Option_SubCode);
 			done = true;
-			inputToken = token;
+			inputToken = std::move(token);
 
 			// get and check next token
 			if ((status = translator.getToken(token)) != Token::Status::Good)
@@ -108,7 +104,7 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 		else  // possible end-of-statement (checked below)
 		{
 			done = true;
-			inputToken = new Token;
+			inputToken = std::make_shared<Token>();
 		}
 
 		// change token to appropriate assign code and append to output
@@ -129,7 +125,6 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 
 	if (status != Token::Status::Good)
 	{
-		delete commandToken;
 		return status;
 	}
 	translator.outputAppend(commandToken);

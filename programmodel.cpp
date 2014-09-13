@@ -672,7 +672,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 	ProgramWord *line = m_code.data() + lineInfo.offset;
 	for (int i = 0; i < lineInfo.size; i++)
 	{
-		TokenPtr token = new Token;
+		TokenPtr token {new Token};
 		token->setCode(line[i].instructionCode());
 		token->addSubCode(line[i].instructionSubCode());
 

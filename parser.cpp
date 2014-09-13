@@ -35,27 +35,25 @@ Parser::Parser(void) :
 
 // function to get a token at the current position
 //
-//   - a pointer to the token is returned
-//   - the token must be deallocated when it is no longer needed
+//   - a shared pointer to the token is returned
+//   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
 TokenPtr Parser::token(bool operandState)
 {
 	m_operandState = operandState;
 	skipWhitespace();
-	m_token = new Token(m_pos);  // allocate new token to return
+	m_token = std::make_shared<Token>(m_pos);  // create new token to return
 	if (m_input[m_pos].isNull())
 	{
 		m_table.setToken(m_token, EOL_Code);
-		return m_token;
 	}
-
-	if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
+	else if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
 		m_token->setError(tr("unrecognizable character"), DataType::None);
 	}
-	return m_token;  // token may contain an error
+	return std::move(m_token);  // token may contain an error
 }
 
 

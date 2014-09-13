@@ -25,9 +25,10 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
+#include <stack>
+
 #include <QList>
 
-#include "donestack.h"
 #include "rpnlist.h"
 
 class Table;
@@ -66,7 +67,7 @@ public:
 
 	// Public Processing Functions
 	Token::Status processFinalOperand(TokenPtr &token,
-		TokenPtr token2 = nullptr, int operandIndex = 0);
+		TokenPtr token2 = TokenPtr{}, int operandIndex = 0);
 	Token::Status processDoneStackTop(TokenPtr &token, int operandIndex = 0,
 		TokenPtr *first = nullptr, TokenPtr *last = nullptr);
 
@@ -81,15 +82,9 @@ public:
 	}
 
 	// Done Stack Access Functions
-	RpnItemPtr doneStackPop(void)
+	void doneStackPop(void)
 	{
-		RpnItemPtr rpnItem = m_doneStack.top().rpnItem;
 		m_doneStack.pop();
-		return rpnItem;
-	}
-	void doneStackDrop(void)
-	{
-		 m_doneStack.pop();
 	}
 	TokenPtr doneStackTopToken(void) const
 	{
@@ -110,18 +105,18 @@ public:
 	{
 		return m_output.lastToken();
 	}
-	RpnItemPtr outputAppend(TokenPtr &token)
+	void outputAppend(TokenPtr token)
 	{
-		return m_output.append(token);
+		m_output.append(std::move(token));
 	}
 	RpnItemList::iterator outputInsert(RpnItemList::iterator iterator,
 		TokenPtr token)
 	{
 		return m_output.insert(iterator, token);
 	}
-	RpnItemList::iterator outputAppendIterator(TokenPtr &token)
+	RpnItemList::iterator outputAppendIterator(TokenPtr token)
 	{
-		return m_output.appendIterator(token);
+		return m_output.appendIterator(std::move(token));
 	}
 
 private:
@@ -133,18 +128,41 @@ private:
 	Token::Status processFirstOperand(TokenPtr &token);
 
 	// Private Support Functions
-	void checkPendingParen(const TokenPtr &token, bool popped);
+	enum class Popped {No, Yes};
+	void checkPendingParen(const TokenPtr &token, Popped popped);
 	void cleanUp(void);		// only called when error occurs
 
 	struct HoldItem
 	{
-		HoldItem(TokenPtr _token, TokenPtr _first = nullptr) : token{_token},
+		HoldItem(TokenPtr _token) : token{_token}, first{} {}
+		HoldItem(TokenPtr _token, TokenPtr _first) : token{_token},
 			first{_first} {}
 
 		TokenPtr token;				// token pointer on hold stack
 		TokenPtr first;				// operator token's first operand pointer
 	};
 	using HoldStack = std::stack<HoldItem>;
+
+	struct DoneItem
+	{
+		DoneItem(RpnItemPtr _rpnItem) : rpnItem{_rpnItem}, first{}, last{} {}
+		DoneItem(RpnItemPtr _rpnItem, TokenPtr _last) : rpnItem{_rpnItem},
+			first{}, last{_last} {}
+		DoneItem(RpnItemPtr _rpnItem, TokenPtr _first, TokenPtr _last) :
+			rpnItem{_rpnItem}, first{_first}, last{_last} {}
+
+		// replace the item's first and last operand token
+		void replaceFirstLast(TokenPtr _first, TokenPtr _last)
+		{
+			first = _first;
+			last = _last;
+		}
+
+		RpnItemPtr rpnItem;			// pointer to RPN item
+		TokenPtr first;				// operator token's first operand pointer
+		TokenPtr last;				// operator token's last operand pointer
+	};
+	using DoneStack = std::stack<DoneItem>;
 
 	Table &m_table;					// reference to the table instance
 	Parser *m_parser;				// pointer to parser instance

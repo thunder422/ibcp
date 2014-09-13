@@ -247,13 +247,6 @@ bool Tester::run(CommandLine *commandLine)
 			recreateInput(inputLine);
 			break;
 		}
-		// report any token leaks and extra token deletes
-		// FIXME temporary disable for encoder testing since program model
-		//       currently holds on to the rpn lists
-		if (m_option != OptEncoder)
-		{
-			Token::reportErrors();
-		}
 	}
 	if (!inputMode)
 	{
@@ -292,18 +285,13 @@ bool Tester::run(CommandLine *commandLine)
 void Tester::parseInput(const QString &testInput)
 {
 	Parser parser;
-	TokenPtr token;
 	bool more;
 
 	parser.setInput(QString(testInput));
-	do {
-		token = parser.token();
-		more = printToken(token, true);
-		if (more && token->isCode(EOL_Code))
-		{
-			more = false;
-		}
-		delete token;
+	do
+	{
+		TokenPtr token = parser.token();
+		more = printToken(token, true) && !token->isCode(EOL_Code);
 	}
 	while (more);
 }

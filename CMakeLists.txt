@@ -175,7 +175,6 @@ set(ibcp_SOURCES
 	basic/print.cpp
 	commandline.cpp
 	dictionary.cpp
-	donestack.cpp
 	errorlist.cpp
 	editbox.cpp
 	main.cpp

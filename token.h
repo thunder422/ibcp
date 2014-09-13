@@ -25,6 +25,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -37,7 +38,7 @@
 
 
 class Token;
-using TokenPtr = Token *;
+using TokenPtr = std::shared_ptr<Token>;
 
 
 class Token
@@ -136,9 +137,6 @@ public:
 	{
 		return !(*this == other);
 	}
-	// overload new and delete operators for memory management
-	void *operator new(size_t size);
-	void operator delete(void *ptr);
 
 	// column and length access functions
 	int column(void) const
@@ -239,7 +237,11 @@ public:
 	}
 
 	// sub-code access functions
-	int hasSubCode(int subCode) const
+	bool hasSubCode() const
+	{
+		return m_subCode;
+	}
+	bool hasSubCode(int subCode) const
 	{
 		return m_subCode & subCode;
 	}
@@ -322,10 +324,9 @@ public:
 	}
 
 	// set length to include second token
-	TokenPtr setThrough(const TokenPtr &token2)
+	void setThrough(const TokenPtr &token2)
 	{
 		m_length = token2->m_column - m_column + token2->m_length;
-		return this;
 	}
 
 	// other functions
@@ -336,39 +337,11 @@ public:
 
 	// static member functions
 	static const QString message(Status status);
-	static void reportErrors(void)
-	{
-		s_used.reportErrors();
-		s_deleted.reportErrors();
-	}
 
 private:
 	// static members
 	static std::unordered_map<Type, bool, EnumClassHash> s_hasParen;
 	static std::unordered_map<Type, int, EnumClassHash> s_precendence;
-
-	class FreeStack : public QStack<TokenPtr>
-	{
-	public:
-		~FreeStack(void);
-	};
-	static FreeStack s_freeStack;
-
-	class UsedVector : public QVector<TokenPtr>
-	{
-	public:
-		~UsedVector(void);
-		void reportErrors(void);
-	};
-	static UsedVector s_used;
-
-	class DeletedList : public QStringList
-	{
-	public:
-		~DeletedList(void);
-		void reportErrors(void);
-	};
-	static DeletedList s_deleted;
 
 	// instance members
 	int m_id;				// private ID (index) for detecting token leaks
@@ -383,21 +356,6 @@ private:
 	double m_value;			// double value for constant token
 	int m_valueInt;			// integer value for constant token (if possible)
 	int m_index;			// index within encoded program code line
-};
-
-
-// stack to hold tokens
-class TokenStack : public QStack<TokenPtr>
-{
-public:
-	~TokenStack(void)
-	{
-		// delete any tokens left in stack when stack goes out of scope
-		while (!isEmpty())
-		{
-			delete pop();
-		}
-	}
 };
 
 

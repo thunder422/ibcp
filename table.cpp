@@ -1908,7 +1908,7 @@ void Table::setToken(TokenPtr &token, Code code)
 // function to create a new token and initialize it for a code
 TokenPtr Table::newToken(Code code)
 {
-	TokenPtr token = new Token;	// allocates and initializes base members
+	TokenPtr token {new Token};	// allocates and initializes base members
 	setToken(token, code);		// initializes code related members
 	return token;
 }

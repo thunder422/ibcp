@@ -25,6 +25,8 @@
 #ifndef TEST_IBCP_H
 #define TEST_IBCP_H
 
+#include <memory>
+
 #include <QCoreApplication>
 #include <QStringList>
 
@@ -32,7 +34,7 @@ class QTextStream;
 
 class CommandLine;
 class Token;
-using TokenPtr = Token *;
+using TokenPtr = std::shared_ptr<Token>;
 class Recreator;
 class RpnItem;
 class RpnList;

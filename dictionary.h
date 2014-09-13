@@ -25,12 +25,14 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
+#include <memory>
+
 #include <QHash>
 #include <QStack>
 #include <QStringList>
 
 class Token;
-using TokenPtr = Token *;
+using TokenPtr = std::shared_ptr<Token>;
 
 
 class Dictionary

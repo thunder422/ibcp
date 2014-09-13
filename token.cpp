@@ -49,91 +49,6 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 	{Type::Paren, 2}
 };
 
-Token::FreeStack Token::s_freeStack;	// stack of free tokens
-Token::UsedVector Token::s_used;		// vector of tokens currently in use
-Token::DeletedList Token::s_deleted;	// list of tokens deleted extra times
-
-
-// destructor function for the token free stack
-//
-//   - called automatically at the end of the application
-//   - deletes memory used by the token on the free stack
-
-Token::FreeStack::~FreeStack(void)
-{
-	// delete any tokens left in the free stack
-	while (!isEmpty())
-	{
-		::operator delete(s_freeStack.pop());
-	}
-}
-
-
-// destructor function for the used token vector
-//
-//   - called automatically at the end of the application
-//   - to report token leaks before application terminates
-
-Token::UsedVector::~UsedVector(void)
-{
-	reportErrors();
-}
-
-
-// function to report token leak errors and delete them
-//
-//   - reports any tokens marked as used and deletes them
-//   - to report token leaks at any time (for testing)
-
-void Token::UsedVector::reportErrors(void)
-{
-	bool first = false;
-	for (int i = 0; i < s_used.size(); i++)
-	{
-		if (s_used[i] != NULL)
-		{
-			if (!first)
-			{
-				qCritical("Token Leaks:");
-				first = true;
-			}
-			qCritical("  %d: %s", i, s_used[i]->text().c_str());
-			::operator delete(s_used[i]);
-			s_used[i] = NULL;
-		}
-	}
-}
-
-
-// destructor function for the list of extra token deletes
-//
-//   - called automatically at the end of the application
-//   - to report extra token deletes before application terminates
-
-Token::DeletedList::~DeletedList(void)
-{
-	reportErrors();
-}
-
-
-// function to report extra token deletes errors
-//
-//   - outputs strings contained in the deleted list
-//   - to report extra token deletes at any time (for testing)
-
-void Token::DeletedList::reportErrors(void)
-{
-	if (!s_deleted.isEmpty())
-	{
-		qCritical("Token Extra Deletes:");
-		for (int i = 0; i < s_deleted.size(); i++)
-		{
-			qCritical("  %s", qPrintable(s_deleted[i]));
-		}
-		s_deleted.clear();
-	}
-}
-
 
 // function to set the default data type of the token
 void Token::setDataType(void)
@@ -213,7 +128,7 @@ std::string Token::text()
 			ss << '?';
 		}
 		ss << m_string.toStdString();
-		if (table.hasFlag(this, Reference_Flag))
+		if (table.hasFlag(m_code, Reference_Flag))
 		{
 			ss << "<ref>";
 		}
@@ -289,7 +204,7 @@ std::string Token::text()
 	{
 		ss << "<ref>";
 	}
-	if (hasSubCode(~(Used_SubCode | UnUsed_SubCode)))
+	if (hasSubCode())
 	{
 		ss << '\'';
 		if (hasSubCode(Paren_SubCode))
@@ -459,64 +374,6 @@ bool Token::operator==(const Token &other) const
 	else
 	{
 		return m_string.compare(other.m_string, Qt::CaseInsensitive) == 0;
-	}
-}
-
-
-// function to overload the default new operator
-//
-//   - if available tokens on free stack then pops one and returns it
-//   - otherwise new memory is allocated
-//   - token pointer is added to the used vector
-
-void *Token::operator new(size_t size)
-{
-	TokenPtr token;
-	if (s_freeStack.isEmpty())
-	{
-		// allocate the memory for the token
-		token = (TokenPtr)::operator new(size);
-
-		// set index into used vector and add to vector
-		token->m_id = s_used.size();
-		s_used.append(token);
-	}
-	else  // get a token from the free stack
-	{
-		token = s_freeStack.pop();
-
-		// mark token as used
-		s_used[token->m_id] = token;
-	}
-
-	// return pointer to new token
-	return token;
-}
-
-
-// function to overload the default delete operator
-//
-//   - ignores null pointer values
-//   - pushes token to free stack, does not delete the token
-//   - if token was already deleted then adds text of token to deleted list
-//   - otherwise token pointer is removed from the used vector
-
-void Token::operator delete(void *ptr)
-{
-	if (ptr != NULL)
-	{
-		TokenPtr token = (TokenPtr)ptr;
-
-		if (s_used[token->m_id] == NULL)  // already deleted?
-		{
-			s_deleted.append(QString("%1: %2").arg(token->m_id)
-				.arg(QString::fromStdString(token->text())));
-		}
-		else  // mark token as unused and cache on free stack
-		{
-			s_used[token->m_id] = NULL;
-			s_freeStack.push(token);
-		}
 	}
 }
 

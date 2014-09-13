@@ -37,10 +37,10 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 	bool hidden;
 	DataType dataType;
 	bool done;
-	TokenStack letStack;
+	std::stack<TokenPtr> letStack;
 	bool haveSubStr = false;
 
-	if (commandToken == NULL)
+	if (!commandToken)
 	{
 		column = token->column();
 		hidden = true;
@@ -48,7 +48,6 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 	else  // delete unneeded command token and get another token
 	{
 		column = commandToken->column();
-		delete commandToken;
 		hidden = false;
 	}
 	dataType = DataType::Any;
@@ -76,7 +75,6 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 			{
 				status = Token::Status::ExpCmd;
 			}
-			delete nextToken;
 			return status;
 		}
 
@@ -104,14 +102,10 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 		if (translator.table().hasFlag(translator.doneStackTopToken(),
 			SubStr_Flag))
 		{
-			// delete comma/equal token, use sub-string function token
-			delete token;
-
 			// get sub-string function token from rpn item on top of stack
 			// (delete rpn item since it was not appended to output)
-			RpnItemPtr rpnItem = translator.doneStackPop();
-			token = rpnItem->token();
-			rpnItem->setToken(NULL);  // prevent delete of token
+			token = translator.doneStackTopToken();
+			translator.doneStackPop();
 
 			// change to assign sub-string code (first associated code)
 			translator.table().setToken(token,
@@ -129,7 +123,6 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 				return status;
 			}
 		}
-		letStack.push(token);  // save token
 
 		// get data type for assignment
 		if (dataType == DataType::Any)
@@ -137,7 +130,7 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 			dataType = token->dataType();
 		}
 
-		token = NULL;
+		letStack.emplace(std::move(token));  // save token
 	}
 	while (!done);
 
@@ -153,8 +146,9 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 		return status;
 	}
 
-	TokenPtr letToken = letStack.pop();
-	if (!letStack.isEmpty())
+	TokenPtr letToken = letStack.top();
+	letStack.pop();
+	if (!letStack.empty())
 	{
 		if (haveSubStr)
 		{
@@ -166,10 +160,11 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 					translator.table().associatedCode(letToken->code()));
 
 				// append to output and pop next token from let stack
-				translator.outputAppend(letToken);
-				letToken = letStack.pop();
+				translator.outputAppend(std::move(letToken));
+				letToken = letStack.top();
+				letStack.pop();
 			}
-			while (!letStack.isEmpty());  // continue until last token
+			while (!letStack.empty());  // continue until last token
 		}
 		else  // have a multiple assignment, change to list code
 		{
@@ -178,15 +173,15 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 		}
 	}
 
-	// drop expresion result from done stack, append last assignment token
-	translator.doneStackDrop();
-	translator.outputAppend(letToken);
-
 	// set hidden LET flag if needed
 	if (!hidden)
 	{
 		letToken->addSubCode(Option_SubCode);
 	}
+
+	// drop expresion result from done stack, append last assignment token
+	translator.doneStackPop();
+	translator.outputAppend(std::move(letToken));
 
 	// check terminating token for end-of-statement
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
