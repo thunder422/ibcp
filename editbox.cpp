@@ -126,10 +126,9 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		else if (event->modifiers() & Qt::ControlModifier
 			|| cursor.atBlockEnd())
 		{
-			event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
-				Qt::NoModifier);
-			QPlainTextEdit::keyPressEvent(event);
-			delete event;
+			std::unique_ptr<QKeyEvent> event {new QKeyEvent(QEvent::KeyPress,
+				Qt::Key_Return, Qt::NoModifier)};
+			QPlainTextEdit::keyPressEvent(event.get());
 			return;
 		}
 		else  // intercept Return when cursor is not at the end of a line

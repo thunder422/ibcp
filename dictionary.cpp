@@ -150,19 +150,6 @@ QString Dictionary::debugText(const QString header)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// constructor function - save the information instance pointer
-InfoDictionary::InfoDictionary(void) :
-	m_info(NULL)
-{
-
-}
-
-InfoDictionary::~InfoDictionary(void)
-{
-	delete m_info;
-}
-
-
 // function to reset the dictionary
 void InfoDictionary::clear(void)
 {

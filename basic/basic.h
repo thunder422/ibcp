@@ -69,16 +69,16 @@ class ConstNumDictionary : public InfoDictionary
 public:
 	ConstNumDictionary(void)
 	{
-		m_info = new ConstNumInfo;
+		m_info.reset(new ConstNumInfo);
 	}
 
 	double *array(void)
 	{
-		return ((ConstNumInfo *)m_info)->array();
+		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->array();
 	}
 	int *arrayInt(void)
 	{
-		return ((ConstNumInfo *)m_info)->arrayInt();
+		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->arrayInt();
 	}
 };
 
@@ -106,12 +106,12 @@ class ConstStrDictionary : public InfoDictionary
 public:
 	ConstStrDictionary(void)
 	{
-		m_info = new ConstStrInfo;
+		m_info.reset(new ConstStrInfo);
 	}
 
 	QString **array(void)
 	{
-		return ((ConstStrInfo *)m_info)->array();
+		return (dynamic_cast<ConstStrInfo *>(m_info.get()))->array();
 	}
 };
 

@@ -129,9 +129,8 @@ void CommandLine::coutClose(void)
 {
 	if (m_cout.device())
 	{
-		QIODevice *output = m_cout.device();
+		std::unique_ptr<QIODevice> output {m_cout.device()};
 		m_cout.setDevice(0);
-		delete output;
 	}
 }
 

@@ -30,16 +30,9 @@
 
 Translator::Translator(void) :
 	m_table(Table::instance()),
-	m_parser(new Parser),
-	m_pendingParen(nullptr)
+	m_parser {new Parser}
 {
 
-}
-
-
-Translator::~Translator(void)
-{
-	delete m_parser;
 }
 
 

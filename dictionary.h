@@ -88,8 +88,7 @@ public:
 class InfoDictionary : public Dictionary
 {
 public:
-	InfoDictionary(void);
-	~InfoDictionary(void);
+	InfoDictionary() {}
 
 	void clear(void);
 	quint16 add(const TokenPtr &token,
@@ -97,7 +96,7 @@ public:
 	void remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 
 protected:
-	AbstractInfo *m_info;				// pointer to additional information
+	std::unique_ptr<AbstractInfo> m_info;	// pointer to additional information
 };
 
 

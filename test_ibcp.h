@@ -30,16 +30,17 @@
 #include <QCoreApplication>
 #include <QStringList>
 
+#include "programmodel.h"
+#include "recreator.h"
+#include "translator.h"
+
 class QTextStream;
 
 class CommandLine;
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
-class Recreator;
 class RpnItem;
 class RpnList;
-class Translator;
-class ProgramModel;
 
 class Tester
 {
@@ -47,7 +48,6 @@ class Tester
 
 public:
 	explicit Tester(const QStringList &args, QTextStream &cout);
-	~Tester(void);
 
 	static QStringList options(void);
 	bool run(CommandLine *commandLine);
@@ -99,9 +99,9 @@ private:
 	QString m_testName;				// name of test
 	QString m_testFileName;			// name of test file (OptFile only)
 	QTextStream &m_cout;			// reference to output device
-	Translator *m_translator;		// program line translator instance
-	ProgramModel *m_programUnit; 	// program unit (has translator instance)
-	Recreator *m_recreator;			// token list recreator instance
+	std::unique_ptr<Translator> m_translator;		// translator instance
+	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
+	std::unique_ptr<Recreator> m_recreator;			// recreator instance
 	QString m_errorMessage;			// message if error occurred
 };
 

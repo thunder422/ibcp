@@ -32,8 +32,6 @@
 #include <QTimer>
 
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "commandline.h"
 #include "editbox.h"
 #include "programmodel.h"
 #include "recentfiles.h"
@@ -41,9 +39,9 @@
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
-	ui(new Ui::MainWindow)
+	ui {new Ui::MainWindow}
 {
-	m_commandLine = new CommandLine(qApp->arguments());
+	m_commandLine.reset(new CommandLine(qApp->arguments()));
 	if (m_commandLine->processed())
 	{
 		// don't start GUI and retrieve the return code
@@ -570,13 +568,6 @@ void MainWindow::settingsSave(void)
 	m_recentPrograms->save(settings);
 	m_program.settingsSave(settings);
 	settings.setValue(curDirectorySettingsName, m_curDirectory);
-}
-
-
-MainWindow::~MainWindow(void)
-{
-	delete ui;
-	delete m_commandLine;
 }
 
 

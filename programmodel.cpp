@@ -23,10 +23,8 @@
 //	2013-03-15	initial version
 
 #include "programmodel.h"
-#include "recreator.h"
 #include "rpnlist.h"
 #include "table.h"
-#include "translator.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,31 +82,19 @@ QString ProgramWord::operandDebugText(QString text) const
 ProgramModel::ProgramModel(QObject *parent) :
 	QAbstractListModel(parent),
 	m_table(Table::instance()),
-	m_translator(new Translator),
-	m_recreator(new Recreator)
+
+	m_translator {new Translator},
+	m_recreator {new Recreator},
+
+	m_remDictionary {new Dictionary},
+	m_constNumDictionary {new ConstNumDictionary},
+	m_constStrDictionary {new ConstStrDictionary},
+
+	m_varDblDictionary {new Dictionary},
+	m_varIntDictionary {new Dictionary},
+	m_varStrDictionary {new Dictionary}
 {
-	m_remDictionary = new Dictionary;
-	m_constNumDictionary = new ConstNumDictionary;
-	m_constStrDictionary = new ConstStrDictionary;
 
-	m_varDblDictionary = new Dictionary;
-	m_varIntDictionary = new Dictionary;
-	m_varStrDictionary = new Dictionary;
-}
-
-
-ProgramModel::~ProgramModel(void)
-{
-	delete m_translator;
-	delete m_recreator;
-
-	delete m_remDictionary;
-	delete m_constNumDictionary;
-	delete m_constStrDictionary;
-
-	delete m_varDblDictionary;
-	delete m_varIntDictionary;
-	delete m_varStrDictionary;
 }
 
 

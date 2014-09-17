@@ -29,17 +29,16 @@
 
 #include <QList>
 
+#include "parser.h"
 #include "rpnlist.h"
 
 class Table;
-class Parser;
 
 
 class Translator
 {
 public:
 	explicit Translator(void);
-	~Translator(void);
 
 	enum class TestMode {
 		No,				// do normal translation
@@ -165,7 +164,7 @@ private:
 	using DoneStack = std::stack<DoneItem>;
 
 	Table &m_table;					// reference to the table instance
-	Parser *m_parser;				// pointer to parser instance
+	std::unique_ptr<Parser> m_parser;	// pointer to parser instance
 	RpnList m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack
 	DoneStack m_doneStack;			// items processed stack

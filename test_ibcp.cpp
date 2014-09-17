@@ -32,18 +32,15 @@
 #include "commandline.h"
 #include "table.h"
 #include "parser.h"
-#include "programmodel.h"
-#include "recreator.h"
-#include "translator.h"
 
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
 Tester::Tester(const QStringList &args, QTextStream &cout) :
 	m_cout(cout),
-	m_translator(new Translator),
-	m_programUnit(new ProgramModel),
-	m_recreator(new Recreator)
+	m_translator {new Translator},
+	m_programUnit {new ProgramModel},
+	m_recreator {new Recreator}
 {
 	QString name[OptSizeOf];
 	name[OptParser] = "parser";
@@ -120,14 +117,6 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 		}
 	}
 	// ignore non-test or invalid test options
-}
-
-
-Tester::~Tester(void)
-{
-	delete m_translator;
-	delete m_programUnit;
-	delete m_recreator;
 }
 
 
