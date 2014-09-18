@@ -82,7 +82,7 @@ private:
 		QString name);
 	void parseInput(const QString &testInput);
 	RpnList translateInput(const QString &testInput, bool exprMode,
-		const char *header = NULL);
+		const char *header = nullptr);
 	void recreateInput(const QString &testInput);
 	void encodeInput(QString &testInput);
 	void printInput(const QString &inputLine)

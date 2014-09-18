@@ -39,9 +39,10 @@ public:
 		Input,
 		Code
 	};
-	ErrorItem(void);
+	ErrorItem() : m_type {Type::None} {}
 	ErrorItem(Type type, int lineNumber, int column, int length,
-		const QString &message);
+		const QString &message) :  m_type {type}, m_lineNumber {lineNumber},
+		m_column {column}, m_length {length}, m_message {message} {}
 
 	bool isEmpty(void) const
 	{
@@ -93,7 +94,8 @@ private:
 class ErrorList : public QList<ErrorItem>
 {
 public:
-	ErrorList(void);
+	ErrorList() : m_changed(false) {}
+
 	int find(int lineNumber) const;
 	int findIndex(int lineNumber) const;
 	void insert(int index, const ErrorItem &value);

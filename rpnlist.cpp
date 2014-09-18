@@ -29,11 +29,6 @@
 #include "table.h"
 
 
-RpnList::~RpnList(void)
-{
-}
-
-
 // function to recreate text (abbreviated contents) of list
 QString RpnList::text()
 {

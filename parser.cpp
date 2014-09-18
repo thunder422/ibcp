@@ -86,13 +86,13 @@ bool Parser::getIdentifier(void)
 		return true;
 	}
 
-	int pos = scanWord(m_pos, dataType, paren);
+	int pos {scanWord(m_pos, dataType, paren)};
 	if (pos == -1)
 	{
 		return false;  // not an identifier
 	}
 
-	int len = pos - m_pos;
+	int len {pos - m_pos};
 	// defined function?
 	if (m_input.midRef(m_pos).startsWith("FN", Qt::CaseInsensitive))
 	{
@@ -124,7 +124,7 @@ bool Parser::getIdentifier(void)
 	{
 		search = PlainWord_SearchType;
 	}
-	Code code = m_table.search(search, m_input.midRef(m_pos, len));
+	Code code {m_table.search(search, m_input.midRef(m_pos, len))};
 	if (code == Invalid_Code)
 	{
 		// word not found in table, therefore
@@ -148,7 +148,7 @@ bool Parser::getIdentifier(void)
 		return true;
 	}
 	// found word in table (command, internal function, or operator)
-	int word1 = m_pos;  // save position of first word
+	int word1 {m_pos};  // save position of first word
 	m_pos = pos;  // move position past first word
 
 	// setup token in case this is only one word
@@ -164,7 +164,7 @@ bool Parser::getIdentifier(void)
 	// command could be a two word command
 	skipWhitespace();
 	pos = scanWord(m_pos, dataType, paren);
-	int len2 = pos - m_pos;
+	int len2 {pos - m_pos};
 	if (dataType != DataType::None || paren
 		|| (code = m_table.search(m_input.midRef(word1, len),
 		m_input.midRef(m_pos, len2))) == Invalid_Code)
@@ -283,11 +283,11 @@ bool Parser::getNumber(void)
 	QString ExpDigits_ErrMsg(tr("expected digits in floating point constant"));
 	QString FPOutOfRange_ErrMsg(tr("floating point constant is out of range"));
 
-	bool digits = false;		// digits were found flag
-	bool decimal = false;		// decimal point was found flag
-	bool sign = false;			// have negative sign flag (2011-03-27)
+	bool digits {};				// digits were found flag
+	bool decimal {};			// decimal point was found flag
+	bool sign {};				// have negative sign flag (2011-03-27)
 
-	int pos = m_pos;
+	int pos {m_pos};
 	forever
 	{
 		if (m_input[pos].isDigit())
@@ -394,8 +394,8 @@ bool Parser::getNumber(void)
 	}
 	// pos pointing to first character that is not part of constant
 	bool ok;
-	int len = pos - m_pos;
-	QString numStr = m_input.mid(m_pos, len);
+	int len {pos - m_pos};
+	QString numStr {m_input.mid(m_pos, len)};
 
 	// save string of number so it later can be reproduced
 	m_token->setString(numStr);
@@ -466,8 +466,8 @@ bool Parser::getString(void)
 		return false;  // not a sting constant
 	}
 
-	int pos = m_pos + 1;
-	int len = 0;
+	int pos {m_pos + 1};
+	int len {};
 	while (!m_input[pos].isNull())
 	{
 		if (m_input[pos] == '"')
@@ -504,7 +504,7 @@ bool Parser::getString(void)
 bool Parser::getOperator(void)
 {
 	// search table for current character to see if it is a valid operator
-	Code code = m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1));
+	Code code {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1))};
 	if (code != Invalid_Code)
 	{
 		// current character is a valid single character operator
@@ -532,7 +532,7 @@ bool Parser::getOperator(void)
 	}
 	// operator could be a two character operator
 	// search table again for two characters at current position
-	Code code2 = m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 2));
+	Code code2 {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 2))};
 	if (code2 == Invalid_Code)
 	{
 		if (code != Invalid_Code)  // was first character a valid operator?

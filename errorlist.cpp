@@ -25,31 +25,6 @@
 #include "errorlist.h"
 
 
-// constructor function to set null error item
-ErrorItem::ErrorItem(void)
-{
-	m_type = Type::None;
-}
-
-
-// constructor function to set error item
-ErrorItem::ErrorItem(Type type, int lineNumber, int column, int length,
-	const QString &message)
-{
-	m_type = type;
-	m_lineNumber = lineNumber;
-	m_column = column;
-	m_length = length;
-	m_message = message;
-}
-
-
-ErrorList::ErrorList(void) :
-	m_changed(false)
-{
-}
-
-
 // function to look for an error by line number
 //
 //   - uses a binary search to find the line number
@@ -60,13 +35,13 @@ ErrorList::ErrorList(void) :
 
 int ErrorList::find(int lineNumber) const
 {
-	int lo = 0;
-	int hi = count();
+	int lo {0};
+	int hi {count()};
 	int mid;
 
 	while ((mid = lo + (hi - lo) / 2) < hi)
 	{
-		int match = lineNumber - at(mid).lineNumber();
+		int match {lineNumber - at(mid).lineNumber()};
 		if (match == 0)
 		{
 			break;
@@ -91,7 +66,7 @@ int ErrorList::find(int lineNumber) const
 
 int ErrorList::findIndex(int lineNumber) const
 {
-	int errIndex = find(lineNumber);
+	int errIndex {find(lineNumber)};
 	return errIndex < size() && lineNumber == at(errIndex).lineNumber()
 		? errIndex : -1;
 }

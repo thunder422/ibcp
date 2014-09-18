@@ -35,8 +35,8 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 {
 	Token::Status status;
 	TokenPtr lastSemiColon;
-	bool separator = false;
-	bool printFunction = false;
+	bool separator {};
+	bool printFunction {};
 
 	forever
 	{

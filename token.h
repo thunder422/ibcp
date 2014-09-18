@@ -30,9 +30,7 @@
 #include <unordered_map>
 
 #include <QCoreApplication>
-#include <QStack>
 #include <QString>
-#include <QStringList>
 
 #include "ibcp.h"
 
@@ -294,7 +292,7 @@ public:
 		m_dataType = dataType;
 		m_string = msg;
 	}
-	void setError(int column, const QString  &msg)
+	void setError(int column, const QString &msg)
 	{
 		m_length = -column;  // assume length=1, specifies alternate column
 		m_type = Type::Error;

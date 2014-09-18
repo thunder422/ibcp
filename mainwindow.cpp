@@ -38,7 +38,7 @@
 
 
 MainWindow::MainWindow(QWidget *parent) :
-	QMainWindow(parent),
+	QMainWindow {parent},
 	ui {new Ui::MainWindow}
 {
 	m_commandLine.reset(new CommandLine(qApp->arguments()));
@@ -250,8 +250,8 @@ void MainWindow::on_actionOpen_triggered(void)
 {
 	if (isOkToContinue())
 	{
-		QString programPath = QFileDialog::getOpenFileName(this,
-			tr("Open Program"), m_curDirectory, tr("Program files (*.*)"));
+		QString programPath {QFileDialog::getOpenFileName(this,
+			tr("Open Program"), m_curDirectory, tr("Program files (*.*)"))};
 		if (!programPath.isEmpty())
 		{
 			programLoad(programPath);
@@ -294,7 +294,7 @@ bool MainWindow::on_actionSave_triggered(void)
 
 bool MainWindow::on_actionSaveAs_triggered(void)
 {
-	QString programPath = m_program.fileName();
+	QString programPath {m_program.fileName()};
 	if (programPath.isEmpty())
 	{
 		programPath = m_curDirectory;
@@ -389,7 +389,7 @@ void MainWindow::on_actionAbout_triggered(void)
 	// build up about box string
 	QString aboutString(tr("<h3>Interactive BASIC Compiler Project</h3>"));
 
-	const char *copyright = m_commandLine->copyrightStatement();
+	const char *copyright {m_commandLine->copyrightStatement()};
 	// add version and copyright year to string
 	aboutString.append(tr(copyright).arg(tr("Version %1")
 		.arg(m_commandLine->version())).arg(m_commandLine->copyrightYear()));
@@ -429,7 +429,7 @@ void MainWindow::on_actionAboutQt_triggered(void)
 void MainWindow::setCurProgram(const QString &programPath)
 {
 	m_program.setFileName(programPath);
-	QString program = tr("Untitled");
+	QString program {tr("Untitled")};
 	if (!m_program.fileName().isEmpty())
 	{
 		program = m_recentPrograms->addFile(m_program.fileName());
@@ -445,9 +445,9 @@ bool MainWindow::isOkToContinue(void)
 {
 	if (isWindowModified())
 	{
-		int answer = QMessageBox::warning(this, tr("IBCP"), tr("The program "
+		int answer {QMessageBox::warning(this, tr("IBCP"), tr("The program "
 			"has been modified.\nDo you want to save the changes?"),
-			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel)};
 		if (answer == QMessageBox::Yes)
 		{
 			return on_actionSave_triggered();
@@ -479,7 +479,7 @@ void MainWindow::programOpen(const QString programPath)
 
 bool MainWindow::programLoad(const QString &programPath)
 {
-	QFile file(programPath);
+	QFile file {programPath};
 
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -508,7 +508,7 @@ bool MainWindow::programLoad(const QString &programPath)
 
 bool MainWindow::programSave(const QString &programPath)
 {
-	QFile file(programPath);
+	QFile file {programPath};
 
 	programCaptureEditChanges();
 
@@ -537,9 +537,9 @@ void MainWindow::programCaptureEditChanges(void)
 
 
 // names of the settings for the application
-const char *geometrySettingsName = "geometry";
-const char *windowStateSettingsName = "windowState";
-const char *curDirectorySettingsName = "curDirectory";
+const char *geometrySettingsName {"geometry"};
+const char *windowStateSettingsName {"windowState"};
+const char *curDirectorySettingsName {"curDirectory"};
 
 
 // function to restore the settings saved the last time the program was run

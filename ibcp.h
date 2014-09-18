@@ -49,17 +49,15 @@ inline Code operator ++(Code &code, int)
 
 
 // miscellenous constant definitions
-enum {
-	HighestPrecedence = 127,	// highest precedence value
+constexpr int HighestPrecedence {127};	// highest precedence value
 	// this value was selected as the highest value because it is the highest
 	// one-byte signed value (in case the precedence member is changed to a
 	// char); all precedences in the table must be below this value
 
-	BaseLineNumber = 0			// number of first line in program
+constexpr int BaseLineNumber {0};		// number of first line in program
 	// this value is the number of the first line in the program edit box and
 	// program view dock widget (a value of zero is used for development, but
 	// will be changed to one)
-};
 
 
 // data type of operands

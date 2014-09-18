@@ -189,7 +189,7 @@ std::string Token::text()
 		else
 		{
 			ss << table.name(m_code).toStdString();
-			if (table.name2(m_code) != NULL)
+			if (!table.name2(m_code).isNull())
 			{
 				ss << '-' << table.name2(m_code).toStdString();
 			}
@@ -213,7 +213,7 @@ std::string Token::text()
 		}
 		if (hasSubCode(Option_SubCode))
 		{
-			std::string option = table.optionName(m_code).toStdString();
+			std::string option {table.optionName(m_code).toStdString()};
 			if (option.empty())
 			{
 				ss << "BUG";

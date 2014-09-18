@@ -60,8 +60,8 @@ public:
 	{
 		m_stack.top().string.append(string);
 	}
-	QString popWithParens(bool addParens, int *precedence = NULL,
-		bool *unaryOperator = NULL);
+	QString popWithParens(bool addParens, int *precedence = nullptr,
+		bool *unaryOperator = nullptr);
 	void pushWithOperands(QString &name, int count);
 	bool stackIsEmpty(void) const
 	{

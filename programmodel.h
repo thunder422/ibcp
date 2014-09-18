@@ -100,7 +100,7 @@ public:
 	{
 		if (line.size() > 0)
 		{
-			int oldSize = size();
+			int oldSize {size()};
 			resize(oldSize + line.size());
 			ProgramWord *lineBegin = data() + i;
 			if (i != oldSize)  // not inserting line at end?
@@ -137,7 +137,7 @@ public:
 			resize(count() - n + line.count());
 			offset = data() + i;  // get data, resize may move data
 
-			int moveCount = count() - i - line.count();
+			int moveCount {count() - i - line.count()};
 			if (moveCount > 0)  // not at end?
 			{
 				memmove(offset + line.count(), offset + n,
@@ -151,7 +151,7 @@ public:
 			{
 				// move program after line down before making program smaller
 				offset = data() + i;
-				int moveCount = count() - i - n;
+				int moveCount {count() - i - n};
 				if (moveCount > 0)  // not at end?
 				{
 					memmove(offset + line.count(), offset + n,
@@ -218,7 +218,7 @@ public:
 	{
 		if (m_lineInfo.at(lineIndex).errIndex == -1)
 		{
-			return NULL;
+			return nullptr;
 		}
 		else
 		{

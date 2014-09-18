@@ -38,7 +38,7 @@ const char *CommandLine::s_warrantyStatement[] = {
 	QT_TR_NOOP("This program comes with ABSOLUTELY NO WARRANTY."),
 	QT_TR_NOOP("This is free software, and you are welcome to"),
 	QT_TR_NOOP("redistribute it under certain conditions."),
-	NULL
+	nullptr
 };
 
 
@@ -50,7 +50,7 @@ CommandLine::CommandLine(const QStringList &args)
 	// NOTE: leave m_returnCode set to -1 to start GUI,
 
 	// create usage string
-	QStringList options = Tester::options();
+	QStringList options {Tester::options()};
 	// append any other options here
 	options.prepend("<program file>|-h|-?|-v");
 	m_usage = tr("usage: %1 [%2]").arg(m_programName).arg(options.join("|"));
@@ -116,7 +116,7 @@ QTextStream &CommandLine::cout(FILE *stream)
 	if (!m_cout.device())
 	{
 		// setup standard output stream first time
-		QFile *output = new QFile;
+		QFile *output {new QFile};
 		output->open(stream, QIODevice::WriteOnly | QIODevice::Unbuffered);
 		m_cout.setDevice(output);
 	}
@@ -165,7 +165,7 @@ int CommandLine::copyrightYear(void) const
 QString CommandLine::version(void) const
 {
 	QString versionString(ibcp_RELEASE_STRING);
-	int start = versionString.indexOf(QRegExp("\\d"));
+	int start {versionString.indexOf(QRegExp("\\d"))};
 	return versionString.mid(start);
 }
 

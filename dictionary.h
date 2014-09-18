@@ -38,8 +38,6 @@ using TokenPtr = std::shared_ptr<Token>;
 class Dictionary
 {
 public:
-	Dictionary(void);
-
 	enum class EntryType
 	{
 		New,
@@ -50,7 +48,7 @@ public:
 	void clear(void);
 	quint16 add(const TokenPtr &token,
 		Qt::CaseSensitivity cs = Qt::CaseInsensitive,
-		EntryType *returnNewEntry = NULL);
+		EntryType *returnNewEntry = nullptr);
 	int remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	QString string(int index) const
 	{

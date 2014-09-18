@@ -27,8 +27,6 @@
 
 #include <memory>
 
-#include <QStringList>
-
 #include "ibcp.h"
 #include "token.h"
 

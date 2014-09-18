@@ -29,10 +29,10 @@
 
 ProgramLineDelegate::ProgramLineDelegate(int baseLineNumber,
 	QListView *programView, QObject *parent) :
-	QStyledItemDelegate(parent),
-	m_programView(programView),
-	m_baseLineNumber(baseLineNumber),
-	m_lineNumberWidth(0)
+	QStyledItemDelegate {parent},
+	m_programView {programView},
+	m_baseLineNumber {baseLineNumber},
+	m_lineNumberWidth {0}
 {
 	m_digitWidth = m_programView->fontMetrics().width(QLatin1Char('9'));
 }
@@ -42,13 +42,13 @@ ProgramLineDelegate::ProgramLineDelegate(int baseLineNumber,
 
 void ProgramLineDelegate::lineNumberWidthUpdate(int newLineCount)
 {
-	int digits = 2;  // plus 2 * 0.5 spacing on either side
+	int digits {2};  // plus 2 * 0.5 spacing on either side
 	while (newLineCount > 10 - m_baseLineNumber)
 	{
 		newLineCount /= 10;
 		digits++;
 	}
-	int width = m_digitWidth * digits;
+	int width {m_digitWidth * digits};
 	if (width != m_lineNumberWidth)
 	{
 		m_lineNumberWidth = width;
@@ -64,12 +64,12 @@ void ProgramLineDelegate::paint(QPainter *painter,
 	const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	// draw line number with gray background
-	QRect rect = option.rect;
+	QRect rect {option.rect};
 	rect.setWidth(m_lineNumberWidth);
 	painter->fillRect(rect, Qt::lightGray);
 	rect.setLeft(rect.left() + m_digitWidth / 2);
 	rect.setWidth(m_lineNumberWidth - m_digitWidth);
-	QString text = QString("%1").arg(index.row() + m_baseLineNumber);
+	QString text {QString("%1").arg(index.row() + m_baseLineNumber)};
 	painter->drawText(rect, Qt::AlignRight, text);
 
 	// draw program line text

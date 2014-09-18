@@ -35,10 +35,9 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 	Token::Status status;
 	int column;
 	bool hidden;
-	DataType dataType;
 	bool done;
 	std::stack<TokenPtr> letStack;
-	bool haveSubStr = false;
+	bool haveSubStr {};
 
 	if (!commandToken)
 	{
@@ -50,7 +49,7 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 		column = commandToken->column();
 		hidden = false;
 	}
-	dataType = DataType::Any;
+	DataType dataType {DataType::Any};
 	do
 	{
 		if ((status = translator.getOperand(token, dataType,
@@ -146,7 +145,7 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 		return status;
 	}
 
-	TokenPtr letToken = letStack.top();
+	TokenPtr letToken {letStack.top()};
 	letStack.pop();
 	if (!letStack.empty())
 	{
@@ -240,13 +239,13 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	}
 	string.append(recreator.pop());
 
-	Code code = rpnItem->token()->code();
+	Code code {rpnItem->token()->code()};
 	if (recreator.table().hasFlag(code, SubStr_Flag))
 	{
 		// for sub-string assignments, get original sub-string function code
-		Code subStrCode = recreator.table().secondAssociatedCode(code);
-		QString name = recreator.table().name(subStrCode);
-		int count = recreator.table().operandCount(subStrCode);
+		Code subStrCode {recreator.table().secondAssociatedCode(code)};
+		QString name {recreator.table().name(subStrCode)};
+		int count {recreator.table().operandCount(subStrCode)};
 		recreator.pushWithOperands(name, count);
 	}
 

@@ -31,12 +31,12 @@
 #include "basic/basic.h"
 
 
-const int MaxOperands = 3;
+constexpr int MaxOperands {3};
 	// this value contains the maximum number of operands
 	// (arguments) for any operator or internal function (there are currently
 	// no internal function with more than 3 arguments)
 
-const int MaxAssocCodes = 3;
+constexpr int MaxAssocCodes {3};
 	// this value contains the maximum number of associated codes,
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
@@ -1484,7 +1484,7 @@ static TableEntry tableEntries[] =
 
 Table &Table::instance(void)
 {
-	if (s_instance == NULL)
+	if (!s_instance)
 	{
 		s_instance = new Table(tableEntries, sizeof(tableEntries)
 			/ sizeof(TableEntry));  // aborts application if table errors
@@ -1507,13 +1507,13 @@ Table::Table(TableEntry *entry, int entryCount) :
 
 	// scan table and record indexes
 	// find maximum number of operands and associated codes
-	int maxOperands = 0;
-	int maxAssocCodes = 0;
+	int maxOperands {};
+	int maxAssocCodes {};
 	for (i = 0; i < entryCount; i++)
 	{
 		// check if found new maximums
-		ExprInfo *exprInfo = m_entry[i].exprInfo;
-		if (exprInfo != NULL)
+		ExprInfo *exprInfo {m_entry[i].exprInfo};
+		if (exprInfo)
 		{
 			if (maxOperands < exprInfo->m_operandCount)
 			{
@@ -1538,14 +1538,14 @@ Table::Table(TableEntry *entry, int entryCount) :
 			// validate multiple entries
 			if ((m_entry[i].flags & Multiple_Flag) != 0)
 			{
-				ExprInfo *exprInfo2 = m_entry[i + 1].exprInfo;
+				ExprInfo *exprInfo2 {m_entry[i + 1].exprInfo};
 				if (m_entry[i].name != m_entry[i + 1].name)
 				{
 					errorList.append(QString("Multiple entry '%1' name "
 						"mis-match '%2'").arg(m_entry[i].name)
 						.arg(m_entry[i + 1].name));
 				}
-				else if (exprInfo2 == NULL)
+				else if (!exprInfo2)
 				{
 					errorList.append(QString("Multiple entry '%1' next entry "
 						"no expression info").arg(m_entry[i + 1].name));
@@ -1584,15 +1584,15 @@ Table::Table(TableEntry *entry, int entryCount) :
 				// check each secondary associated code
 				if (exprInfo->m_associatedCodeCount > 0)
 				{
-					int bitMask = bitMaskDataType[exprInfo->m_expectedDataType];
-					int index = exprInfo->m_secondAssociatedIndex;
+					int bitMask {bitMaskDataType[exprInfo->m_expectedDataType]};
+					int index {exprInfo->m_secondAssociatedIndex};
 					if (index >= 0)
 					{
 						for (; index < exprInfo->m_associatedCodeCount; index++)
 						{
-							Code assocCode = exprInfo->m_associatedCode[index];
-							ExprInfo *exprInfo2 = m_entry[assocCode].exprInfo;
-							if (exprInfo2 != NULL)
+							Code assocCode {exprInfo->m_associatedCode[index]};
+							ExprInfo *exprInfo2 {m_entry[assocCode].exprInfo};
+							if (exprInfo2)
 							{
 								bitMask |= bitMaskDataType[exprInfo2
 									->m_operandDataType[exprInfo2
@@ -1651,7 +1651,7 @@ Table::Table(TableEntry *entry, int entryCount) :
 		else
 		{
 			// check to make sure no bracketing codes overlap
-			for (int type2 = 0; type2 < sizeof_SearchType; type2++)
+			for (int type2 {}; type2 < sizeof_SearchType; type2++)
 			{
 				if (type != type2
 					&& ((m_range[type].beg > m_range[type2].beg
@@ -1672,7 +1672,7 @@ Table::Table(TableEntry *entry, int entryCount) :
 	// if errors then output messages and abort
 	if (!errorList.isEmpty())
 	{
-		int n = 0;
+		int n {};
 		foreach (QString error, errorList)
 		{
 			qCritical("%s", qPrintable(tr("Error #%1: %2").arg(++n)
@@ -1726,7 +1726,7 @@ const QString Table::optionName(Code code) const
 // except for internal functions with multiple argument footprints
 const QString Table::debugName(Code code) const
 {
-	QString name = code == Invalid_Code ? "<NotSet>" : m_entry[code].name2;
+	QString name {code == Invalid_Code ? "<NotSet>" : m_entry[code].name2};
 	if (name.isEmpty())
 	{
 		name = m_entry[code].name;
@@ -1810,7 +1810,7 @@ EncodeFunction Table::encodeFunction(Code code) const
 // returns whether the code has an operand
 bool Table::hasOperand(Code code) const
 {
-	return m_entry[code].operandText != NULL;
+	return m_entry[code].operandText;
 }
 
 // returns the pointer to the operand text function (if any) for code
@@ -1840,8 +1840,8 @@ Code Table::unaryCode(const TokenPtr &token) const
 {
 	if (token->isType(Token::Type::Operator))
 	{
-		ExprInfo *ei = m_entry[token->code()].exprInfo;
-		if (ei != NULL)
+		ExprInfo *ei {m_entry[token->code()].exprInfo};
+		if (ei)
 		{
 			return ei->m_unaryCode;
 		}
@@ -1871,7 +1871,7 @@ bool Table::isUnaryOrBinaryOperator(const TokenPtr &token) const
 //   - if this is -1 then the precedences if obtained for the token's code
 int Table::precedence(const TokenPtr &token) const
 {
-	int prec = token->precedence();
+	int prec {token->precedence()};
 	return prec != -1 ? prec : precedence(token->code());
 }
 
@@ -1887,8 +1887,8 @@ int Table::hasFlag(const TokenPtr &token, int flag) const
 // returns number of operands expected for code in token token
 int Table::operandCount(const TokenPtr &token) const
 {
-	ExprInfo *exprInfo = m_entry[token->code()].exprInfo;
-	return exprInfo == NULL ? 0 : exprInfo->m_operandCount;
+	ExprInfo *exprInfo {m_entry[token->code()].exprInfo};
+	return !exprInfo ? 0 : exprInfo->m_operandCount;
 }
 
 // returns the expected data type for last operand for operator token
@@ -1918,7 +1918,7 @@ TokenPtr Table::newToken(Code code)
 QString Table::name(const TokenPtr &token) const
 {
 	TableEntry &entry = m_entry[token->code()];
-	QString string = entry.name;
+	QString string {entry.name};
 	if (entry.multiple == Multiple::TwoWord && !entry.name2.isEmpty())
 	{
 		string += ' ' + entry.name2;
@@ -1937,7 +1937,7 @@ QString Table::name(const TokenPtr &token) const
 
 Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 {
-	DataType expectedDataType = operandDataType(token->code(), operandIndex);
+	DataType expectedDataType {operandDataType(token->code(), operandIndex)};
 
 	if (operandToken->dataType() == expectedDataType     // exact match?
 		|| (operandIndex == operandCount(token) - 1      // last operand?
@@ -1970,7 +1970,7 @@ Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 	}
 
 	// get a conversion code if no associated code was found
-	Code cvtCode = operandToken->convertCode(expectedDataType);
+	Code cvtCode {operandToken->convertCode(expectedDataType)};
 
 	// did not find an associated code, return conversion code
 	if (cvtCode == Invalid_Code)
@@ -2016,13 +2016,13 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 	if (dataType != operandDataType(code, operandIndex))
 	{
 		// if not, see if data type of any associated code matches
-		int i = secondAssociatedIndex(code);
+		int i {secondAssociatedIndex(code)};
 		if (i < 0)  // if second index -1, then no associated codes to search
 		{
 			return false;
 		}
 		// determine range of associated codes to search
-		int end = associatedCodeCount(code);
+		int end {associatedCodeCount(code)};
 		if (operandIndex == 0 && i != 0)  // first operand?
 		{
 			// if first operand and there are second operand associated codes
@@ -2031,7 +2031,7 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 			end = i;
 			i = 0;
 		}
-		Code *associatedCodes = associatedCodeArray(code);
+		Code *associatedCodes {associatedCodeArray(code)};
 		forever
 		{
 			if (i >= end)
@@ -2063,8 +2063,8 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 
 Code Table::search(SearchType type, const QStringRef &string) const
 {
-	Code i = m_range[type].beg;
-	Code end = m_range[type].end;
+	Code i {m_range[type].beg};
+	Code end {m_range[type].end};
 	while (++i < end)
 	{
 		if (string.compare(m_entry[i].name, Qt::CaseInsensitive) == 0)
@@ -2085,10 +2085,10 @@ Code Table::search(SearchType type, const QStringRef &string) const
 
 Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 {
-	for (Code i = m_range[PlainWord_SearchType].beg;
+	for (Code i {m_range[PlainWord_SearchType].beg};
 		i < m_range[PlainWord_SearchType].end; i++)
 	{
-		if (m_entry[i].name2 != NULL
+		if (!m_entry[i].name2.isNull()
 			&& word1.compare(m_entry[i].name, Qt::CaseInsensitive) == 0
 			&& word2.compare(m_entry[i].name2, Qt::CaseInsensitive) == 0)
 		{
@@ -2112,7 +2112,7 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 
 Code Table::search(Code index, int argumentCount) const
 {
-	for (Code i = index + 1; m_entry[i].name != NULL; i++)
+	for (Code i {index + 1}; !m_entry[i].name.isNull(); i++)
 	{
 		if (m_entry[index].name == m_entry[i].name
 			&& argumentCount == operandCount(i))
@@ -2140,9 +2140,9 @@ Code Table::search(Code code, DataType *datatype) const
 		return code;  // main code matches
 	}
 
-	for (int n = associatedCodeCount(code); --n >= 0;)
+	for (int n {associatedCodeCount(code)}; --n >= 0;)
 	{
-		Code assoc_code = this->associatedCode(code, n);
+		Code assoc_code {this->associatedCode(code, n)};
 		if (match(assoc_code, datatype))
 		{
 			return assoc_code;  // associated code matches
@@ -2158,7 +2158,7 @@ Code Table::search(Code code, DataType *datatype) const
 
 bool Table::match(Code code, DataType *datatype) const
 {
-	for (int n = operandCount(code); --n >= 0;)
+	for (int n {operandCount(code)}; --n >= 0;)
 	{
 		if (datatype[n] != operandDataType(code, n))
 		{

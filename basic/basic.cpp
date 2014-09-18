@@ -105,7 +105,7 @@ void ConstStrInfo::clearElement(int index)
 
 ConstStrInfo::~ConstStrInfo(void)
 {
-	for (int i = 0; i < m_value.count(); i++)
+	for (int i {}; i < m_value.count(); i++)
 	{
 		delete m_value.at(i);
 	}
@@ -131,7 +131,7 @@ void constStrRemove(ProgramModel *programUnit, quint16 operand)
 void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// change all double quote to two double qoutes and surround with quotes
-	QString string = rpnItem->token()->string();
+	QString string {rpnItem->token()->string()};
 	string.replace('"', "\"\"");
 	recreator.push('"' + string + '"');
 }

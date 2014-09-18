@@ -82,7 +82,6 @@ class RpnList
 {
 public:
 	RpnList(void) : m_errorColumn{-1}, m_errorLength{-1} {}
-	~RpnList(void);
 	RpnList(RpnList &&other) :
 		m_list{other.m_list},
 		m_codeSize{other.m_codeSize},

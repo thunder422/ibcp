@@ -86,9 +86,9 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 		{
 			// find start of file name less path
 			m_testFileName = args.at(2);
-			QString baseName = QFileInfo(m_testFileName).baseName();
+			QString baseName {QFileInfo(m_testFileName).baseName()};
 
-			for (int i = OptFirst; i < OptNumberOf; i++)
+			for (int i {OptFirst}; i < OptNumberOf; i++)
 			{
 				// check beginning of file name
 				if (baseName.startsWith(name[i], Qt::CaseInsensitive))
@@ -101,8 +101,8 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 			if (m_option == OptNone)  // no matching names?
 			{
 				m_option = OptError;
-				QString parser = m_recreate
-					? "" : QString("%1|").arg(name[OptParser]);
+				QString parser {m_recreate
+					? "" : QString("%1|").arg(name[OptParser])};
 				m_errorMessage = QString("%1: %2 -t%3 (%4%5|%6)[xx]")
 					.arg(tr("usage")).arg(m_programName).arg(parser)
 					.arg(m_recreate ? "o" : "").arg(name[OptExpression])
@@ -149,7 +149,7 @@ bool Tester::run(CommandLine *commandLine)
 	QTextStream input(&file);
 	QString inputLine;
 
-	bool inputMode = m_testFileName.isEmpty();
+	bool inputMode {m_testFileName.isEmpty()};
 	if (inputMode)
 	{
 		file.open(stdin, QIODevice::ReadOnly);
@@ -169,15 +169,15 @@ bool Tester::run(CommandLine *commandLine)
 	{
 		m_cout << endl;
 
-		const char *copyright = commandLine->copyrightStatement();
-		QString line = tr(copyright).arg(commandLine->programName())
-			.arg(commandLine->copyrightYear());
+		const char *copyright {commandLine->copyrightStatement()};
+		QString line {tr(copyright).arg(commandLine->programName())
+			.arg(commandLine->copyrightYear())};
 		m_cout << line << endl;
 
-		const char **warranty = commandLine->warrantyStatement();
-		for (int i = 0; warranty[i]; i++)
+		const char **warranty {commandLine->warrantyStatement()};
+		for (int i {}; warranty[i]; i++)
 		{
-			QString line = tr(warranty[i]);
+			QString line {tr(warranty[i])};
 			m_cout << line << endl;
 		}
 
@@ -189,7 +189,7 @@ bool Tester::run(CommandLine *commandLine)
 		m_cout << endl << tr("Testing %1...").arg(m_testName);
 	}
 
-	for (int lineno = 1;; lineno++)
+	for (int lineno {1};; lineno++)
 	{
 		if (inputMode)
 		{
@@ -250,7 +250,7 @@ bool Tester::run(CommandLine *commandLine)
 	{
 		// for encoder testing, output program lines
 		m_cout << "Program:" << endl;
-		for (int i = 0; i < m_programUnit->rowCount(); i++)
+		for (int i {}; i < m_programUnit->rowCount(); i++)
 		{
 			m_cout << i << ": " << m_programUnit->debugText(i, true) << endl;
 		}
@@ -259,7 +259,7 @@ bool Tester::run(CommandLine *commandLine)
 		if (m_recreate)
 		{
 			m_cout << endl << "Output:" << endl;
-			for (int i = 0; i < m_programUnit->rowCount(); i++)
+			for (int i {}; i < m_programUnit->rowCount(); i++)
 			{
 				m_cout << i << ": " << m_programUnit->lineText(i) << endl;
 			}
@@ -279,7 +279,7 @@ void Tester::parseInput(const QString &testInput)
 	parser.setInput(QString(testInput));
 	do
 	{
-		TokenPtr token = parser.token();
+		TokenPtr token {parser.token()};
 		more = printToken(token, true) && !token->isCode(EOL_Code);
 	}
 	while (more);
@@ -311,7 +311,7 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 		{
 			output = rpnList.text();
 		}
-		if (header == NULL)
+		if (!header)
 		{
 			header = "Output";
 			rpnList.clear();
@@ -330,7 +330,7 @@ void Tester::recreateInput(const QString &testInput)
 	if (!rpnList.empty())
 	{
 		// recreate text from rpn list
-		QString output = m_recreator->recreate(rpnList);
+		QString output {m_recreator->recreate(rpnList)};
 		m_cout << "Output: " << output << ' ' << endl;
 	}
 }
@@ -341,8 +341,8 @@ void Tester::recreateInput(const QString &testInput)
 void Tester::encodeInput(QString &testInput)
 {
 	// parse beginning of line for line number program operation
-	Operation operation = Operation::Change;
-	int pos = 0;
+	Operation operation {Operation::Change};
+	int pos {};
 	if (pos < testInput.length())
 	{
 		if (testInput.at(pos) == '+')
@@ -356,11 +356,11 @@ void Tester::encodeInput(QString &testInput)
 			pos++;
 		}
 	}
-	int digitCount = 0;
-	int lineIndex = 0;
+	int digitCount {};
+	int lineIndex {};
 	while (pos < testInput.length() && testInput.at(pos).isDigit())
 	{
-		int digit = testInput.at(pos).toAscii() - '0';
+		int digit {testInput.at(pos).toAscii() - '0'};
 		lineIndex = lineIndex * 10 + digit;
 		pos++;
 		digitCount++;
@@ -423,12 +423,12 @@ void Tester::encodeInput(QString &testInput)
 			operation == Operation::Insert ? 1 : 0, QStringList() << testInput);
 	}
 
-	const ErrorItem *errorItem = m_programUnit->lineError(lineIndex);
+	const ErrorItem *errorItem {m_programUnit->lineError(lineIndex)};
 	// only output line if no operation/line number or has an error
-	if (pos == 0 || errorItem != NULL)
+	if (pos == 0 || errorItem)
 	{
 		printInput(testInput);
-		if (errorItem != NULL)
+		if (errorItem)
 		{
 			printError(errorItem->column(), errorItem->length(),
 				errorItem->message());

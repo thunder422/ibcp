@@ -27,8 +27,6 @@
 
 #include <stack>
 
-#include <QList>
-
 #include "parser.h"
 #include "rpnlist.h"
 
