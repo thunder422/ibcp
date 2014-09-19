@@ -29,18 +29,17 @@
 
 
 // LET command translate function
-TokenStatus letTranslate(Translator &translator, Token *commandToken,
-	Token *&token)
+Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token)
 {
-	TokenStatus status;
+	Token::Status status;
 	int column;
 	bool hidden;
-	DataType dataType;
 	bool done;
-	TokenStack letStack;
-	bool haveSubStr = false;
+	std::stack<TokenPtr> letStack;
+	bool haveSubStr {};
 
-	if (commandToken == NULL)
+	if (!commandToken)
 	{
 		column = token->column();
 		hidden = true;
@@ -48,34 +47,33 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 	else  // delete unneeded command token and get another token
 	{
 		column = commandToken->column();
-		delete commandToken;
 		hidden = false;
 	}
-	dataType = Any_DataType;
+	DataType dataType {DataType::Any};
 	do
 	{
 		if ((status = translator.getOperand(token, dataType,
-			Translator::All_Reference)) != Good_TokenStatus)
+			Translator::Reference::All)) != Token::Status::Good)
 		{
 			if (token->column() > column)
 			{
 				return status;
 			}
 			// next token determines error
-			Token *nextToken;
-			if ((status = translator.getToken(nextToken)) != Good_TokenStatus)
+			TokenPtr nextToken;
+			if ((status = translator.getToken(nextToken))
+				!= Token::Status::Good)
 			{
-				status = ExpCmd_TokenStatus;
+				status = Token::Status::ExpCmd;
 			}
 			if (nextToken->isCode(Comma_Code) || nextToken->isCode(Eq_Code))
 			{
-				status = ExpAssignItem_TokenStatus;
+				status = Token::Status::ExpAssignItem;
 			}
 			else
 			{
-				status = ExpCmd_TokenStatus;
+				status = Token::Status::ExpCmd;
 			}
-			delete nextToken;
 			return status;
 		}
 
@@ -94,24 +92,19 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 			if (translator.table().hasFlag(translator.doneStackTopToken(),
 				SubStr_Flag))
 			{
-				delete translator.doneStackPop();
+				translator.doneStackPop();
 			}
-			return ExpEqualOrComma_TokenStatus;
+			return Token::Status::ExpEqualOrComma;
 		}
 
 		// check if this is a sub-string assignment
 		if (translator.table().hasFlag(translator.doneStackTopToken(),
 			SubStr_Flag))
 		{
-			// delete comma/equal token, use sub-string function token
-			delete token;
-
 			// get sub-string function token from rpn item on top of stack
 			// (delete rpn item since it was not appended to output)
-			RpnItem *rpnItem = translator.doneStackPop();
-			token = rpnItem->token();
-			rpnItem->setToken(NULL);  // prevent delete of token
-			delete rpnItem;
+			token = translator.doneStackTopToken();
+			translator.doneStackPop();
 
 			// change to assign sub-string code (first associated code)
 			translator.table().setToken(token,
@@ -124,36 +117,37 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 			// change token to appropriate assign code
 			translator.table().setToken(token, Assign_Code);
 			status = translator.processDoneStackTop(token);
-			if (status != Good_TokenStatus)
+			if (status != Token::Status::Good)
 			{
 				return status;
 			}
 		}
-		letStack.push(token);  // save token
 
 		// get data type for assignment
-		if (dataType == Any_DataType)
+		if (dataType == DataType::Any)
 		{
 			dataType = token->dataType();
 		}
 
-		token = NULL;
+		letStack.emplace(std::move(token));  // save token
 	}
 	while (!done);
 
 	// get expression for value to assign
-	if ((status = translator.getExpression(token,
-		translator.equivalentDataType(dataType))) != Done_TokenStatus)
+	if ((status = translator.getExpression(token, dataType))
+		!= Token::Status::Done)
 	{
-		if (status == Parser_TokenStatus && token->isDataType(None_DataType))
+		if (status == Token::Status::Parser
+			&& token->isDataType(DataType::None))
 		{
-			status = ExpOpOrEnd_TokenStatus;
+			status = Token::Status::ExpOpOrEnd;
 		}
 		return status;
 	}
 
-	Token *letToken = letStack.pop();
-	if (!letStack.isEmpty())
+	TokenPtr letToken {letStack.top()};
+	letStack.pop();
+	if (!letStack.empty())
 	{
 		if (haveSubStr)
 		{
@@ -165,10 +159,11 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 					translator.table().associatedCode(letToken->code()));
 
 				// append to output and pop next token from let stack
-				translator.outputAppend(letToken);
-				letToken = letStack.pop();
+				translator.outputAppend(std::move(letToken));
+				letToken = letStack.top();
+				letStack.pop();
 			}
-			while (!letStack.isEmpty());  // continue until last token
+			while (!letStack.empty());  // continue until last token
 		}
 		else  // have a multiple assignment, change to list code
 		{
@@ -177,28 +172,28 @@ TokenStatus letTranslate(Translator &translator, Token *commandToken,
 		}
 	}
 
-	// drop expresion result from done stack, append last assignment token
-	translator.doneStackDrop();
-	translator.outputAppend(letToken);
-
 	// set hidden LET flag if needed
 	if (!hidden)
 	{
 		letToken->addSubCode(Option_SubCode);
 	}
 
+	// drop expresion result from done stack, append last assignment token
+	translator.doneStackPop();
+	translator.outputAppend(std::move(letToken));
+
 	// check terminating token for end-of-statement
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
-		return ExpOpOrEnd_TokenStatus;
+		return Token::Status::ExpOpOrEnd;
 	}
 
-	return Done_TokenStatus;
+	return Token::Status::Done;
 }
 
 
 // function to append LET keyword if the option sub-code is set
-void letRecreate(Recreator &recreator, Token *token)
+void letRecreate(Recreator &recreator, TokenPtr token)
 {
 	if (token->hasSubCode(Option_SubCode))
 	{
@@ -208,7 +203,7 @@ void letRecreate(Recreator &recreator, Token *token)
 
 
 // function to recreate assignment and list assignment statements
-void assignRecreate(Recreator &recreator, RpnItem *rpnItem)
+void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QStack<QString> stack;
 
@@ -228,7 +223,7 @@ void assignRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate string and sub-string assignment statements
-void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem)
+void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString string;
 
@@ -244,13 +239,13 @@ void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem)
 	}
 	string.append(recreator.pop());
 
-	Code code = rpnItem->token()->code();
+	Code code {rpnItem->token()->code()};
 	if (recreator.table().hasFlag(code, SubStr_Flag))
 	{
 		// for sub-string assignments, get original sub-string function code
-		Code subStrCode = recreator.table().secondAssociatedCode(code);
-		QString name = recreator.table().name(subStrCode);
-		int count = recreator.table().operandCount(subStrCode);
+		Code subStrCode {recreator.table().secondAssociatedCode(code)};
+		QString name {recreator.table().name(subStrCode)};
+		int count {recreator.table().operandCount(subStrCode)};
 		recreator.pushWithOperands(name, count);
 	}
 

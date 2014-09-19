@@ -88,45 +88,4 @@ BEGIN {
 			code_enum = 0
 		}
 	}
-
-	find_enum(path "token.h", "enum TokenType", "_TokenType", "tokentype");
-	find_enum(path "ibcp.h", "enum DataType", "_DataType", "datatype");
-}
-
-function find_enum(header_file, start, enum, name)
-{
-	type_enum = 0
-	c = ""
-	while ((getline line < header_file) > 0)
-	{
-		if (type_enum == 0)
-		{
-			if (line ~ start)
-			{
-				# found start of token types
-				printf "\nconst char *%s_name[] = {\n", name > output
-				type_enum = 1
-			}
-		}
-		else if (type_enum)
-		{
-			if (line !~ /-1/ && line ~ enum && line !~ /sizeof/)
-			{
-				nf = split(line, field)
-				if (c != "")
-				{
-					printf ",\n" > output
-				}
-				c = substr(field[1], 1, index(field[1], enum) - 1)
-				printf "\t\"%s\"", c > output
-			}
-			else if (line ~ /};/)
-			{
-				# found end of enum
-				printf "\n};\n" > output
-				type_enum = 0
-				c = ""
-			}
-		}
-	}
 }

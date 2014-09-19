@@ -35,27 +35,25 @@ Parser::Parser(void) :
 
 // function to get a token at the current position
 //
-//   - a pointer to the token is returned
-//   - the token must be deallocated when it is no longer needed
+//   - a shared pointer to the token is returned
+//   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-Token *Parser::token(bool operandState)
+TokenPtr Parser::token(bool operandState)
 {
 	m_operandState = operandState;
 	skipWhitespace();
-	m_token = new Token(m_pos);  // allocate new token to return
+	m_token = std::make_shared<Token>(m_pos);  // create new token to return
 	if (m_input[m_pos].isNull())
 	{
 		m_table.setToken(m_token, EOL_Code);
-		return m_token;
 	}
-
-	if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
+	else if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		m_token->setError(tr("unrecognizable character"), None_DataType);
+		m_token->setError(tr("unrecognizable character"), DataType::None);
 	}
-	return m_token;  // token may contain an error
+	return std::move(m_token);  // token may contain an error
 }
 
 
@@ -88,25 +86,25 @@ bool Parser::getIdentifier(void)
 		return true;
 	}
 
-	int pos = scanWord(m_pos, dataType, paren);
+	int pos {scanWord(m_pos, dataType, paren)};
 	if (pos == -1)
 	{
 		return false;  // not an identifier
 	}
 
-	int len = pos - m_pos;
+	int len {pos - m_pos};
 	// defined function?
 	if (m_input.midRef(m_pos).startsWith("FN", Qt::CaseInsensitive))
 	{
 		if (paren)
 		{
-			m_token->setType(DefFuncP_TokenType);
+			m_token->setType(Token::Type::DefFuncP);
 			m_token->setString(m_input.mid(m_pos, len - 1));
 			m_token->setLength(len - 1);
 		}
 		else  // no parentheses
 		{
-			m_token->setType(DefFuncN_TokenType);
+			m_token->setType(Token::Type::DefFuncN);
 			m_token->setString(m_input.mid(m_pos, len));
 			m_token->setLength(len);
 		}
@@ -118,7 +116,7 @@ bool Parser::getIdentifier(void)
 	{
 		search = ParenWord_SearchType;
 	}
-	else if (dataType != None_DataType)
+	else if (dataType != DataType::None)
 	{
 		search = DataTypeWord_SearchType;
 	}
@@ -126,7 +124,7 @@ bool Parser::getIdentifier(void)
 	{
 		search = PlainWord_SearchType;
 	}
-	Code code = m_table.search(search, m_input.midRef(m_pos, len));
+	Code code {m_table.search(search, m_input.midRef(m_pos, len))};
 	if (code == Invalid_Code)
 	{
 		// word not found in table, therefore
@@ -135,13 +133,13 @@ bool Parser::getIdentifier(void)
 		// whether opening parenthesis is present, and string of identifier
 		if (paren)
 		{
-			m_token->setType(Paren_TokenType);
+			m_token->setType(Token::Type::Paren);
 			m_token->setString(m_input.mid(m_pos, len - 1));
 			m_token->setLength(len - 1);
 		}
 		else
 		{
-			m_token->setType(NoParen_TokenType);
+			m_token->setType(Token::Type::NoParen);
 			m_token->setString(m_input.mid(m_pos, len));
 			m_token->setLength(len);
 		}
@@ -150,14 +148,14 @@ bool Parser::getIdentifier(void)
 		return true;
 	}
 	// found word in table (command, internal function, or operator)
-	int word1 = m_pos;  // save position of first word
+	int word1 {m_pos};  // save position of first word
 	m_pos = pos;  // move position past first word
 
 	// setup token in case this is only one word
 	m_table.setToken(m_token, code);
 	m_token->setLength(len);
 
-	if (m_table.multiple(code) == OneWord_Multiple)
+	if (m_table.multiple(code) == Multiple::OneWord)
 	{
 		// identifier can only be a single word
 		return true;
@@ -166,12 +164,12 @@ bool Parser::getIdentifier(void)
 	// command could be a two word command
 	skipWhitespace();
 	pos = scanWord(m_pos, dataType, paren);
-	int len2 = pos - m_pos;
-	if (dataType != None_DataType || paren
+	int len2 {pos - m_pos};
+	if (dataType != DataType::None || paren
 		|| (code = m_table.search(m_input.midRef(word1, len),
 		m_input.midRef(m_pos, len2))) == Invalid_Code)
 	{
-		if (m_token->type() == Error_TokenType)
+		if (m_token->type() == Token::Type::Error)
 		{
 			// first word by itself is not valid
 			m_token->setString("Invalid Two Word Command");
@@ -213,19 +211,19 @@ int Parser::scanWord(int pos, DataType &dataType, bool &paren)
 	switch (m_input[pos].unicode())
 	{
 	case '%':
-		dataType = Integer_DataType;
+		dataType = DataType::Integer;
 		pos++;
 		break;
 	case '$':
-		dataType = String_DataType;
+		dataType = DataType::String;
 		pos++;
 		break;
 	case '#':
-		dataType = Double_DataType;
+		dataType = DataType::Double;
 		pos++;
 		break;
 	default:
-		dataType = None_DataType;
+		dataType = DataType::None;
 	}
 
 	// see if there is an opening parenthesis
@@ -285,11 +283,11 @@ bool Parser::getNumber(void)
 	QString ExpDigits_ErrMsg(tr("expected digits in floating point constant"));
 	QString FPOutOfRange_ErrMsg(tr("floating point constant is out of range"));
 
-	bool digits = false;		// digits were found flag
-	bool decimal = false;		// decimal point was found flag
-	bool sign = false;			// have negative sign flag (2011-03-27)
+	bool digits {};				// digits were found flag
+	bool decimal {};			// decimal point was found flag
+	bool sign {};				// have negative sign flag (2011-03-27)
 
-	int pos = m_pos;
+	int pos {m_pos};
 	forever
 	{
 		if (m_input[pos].isDigit())
@@ -396,15 +394,15 @@ bool Parser::getNumber(void)
 	}
 	// pos pointing to first character that is not part of constant
 	bool ok;
-	int len = pos - m_pos;
-	QString numStr = m_input.mid(m_pos, len);
+	int len {pos - m_pos};
+	QString numStr {m_input.mid(m_pos, len)};
 
 	// save string of number so it later can be reproduced
 	m_token->setString(numStr);
 	m_token->setLength(len);
 	m_pos = pos;  // move to next character after constant
 
-	m_token->setType(Constant_TokenType);
+	m_token->setType(Token::Type::Constant);
 
 	// FIXME hack for memory issue reported against QString::toInt()/toDouble()
 	QByteArray numBytes;
@@ -415,7 +413,7 @@ bool Parser::getNumber(void)
 		m_token->setValue(numBytes.toInt(&ok));
 		if (ok)
 		{
-			m_token->setDataType(Integer_DataType);
+			m_token->setDataType(DataType::Integer);
 			// convert to double in case double is needed
 			m_token->setValue((double)m_token->valueInt());
 			return true;
@@ -435,7 +433,7 @@ bool Parser::getNumber(void)
 	if (m_token->value() > (double)INT_MIN - 0.5
 		&& m_token->value() < (double)INT_MAX + 0.5)
 	{
-		m_token->setDataType(Integer_DataType);
+		m_token->setDataType(DataType::Integer);
 		// convert to integer in case integer is needed
 		m_token->setValue((int)m_token->value());
 		if (decimal)  // decimal point or exponent?
@@ -446,7 +444,7 @@ bool Parser::getNumber(void)
 	}
 	else  // number can't be converted to integer
 	{
-		m_token->setDataType(Double_DataType);
+		m_token->setDataType(DataType::Double);
 	}
 	return true;
 }
@@ -468,8 +466,8 @@ bool Parser::getString(void)
 		return false;  // not a sting constant
 	}
 
-	int pos = m_pos + 1;
-	int len = 0;
+	int pos {m_pos + 1};
+	int len {};
 	while (!m_input[pos].isNull())
 	{
 		if (m_input[pos] == '"')
@@ -484,8 +482,8 @@ bool Parser::getString(void)
 		}
 		m_token->setString(len++, m_input[pos++]);  // copy char into string
 	}
-	m_token->setType(Constant_TokenType);
-	m_token->setDataType(String_DataType);
+	m_token->setType(Token::Type::Constant);
+	m_token->setDataType(DataType::String);
 	m_token->setLength(pos - m_pos);
 	// advance position past end of string
 	m_pos = pos;
@@ -506,7 +504,7 @@ bool Parser::getString(void)
 bool Parser::getOperator(void)
 {
 	// search table for current character to see if it is a valid operator
-	Code code = m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1));
+	Code code {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1))};
 	if (code != Invalid_Code)
 	{
 		// current character is a valid single character operator
@@ -517,7 +515,7 @@ bool Parser::getOperator(void)
 		m_token->setCode(code);
 		m_token->setLength(1);
 
-		if (m_table.multiple(code) == OneChar_Multiple)
+		if (m_table.multiple(code) == Multiple::OneChar)
 		{
 			// operator can only be a single character
 			m_pos++;  // move past operator
@@ -534,7 +532,7 @@ bool Parser::getOperator(void)
 	}
 	// operator could be a two character operator
 	// search table again for two characters at current position
-	Code code2 = m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 2));
+	Code code2 {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 2))};
 	if (code2 == Invalid_Code)
 	{
 		if (code != Invalid_Code)  // was first character a valid operator?

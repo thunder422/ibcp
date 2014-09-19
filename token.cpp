@@ -22,388 +22,176 @@
 //
 //	2012-11-03	initial version (parts removed from ibcp.cpp)
 
+#include <sstream>
+
 #include "ibcp.h"
 #include "token.h"
 #include "table.h"
 
 
 // static token variables
-bool Token::s_paren[sizeof_TokenType];
-int Token::s_prec[sizeof_TokenType];
-
-// token status message array
-//   (TokenStatus enumeration generated from names in comments
-//   on the line before the line with the message string by enums.awk,
-//   extra lines starting with comments are ignored)
-const QString Token::s_messageArray[sizeof_TokenStatus] = {
-	// Null
-	tr("Null_TokenStatus (BUG)"),
-	// Good
-	tr("Good_TokenStatus (BUG)"),
-	// Done
-	tr("Done_TokenStatus (BUG)"),
-	// Parser
-	tr("Parser_TokenStatus (BUG)"),
-	// ExpCmd
-	tr("expected command"),
-	// ExpExpr
-	tr("expected expression"),
-	// ExpExprOrEnd
-	tr("expected expression or end-of-statement"),
-	// ExpOpOrEnd
-	tr("expected operator or end-of-statement"),
-	// ExpBinOpOrEnd
-	tr("expected binary operator or end-of-statement"),
-	// ExpEqualOrComma
-	tr("expected equal or comma for assignment"),
-	// ExpComma
-	tr("expected comma"),
-	// ExpAssignItem
-	tr("expected item for assignment"),
-	// ExpOpOrComma
-	tr("expected operator or comma"),
-	// ExpOpCommaOrParen
-	tr("expected operator, comma or closing parentheses"),
-	// ExpOpOrParen
-	tr("expected operator or closing parentheses"),
-	// ExpBinOpOrComma
-	tr("expected binary operator or comma"),
-	// ExpBinOpCommaOrParen
-	tr("expected binary operator, comma or closing parentheses"),
-	// ExpBinOpOrParen
-	tr("expected binary operator or closing parentheses"),
-	// ExpDouble
-	tr("expected double expression"),
-	// ExpInteger
-	tr("expected integer expression"),
-	// ExpString
-	tr("expected string expression (old)"),
-	// ExpNumExpr
-	tr("expected numeric expression"),
-	// ExpStrExpr
-	tr("expected string expression"),
-	// ExpSemiCommaOrEnd
-	tr("expected semicolon, comma or end-of-statement"),
-	// ExpCommaSemiOrEnd
-	tr("expected comma, semicolon or end-of-statement"),
-	// ExpSemiOrComma
-	tr("expected semicolon or comma"),
-	// ExpOpSemiOrComma
-	tr("expected operator, semicolon or comma"),
-	// ExpBinOpSemiOrComma
-	tr("expected binary operator, semicolon or comma"),
-	// ExpDblVar
-	tr("expected double variable"),
-	// ExpIntVar
-	tr("expected integer variable"),
-	// ExpStrVar
-	tr("expected string variable"),
-	// ExpVar
-	tr("expected variable"),
-	// ExpStrItem
-	tr("expected string item for assignment"),
-	// ExpEndStmt
-	tr("expected end-of-statement"),
-	// ExpExprPfnOrEnd
-	tr("expected expression, print function or end-of-statement"),
-	// ExpExprCommaPfnOrEnd
-	tr("expected expression, comma, print function or end-of-statement"),
-	// ExpOpSemiCommaOrEnd
-	tr("expected operator, semicolon, comma or end-of-statement"),
-	// ExpIntConst
-	tr("expected valid integer constant"),
-	// the following statuses used during development
-	// NotYetImplemented
-	tr("BUG: not yet implemented"),
-	// InvalidMode
-	tr("BUG: invalid mode"),
-	// HoldStackEmpty
-	tr("BUG: hold stack empty"),
-	// HoldStackNotEmpty
-	tr("BUG: hold stack not empty"),
-	// DoneStackNotEmpty
-	tr("BUG: done stack not empty"),
-	// DoneStackEmptyParen
-	tr("BUG: done stack empty - parentheses"),
-	// DoneStackEmptyOperands
-	tr("BUG: done stack empty - operands"),
-	// DoneStackEmptyOperands2
-	tr("BUG: done stack empty - operands 2"),
-	// DoneStackEmptyFindCode
-	tr("BUG: done stack empty - find code"),
-	// UnexpectedCloseParen
-	tr("BUG: unexpected closing parentheses"),
-	// UnexpectedToken
-	tr("BUG: unexpected token on hold stack"),
-	// DoneStackEmpty
-	tr("BUG: expected operand on done stack"),
-	// CmdStackNotEmpty
-	tr("BUG: command stack not empty"),
-	// CmdStackEmpty
-	tr("BUG: command stack empty"),
-	// CmdStackEmptyExpr
-	tr("BUG: command stack empty for command"),
-	// CmdStackEmptyCmd
-	tr("BUG: command stack empty for expression"),
-	// NoAssignListCode
-	tr("BUG: no assign list code found"),
-	// InvalidDataType
-	tr("BUG: invalid data type"),
-	// CountStackEmpty
-	tr("BUG: count stack empty"),
-	// UnexpParenExpr
-	tr("BUG: unexpected parentheses in expression"),
-	// UnexpToken
-	tr("BUG: unexpected token"),
-	// Debug1
-	tr("BUG: debug #1"),
-	// Debug2
-	tr("BUG: debug #2"),
-	// Debug3
-	tr("BUG: debug #3"),
-	// Debug4
-	tr("BUG: debug #4"),
-	// Debug5
-	tr("BUG: debug #5"),
-	// Debug6
-	tr("BUG: debug #6"),
-	// Debug7
-	tr("BUG: debug #7"),
-	// Debug8
-	tr("BUG: debug #8"),
-	// Debug9
-	tr("BUG: debug #9"),
-	// Debug
-	tr("BUG: debug")
+std::unordered_map<Token::Type, bool, EnumClassHash> Token::s_hasParen {
+	{Type::IntFuncP, true},
+	{Type::DefFuncP, true},
+	{Type::Paren, true}
 };
-
-Token::FreeStack Token::s_freeStack;	// stack of free tokens
-Token::UsedVector Token::s_used;		// vector of tokens currently in use
-Token::DeletedList Token::s_deleted;	// list of tokens deleted extra times
-
-
-// destructor function for the token free stack
-//
-//   - called automatically at the end of the application
-//   - deletes memory used by the token on the free stack
-
-Token::FreeStack::~FreeStack(void)
-{
-	// delete any tokens left in the free stack
-	while (!isEmpty())
-	{
-		::operator delete(s_freeStack.pop());
-	}
-}
-
-
-// destructor function for the used token vector
-//
-//   - called automatically at the end of the application
-//   - to report token leaks before application terminates
-
-Token::UsedVector::~UsedVector(void)
-{
-	reportErrors();
-}
-
-
-// function to report token leak errors and delete them
-//
-//   - reports any tokens marked as used and deletes them
-//   - to report token leaks at any time (for testing)
-
-void Token::UsedVector::reportErrors(void)
-{
-	bool first = false;
-	for (int i = 0; i < s_used.size(); i++)
-	{
-		if (s_used[i] != NULL)
-		{
-			if (!first)
-			{
-				qCritical("Token Leaks:");
-				first = true;
-			}
-			qCritical("  %d: %s", i, qPrintable(s_used[i]->text()));
-			::operator delete(s_used[i]);
-			s_used[i] = NULL;
-		}
-	}
-}
-
-
-// destructor function for the list of extra token deletes
-//
-//   - called automatically at the end of the application
-//   - to report extra token deletes before application terminates
-
-Token::DeletedList::~DeletedList(void)
-{
-	reportErrors();
-}
-
-
-// function to report extra token deletes errors
-//
-//   - outputs strings contained in the deleted list
-//   - to report extra token deletes at any time (for testing)
-
-void Token::DeletedList::reportErrors(void)
-{
-	if (!s_deleted.isEmpty())
-	{
-		qCritical("Token Extra Deletes:");
-		for (int i = 0; i < s_deleted.size(); i++)
-		{
-			qCritical("  %s", qPrintable(s_deleted[i]));
-		}
-		s_deleted.clear();
-	}
-}
-
-
-// static function to initialize the static token data
-void Token::initialize(void)
-{
-	// set true for types that contain an opening parentheses
-	s_paren[IntFuncP_TokenType] = true;
-	s_paren[DefFuncP_TokenType] = true;
-	s_paren[Paren_TokenType] = true;
-
-	// set precedence for non-table token types
-	s_prec[Command_TokenType] = -1;  // use table precedence if -1
-	s_prec[Operator_TokenType] = -1;
-	s_prec[IntFuncN_TokenType] = -1;
-	s_prec[IntFuncP_TokenType] = -1;
+// set precedence for non-table token types
+std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
+	{Type::Command, -1},  // use table precedence if -1
+	{Type::Operator, -1},
+	{Type::IntFuncN, -1},
+	{Type::IntFuncP, -1},
 	// these tokens need to be lowest precedence but above Null_Code
-	s_prec[Constant_TokenType] = 2;
-	s_prec[DefFuncN_TokenType] = 2;
-	s_prec[DefFuncP_TokenType] = 2;
-	s_prec[NoParen_TokenType] = 2;
-	s_prec[Paren_TokenType] = 2;
-}
+	{Type::Constant, 2},
+	{Type::DefFuncN, 2},
+	{Type::DefFuncP, 2},
+	{Type::NoParen, 2},
+	{Type::Paren, 2}
+};
 
 
 // function to set the default data type of the token
 void Token::setDataType(void)
 {
 	// only set to double if not an internal function
-	if (m_dataType == None_DataType && m_type != IntFuncP_TokenType)
+	if (m_dataType == DataType::None && m_type != Type::IntFuncP)
 	{
 		// TODO for now just set default to double
-		m_dataType = Double_DataType;
+		m_dataType = DataType::Double;
+	}
+}
+
+
+// function to get convert code needed to convert token to data type
+Code Token::convertCode(DataType toDataType) const
+{
+	switch (dataType())
+	{
+	case DataType::Double:
+		switch (toDataType)
+		{
+		case DataType::Integer:
+			return CvtInt_Code;		// convert Double to Integer
+		case DataType::String:
+			return Invalid_Code;	// can't convert Double to String
+		default:
+			return Null_Code;		// no conversion needed
+		}
+	case DataType::Integer:
+		switch (toDataType)
+		{
+		case DataType::Double:
+			return CvtDbl_Code;		// convert Integer to Double
+		case DataType::String:
+			return Invalid_Code;	// can't convert Integer to String
+		default:
+			return Null_Code;		// no conversion needed
+		}
+	case DataType::String:
+		switch (toDataType)
+		{
+		case DataType::String:
+		case DataType::None:
+		case DataType::Any:
+			return Null_Code;		// print function allowed if needed None
+		default:
+			return Invalid_Code;	// conversion from string no allowed
+		}
+	case DataType::None:
+		// print function allowed if needed none,
+		// else conversion from none not allowed
+		return toDataType == DataType::None ? Null_Code : Invalid_Code;
+
+	default:
+		// Number, Any (will not have any of this data type)
+		return Invalid_Code;
 	}
 }
 
 
 // function to recreate text (abbreviated contents) of token
-QString Token::text(bool withIndex)
+std::string Token::text()
 {
 	Table &table = Table::instance();
-	QString string;
-	QString second;
+	std::stringstream ss;
+	bool second {};
 
-	if (withIndex)
-	{
-		string = QString("%1:").arg(m_index);
-	}
 	switch (m_type)
 	{
-	case DefFuncN_TokenType:
-		string += m_string;
+	case Type::DefFuncN:
+		ss << m_string.toStdString();
 		break;
 
-	case NoParen_TokenType:
-		if (withIndex)
+	case Type::NoParen:
+		if (m_code == Invalid_Code)
 		{
-			string += table.debugName(m_code);
-			second = textOperand(withIndex);
+			ss << '?';
 		}
-		else
+		ss << m_string.toStdString();
+		if (table.hasFlag(m_code, Reference_Flag))
 		{
-			if (m_code == Invalid_Code)
-			{
-				string += '?';
-			}
-			string += m_string;
-			if (table.hasFlag(this, Reference_Flag))
-			{
-				string += "<ref>";
-			}
+			ss << "<ref>";
 		}
 		break;
 
-	case DefFuncP_TokenType:
-	case Paren_TokenType:
-		string += m_string + '(';
+	case Type::DefFuncP:
+	case Type::Paren:
+		ss << m_string.toStdString() << '(';
 		break;
 
-	case Constant_TokenType:
-		if (withIndex)
+	case Type::Constant:
+		if (m_code == Invalid_Code)
 		{
-			string += table.debugName(m_code);
-			second = textOperand(withIndex);
+			ss << '?';
 		}
-		else
+		switch (m_dataType)
 		{
-			if (m_code == Invalid_Code)
+		case DataType::Integer:
+		case DataType::Double:
+			ss << m_string.toStdString();
+			if (m_dataType == DataType::Integer)
 			{
-				string += '?';
+				ss << "%";
 			}
-			switch (m_dataType)
-			{
-			case Integer_DataType:
-			case Double_DataType:
-				string += m_string;
-				if (m_dataType == Integer_DataType)
-				{
-					string += "%";
-				}
-				break;
+			break;
 
-			case String_DataType:
-				string += '"' + m_string + '"';
-				break;
-            default:
-                break;
-			}
+		case DataType::String:
+			ss << '"' << m_string.toStdString() << '"';
+			break;
+		default:
+			break;
 		}
 		break;
 
-	case Operator_TokenType:
+	case Type::Operator:
 		if (isCode(RemOp_Code))
 		{
-			string += table.name(m_code);
-			second = textOperand(withIndex);
+			ss << table.name(m_code).toStdString();
+			second = true;
 		}
 		else
 		{
-			string += table.debugName(m_code);
+			ss << table.debugName(m_code).toStdString();
 		}
 		break;
 
-	case IntFuncN_TokenType:
-	case IntFuncP_TokenType:
-		string += table.debugName(m_code);
-		if (withIndex && table.hasOperand(m_code))
-		{
-			second += textOperand(withIndex);
-		}
+	case Type::IntFuncN:
+	case Type::IntFuncP:
+		ss << table.debugName(m_code).toStdString();
 		break;
 
-	case Command_TokenType:
+	case Type::Command:
 		if (isCode(Rem_Code))
 		{
-			string += table.name(m_code);
-			second = textOperand(withIndex);
+			ss << table.name(m_code).toStdString();
+			second = true;
 		}
 		else
 		{
-			string += table.name(m_code);
-			if (table.name2(m_code) != NULL)
+			ss << table.name(m_code).toStdString();
+			if (!table.name2(m_code).isNull())
 			{
-				string += '-' + table.name2(m_code);
+				ss << '-' << table.name2(m_code).toStdString();
 			}
 		}
 		break;
@@ -414,43 +202,156 @@ QString Token::text(bool withIndex)
 	}
 	if (m_reference)
 	{
-		string += "<ref>";
+		ss << "<ref>";
 	}
-	if (hasSubCode(~(Used_SubCode | UnUsed_SubCode)))
+	if (hasSubCode())
 	{
-		string += '\'';
+		ss << '\'';
 		if (hasSubCode(Paren_SubCode))
 		{
-			string += ')';
+			ss << ')';
 		}
 		if (hasSubCode(Option_SubCode))
 		{
-			QString option = table.optionName(m_code);
-			string += option.isEmpty() ? "BUG" : option;
+			std::string option {table.optionName(m_code).toStdString()};
+			if (option.empty())
+			{
+				ss << "BUG";
+			}
+			else
+			{
+				ss << option;
+			}
 		}
 		if (hasSubCode(Colon_SubCode))
 		{
-			string += ":";
+			ss << ':';
 		}
 		if (hasSubCode(Double_SubCode))
 		{
-			string += "Double";
+			ss << "Double";
 		}
-		string += '\'';
+		ss << '\'';
 	}
-	return string + second;
+	if (second)
+	{
+		ss << '|' << m_string.toStdString() << '|';
+	}
+	return ss.str();
 }
 
 
-// function to get text of operand (with index if selected)
-QString Token::textOperand(bool withIndex)
+// function to convert token status enumerator to translated string
+const QString Token::message(Status status)
 {
-	QString string;
-	if (withIndex)
+	switch (status)
 	{
-		string = QString(" %1:").arg(m_index + 1);
+	case Status::Good:
+		return tr("Good_TokenStatus (BUG)");
+	case Status::Done:
+		return tr("Done_TokenStatus (BUG)");
+	case Status::Parser:
+		return tr("Parser_TokenStatus (BUG)");
+	case Status::ExpCmd:
+		return tr("expected command");
+	case Status::ExpExpr:
+		return tr("expected expression");
+	case Status::ExpExprOrEnd:
+		return tr("expected expression or end-of-statement");
+	case Status::ExpOpOrEnd:
+		return tr("expected operator or end-of-statement");
+	case Status::ExpBinOpOrEnd:
+		return tr("expected binary operator or end-of-statement");
+	case Status::ExpEqualOrComma:
+		return tr("expected equal or comma for assignment");
+	case Status::ExpComma:
+		return tr("expected comma");
+	case Status::ExpAssignItem:
+		return tr("expected item for assignment");
+	case Status::ExpOpOrComma:
+		return tr("expected operator or comma");
+	case Status::ExpOpCommaOrParen:
+		return tr("expected operator, comma or closing parentheses");
+	case Status::ExpOpOrParen:
+		return tr("expected operator or closing parentheses");
+	case Status::ExpBinOpOrComma:
+		return tr("expected binary operator or comma");
+	case Status::ExpBinOpCommaOrParen:
+		return tr("expected binary operator, comma or closing parentheses");
+	case Status::ExpBinOpOrParen:
+		return tr("expected binary operator or closing parentheses");
+	case Status::ExpNumExpr:
+		return tr("expected numeric expression");
+	case Status::ExpStrExpr:
+		return tr("expected string expression");
+	case Status::ExpSemiCommaOrEnd:
+		return tr("expected semicolon, comma or end-of-statement");
+	case Status::ExpCommaSemiOrEnd:
+		return tr("expected comma, semicolon or end-of-statement");
+	case Status::ExpSemiOrComma:
+		return tr("expected semicolon or comma");
+	case Status::ExpOpSemiOrComma:
+		return tr("expected operator, semicolon or comma");
+	case Status::ExpDblVar:
+		return tr("expected double variable");
+	case Status::ExpIntVar:
+		return tr("expected integer variable");
+	case Status::ExpStrVar:
+		return tr("expected string variable");
+	case Status::ExpVar:
+		return tr("expected variable");
+	case Status::ExpStrItem:
+		return tr("expected string item for assignment");
+	case Status::ExpEndStmt:
+		return tr("expected end-of-statement");
+	case Status::ExpExprPfnOrEnd:
+		return tr("expected expression, print function or end-of-statement");
+	case Status::ExpExprCommaPfnOrEnd:
+		return tr("expected expression, comma, print function or "
+			"end-of-statement");
+	case Status::ExpOpSemiCommaOrEnd:
+		return tr("expected operator, semicolon, comma or end-of-statement");
+	case Status::ExpIntConst:
+		return tr("expected valid integer constant");
+	// the following statuses used during development
+	case Status::BUG_NotYetImplemented:
+		return tr("BUG: not yet implemented");
+	case Status::BUG_HoldStackNotEmpty:
+		return tr("BUG: hold stack not empty");
+	case Status::BUG_DoneStackNotEmpty:
+		return tr("BUG: done stack not empty");
+	case Status::BUG_DoneStackEmptyFindCode:
+		return tr("BUG: done stack empty - find code");
+	case Status::BUG_UnexpectedCloseParen:
+		return tr("BUG: unexpected closing parentheses");
+	case Status::BUG_DoneStackEmpty:
+		return tr("BUG: expected operand on done stack");
+	case Status::BUG_InvalidDataType:
+		return tr("BUG: invalid data type");
+	case Status::BUG_UnexpToken:
+		return tr("BUG: unexpected token");
+	case Status::BUG_Debug1:
+		return tr("BUG: debug #1");
+	case Status::BUG_Debug2:
+		return tr("BUG: debug #2");
+	case Status::BUG_Debug3:
+		return tr("BUG: debug #3");
+	case Status::BUG_Debug4:
+		return tr("BUG: debug #4");
+	case Status::BUG_Debug5:
+		return tr("BUG: debug #5");
+	case Status::BUG_Debug6:
+		return tr("BUG: debug #6");
+	case Status::BUG_Debug7:
+		return tr("BUG: debug #7");
+	case Status::BUG_Debug8:
+		return tr("BUG: debug #8");
+	case Status::BUG_Debug9:
+		return tr("BUG: debug #9");
+	case Status::BUG_Debug:
+		return tr("BUG: debug");
 	}
-	return string + '|' + m_string + '|';
+	return "";
 }
 
 
@@ -473,64 +374,6 @@ bool Token::operator==(const Token &other) const
 	else
 	{
 		return m_string.compare(other.m_string, Qt::CaseInsensitive) == 0;
-	}
-}
-
-
-// function to overload the default new operator
-//
-//   - if available tokens on free stack then pops one and returns it
-//   - otherwise new memory is allocated
-//   - token pointer is added to the used vector
-
-void *Token::operator new(size_t size)
-{
-	Token *token;
-	if (s_freeStack.isEmpty())
-	{
-		// allocate the memory for the token
-		token = (Token *)::operator new(size);
-
-		// set index into used vector and add to vector
-		token->m_id = s_used.size();
-		s_used.append(token);
-	}
-	else  // get a token from the free stack
-	{
-		token = s_freeStack.pop();
-
-		// mark token as used
-		s_used[token->m_id] = token;
-	}
-
-	// return pointer to new token
-	return token;
-}
-
-
-// function to overload the default delete operator
-//
-//   - ignores null pointer values
-//   - pushes token to free stack, does not delete the token
-//   - if token was already deleted then adds text of token to deleted list
-//   - otherwise token pointer is removed from the used vector
-
-void Token::operator delete(void *ptr)
-{
-	if (ptr != NULL)
-	{
-		Token *token = (Token *)ptr;
-
-		if (s_used[token->m_id] == NULL)  // already deleted?
-		{
-			s_deleted.append(QString("%1: %2").arg(token->m_id)
-				.arg(token->text()));
-		}
-		else  // mark token as unused and cache on free stack
-		{
-			s_used[token->m_id] = NULL;
-			s_freeStack.push(token);
-		}
 	}
 }
 

@@ -37,9 +37,9 @@
 RecentFiles::RecentFiles(QMenu *menu, QObject *parent) :
 	QObject(parent)
 {
-	QAction *separatorAction = menu->actions().at(0);
+	QAction *separatorAction {menu->actions().at(0)};
 
-	for (int i = 0; i < MaxCount; ++i) {
+	for (int i {}; i < MaxCount; ++i) {
 		m_actions[i] = new QAction(menu);
 		m_actions[i]->setVisible(false);
 		m_actions[i]->setIcon(QIcon(":/images/file-open.png"));
@@ -120,7 +120,7 @@ void RecentFiles::save(QSettings &settings)
 
 void RecentFiles::on_openFile_triggered(void)
 {
-	QAction *action = qobject_cast<QAction *>(sender());
+	QAction *action {qobject_cast<QAction *>(sender())};
 	if (action)
 	{
 		emit openFile(action->data().toString());
@@ -137,7 +137,7 @@ void RecentFiles::on_openFile_triggered(void)
 
 void RecentFiles::updateActions(void)
 {
-	QMutableStringListIterator path(m_files);
+	QMutableStringListIterator path {m_files};
 	while (path.hasNext())
 	{
 		if (!QFile::exists(path.next()))
@@ -146,14 +146,14 @@ void RecentFiles::updateActions(void)
 		}
 	}
 
-	for (int i = 0; i < m_count; i++)
+	for (int i {}; i < m_count; i++)
 	{
 		if (i < m_files.count())
 		{
-			QString number = tr("%1").arg(i + 1);
+			QString number {tr("%1").arg(i + 1)};
 			number.insert(number.length() - 1, QChar('&'));
-			QString text = tr("%1 %2").arg(number)
-				.arg(fileName(m_files.at(i)));
+			QString text {tr("%1 %2").arg(number)
+				.arg(fileName(m_files.at(i)))};
 			m_actions[i]->setText(text);
 			m_actions[i]->setData(m_files.at(i));
 			m_actions[i]->setStatusTip(tr("Open %1").arg(m_files.at(i)));

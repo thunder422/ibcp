@@ -25,29 +25,30 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
+#include <memory>
+
 #include <QHash>
 #include <QStack>
 #include <QStringList>
 
 class Token;
+using TokenPtr = std::shared_ptr<Token>;
 
 
 class Dictionary
 {
 public:
-	Dictionary(void);
-
-	enum EntryType
+	enum class EntryType
 	{
-		New_Entry,
-		Reused_Entry,
-		Exists_Entry,
-		sizeof_Entry
+		New,
+		Reused,
+		Exists
 	};
 
 	void clear(void);
-	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
-		EntryType *returnNewEntry = NULL);
+	quint16 add(const TokenPtr &token,
+		Qt::CaseSensitivity cs = Qt::CaseInsensitive,
+		EntryType *returnNewEntry = nullptr);
 	int remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	QString string(int index) const
 	{
@@ -70,7 +71,7 @@ public:
 	virtual ~AbstractInfo(void) {}
 	virtual void clear(void) {}
 	virtual void addElement(void) {}
-	virtual void setElement(int index, Token *token)
+	virtual void setElement(int index, const TokenPtr &token)
 	{
 		Q_UNUSED(index)
 		Q_UNUSED(token)
@@ -85,15 +86,15 @@ public:
 class InfoDictionary : public Dictionary
 {
 public:
-	InfoDictionary(void);
-	~InfoDictionary(void);
+	InfoDictionary() {}
 
 	void clear(void);
-	quint16 add(Token *token, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+	quint16 add(const TokenPtr &token,
+		Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 	void remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 
 protected:
-	AbstractInfo *m_info;				// pointer to additional information
+	std::unique_ptr<AbstractInfo> m_info;	// pointer to additional information
 };
 
 

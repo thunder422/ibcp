@@ -25,6 +25,8 @@
 #ifndef IBCP_H
 #define IBCP_H
 
+#include <cstddef>
+
 // include auto-generated enumerations
 #include "autoenums.h"
 
@@ -47,36 +49,30 @@ inline Code operator ++(Code &code, int)
 
 
 // miscellenous constant definitions
-enum {
-	HighestPrecedence = 127,	// highest precedence value
+constexpr int HighestPrecedence {127};	// highest precedence value
 	// this value was selected as the highest value because it is the highest
 	// one-byte signed value (in case the precedence member is changed to a
 	// char); all precedences in the table must be below this value
 
-	BaseLineNumber = 0			// number of first line in program
+constexpr int BaseLineNumber {0};		// number of first line in program
 	// this value is the number of the first line in the program edit box and
 	// program view dock widget (a value of zero is used for development, but
 	// will be changed to one)
-};
 
 
 // data type of operands
-enum DataType
+enum class DataType
 {
-	No_DataType = -1,
 	// actual execution data types must be listed first
 	// since they will also be used for indexes
-	Double_DataType,
-	Integer_DataType,
-	String_DataType,
+	Double = 1,
+	Integer,
+	String,
 	// end of the actual execution data types
 	// the following data types are used internally for other uses
-	None_DataType,		// indicates none of the above data types
-	// number of actual execution data types
-	numberof_DataType = None_DataType,
-	Number_DataType,	// either Double or Integer
-	Any_DataType,		// any type (Double, Integer or String)
-	sizeof_DataType
+	None,		// indicates none of the above data types
+	Number,		// either Double or Integer
+	Any 		// any type (Double, Integer or String)
 };
 
 
@@ -90,12 +86,20 @@ enum SubCode
 	Option_SubCode		= 0x00001000,	// reproduce command specific option
 	// sub-codes used by translator only
 	Double_SubCode		= 0x00000001,	// integer constant has decimal/exponent
-	Used_SubCode		= 0x00010000,	// parentheses used in output
-	Last_SubCode		= 0x00020000,	// parentheses used as last token
-	UnUsed_SubCode		= 0x00040000,	// token not in output (for errors)
 
 	// code program mask
 	ProgramMask_Code	= 0x000003FF	// mask for actual program codes
+};
+
+
+// provide generic hash for enum class with std::unordered_map
+struct EnumClassHash
+{
+    template <typename T>
+    std::size_t operator()(T t) const
+    {
+        return static_cast<std::size_t>(t);
+    }
 };
 
 

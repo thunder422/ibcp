@@ -32,18 +32,15 @@
 #include "commandline.h"
 #include "table.h"
 #include "parser.h"
-#include "programmodel.h"
-#include "recreator.h"
-#include "translator.h"
 
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
 Tester::Tester(const QStringList &args, QTextStream &cout) :
 	m_cout(cout),
-	m_translator(new Translator),
-	m_programUnit(new ProgramModel),
-	m_recreator(new Recreator)
+	m_translator {new Translator},
+	m_programUnit {new ProgramModel},
+	m_recreator {new Recreator}
 {
 	QString name[OptSizeOf];
 	name[OptParser] = "parser";
@@ -89,9 +86,9 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 		{
 			// find start of file name less path
 			m_testFileName = args.at(2);
-			QString baseName = QFileInfo(m_testFileName).baseName();
+			QString baseName {QFileInfo(m_testFileName).baseName()};
 
-			for (int i = OptFirst; i < OptNumberOf; i++)
+			for (int i {OptFirst}; i < OptNumberOf; i++)
 			{
 				// check beginning of file name
 				if (baseName.startsWith(name[i], Qt::CaseInsensitive))
@@ -104,8 +101,8 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 			if (m_option == OptNone)  // no matching names?
 			{
 				m_option = OptError;
-				QString parser = m_recreate
-					? "" : QString("%1|").arg(name[OptParser]);
+				QString parser {m_recreate
+					? "" : QString("%1|").arg(name[OptParser])};
 				m_errorMessage = QString("%1: %2 -t%3 (%4%5|%6)[xx]")
 					.arg(tr("usage")).arg(m_programName).arg(parser)
 					.arg(m_recreate ? "o" : "").arg(name[OptExpression])
@@ -123,17 +120,9 @@ Tester::Tester(const QStringList &args, QTextStream &cout) :
 }
 
 
-Tester::~Tester(void)
-{
-	delete m_translator;
-	delete m_programUnit;
-	delete m_recreator;
-}
-
-
 // function to see if argument is expected option
-bool Tester::isOption(const QString &arg, const QString &exp,
-	enum Option option, QString name)
+bool Tester::isOption(const QString &arg, const QString &exp, Option option,
+	QString name)
 {
 	if (arg == exp)
 	{
@@ -160,7 +149,7 @@ bool Tester::run(CommandLine *commandLine)
 	QTextStream input(&file);
 	QString inputLine;
 
-	bool inputMode = m_testFileName.isEmpty();
+	bool inputMode {m_testFileName.isEmpty()};
 	if (inputMode)
 	{
 		file.open(stdin, QIODevice::ReadOnly);
@@ -180,15 +169,15 @@ bool Tester::run(CommandLine *commandLine)
 	{
 		m_cout << endl;
 
-		const char *copyright = commandLine->copyrightStatement();
-		QString line = tr(copyright).arg(commandLine->programName())
-			.arg(commandLine->copyrightYear());
+		const char *copyright {commandLine->copyrightStatement()};
+		QString line {tr(copyright).arg(commandLine->programName())
+			.arg(commandLine->copyrightYear())};
 		m_cout << line << endl;
 
-		const char **warranty = commandLine->warrantyStatement();
-		for (int i = 0; warranty[i]; i++)
+		const char **warranty {commandLine->warrantyStatement()};
+		for (int i {}; warranty[i]; i++)
 		{
-			QString line = tr(warranty[i]);
+			QString line {tr(warranty[i])};
 			m_cout << line << endl;
 		}
 
@@ -200,7 +189,7 @@ bool Tester::run(CommandLine *commandLine)
 		m_cout << endl << tr("Testing %1...").arg(m_testName);
 	}
 
-	for (int lineno = 1;; lineno++)
+	for (int lineno {1};; lineno++)
 	{
 		if (inputMode)
 		{
@@ -247,13 +236,6 @@ bool Tester::run(CommandLine *commandLine)
 			recreateInput(inputLine);
 			break;
 		}
-		// report any token leaks and extra token deletes
-		// FIXME temporary disable for encoder testing since program model
-		//       currently holds on to the rpn lists
-		if (m_option != OptEncoder)
-		{
-			Token::reportErrors();
-		}
 	}
 	if (!inputMode)
 	{
@@ -268,7 +250,7 @@ bool Tester::run(CommandLine *commandLine)
 	{
 		// for encoder testing, output program lines
 		m_cout << "Program:" << endl;
-		for (int i = 0; i < m_programUnit->rowCount(); i++)
+		for (int i {}; i < m_programUnit->rowCount(); i++)
 		{
 			m_cout << i << ": " << m_programUnit->debugText(i, true) << endl;
 		}
@@ -277,7 +259,7 @@ bool Tester::run(CommandLine *commandLine)
 		if (m_recreate)
 		{
 			m_cout << endl << "Output:" << endl;
-			for (int i = 0; i < m_programUnit->rowCount(); i++)
+			for (int i {}; i < m_programUnit->rowCount(); i++)
 			{
 				m_cout << i << ": " << m_programUnit->lineText(i) << endl;
 			}
@@ -292,18 +274,13 @@ bool Tester::run(CommandLine *commandLine)
 void Tester::parseInput(const QString &testInput)
 {
 	Parser parser;
-	Token *token;
 	bool more;
 
 	parser.setInput(QString(testInput));
-	do {
-		token = parser.token();
-		more = printToken(token, true);
-		if (more && token->isCode(EOL_Code))
-		{
-			more = false;
-		}
-		delete token;
+	do
+	{
+		TokenPtr token {parser.token()};
+		more = printToken(token, true) && !token->isCode(EOL_Code);
 	}
 	while (more);
 }
@@ -311,17 +288,16 @@ void Tester::parseInput(const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
+RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 	const char *header)
 {
-	RpnList *rpnList = m_translator->translate(testInput, exprMode
-		? Translator::Expression_TestMode : Translator::Yes_TestMode);
-	if (rpnList->hasError())
+	RpnList rpnList {m_translator->translate(testInput, exprMode
+		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
+	if (rpnList.hasError())
 	{
-		printError(rpnList->errorColumn(), rpnList->errorLength(),
-			rpnList->errorMessage());
-		delete rpnList;
-		return NULL;
+		printError(rpnList.errorColumn(), rpnList.errorLength(),
+			rpnList.errorMessage());
+		rpnList.clear();  // return an empty list
 	}
 	else  // no error, translate line and if selected recreate it
 	{
@@ -333,17 +309,16 @@ RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
 		}
 		else
 		{
-			output = rpnList->text();
+			output = rpnList.text();
 		}
-		if (header == NULL)
+		if (!header)
 		{
 			header = "Output";
-			delete rpnList;
-			rpnList = NULL;
+			rpnList.clear();
 		}
 		m_cout << header << ": " << output << ' ' << endl;
-		return rpnList;
 	}
+	return rpnList;
 }
 
 
@@ -351,12 +326,11 @@ RpnList *Tester::translateInput(const QString &testInput, bool exprMode,
 // recreate the line and output the resulting recreated text
 void Tester::recreateInput(const QString &testInput)
 {
-	RpnList *rpnList = translateInput(testInput, false, "Tokens");
-	if (rpnList != NULL)
+	RpnList rpnList {translateInput(testInput, false, "Tokens")};
+	if (!rpnList.empty())
 	{
 		// recreate text from rpn list
-		QString output = m_recreator->recreate(rpnList);
-		delete rpnList;
+		QString output {m_recreator->recreate(rpnList)};
 		m_cout << "Output: " << output << ' ' << endl;
 	}
 }
@@ -367,39 +341,39 @@ void Tester::recreateInput(const QString &testInput)
 void Tester::encodeInput(QString &testInput)
 {
 	// parse beginning of line for line number program operation
-	Operation operation = Change_Operation;
-	int pos = 0;
+	Operation operation {Operation::Change};
+	int pos {};
 	if (pos < testInput.length())
 	{
 		if (testInput.at(pos) == '+')
 		{
-			operation = Insert_Operation;
+			operation = Operation::Insert;
 			pos++;
 		}
 		else if (testInput.at(pos) == '-')
 		{
-			operation = Remove_Operation;
+			operation = Operation::Remove;
 			pos++;
 		}
 	}
-	int digitCount = 0;
-	int lineIndex = 0;
+	int digitCount {};
+	int lineIndex {};
 	while (pos < testInput.length() && testInput.at(pos).isDigit())
 	{
-		int digit = testInput.at(pos).toAscii() - '0';
+		int digit {testInput.at(pos).toAscii() - '0'};
 		lineIndex = lineIndex * 10 + digit;
 		pos++;
 		digitCount++;
 	}
 	if (digitCount == 0)  // no number at beginning?
 	{
-		if (operation == Change_Operation)
+		if (operation == Operation::Change)
 		{
 			// no number at beginning, insert at end of program
-			operation = Insert_Operation;
+			operation = Operation::Insert;
 			lineIndex = m_programUnit->rowCount();
 		}
-		else if (operation == Insert_Operation)
+		else if (operation == Operation::Insert)
 		{
 			// no number at beginning, insert at end of program
 			lineIndex = m_programUnit->rowCount();
@@ -414,15 +388,15 @@ void Tester::encodeInput(QString &testInput)
 	else
 	{
 		if (lineIndex > m_programUnit->rowCount()
-			|| (operation != Insert_Operation
+			|| (operation != Operation::Insert
 			&& lineIndex == m_programUnit->rowCount()))
 		{
 			printInput(testInput);
 			m_cout << QString("       %1^-- line index number out of range")
-				.arg(operation == Change_Operation ? "" : " ") << endl;
+				.arg(operation == Operation::Change ? "" : " ") << endl;
 			return;
 		}
-		if (operation == Remove_Operation && pos < testInput.length())
+		if (operation == Operation::Remove && pos < testInput.length())
 		{
 			printInput(testInput);
 			m_cout << QString(" ").repeated(7 + pos)
@@ -439,22 +413,22 @@ void Tester::encodeInput(QString &testInput)
 	testInput.remove(0, pos);  // remove operation, number and any spaces
 
 	// call update with arguments dependent on operation
-	if (operation == Remove_Operation)
+	if (operation == Operation::Remove)
 	{
 		m_programUnit->update(lineIndex, 1, 0, QStringList());
 	}
 	else  // Change_Operation or Insert_Operation
 	{
 		m_programUnit->update(lineIndex, 0,
-			operation == Insert_Operation ? 1 : 0, QStringList() << testInput);
+			operation == Operation::Insert ? 1 : 0, QStringList() << testInput);
 	}
 
-	const ErrorItem *errorItem = m_programUnit->lineError(lineIndex);
+	const ErrorItem *errorItem {m_programUnit->lineError(lineIndex)};
 	// only output line if no operation/line number or has an error
-	if (pos == 0 || errorItem != NULL)
+	if (pos == 0 || errorItem)
 	{
 		printInput(testInput);
-		if (errorItem != NULL)
+		if (errorItem)
 		{
 			printError(errorItem->column(), errorItem->length(),
 				errorItem->message());
@@ -467,13 +441,65 @@ void Tester::encodeInput(QString &testInput)
 }
 
 
+// function to convert data type enumerator to string
+static const char *dataTypeName(DataType dataType)
+{
+	switch (dataType)
+	{
+	case DataType::Double:
+		return "Double";
+	case DataType::Integer:
+		return "Integer";
+	case DataType::String:
+		return "String";
+	case DataType::None:
+		return "None";
+	case DataType::Number:
+		return "Number";
+	case DataType::Any:
+		return "Any";
+	}
+	return "";  // silence compiler warning (doesn't reach here at run-time)
+}
+
+
+// function to convert token type enumerator to string
+static const char *tokenTypeName(Token::Type type)
+{
+	switch (type)
+	{
+	case Token::Type::Command:
+		return "Command";
+	case Token::Type::Operator:
+		return "Operator";
+	case Token::Type::IntFuncN:
+		return "IntFuncN";
+	case Token::Type::IntFuncP:
+		return "IntFuncP";
+	case Token::Type::Constant:
+		return "Constant";
+	case Token::Type::DefFuncN:
+		return "DefFuncN";
+	case Token::Type::DefFuncP:
+		return "DefFuncP";
+	case Token::Type::NoParen:
+		return "NoParen";
+	case Token::Type::Paren:
+		return "Paren";
+	case Token::Type::Error:
+		return "Error";
+	}
+	return "";  // silence compiler warning (doesn't reach here at run-time)
+}
+
+
 // function to print the contents of a token
-bool Tester::printToken(Token *token, bool tab)
+bool Tester::printToken(const TokenPtr &token, bool tab)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
 
-	if (token->isType(Error_TokenType))
+	if (token->isType(Token::Type::Error))
 	{
 		printError(token->column(), token->length(), token->string());
 		return false;
@@ -483,8 +509,8 @@ bool Tester::printToken(Token *token, bool tab)
 	{
 		info = "()";
 	}
-	else if (token->isType(Operator_TokenType)
-		|| token->isType(Command_TokenType))
+	else if (token->isType(Token::Type::Operator)
+		|| token->isType(Token::Type::Command))
 	{
 		info = "Op";
 	}
@@ -493,26 +519,26 @@ bool Tester::printToken(Token *token, bool tab)
 		m_cout << '\t';
 	}
 	m_cout << qSetFieldWidth(2) << right << token->column() << qSetFieldWidth(0)
-		<< left << ": " << qSetFieldWidth(10) << tokentype_name[token->type()]
+		<< left << ": " << qSetFieldWidth(10) << tokenTypeName(token->type())
 		<< qSetFieldWidth(0) << info;
 	switch (token->type())
 	{
-	case DefFuncN_TokenType:
-	case NoParen_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::DefFuncN:
+	case Token::Type::NoParen:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0) << " |" << token->string() << '|';
 		break;
-	case DefFuncP_TokenType:
-	case Paren_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::DefFuncP:
+	case Token::Type::Paren:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0) << " |" << token->string() << "(|";
 		break;
-	case Constant_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::Constant:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0);
 		switch (token->dataType(true))
 		{
-		case Integer_DataType:
+		case DataType::Integer:
 			m_cout << ' ' << token->valueInt();
 			if (token->hasSubCode(Double_SubCode))
 			{
@@ -520,23 +546,23 @@ bool Tester::printToken(Token *token, bool tab)
 			}
 			m_cout << " |" << token->string() << '|';
 			break;
-		case Double_DataType:
+		case DataType::Double:
 			m_cout << ' ' << token->value() << " |" << token->string() << '|';
 			break;
-		case String_DataType:
+		case DataType::String:
 			m_cout << " |" << token->string() << '|';
 			break;
 		default:
 		    break;
 		}
 		break;
-	case Operator_TokenType:
-	case IntFuncN_TokenType:
-	case IntFuncP_TokenType:
-		m_cout << ' ' << qSetFieldWidth(7) << datatype_name[token->dataType()]
+	case Token::Type::Operator:
+	case Token::Type::IntFuncN:
+	case Token::Type::IntFuncP:
+		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
 			<< qSetFieldWidth(0);
 		// fall thru
-	case Command_TokenType:
+	case Token::Type::Command:
 		m_cout << " " << code_name[token->code()];
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{

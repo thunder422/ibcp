@@ -22,6 +22,8 @@
 //
 //	2010-02-18	initial version
 
+#include <unordered_map>
+
 #include <QChar>
 #include <QString>
 
@@ -29,68 +31,15 @@
 #include "basic/basic.h"
 
 
-const int MaxOperands = 3;
+constexpr int MaxOperands {3};
 	// this value contains the maximum number of operands
 	// (arguments) for any operator or internal function (there are currently
 	// no internal function with more than 3 arguments)
 
-const int MaxAssocCodes = 3;
+constexpr int MaxAssocCodes {3};
 	// this value contains the maximum number of associated codes,
 	// codes in additional to the main code for different possible data types
 	// for the code (no code currently has more the 3 total codes)
-
-
-// array of conversion codes [have data type] [need data type]
-static Code cvtCodeHaveNeed[sizeof_DataType][sizeof_DataType] = {
-	{	// have Double,    need:
-		Null_Code,		// Double
-		CvtInt_Code,	// Integer
-		Invalid_Code,	// String
-		Null_Code,		// None
-		Null_Code,		// Number
-		Null_Code		// Any
-	},
-	{	// have Integer,   need:
-		CvtDbl_Code,	// Double
-		Null_Code,		// Integer
-		Invalid_Code,	// String
-		Null_Code,		// None
-		Null_Code,		// Number
-		Null_Code		// Any
-	},
-	{	// have String,    need:
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Null_Code,		// String
-		Null_Code,		// None
-		Invalid_Code,	// Number
-		Null_Code		// Any
-	},
-	{	// have None,      need:  (print functions have this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Null_Code,		// None (print function allowed if needed None)
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	},
-	{	// have Number,    need:  (will not have any of this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// None
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	},
-	{	// have Any,       need:  (will not have any of this data type)
-		Invalid_Code,	// Double
-		Invalid_Code,	// Integer
-		Invalid_Code,	// String
-		Invalid_Code,	// None
-		Invalid_Code,	// Number
-		Invalid_Code	// Any
-	}
-};
 
 
 // expression information for operators and internal functions
@@ -107,7 +56,7 @@ struct ExprInfo
 	ExprInfo(Code unaryCode = Null_Code, short operandCount = 0,
 		DataType *operandDataType = NULL, short associatedCodeCount = 0,
 		short secondAssociatedIndex = 0, Code *associatedCode = NULL,
-		DataType expectedDataType = None_DataType) :
+		DataType expectedDataType = DataType::None) :
 		m_unaryCode(unaryCode), m_operandCount(operandCount),
 		m_associatedCodeCount(associatedCodeCount),
 		m_secondAssociatedIndex(secondAssociatedIndex),
@@ -121,7 +70,7 @@ struct ExprInfo
 
 struct TableEntry
 {
-	TokenType type;					// type of token for entry
+	Token::Type type;				// type of token for entry
 	Multiple multiple;				// multiple word command/character operator
 	const QString name;				// name for table entry
 	const QString name2;			// name of second word of command
@@ -158,39 +107,39 @@ Table *Table::s_instance;			// pointer to single table instance
 
 // operand data type arrays
 static DataType Dbl_OperandArray[] = {
-	Double_DataType
+	DataType::Double
 };
 static DataType DblDbl_OperandArray[] = {
-	Double_DataType, Double_DataType
+	DataType::Double, DataType::Double
 };
 static DataType DblInt_OperandArray[] = {
-	Double_DataType, Integer_DataType
+	DataType::Double, DataType::Integer
 };
 
 static DataType Int_OperandArray[] = {
-	Integer_DataType
+	DataType::Integer
 };
 static DataType IntDbl_OperandArray[] = {
-	Integer_DataType, Double_DataType
+	DataType::Integer, DataType::Double
 };
 static DataType IntInt_OperandArray[] = {
-	Integer_DataType, Integer_DataType
+	DataType::Integer, DataType::Integer
 };
 
 static DataType Str_OperandArray[] = {
-	String_DataType
+	DataType::String
 };
 static DataType StrInt_OperandArray[] = {
-	String_DataType, Integer_DataType
+	DataType::String, DataType::Integer
 };
 static DataType StrIntInt_OperandArray[] = {
-	String_DataType, Integer_DataType, Integer_DataType
+	DataType::String, DataType::Integer, DataType::Integer
 };
 static DataType StrStr_OperandArray[] = {
-	String_DataType, String_DataType
+	DataType::String, DataType::String
 };
 static DataType StrStrInt_OperandArray[] = {
-	String_DataType, String_DataType, Integer_DataType
+	DataType::String, DataType::String, DataType::Integer
 };
 
 
@@ -292,9 +241,9 @@ static TableEntry tableEntries[] =
 {
 	// Null_Code entry at beginning so Null_Code == 0
 	{	// Null_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -302,9 +251,9 @@ static TableEntry tableEntries[] =
 	//   BEGIN PLAIN WORDS
 	//***********************
 	{	// BegPlainWord_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -312,167 +261,167 @@ static TableEntry tableEntries[] =
 	//   Commands
 	//--------------
 	{	// Let_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"LET", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		letTranslate, NULL, NULL, NULL, NULL
 	},
 	{	// Print_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"PRINT", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		printTranslate, NULL, NULL, NULL, printRecreate
 	},
 	{	// Input_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"INPUT", NULL, "Keep",
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// InputPrompt_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"INPUT", "PROMPT", "Keep",
-		Null_Flag, 4, String_DataType, NULL,
+		Null_Flag, 4, DataType::String, NULL,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// Dim_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"DIM", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Def_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"DEF", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Rem_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"REM", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	{	// If_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"IF", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Then_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"THEN", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Else_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"ELSE", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// End_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"END", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// EndIf_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"END", "IF", NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// For_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"FOR", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// To_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"TO", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Step_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"STEP", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Next_Code
-		Command_TokenType, OneWord_Multiple,
+		Token::Type::Command, Multiple::OneWord,
 		"NEXT", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Do_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"DO", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoWhile_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"DO", "WHILE", NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoUntil_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"DO", "UNTIL", NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// While_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"WHILE", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Until_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"UNTIL", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Loop_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"LOOP", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopWhile_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"LOOP", "WHILE", NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopUntil_Code
-		Command_TokenType, TwoWord_Multiple,
+		Token::Type::Command, Multiple::TwoWord,
 		"LOOP", "UNTIL", NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -480,65 +429,65 @@ static TableEntry tableEntries[] =
 	//   Internal Functions (No Parentheses)
 	//-----------------------------------------
 	{	// Rnd_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		"RND", NULL, NULL,
-		Null_Flag, 2, Double_DataType, new ExprInfo(),
+		Null_Flag, 2, DataType::Double, new ExprInfo(),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	//--------------------
 	//   Word Operators
 	//--------------------
 	{	// Mod_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"MOD", NULL, NULL,
-		Null_Flag, 42, Double_DataType,
+		Null_Flag, 42, DataType::Double,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Mod, 1)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// And_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"AND", NULL, NULL,
-		Null_Flag, 18, Integer_DataType, &IntInt_ExprInfo,
+		Null_Flag, 18, DataType::Integer, &IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Or_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"OR", NULL, NULL,
-		Null_Flag, 14, Integer_DataType, &IntInt_ExprInfo,
+		Null_Flag, 14, DataType::Integer, &IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Not_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"NOT", NULL, NULL,
-		Null_Flag, 20, Integer_DataType,
+		Null_Flag, 20, DataType::Integer,
 		new ExprInfo(Not_Code, Operands(Int)),
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// Eqv_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"EQV", NULL, NULL,
-		Null_Flag, 12, Integer_DataType, &IntInt_ExprInfo,
+		Null_Flag, 12, DataType::Integer, &IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Imp_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"IMP", NULL, NULL,
-		Null_Flag, 10, Integer_DataType, &IntInt_ExprInfo,
+		Null_Flag, 10, DataType::Integer, &IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Xor_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"XOR", NULL, NULL,
-		Null_Flag, 16, Integer_DataType, &IntInt_ExprInfo,
+		Null_Flag, 16, DataType::Integer, &IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	//*********************
 	//   END PLAIN WORDS
 	//*********************
 	{	// EndPlainWord_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -546,9 +495,9 @@ static TableEntry tableEntries[] =
 	//   BEGIN PARENTHESES WORDS
 	//*****************************
 	{	// BegParenWord_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -556,212 +505,212 @@ static TableEntry tableEntries[] =
 	//   INTERNAL FUNCTIONS (Parentheses)
 	//--------------------------------------
 	{	// Abs_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"ABS(", NULL, NULL,
-		Null_Flag, 2, Double_DataType,
+		Null_Flag, 2, DataType::Double,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Abs)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Fix_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"FIX(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Frac_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"FRAC(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Int_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"INT(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 
 	},
 	{	// RndArg_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"RND(", NULL, NULL,
-		Null_Flag, 2, Double_DataType,
+		Null_Flag, 2, DataType::Double,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(RndArgs)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sgn_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"SGN(", NULL, NULL,
-		Null_Flag, 2, Double_DataType,
+		Null_Flag, 2, DataType::Double,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Sgn)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cint_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"CINT(", NULL, NULL,
-		Null_Flag, 2, Integer_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Integer, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cdbl_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"CDBL(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sqr_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"SQR(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Atn_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"ATN(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cos_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"COS(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sin_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"SIN(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tan_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"TAN(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Exp_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"EXP(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Log_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"LOG(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Dbl_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tab_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"TAB(", NULL, NULL,
-		Print_Flag, 2, None_DataType, &Int_ExprInfo,
+		Print_Flag, 2, DataType::None, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Spc_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"SPC(", NULL, NULL,
-		Print_Flag, 2, None_DataType, &Int_ExprInfo,
+		Print_Flag, 2, DataType::None, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Asc_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"ASC(", NULL, NULL,
-		Multiple_Flag, 2, Integer_DataType,
+		Multiple_Flag, 2, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(Str)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Asc2_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"ASC(", "ASC2(", NULL,
-		Null_Flag, 2, Integer_DataType,
+		Null_Flag, 2, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(StrInt)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Chr_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"CHR$(", NULL, NULL,
-		Null_Flag, 2, String_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::String, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr2_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"INSTR(", "INSTR2(", NULL,
-		Multiple_Flag, 2, Integer_DataType, &StrStr_ExprInfo,
+		Multiple_Flag, 2, DataType::Integer, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr3_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"INSTR(", "INSTR3(", NULL,
-		Null_Flag, 2, Integer_DataType,
+		Null_Flag, 2, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(StrStrInt)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Left_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"LEFT$(", NULL, NULL,
-		SubStr_Flag, 2, String_DataType,
+		SubStr_Flag, 2, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Left, -1)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Len_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"LEN(", NULL, NULL,
-		Null_Flag, 2, Integer_DataType,
+		Null_Flag, 2, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(Str)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid2_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"MID$(", "MID2$(", NULL,
-		Multiple_Flag | SubStr_Flag, 2, String_DataType,
+		Multiple_Flag | SubStr_Flag, 2, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Mid2, -1)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid3_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"MID$(", "MID3$(", NULL,
-		SubStr_Flag, 2, String_DataType,
+		SubStr_Flag, 2, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrIntInt), AssocCode2(Mid3, -1)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Repeat_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"REPEAT$(", NULL, NULL,
-		Null_Flag, 2, String_DataType,
+		Null_Flag, 2, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrInt)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Right_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"RIGHT$(", NULL, NULL,
-		SubStr_Flag, 2, String_DataType,
+		SubStr_Flag, 2, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrInt), AssocCode2(Right, -1)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Space_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"SPACE$(", NULL, NULL,
-		Null_Flag, 2, String_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::String, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Str_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"STR$(", NULL, NULL,
-		Null_Flag, 2, String_DataType,
+		Null_Flag, 2, DataType::String,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Str)),
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Val_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"VAL(", NULL, NULL,
-		Null_Flag, 2, Double_DataType, &Str_ExprInfo,
+		Null_Flag, 2, DataType::Double, &Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	//***************************
 	//   END PARENTHESES WORDS
 	//***************************
 	{	// EndParenWord_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -769,9 +718,9 @@ static TableEntry tableEntries[] =
 	//   BEGIN DATA TYPE WORDS
 	//***************************
 	{	// BegDataTypeWord_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -781,9 +730,9 @@ static TableEntry tableEntries[] =
 	//   END DATA TYPE WORDS
 	//*************************
 	{	// EndDataTypeWord_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -791,9 +740,9 @@ static TableEntry tableEntries[] =
 	//   BEGIN SYMBOLS
 	//*******************
 	{	// BegSymbol_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -801,133 +750,133 @@ static TableEntry tableEntries[] =
 	//   Symbol Operators
 	//----------------------
 	{	// Add_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"+", NULL, NULL,
-		Null_Flag, 40, Double_DataType,
+		Null_Flag, 40, DataType::Double,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Add, 2)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Sub_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"-", NULL, NULL,
-		Null_Flag, 40, Double_DataType,
+		Null_Flag, 40, DataType::Double,
 		new ExprInfo(Neg_Code, Operands(DblDbl), AssocCode2(Sub, 1)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Mul_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"*", NULL, NULL,
-		Null_Flag, 46, Double_DataType,
+		Null_Flag, 46, DataType::Double,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Mul, 1)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Div_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"/", NULL, NULL,
-		Null_Flag, 46, Double_DataType,
+		Null_Flag, 46, DataType::Double,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Div, 1)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// IntDiv_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"\\", NULL, NULL,
-		Null_Flag, 44, Integer_DataType, &DblDbl_ExprInfo,
+		Null_Flag, 44, DataType::Integer, &DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Power_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"^", NULL, NULL,
-		UseConstAsIs_Flag, 50, Double_DataType,
+		UseConstAsIs_Flag, 50, DataType::Double,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Power, 1)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Eq_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"=", NULL, NULL,
-		Null_Flag, 30, Integer_DataType,
+		Null_Flag, 30, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Eq, 2)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Gt_Code
-		Operator_TokenType, TwoChar_Multiple,
+		Token::Type::Operator, Multiple::TwoChar,
 		">", NULL, NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Gt, 2)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEq_Code
-		Operator_TokenType, TwoChar_Multiple,
+		Token::Type::Operator, Multiple::TwoChar,
 		">=", NULL, NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(GtEq, 2)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Lt_Code
-		Operator_TokenType, TwoChar_Multiple,
+		Token::Type::Operator, Multiple::TwoChar,
 		"<", NULL, NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Lt, 2)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEq_Code
-		Operator_TokenType, TwoChar_Multiple,
+		Token::Type::Operator, Multiple::TwoChar,
 		"<=", NULL, NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(LtEq, 2)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEq_Code
-		Operator_TokenType, TwoChar_Multiple,
+		Token::Type::Operator, Multiple::TwoChar,
 		"<>", NULL, NULL,
-		Null_Flag, 30, Integer_DataType,
+		Null_Flag, 30, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(NotEq, 2)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// OpenParen_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"(", NULL, NULL,
-		Null_Flag, 2, None_DataType, NULL,
+		Null_Flag, 2, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// CloseParen_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		")", NULL, NULL,
-		Null_Flag, 4, None_DataType, NULL,
+		Null_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, parenRecreate
 	},
 	{	// Comma_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		",", NULL, NULL,
-		Null_Flag, 6, None_DataType, NULL,
+		Null_Flag, 6, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, printCommaRecreate
 	},
 	{	// SemiColon_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		";", NULL, NULL,
-		Null_Flag, 6, None_DataType, NULL,
+		Null_Flag, 6, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, printSemicolonRecreate
 	},
 	{	// Colon_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		":", NULL, NULL,
-		EndStmt_Flag, 4, None_DataType, NULL,
+		EndStmt_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// RemOp_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"'", NULL, NULL,
-		EndStmt_Flag, 2, None_DataType, NULL,
+		EndStmt_Flag, 2, DataType::None, NULL,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	//*****************
 	//   END SYMBOLS
 	//*****************
 	{	// EndSymbol_Code
-		Error_TokenType, OneWord_Multiple,
+		Token::Type::Error, Multiple::OneWord,
 		NULL, "NULL", NULL,
-		Null_Flag, 0, No_DataType, NULL,
+		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -935,594 +884,594 @@ static TableEntry tableEntries[] =
 	//   MISCELLANEOUS ENTRIES
 	//***************************
 	{	// Neg_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		// FIXME temporarily replaced "-" with "Neq" for testing
 		"-", "Neg", NULL,
-		UseConstAsIs_Flag, 48, Double_DataType,
+		UseConstAsIs_Flag, 48, DataType::Double,
 		new ExprInfo(Neg_Code, Operands(Dbl), AssocCode(Neg)),
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// Assign_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"=", "Assign", "LET",
-		Reference_Flag, 4, Double_DataType,
+		Reference_Flag, 4, DataType::Double,
 		new ExprInfo(Null_Code, Operands(DblDbl), AssocCode2(Assign, 2)),
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignInt_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"=", "Assign%", "LET",
-		Reference_Flag, 4, Integer_DataType,
+		Reference_Flag, 4, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AssignInt)),
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignStr_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"=", "Assign$", "LET",
-		Reference_Flag, 4, String_DataType,
+		Reference_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignStr, 1)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignLeft_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"LEFT$(", "AssignLeft", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignLeft, 1)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid2_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"MID$(", "AssignMid2", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignMid2, 1)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid3_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"MID$(", "AssignMid3", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignMid3, 1)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignRight_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"MID$(", "AssignRight", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignRight, 1)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignList_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"=", "AssignList", "LET",
-		Reference_Flag, 4, Double_DataType, &DblDbl_ExprInfo,
+		Reference_Flag, 4, DataType::Double, &DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListInt_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"=", "AssignList%", "LET",
-		Reference_Flag, 4, Integer_DataType, &IntInt_ExprInfo,
+		Reference_Flag, 4, DataType::Integer, &IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListStr_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"=", "AssignList$", "LET",
-		Reference_Flag, 4, String_DataType, &StrStr_ExprInfo,
+		Reference_Flag, 4, DataType::String, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignKeepStr_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"=", "AssignKeep$", "LET",
-		Reference_Flag, 4, String_DataType, &StrStr_ExprInfo,
+		Reference_Flag, 4, DataType::String, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepLeft_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"LEFT$(", "AssignKeepLeft", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr),
 		AssocCode2(AssignKeepLeft, 0)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid2_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"MID$(", "AssignKeepMid2", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr),
 		AssocCode2(AssignKeepMid2, 0)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid3_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"MID$(", "AssignKeepMid3", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr),
 		AssocCode2(AssignKeepMid3, 0)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepRight_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"RIGHT$(", "AssignKeepRight", "LET",
-		Reference_Flag | SubStr_Flag, 4, String_DataType,
+		Reference_Flag | SubStr_Flag, 4, DataType::String,
 		new ExprInfo(Null_Code, Operands(StrStr),
 		AssocCode2(AssignKeepRight, 0)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// EOL_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		NULL, "EOL", NULL,
-		EndStmt_Flag, 4, None_DataType, NULL,
+		EndStmt_Flag, 4, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// AddI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"+", "+%1", NULL,
-		Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 40, DataType::Double, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AddI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"+", "+%2", NULL,
-		Null_Flag, 40, Double_DataType, &DblInt_ExprInfo,
+		Null_Flag, 40, DataType::Double, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AddInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"+", "+%", NULL,
-		Null_Flag, 40, Integer_DataType,
+		Null_Flag, 40, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(AddInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// CatStr_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"+", "+$", NULL,
-		Null_Flag, 40, String_DataType, &StrStr_ExprInfo,
+		Null_Flag, 40, DataType::String, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"-", "-%1", NULL,
-		Null_Flag, 40, Double_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 40, DataType::Double, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"-", "-%2", NULL,
-		Null_Flag, 40, Double_DataType, &DblInt_ExprInfo,
+		Null_Flag, 40, DataType::Double, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"-", "-%", NULL,
-		Null_Flag, 40, Integer_DataType,
+		Null_Flag, 40, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(SubInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NegInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"-", "Neg%", NULL,
-		Null_Flag, 48, Integer_DataType,
+		Null_Flag, 48, DataType::Integer,
 		new ExprInfo(NegInt_Code, Operands(Int)),
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// MulI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"*", "*%1", NULL,
-		Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 46, DataType::Double, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// MulI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"*", "*%2", NULL,
-		Null_Flag, 46, Double_DataType, &DblInt_ExprInfo,
+		Null_Flag, 46, DataType::Double, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// MulInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"*", "*%", NULL,
-		Null_Flag, 46, Integer_DataType,
+		Null_Flag, 46, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(MulInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"/", "/%1", NULL,
-		Null_Flag, 46, Double_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 46, DataType::Double, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"/", "/%2", NULL,
-		Null_Flag, 46, Double_DataType, &DblInt_ExprInfo,
+		Null_Flag, 46, DataType::Double, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"/", "/%", NULL,
-		Null_Flag, 46, Integer_DataType,
+		Null_Flag, 46, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(DivInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"MOD", "MOD%1", NULL,
-		Null_Flag, 42, Double_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 42, DataType::Double, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"MOD", "MOD%2", NULL,
-		Null_Flag, 42, Double_DataType, &DblInt_ExprInfo,
+		Null_Flag, 42, DataType::Double, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModInt_Code
-		Operator_TokenType, OneWord_Multiple,
+		Token::Type::Operator, Multiple::OneWord,
 		"MOD", "MOD%", NULL,
-		Null_Flag, 42, Integer_DataType,
+		Null_Flag, 42, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(ModInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"^", "^%1", NULL,
-		Null_Flag, 50, Double_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 50, DataType::Double, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerMul_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"^", "^*", NULL,
-		Null_Flag, 50, Double_DataType, &DblInt_ExprInfo,
+		Null_Flag, 50, DataType::Double, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"^", "^%", NULL,
-		Null_Flag, 50, Integer_DataType,
+		Null_Flag, 50, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(PowerInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"=", "=%1", NULL,
-		Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 30, DataType::Integer, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"=", "=%2", NULL,
-		Null_Flag, 30, Integer_DataType, &DblInt_ExprInfo,
+		Null_Flag, 30, DataType::Integer, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"=", "=%", NULL,
-		Null_Flag, 30, Integer_DataType,
+		Null_Flag, 30, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(EqInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqStr_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"=", "=$", NULL,
-		Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo,
+		Null_Flag, 30, DataType::Integer, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">", ">%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">", ">%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">", ">%", NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtStr_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">", ">$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">=", ">=%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">=", ">=%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">=", ">=%", NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(GtEqInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqStr_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		">=", ">=$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<", "<%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<", "<%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<", "<%", NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtStr_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<", "<$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<=", "<=%1", NULL,
-		Null_Flag, 32, Integer_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<=", "<=%2", NULL,
-		Null_Flag, 32, Integer_DataType, &DblInt_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<=", "<=%", NULL,
-		Null_Flag, 32, Integer_DataType,
+		Null_Flag, 32, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(LtEqInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqStr_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<=", "<=$", NULL,
-		Null_Flag, 32, Integer_DataType, &StrStr_ExprInfo,
+		Null_Flag, 32, DataType::Integer, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqI1_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<>", "<>%1", NULL,
-		Null_Flag, 30, Integer_DataType, &IntDbl_ExprInfo,
+		Null_Flag, 30, DataType::Integer, &IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqI2_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<>", "<>%2", NULL,
-		Null_Flag, 30, Integer_DataType, &DblInt_ExprInfo,
+		Null_Flag, 30, DataType::Integer, &DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqInt_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<>", "<>%", NULL,
-		Null_Flag, 30, Integer_DataType,
+		Null_Flag, 30, DataType::Integer,
 		new ExprInfo(Null_Code, Operands(IntInt), AssocCode(NotEqInt)),
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqStr_Code
-		Operator_TokenType, OneChar_Multiple,
+		Token::Type::Operator, Multiple::OneChar,
 		"<>", "<>$", NULL,
-		Null_Flag, 30, Integer_DataType, &StrStr_ExprInfo,
+		Null_Flag, 30, DataType::Integer, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AbsInt_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"ABS(", "ABS%(", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::Integer, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// RndArgInt_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"RND(", "RND%(", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::Integer, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// SgnInt_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"SGN(", "SGN%(", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::Integer, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// CvtInt_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "CvtInt", NULL,
-		Hidden_Flag, 2, None_DataType, NULL,
+		Hidden_Flag, 2, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// CvtDbl_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "CvtDbl", NULL,
-		Hidden_Flag, 2, None_DataType, NULL,
+		Hidden_Flag, 2, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// StrInt_Code
-		IntFuncP_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncP, Multiple::OneWord,
 		"STR$(", "STR%$(", NULL,
-		Null_Flag, 2, String_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::String, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// PrintDbl_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "PrintDbl", NULL,
-		Print_Flag | UseConstAsIs_Flag, 2, None_DataType,
+		Print_Flag | UseConstAsIs_Flag, 2, DataType::None,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Print)),
 		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// PrintInt_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "PrintInt", NULL,
-		Print_Flag, 2, None_DataType, &Int_ExprInfo,
+		Print_Flag, 2, DataType::None, &Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// PrintStr_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "PrintStr", NULL,
-		Print_Flag, 2, None_DataType, &Str_ExprInfo,
+		Print_Flag, 2, DataType::None, &Str_ExprInfo,
 		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// InputBegin_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputBegin", NULL,
-		Null_Flag, 2, None_DataType, NULL,
+		Null_Flag, 2, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputBeginStr_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputBeginStr", "Question",
-		Null_Flag, 2, None_DataType, new ExprInfo(Null_Code, Operands(Str)),
+		Null_Flag, 2, DataType::None, new ExprInfo(Null_Code, Operands(Str)),
 		NULL, NULL, NULL, NULL, inputPromptBeginRecreate
 	},
 	{	// InputAssign_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputAssign", NULL,
-		Reference_Flag, 2, None_DataType,
+		Reference_Flag, 2, DataType::None,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode2(InputAssign, 2)),
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignInt_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputAssignInt", NULL,
-		Reference_Flag, 2, None_DataType,
+		Reference_Flag, 2, DataType::None,
 		new ExprInfo(Null_Code, Operands(Int), AssocCode(InputAssignInt)),
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignStr_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputAssignStr", NULL,
-		Reference_Flag, 2, None_DataType,
+		Reference_Flag, 2, DataType::None,
 		new ExprInfo(Null_Code, Operands(Str), AssocCode(InputAssignStr)),
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputParse_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputParse", NULL,
-		Null_Flag, 2, None_DataType, NULL,
+		Null_Flag, 2, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseInt_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputParseInt", NULL,
-		Null_Flag, 2, None_DataType, NULL,
+		Null_Flag, 2, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseStr_Code
-		IntFuncN_TokenType, OneWord_Multiple,
+		Token::Type::IntFuncN, Multiple::OneWord,
 		NULL, "InputParseStr", NULL,
-		Null_Flag, 2, None_DataType, NULL,
+		Null_Flag, 2, DataType::None, NULL,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// Const_Code
-		Constant_TokenType, OneWord_Multiple,
+		Token::Type::Constant, Multiple::OneWord,
 		NULL, "Const", NULL,
-		Null_Flag, 2, Double_DataType,
+		Null_Flag, 2, DataType::Double,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Const)),
 		NULL, constNumEncode, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstInt_Code
-		Constant_TokenType, OneWord_Multiple,
+		Token::Type::Constant, Multiple::OneWord,
 		NULL, "ConstInt", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::Integer, &Int_ExprInfo,
 		NULL, constNumEncode, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstStr_Code
-		Constant_TokenType, OneWord_Multiple,
+		Token::Type::Constant, Multiple::OneWord,
 		NULL, "ConstStr", NULL,
-		Null_Flag, 2, String_DataType, &Str_ExprInfo,
+		Null_Flag, 2, DataType::String, &Str_ExprInfo,
 		NULL, constStrEncode, constStrOperandText, constStrRemove,
 		constStrRecreate
 	},
 	{	// Var_Code
-		NoParen_TokenType, OneWord_Multiple,
+		Token::Type::NoParen, Multiple::OneWord,
 		NULL, "Var", NULL,
-		Null_Flag, 2, Double_DataType,
+		Null_Flag, 2, DataType::Double,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(Var)),
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarInt_Code
-		NoParen_TokenType, OneWord_Multiple,
+		Token::Type::NoParen, Multiple::OneWord,
 		NULL, "VarInt", NULL,
-		Null_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Null_Flag, 2, DataType::Integer, &Int_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarStr_Code
-		NoParen_TokenType, OneWord_Multiple,
+		Token::Type::NoParen, Multiple::OneWord,
 		NULL, "VarStr", NULL,
-		Null_Flag, 2, String_DataType, &Str_ExprInfo,
+		Null_Flag, 2, DataType::String, &Str_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// VarRef_Code
-		NoParen_TokenType, OneWord_Multiple,
+		Token::Type::NoParen, Multiple::OneWord,
 		NULL, "VarRef", NULL,
-		Reference_Flag, 2, Double_DataType,
+		Reference_Flag, 2, DataType::Double,
 		new ExprInfo(Null_Code, Operands(Dbl), AssocCode(VarRef)),
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarRefInt_Code
-		NoParen_TokenType, OneWord_Multiple,
+		Token::Type::NoParen, Multiple::OneWord,
 		NULL, "VarRefInt", NULL,
-		Reference_Flag, 2, Integer_DataType, &Int_ExprInfo,
+		Reference_Flag, 2, DataType::Integer, &Int_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarRefStr_Code
-		NoParen_TokenType, OneWord_Multiple,
+		Token::Type::NoParen, Multiple::OneWord,
 		NULL, "VarRefStr", NULL,
-		Reference_Flag, 2, String_DataType, &Str_ExprInfo,
+		Reference_Flag, 2, DataType::String, &Str_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// Array_Code
 		// TODO preliminary until full array support is implemented
-		Paren_TokenType, OneWord_Multiple,
+		Token::Type::Paren, Multiple::OneWord,
 		NULL, "Array", NULL,
-		Null_Flag, 2, Double_DataType, NULL,
+		Null_Flag, 2, DataType::Double, NULL,
 		NULL, NULL, NULL, NULL, arrayRecreate
 	},
 	{	// DefFuncN_Code
 		// TODO preliminary until full define function support is implemented
-		DefFuncN_TokenType, OneWord_Multiple,
+		Token::Type::DefFuncN, Multiple::OneWord,
 		NULL, "DefFuncN", NULL,
-		Null_Flag, 2, Double_DataType, NULL,
+		Null_Flag, 2, DataType::Double, NULL,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
 	{	// DefFuncP_Code
 		// TODO preliminary until full define function support is implemented
-		DefFuncP_TokenType, OneWord_Multiple,
+		Token::Type::DefFuncP, Multiple::OneWord,
 		NULL, "DefFuncP", NULL,
-		Null_Flag, 2, Double_DataType, NULL,
+		Null_Flag, 2, DataType::Double, NULL,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
 	{	// Function_Code
 		// TODO preliminary until full user function support is implemented
-		Paren_TokenType, OneWord_Multiple,
+		Token::Type::Paren, Multiple::OneWord,
 		NULL, "Function", NULL,
-		Null_Flag, 2, Double_DataType, NULL,
+		Null_Flag, 2, DataType::Double, NULL,
 		NULL, NULL, NULL, NULL, functionRecreate
 	}
 };
@@ -1535,7 +1484,7 @@ static TableEntry tableEntries[] =
 
 Table &Table::instance(void)
 {
-	if (s_instance == NULL)
+	if (!s_instance)
 	{
 		s_instance = new Table(tableEntries, sizeof(tableEntries)
 			/ sizeof(TableEntry));  // aborts application if table errors
@@ -1558,13 +1507,13 @@ Table::Table(TableEntry *entry, int entryCount) :
 
 	// scan table and record indexes
 	// find maximum number of operands and associated codes
-	int maxOperands = 0;
-	int maxAssocCodes = 0;
+	int maxOperands {};
+	int maxAssocCodes {};
 	for (i = 0; i < entryCount; i++)
 	{
 		// check if found new maximums
-		ExprInfo *exprInfo = m_entry[i].exprInfo;
-		if (exprInfo != NULL)
+		ExprInfo *exprInfo {m_entry[i].exprInfo};
+		if (exprInfo)
 		{
 			if (maxOperands < exprInfo->m_operandCount)
 			{
@@ -1589,14 +1538,14 @@ Table::Table(TableEntry *entry, int entryCount) :
 			// validate multiple entries
 			if ((m_entry[i].flags & Multiple_Flag) != 0)
 			{
-				ExprInfo *exprInfo2 = m_entry[i + 1].exprInfo;
+				ExprInfo *exprInfo2 {m_entry[i + 1].exprInfo};
 				if (m_entry[i].name != m_entry[i + 1].name)
 				{
 					errorList.append(QString("Multiple entry '%1' name "
 						"mis-match '%2'").arg(m_entry[i].name)
 						.arg(m_entry[i + 1].name));
 				}
-				else if (exprInfo2 == NULL)
+				else if (!exprInfo2)
 				{
 					errorList.append(QString("Multiple entry '%1' next entry "
 						"no expression info").arg(m_entry[i + 1].name));
@@ -1618,10 +1567,10 @@ Table::Table(TableEntry *entry, int entryCount) :
 				Num_BitMask = Dbl_BitMask | Int_BitMask,
 				Any_BitMask = Num_BitMask | Str_BitMask
 			};
-			int bitMaskDataType[numberof_DataType] = {
-				Dbl_BitMask,	// Double
-				Int_BitMask,	// Integer
-				Str_BitMask		// String
+			std::unordered_map<DataType, int, EnumClassHash> bitMaskDataType {
+				{DataType::Double,  Dbl_BitMask},
+				{DataType::Integer, Int_BitMask},
+				{DataType::String,  Str_BitMask}
 			};
 
 			// set expected data type (start with data type of last operand)
@@ -1630,19 +1579,20 @@ Table::Table(TableEntry *entry, int entryCount) :
 				// use last operand for operators, first operand for functions
 				exprInfo->m_expectedDataType
 					= exprInfo->m_operandDataType[m_entry[i].type
-					== Operator_TokenType ? exprInfo->m_operandCount - 1 : 0];
+					== Token::Type::Operator
+					? exprInfo->m_operandCount - 1 : 0];
 				// check each secondary associated code
 				if (exprInfo->m_associatedCodeCount > 0)
 				{
-					int bitMask = bitMaskDataType[exprInfo->m_expectedDataType];
-					int index = exprInfo->m_secondAssociatedIndex;
+					int bitMask {bitMaskDataType[exprInfo->m_expectedDataType]};
+					int index {exprInfo->m_secondAssociatedIndex};
 					if (index >= 0)
 					{
 						for (; index < exprInfo->m_associatedCodeCount; index++)
 						{
-							Code assocCode = exprInfo->m_associatedCode[index];
-							ExprInfo *exprInfo2 = m_entry[assocCode].exprInfo;
-							if (exprInfo2 != NULL)
+							Code assocCode {exprInfo->m_associatedCode[index]};
+							ExprInfo *exprInfo2 {m_entry[assocCode].exprInfo};
+							if (exprInfo2)
 							{
 								bitMask |= bitMaskDataType[exprInfo2
 									->m_operandDataType[exprInfo2
@@ -1651,11 +1601,11 @@ Table::Table(TableEntry *entry, int entryCount) :
 						}
 						if (bitMask == Num_BitMask)
 						{
-							exprInfo->m_expectedDataType = Number_DataType;
+							exprInfo->m_expectedDataType = DataType::Number;
 						}
 						else if (bitMask == Any_BitMask)
 						{
-							exprInfo->m_expectedDataType = Any_DataType;
+							exprInfo->m_expectedDataType = DataType::Any;
 						}
 					}
 				}
@@ -1701,7 +1651,7 @@ Table::Table(TableEntry *entry, int entryCount) :
 		else
 		{
 			// check to make sure no bracketing codes overlap
-			for (int type2 = 0; type2 < sizeof_SearchType; type2++)
+			for (int type2 {}; type2 < sizeof_SearchType; type2++)
 			{
 				if (type != type2
 					&& ((m_range[type].beg > m_range[type2].beg
@@ -1722,7 +1672,7 @@ Table::Table(TableEntry *entry, int entryCount) :
 	// if errors then output messages and abort
 	if (!errorList.isEmpty())
 	{
-		int n = 0;
+		int n {};
 		foreach (QString error, errorList)
 		{
 			qCritical("%s", qPrintable(tr("Error #%1: %2").arg(++n)
@@ -1738,7 +1688,7 @@ Table::Table(TableEntry *entry, int entryCount) :
 //================================
 
 // returns token type for code
-TokenType Table::type(Code code) const
+Token::Type Table::type(Code code) const
 {
 	return m_entry[code].type;
 }
@@ -1776,7 +1726,7 @@ const QString Table::optionName(Code code) const
 // except for internal functions with multiple argument footprints
 const QString Table::debugName(Code code) const
 {
-	QString name = code == Invalid_Code ? "<NotSet>" : m_entry[code].name2;
+	QString name {code == Invalid_Code ? "<NotSet>" : m_entry[code].name2};
 	if (name.isEmpty())
 	{
 		name = m_entry[code].name;
@@ -1860,7 +1810,7 @@ EncodeFunction Table::encodeFunction(Code code) const
 // returns whether the code has an operand
 bool Table::hasOperand(Code code) const
 {
-	return m_entry[code].operandText != NULL;
+	return m_entry[code].operandText;
 }
 
 // returns the pointer to the operand text function (if any) for code
@@ -1886,12 +1836,12 @@ RecreateFunction Table::recreateFunction(Code code) const
 //=================================
 
 // returns the unary operator code (or Null_Code if none) for token code
-Code Table::unaryCode(Token *token) const
+Code Table::unaryCode(const TokenPtr &token) const
 {
-	if (token->isType(Operator_TokenType))
+	if (token->isType(Token::Type::Operator))
 	{
-		ExprInfo *ei = m_entry[token->code()].exprInfo;
-		if (ei != NULL)
+		ExprInfo *ei {m_entry[token->code()].exprInfo};
+		if (ei)
 		{
 			return ei->m_unaryCode;
 		}
@@ -1901,52 +1851,54 @@ Code Table::unaryCode(Token *token) const
 
 // returns whether the token contains a unary operator code
 // (convenience function to avoid confusion)
-bool Table::isUnaryOperator(Token *token) const
+bool Table::isUnaryOperator(const TokenPtr &token) const
 {
-	return token->isType(Operator_TokenType) ? operandCount(token) == 1 : false;
+	return token->isType(Token::Type::Operator)
+		? operandCount(token) == 1 : false;
 }
 
 // returns whether the token is a unary or binary operator
 // (token type must be operator and have operands)
-bool Table::isUnaryOrBinaryOperator(Token *token) const
+bool Table::isUnaryOrBinaryOperator(const TokenPtr &token) const
 {
-	return token->isType(Operator_TokenType) ? operandCount(token) > 0 : false;
+	return token->isType(Token::Type::Operator)
+		? operandCount(token) > 0 : false;
 }
 
 // returns the precedence of the code contained in a token
 //
 //   - the precedence is obtained from the token
 //   - if this is -1 then the precedences if obtained for the token's code
-int Table::precedence(Token *token) const
+int Table::precedence(const TokenPtr &token) const
 {
-	int prec = token->precedence();
+	int prec {token->precedence()};
 	return prec != -1 ? prec : precedence(token->code());
 }
 
 // returns the flags of the code contained in a token
 //
 //   - returns Null_Flag is the token does not contain a code
-int Table::hasFlag(Token *token, int flag) const
+int Table::hasFlag(const TokenPtr &token, int flag) const
 {
 	// (invalid code tokens have no flags)
 	return token->hasValidCode() ? hasFlag(token->code(), flag) : 0;
 }
 
 // returns number of operands expected for code in token token
-int Table::operandCount(Token *token) const
+int Table::operandCount(const TokenPtr &token) const
 {
-	ExprInfo *exprInfo = m_entry[token->code()].exprInfo;
-	return exprInfo == NULL ? 0 : exprInfo->m_operandCount;
+	ExprInfo *exprInfo {m_entry[token->code()].exprInfo};
+	return !exprInfo ? 0 : exprInfo->m_operandCount;
 }
 
 // returns the expected data type for last operand for operator token
-DataType Table::expectedDataType(Token *token) const
+DataType Table::expectedDataType(const TokenPtr &token) const
 {
 	return expectedDataType(token->code());
 }
 
 // function to set a token for a code (code, token type and data type)
-void Table::setToken(Token *token, Code code)
+void Table::setToken(TokenPtr &token, Code code)
 {
 	token->setCode(code);
 	token->setType(type(code));
@@ -1954,26 +1906,20 @@ void Table::setToken(Token *token, Code code)
 }
 
 // function to create a new token and initialize it for a code
-Token *Table::newToken(Code code)
+TokenPtr Table::newToken(Code code)
 {
-	Token *token = new Token;	// allocates and initializes base members
+	TokenPtr token {new Token};	// allocates and initializes base members
 	setToken(token, code);		// initializes code related members
 	return token;
 }
 
-// function to get convert code needed to convert token to data type
-Code Table::cvtCode(Token *token, DataType dataType) const
-{
-	return cvtCodeHaveNeed[token->dataType()][dataType];
-}
-
 
 // function to return text for an command, operator or function code in a token
-QString Table::name(Token *token) const
+QString Table::name(const TokenPtr &token) const
 {
 	TableEntry &entry = m_entry[token->code()];
-	QString string = entry.name;
-	if (entry.multiple == TwoWord_Multiple && !entry.name2.isEmpty())
+	QString string {entry.name};
+	if (entry.multiple == Multiple::TwoWord && !entry.name2.isEmpty())
 	{
 		string += ' ' + entry.name2;
 	}
@@ -1989,23 +1935,23 @@ QString Table::name(Token *token) const
 //   - if no associated code, returns possible conversion code for data type
 //   - if no associated code, returns expected data type
 
-Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
+Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 {
-	DataType expectedDataType = operandDataType(token->code(), operandIndex);
+	DataType expectedDataType {operandDataType(token->code(), operandIndex)};
 
 	if (operandToken->dataType() == expectedDataType     // exact match?
 		|| (operandIndex == operandCount(token) - 1      // last operand?
-		&& operandToken->isType(Constant_TokenType)
-		&& (expectedDataType == Double_DataType
-		|| operandToken->isDataType(Integer_DataType))
+		&& operandToken->isType(Token::Type::Constant)
+		&& (expectedDataType == DataType::Double
+		|| operandToken->isDataType(DataType::Integer))
 		&& !hasFlag(token, UseConstAsIs_Flag)
-		&& !operandToken->isDataType(String_DataType)))
+		&& !operandToken->isDataType(DataType::String)))
 	{
 		// force token to expected data type and remove double sub-code
 		// (applies only to constant token type, but safe for all token types)
 		operandToken->setDataType(expectedDataType);
 		operandToken->removeSubCode(Double_SubCode);
-		if (operandToken->isType(Constant_TokenType))
+		if (operandToken->isType(Token::Type::Constant))
 		{
 			setTokenCode(operandToken, Const_Code);
 		}
@@ -2016,7 +1962,7 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 	if (setTokenCode(token, token->code(), operandToken->dataType(),
 		operandIndex))
 	{
-		if (operandToken->isType(Constant_TokenType))
+		if (operandToken->isType(Token::Type::Constant))
 		{
 			setTokenCode(operandToken, Const_Code);
 		}
@@ -2024,7 +1970,7 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 	}
 
 	// get a conversion code if no associated code was found
-	Code cvtCode = cvtCodeHaveNeed[operandToken->dataType()][expectedDataType];
+	Code cvtCode {operandToken->convertCode(expectedDataType)};
 
 	// did not find an associated code, return conversion code
 	if (cvtCode == Invalid_Code)
@@ -2032,12 +1978,13 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 		// set operand token to return expected data type
 		operandToken->setDataType(expectedDataType);
 	}
-	else if (operandToken->isType(Constant_TokenType))
+	else if (operandToken->isType(Token::Type::Constant))
 	{
-		if (cvtCode == CvtInt_Code && operandToken->isDataType(Double_DataType))
+		if (cvtCode == CvtInt_Code
+			&& operandToken->isDataType(DataType::Double))
 		{
 			// double constant can't be converted to an integer
-			operandToken->setDataType(No_DataType);
+			operandToken->setDataType(DataType{});
 			cvtCode = Invalid_Code;
 		}
 		else
@@ -2062,20 +2009,20 @@ Code Table::findCode(Token *token, Token *operandToken, int operandIndex)
 //   - if there are no associated codes, or none is found, returns false
 //   - upon success, sets the code, type and data type of the token
 
-bool Table::setTokenCode(Token *token, Code code, DataType dataType,
+bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 	int operandIndex)
 {
 	// first check if data type already matches data type of code
 	if (dataType != operandDataType(code, operandIndex))
 	{
 		// if not, see if data type of any associated code matches
-		int i = secondAssociatedIndex(code);
+		int i {secondAssociatedIndex(code)};
 		if (i < 0)  // if second index -1, then no associated codes to search
 		{
 			return false;
 		}
 		// determine range of associated codes to search
-		int end = associatedCodeCount(code);
+		int end {associatedCodeCount(code)};
 		if (operandIndex == 0 && i != 0)  // first operand?
 		{
 			// if first operand and there are second operand associated codes
@@ -2084,7 +2031,7 @@ bool Table::setTokenCode(Token *token, Code code, DataType dataType,
 			end = i;
 			i = 0;
 		}
-		Code *associatedCodes = associatedCodeArray(code);
+		Code *associatedCodes {associatedCodeArray(code)};
 		forever
 		{
 			if (i >= end)
@@ -2116,8 +2063,8 @@ bool Table::setTokenCode(Token *token, Code code, DataType dataType,
 
 Code Table::search(SearchType type, const QStringRef &string) const
 {
-	Code i = m_range[type].beg;
-	Code end = m_range[type].end;
+	Code i {m_range[type].beg};
+	Code end {m_range[type].end};
 	while (++i < end)
 	{
 		if (string.compare(m_entry[i].name, Qt::CaseInsensitive) == 0)
@@ -2138,10 +2085,10 @@ Code Table::search(SearchType type, const QStringRef &string) const
 
 Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 {
-	for (Code i = m_range[PlainWord_SearchType].beg;
+	for (Code i {m_range[PlainWord_SearchType].beg};
 		i < m_range[PlainWord_SearchType].end; i++)
 	{
-		if (m_entry[i].name2 != NULL
+		if (!m_entry[i].name2.isNull()
 			&& word1.compare(m_entry[i].name, Qt::CaseInsensitive) == 0
 			&& word2.compare(m_entry[i].name2, Qt::CaseInsensitive) == 0)
 		{
@@ -2165,7 +2112,7 @@ Code Table::search(const QStringRef &word1, const QStringRef &word2) const
 
 Code Table::search(Code index, int argumentCount) const
 {
-	for (Code i = index + 1; m_entry[i].name != NULL; i++)
+	for (Code i {index + 1}; !m_entry[i].name.isNull(); i++)
 	{
 		if (m_entry[index].name == m_entry[i].name
 			&& argumentCount == operandCount(i))
@@ -2193,9 +2140,9 @@ Code Table::search(Code code, DataType *datatype) const
 		return code;  // main code matches
 	}
 
-	for (int n = associatedCodeCount(code); --n >= 0;)
+	for (int n {associatedCodeCount(code)}; --n >= 0;)
 	{
-		Code assoc_code = this->associatedCode(code, n);
+		Code assoc_code {this->associatedCode(code, n)};
 		if (match(assoc_code, datatype))
 		{
 			return assoc_code;  // associated code matches
@@ -2211,7 +2158,7 @@ Code Table::search(Code code, DataType *datatype) const
 
 bool Table::match(Code code, DataType *datatype) const
 {
-	for (int n = operandCount(code); --n >= 0;)
+	for (int n {operandCount(code)}; --n >= 0;)
 	{
 		if (datatype[n] != operandDataType(code, n))
 		{

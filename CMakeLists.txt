@@ -25,7 +25,29 @@ project(ibcp)
 
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic-errors")
+# enable all compiler warnings as errors, enable c++11 compilation
+set(CMAKE_CXX_FLAGS
+	"${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -pedantic-errors -std=c++11"
+)
+
+# check for c++11 support
+message(STATUS "Checking for working C++11 compiler: ${CMAKE_CXX_COMPILER}")
+try_compile(CPP11_GOOD
+	${PROJECT_BINARY_DIR}
+	${PROJECT_SOURCE_DIR}/test/cpp11.cpp
+	OUTPUT_VARIABLE OUTPUT
+)
+if (${CPP11_GOOD})
+	message(STATUS
+		"Checking for working C++11 compiler: ${CMAKE_CXX_COMPILER} -- works"
+	)
+else ()
+	message(FATAL_ERROR
+		"The C++ compiler is not able to compile a simple C++11 test program.\n"
+		"It fails with the following output:\n"
+		"${OUTPUT}"
+	)
+endif ()
 
 # prevent in source directory builds
 if (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
@@ -38,11 +60,6 @@ endif (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 # find Qt package
 find_package(Qt4 REQUIRED QtCore QtGui)
 include(${QT_USE_FILE})
-
-# check GCC versionn
-execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-	OUTPUT_VARIABLE GCC_VERSION
-)
 
 # ckeck is a specific build type is set in the environment
 if (NOT $ENV{CMAKE_BUILD_TYPE} STREQUAL "")
@@ -139,7 +156,7 @@ add_custom_command(OUTPUT autoenums.h
 	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/enums.awk
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY enums.awk
-	DEPENDS table.cpp token.cpp
+	DEPENDS table.cpp
 )
 
 # custom target
@@ -147,7 +164,7 @@ add_custom_command(OUTPUT test_names.h
 	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/test_names.awk
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY test_names.awk
-	DEPENDS table.cpp token.h ibcp.h
+	DEPENDS table.cpp
 )
 
 # list the main program sources
@@ -158,7 +175,6 @@ set(ibcp_SOURCES
 	basic/print.cpp
 	commandline.cpp
 	dictionary.cpp
-	donestack.cpp
 	errorlist.cpp
 	editbox.cpp
 	main.cpp

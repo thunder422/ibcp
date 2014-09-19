@@ -46,7 +46,7 @@ class Recreator
 public:
 	explicit Recreator(void);
 
-	QString recreate(RpnList *rpnList, bool exprMode = false);
+	QString recreate(const RpnList &rpnList, bool exprMode = false);
 
 	// holding stack access functions
 	void push(QString string, int precedence = HighestPrecedence,
@@ -60,8 +60,8 @@ public:
 	{
 		m_stack.top().string.append(string);
 	}
-	QString popWithParens(bool addParens, int *precedence = NULL,
-		bool *unaryOperator = NULL);
+	QString popWithParens(bool addParens, int *precedence = nullptr,
+		bool *unaryOperator = nullptr);
 	void pushWithOperands(QString &name, int count);
 	bool stackIsEmpty(void) const
 	{

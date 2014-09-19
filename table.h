@@ -25,7 +25,7 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <QStringList>
+#include <memory>
 
 #include "ibcp.h"
 #include "token.h"
@@ -58,15 +58,14 @@ enum SearchType  // table search types
 
 
 // multiple word command or multiple character operator type
-enum Multiple
+enum class Multiple
 {
-	OneWord_Multiple,
-	OneChar_Multiple = OneWord_Multiple,
-	TwoWord_Multiple,
-	TwoChar_Multiple = TwoWord_Multiple,
-	ThreeWord_Multiple,
-	ThreeChar_Multiple = ThreeWord_Multiple,
-	sizeof_Multiple
+	OneWord,
+	OneChar = OneWord,
+	TwoWord,
+	TwoChar = TwoWord,
+	ThreeWord,
+	ThreeChar = ThreeWord
 };
 
 
@@ -75,14 +74,16 @@ class Translator;
 class ProgramModel;
 class Recreator;
 class RpnItem;
+using RpnItemPtr = std::shared_ptr<RpnItem>;
 
-typedef TokenStatus (*TranslateFunction)(Translator &translator,
-	Token *commandToken, Token *&token);
-typedef quint16 (*EncodeFunction)(ProgramModel *programUnit, Token *token);
+typedef Token::Status (*TranslateFunction)(Translator &translator,
+	TokenPtr commandToken, TokenPtr &token);
+typedef quint16 (*EncodeFunction)(ProgramModel *programUnit,
+	const TokenPtr &token);
 typedef const QString (*OperandTextFunction)(const ProgramModel *programUnit,
 	quint16 operand);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
-typedef void (*RecreateFunction)(Recreator &recreator, RpnItem *rpnItem);
+typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 
 class Table
@@ -94,7 +95,7 @@ public:
 	static Table &instance(void);
 
 	// CODE RELATED TABLE FUNCTIONS
-	TokenType type(Code code) const;
+	Token::Type type(Code code) const;
 	DataType dataType(Code code) const;
 	Multiple multiple(Code code) const;
 	const QString name(Code code) const;
@@ -120,24 +121,24 @@ public:
 	RecreateFunction recreateFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
-	Code unaryCode(Token *token) const;
-	bool isUnaryOperator(Token *token) const;
-	bool isUnaryOrBinaryOperator(Token *token) const;
-	int precedence(Token *token) const;
-	int hasFlag(Token *token, int flag) const;
-	int operandCount(Token *token) const;
-	DataType expectedDataType(Token *token) const;
-	void setToken(Token *token, Code code);
-	Token *newToken(Code code);
-	Code cvtCode(Token *token, DataType dataType) const;
-	Code findCode(Token *token, Token *operandToken, int operandIndex = 0);
-	bool setTokenCode(Token *token, Code code, DataType dataType,
+	Code unaryCode(const TokenPtr &token) const;
+	bool isUnaryOperator(const TokenPtr &token) const;
+	bool isUnaryOrBinaryOperator(const TokenPtr &token) const;
+	int precedence(const TokenPtr &token) const;
+	int hasFlag(const TokenPtr &token, int flag) const;
+	int operandCount(const TokenPtr &token) const;
+	DataType expectedDataType(const TokenPtr &token) const;
+	void setToken(TokenPtr &token, Code code);
+	TokenPtr newToken(Code code);
+	Code findCode(TokenPtr &token, TokenPtr &operandToken,
+		int operandIndex = 0);
+	bool setTokenCode(TokenPtr token, Code code, DataType dataType,
 		int operandIndex);
-	void setTokenCode(Token *token, Code baseCode)
+	void setTokenCode(TokenPtr token, Code baseCode)
 	{
 		setTokenCode(token, baseCode, token->dataType(), 0);
 	}
-	QString name(Token *token) const;
+	QString name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const QStringRef &string) const;

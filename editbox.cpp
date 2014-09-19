@@ -45,7 +45,7 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 	m_ignoreChange(false)
 {
 	// set the edit box to a fixed width font
-	QFont font = this->font();
+	QFont font {this->font()};
 	font.setFixedPitch(true);
 	font.setFamily("Monospace");
 	font.setStyleHint(QFont::Monospace);
@@ -111,7 +111,7 @@ EditBox::EditBox(ProgramModel *programUnit, QWidget *parent) :
 
 void EditBox::keyPressEvent(QKeyEvent *event)
 {
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor {textCursor()};
 
 	switch (event->key())
 	{
@@ -126,10 +126,9 @@ void EditBox::keyPressEvent(QKeyEvent *event)
 		else if (event->modifiers() & Qt::ControlModifier
 			|| cursor.atBlockEnd())
 		{
-			event = new QKeyEvent(QEvent::KeyPress, Qt::Key_Return,
-				Qt::NoModifier);
-			QPlainTextEdit::keyPressEvent(event);
-			delete event;
+			std::unique_ptr<QKeyEvent> event {new QKeyEvent(QEvent::KeyPress,
+				Qt::Key_Return, Qt::NoModifier)};
+			QPlainTextEdit::keyPressEvent(event.get());
 			return;
 		}
 		else  // intercept Return when cursor is not at the end of a line
@@ -202,13 +201,13 @@ void EditBox::remove(void)
 
 void EditBox::paste(QClipboard::Mode mode)
 {
-	QClipboard *clipboard = QApplication::clipboard();
-	QTextCursor cursor = textCursor();
+	QClipboard *clipboard {QApplication::clipboard()};
+	QTextCursor cursor {textCursor()};
 
 	// clear any selection on screen first with a temporary cursor
 	if (cursor.hasSelection())
 	{
-		QTextCursor tmpCursor = cursor;
+		QTextCursor tmpCursor {cursor};
 		tmpCursor.clearSelection();
 		setTextCursor(tmpCursor);
 	}
@@ -223,7 +222,7 @@ void EditBox::paste(QClipboard::Mode mode)
 
 bool EditBox::pasteSelection(const QPoint &pos)
 {
-	QClipboard *clipboard = QApplication::clipboard();
+	QClipboard *clipboard {QApplication::clipboard()};
 	if (clipboard->supportsSelection())
 	{
 		if (pos != QPoint())
@@ -241,7 +240,7 @@ bool EditBox::pasteSelection(const QPoint &pos)
 
 void EditBox::selectAll(void)
 {
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor {textCursor()};
 	cursor.select(QTextCursor::Document);
 	setTextCursor(cursor);
 }
@@ -251,8 +250,8 @@ void EditBox::selectAll(void)
 
 void EditBox::goNextError(void)
 {
-	int lineNum = lineNumber();
-	int col = column();
+	int lineNum {lineNumber()};
+	int col {column()};
 	bool wrapped;
 	if (m_programUnit->errorFindNext(lineNum, col, wrapped))
 	{
@@ -272,8 +271,8 @@ void EditBox::goNextError(void)
 
 void EditBox::goPrevError(void)
 {
-	int lineNum = lineNumber();
-	int col = column();
+	int lineNum {lineNumber()};
+	int col {column()};
 	bool wrapped;
 	if (m_programUnit->errorFindPrev(lineNum, col, wrapped))
 	{
@@ -293,8 +292,8 @@ void EditBox::goPrevError(void)
 
 void EditBox::moveCursorToLineColumn(int lineNum, int col)
 {
-	QTextBlock block = document()->findBlockByNumber(lineNum);
-	QTextCursor cursor = textCursor();
+	QTextBlock block {document()->findBlockByNumber(lineNum)};
+	QTextCursor cursor {textCursor()};
 	cursor.setPosition(block.position() + col);
 	setTextCursor(cursor);
 }
@@ -322,22 +321,22 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		return;  // change due to recreated line, ignore
 	}
 
-	int linesInserted = 0;
-	int linesDeleted = 0;
+	int linesInserted {};
+	int linesDeleted {};
 	QStringList lines;
 
 	// get information about position at start of change
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor {textCursor()};
 	cursor.setPosition(position);
-	int changeLine = cursor.blockNumber();
-	bool changeAtLineBegin = cursor.atBlockStart();
+	int changeLine {cursor.blockNumber()};
+	bool changeAtLineBegin {cursor.atBlockStart()};
 
 	// move cursor to end of change and get information about end position
-	bool cursorMoved = cursor.movePosition(QTextCursor::Right,
-		QTextCursor::MoveAnchor, charsAdded);
-	int linesModified = cursor.blockNumber() - changeLine;
-	int newLineCount = document()->blockCount();
-	int netLineCount = newLineCount - m_lineCount;
+	bool cursorMoved {cursor.movePosition(QTextCursor::Right,
+		QTextCursor::MoveAnchor, charsAdded)};
+	int linesModified {cursor.blockNumber() - changeLine};
+	int newLineCount {document()->blockCount()};
+	int netLineCount {newLineCount - m_lineCount};
 
 	if (document()->isEmpty())
 	{
@@ -378,7 +377,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 		}
 		else  // changed multiple lines or single line and not at begin of line
 		{
-			bool changeLineIsNew = m_modifiedLineIsNew;
+			bool changeLineIsNew {m_modifiedLineIsNew};
 
 			// check if last line is new before linesModified is changed
 			if ((linesModified == netLineCount && !changeAtLineBegin)
@@ -446,7 +445,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 			if (linesModified + linesInserted > 0)
 			{
 				// get list of lines changed and inserted
-				for (int i = 0; i < linesModified + linesInserted; i++)
+				for (int i {}; i < linesModified + linesInserted; i++)
 				{
 					lines << document()->findBlockByNumber(changeLine
 						+ i).text();
@@ -479,7 +478,7 @@ void EditBox::cursorMoved(void)
 		m_cursorValid = true;  // cursor is now valid
 
 		// now retrieve any errors from program unit
-		for (int i = 0; i < m_programUnit->errorCount(); i++)
+		for (int i {}; i < m_programUnit->errorCount(); i++)
 		{
 			errorInserted(i, m_programUnit->errorItem(i));
 		}
@@ -520,13 +519,13 @@ void EditBox::clear()
 // function to received program model line changes
 void EditBox::programChanged(int lineNumber)
 {
-	QString lineText = m_programUnit->lineText(lineNumber);
+	QString lineText {m_programUnit->lineText(lineNumber)};
 	if (!m_cursorValid)
 	{
 		return;  // FIXME can't replace lines until cursor is valid
 	}
 
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor {textCursor()};
 	cursor.setPosition(document()->findBlockByNumber(lineNumber).position());
 	cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
 
@@ -622,8 +621,8 @@ void EditBox::setCursorFromError(QTextCursor &cursor,
 
 int EditBox::lineNumberWidgetWidth(void)
 {
-	int digits = 3;  // add one space to each side of the numbers
-	int max = blockCount();
+	int digits {3};  // add one space to each side of the numbers
+	int max {blockCount()};
 	while (max > 10 - BaseLineNumber)
 	{
 		max /= 10;
@@ -668,7 +667,7 @@ void EditBox::resizeEvent(QResizeEvent *event)
 {
 	QPlainTextEdit::resizeEvent(event);
 
-	QRect rect = contentsRect();
+	QRect rect {contentsRect()};
 	m_lineNumberWidget->setGeometry(QRect(rect.left(), rect.top(),
 		lineNumberWidgetWidth(), rect.height()));
 }
@@ -681,13 +680,13 @@ void EditBox::lineNumberWidgetPaint(QPaintEvent *event)
 	QPainter painter(m_lineNumberWidget);
 	painter.fillRect(event->rect(), Qt::lightGray);
 
-	QTextBlock block = firstVisibleBlock();
-	int blockNumber = block.blockNumber();
-	int top = (int)blockBoundingGeometry(block).translated(contentOffset())
-		.top();
-	int bottom = top + (int)blockBoundingRect(block).height();
+	QTextBlock block {firstVisibleBlock()};
+	int blockNumber {block.blockNumber()};
+	int top {(int)blockBoundingGeometry(block).translated(contentOffset())
+		.top()};
+	int bottom {top + (int)blockBoundingRect(block).height()};
 
-	int offset = BaseLineNumber;
+	int offset {BaseLineNumber};
 	while (block.isValid() && top <= event->rect().bottom())
 	{
 		if (block.isVisible() && bottom >= event->rect().top())

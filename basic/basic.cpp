@@ -30,7 +30,7 @@
 
 // REM FUNCTIONS
 
-quint16 remEncode(ProgramModel *programUnit, Token *token)
+quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->remDictionary()->add(token, Qt::CaseSensitive);
 }
@@ -60,13 +60,13 @@ void ConstNumInfo::addElement(void)
 	m_valueInt.resize(m_valueInt.size() + 1);
 }
 
-void ConstNumInfo::setElement(int index, Token *token)
+void ConstNumInfo::setElement(int index, const TokenPtr &token)
 {
 	m_value[index] = token->value();
 	m_valueInt[index] = token->valueInt();
 }
 
-quint16 constNumEncode(ProgramModel *programUnit, Token *token)
+quint16 constNumEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->constNumDictionary()->add(token);
 }
@@ -93,7 +93,7 @@ void ConstStrInfo::addElement(void)
 	m_value.append(new QString);
 }
 
-void ConstStrInfo::setElement(int index, Token *token)
+void ConstStrInfo::setElement(int index, const TokenPtr &token)
 {
 	*m_value[index] = token->string();
 }
@@ -105,14 +105,14 @@ void ConstStrInfo::clearElement(int index)
 
 ConstStrInfo::~ConstStrInfo(void)
 {
-	for (int i = 0; i < m_value.count(); i++)
+	for (int i {}; i < m_value.count(); i++)
 	{
 		delete m_value.at(i);
 	}
 }
 
 
-quint16 constStrEncode(ProgramModel *programUnit, Token *token)
+quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->constStrDictionary()->add(token, Qt::CaseSensitive);
 }
@@ -128,10 +128,10 @@ void constStrRemove(ProgramModel *programUnit, quint16 operand)
 	programUnit->constStrDictionary()->remove(operand, Qt::CaseSensitive);
 }
 
-void constStrRecreate(Recreator &recreator, RpnItem *rpnItem)
+void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// change all double quote to two double qoutes and surround with quotes
-	QString string = rpnItem->token()->string();
+	QString string {rpnItem->token()->string()};
 	string.replace('"', "\"\"");
 	recreator.push('"' + string + '"');
 }
@@ -139,17 +139,17 @@ void constStrRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 // VARIABLE FUNCTIONS
 
-quint16 varDblEncode(ProgramModel *programUnit, Token *token)
+quint16 varDblEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varDblDictionary()->add(token);
 }
 
-quint16 varIntEncode(ProgramModel *programUnit, Token *token)
+quint16 varIntEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varIntDictionary()->add(token);
 }
 
-quint16 varStrEncode(ProgramModel *programUnit, Token *token)
+quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varStrDictionary()->add(token);
 }

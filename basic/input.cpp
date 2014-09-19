@@ -29,13 +29,12 @@
 
 
 // INPUT command translate function
-TokenStatus inputTranslate(Translator &translator, Token *commandToken,
-	Token *&token)
+Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token)
 {
-	TokenStatus status;
-	int indexBegin;
+	Token::Status status;
 	bool done;
-	Token *inputToken;
+	TokenPtr inputToken;
 
 	if (commandToken->isCode(Input_Code))
 	{
@@ -43,95 +42,89 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 	}
 	else  // InputPrompt_Code
 	{
-		token = NULL;
-		status = translator.getExpression(token, String_DataType);
-		if (status != Done_TokenStatus)
+		status = translator.getExpression(token, DataType::String);
+		if (status != Token::Status::Done)
 		{
-			if (status == Parser_TokenStatus
-				&& token->isDataType(None_DataType))
+			if (status == Token::Status::Parser
+				&& token->isDataType(DataType::None))
 			{
-				status = ExpSemiOrComma_TokenStatus;
+				status = Token::Status::ExpSemiOrComma;
 			}
-			delete commandToken;
 			return status;
 		}
-		translator.doneStackDrop();
+		translator.doneStackPop();
 		if (token->isCode(Comma_Code))
 		{
 			token->addSubCode(Option_SubCode);
 		}
 		else if (!token->isCode(SemiColon_Code))
 		{
-			delete commandToken;
-			return ExpOpSemiOrComma_TokenStatus;
+			return Token::Status::ExpOpSemiOrComma;
 		}
 		token->setCode(InputBeginStr_Code);
 	}
 
-	// save index where to insert input parse codes and append input begin
-	indexBegin = translator.outputCount();
-	translator.outputAppend(token);
+	// append input begin and save iterator where to insert input parse codes
+	auto insertPoint = translator.outputAppendIterator(std::move(token));
 
 	// loop to read input variables
 	do
 	{
 		// get variable reference
-		token = NULL;
-		if ((status = translator.getOperand(token, Any_DataType,
-			Translator::Variable_Reference)) != Good_TokenStatus)
+		if ((status = translator.getOperand(token, DataType::Any,
+			Translator::Reference::Variable)) != Token::Status::Good)
 		{
 			break;
 		}
 
 		// get and check next token
-		if ((status = translator.getToken(token)) != Good_TokenStatus)
+		if ((status = translator.getToken(token)) != Token::Status::Good)
 		{
-			status = ExpCommaSemiOrEnd_TokenStatus;
+			status = Token::Status::ExpCommaSemiOrEnd;
 			break;
 		}
 		if (token->isCode(Comma_Code))
 		{
 			done = false;
-			inputToken = token;
+			inputToken = std::move(token);
 		}
 		else if (token->isCode(SemiColon_Code))
 		{
 			commandToken->addSubCode(Option_SubCode);
 			done = true;
-			inputToken = token;
+			inputToken = std::move(token);
 
 			// get and check next token
-			if ((status = translator.getToken(token)) != Good_TokenStatus)
+			if ((status = translator.getToken(token)) != Token::Status::Good)
 			{
-				status = ExpEndStmt_TokenStatus;
+				status = Token::Status::ExpEndStmt;
 				break;
 			}
 		}
 		else  // possible end-of-statement (checked below)
 		{
 			done = true;
-			inputToken = new Token;
+			inputToken = std::make_shared<Token>();
 		}
 
 		// change token to appropriate assign code and append to output
 		translator.table().setToken(inputToken, InputAssign_Code);
 		status = translator.processFinalOperand(inputToken);
-		if (status != Good_TokenStatus)
+		if (status != Token::Status::Good)
 		{
 			break;
 		}
 
-		// create and insert input parse code at beginning
+		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
-		translator.outputInsert(indexBegin, translator.table()
+		insertPoint = translator.outputInsert(insertPoint, translator.table()
 			.newToken(translator.table()
 			.secondAssociatedCode(inputToken->code())));
 	}
 	while (!done);
 
-	if (status != Good_TokenStatus)
+	if (status != Token::Status::Good)
 	{
-		delete commandToken;
 		return status;
 	}
 	translator.outputAppend(commandToken);
@@ -139,15 +132,15 @@ TokenStatus inputTranslate(Translator &translator, Token *commandToken,
 	// check terminating token for end-of-statement
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
-		return ExpCommaSemiOrEnd_TokenStatus;
+		return Token::Status::ExpCommaSemiOrEnd;
 	}
 
-	return Done_TokenStatus;
+	return Token::Status::Done;
 }
 
 
 // function to recreate the input begin string code (for INPUT PROMPT)
-void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem)
+void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	recreator.setSeparator(rpnItem->token()->hasSubCode(Option_SubCode)
 		? ',' : ';');
@@ -155,7 +148,7 @@ void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate an input assign type code
-void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem)
+void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 
@@ -174,7 +167,7 @@ void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate the input command code
-void inputRecreate(Recreator &recreator, RpnItem *rpnItem)
+void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	recreator.append(recreator.table().name(rpnItem->token()));
 	// FLAG option: all spaces after commands (default=yes)

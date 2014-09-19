@@ -33,11 +33,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Dictionary::Dictionary(void)
-{
-}
-
-
 void Dictionary::clear(void)
 {
 	m_freeStack.clear();
@@ -47,16 +42,16 @@ void Dictionary::clear(void)
 }
 
 
-quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
+quint16 Dictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs,
 	Dictionary::EntryType *returnNewEntry)
 {
 	EntryType newEntry;
 
 	// if requested, store upper case of key in hash to make search case
 	// insensitive (first actual string will be stored in key list)
-	QString hashKey = cs == Qt::CaseInsensitive
-		? token->string().toUpper() : token->string();
-	int index = m_keyHash.value(hashKey, -1);
+	QString hashKey {cs == Qt::CaseInsensitive
+		? token->string().toUpper() : token->string()};
+	int index {m_keyHash.value(hashKey, -1)};
 	if (index == -1)  // string not present?
 	{
 		if (m_freeStack.empty())  // no free indexes available?
@@ -64,21 +59,21 @@ quint16 Dictionary::add(Token *token, Qt::CaseSensitivity cs,
 			index = m_keyList.count();
 			m_keyList.append(token->string());
 			m_useCount.append(1);
-			newEntry = New_Entry;
+			newEntry = EntryType::New;
 		}
 		else  // use a previously freed index
 		{
 			index = m_freeStack.pop();
 			m_keyList[index] = token->string();
 			m_useCount[index] = 1;
-			newEntry = Reused_Entry;
+			newEntry = EntryType::Reused;
 		}
 		m_keyHash[hashKey] = index;  // save key/index in map
 	}
 	else  // string already present, update use count
 	{
 		m_useCount[index]++;
-		newEntry = Exists_Entry;
+		newEntry = EntryType::Exists;
 	}
 	if (returnNewEntry)
 	{
@@ -92,7 +87,7 @@ int Dictionary::remove(quint16 index, Qt::CaseSensitivity cs)
 {
 	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
 	{
-		QString hashKey = m_keyList.at(index);
+		QString hashKey {m_keyList.at(index)};
 		if (cs == Qt::CaseInsensitive)
 		{
 			hashKey = hashKey.toUpper();
@@ -108,8 +103,8 @@ int Dictionary::remove(quint16 index, Qt::CaseSensitivity cs)
 
 QString Dictionary::debugText(const QString header)
 {
-	QString string = QString("\n%1:\n").arg(header);
-	for (int i = 0; i < m_keyList.count(); i++)
+	QString string {QString("\n%1:\n").arg(header)};
+	for (int i {}; i < m_keyList.count(); i++)
 	{
 		if (m_useCount.at(i) != 0)
 		{
@@ -124,9 +119,9 @@ QString Dictionary::debugText(const QString header)
 	}
 	else
 	{
-		for (int i = 0; i < m_freeStack.count(); i++)
+		for (int i {}; i < m_freeStack.count(); i++)
 		{
-			int index = m_freeStack.at(i);
+			int index {m_freeStack.at(i)};
 			string.append(QString(" %1").arg(index));
 			if (m_useCount.at(index) != 0)
 			{
@@ -150,19 +145,6 @@ QString Dictionary::debugText(const QString header)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// constructor function - save the information instance pointer
-InfoDictionary::InfoDictionary(void) :
-	m_info(NULL)
-{
-
-}
-
-InfoDictionary::~InfoDictionary(void)
-{
-	delete m_info;
-}
-
-
 // function to reset the dictionary
 void InfoDictionary::clear(void)
 {
@@ -172,17 +154,17 @@ void InfoDictionary::clear(void)
 
 
 // function to possibly add a new dictionary entry and return its index
-quint16 InfoDictionary::add(Token *token, Qt::CaseSensitivity cs)
+quint16 InfoDictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs)
 {
 	EntryType returnNewEntry;
-	int index = Dictionary::add(token, cs, &returnNewEntry);
-	if (returnNewEntry == New_Entry)
+	int index {Dictionary::add(token, cs, &returnNewEntry)};
+	if (returnNewEntry == EntryType::New)
 	{
 		// a new entry was added to the dictionary
 		// so add a new element to the additional information
 		m_info->addElement();
 	}
-	if (returnNewEntry != Exists_Entry)
+	if (returnNewEntry != EntryType::Exists)
 	{
 		// for a new entry or a reused entry,
 		// set the additional information from the token

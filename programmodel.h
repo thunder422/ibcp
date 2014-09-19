@@ -33,20 +33,20 @@
 #include "ibcp.h"
 #include "dictionary.h"
 #include "errorlist.h"
+#include "recreator.h"
+#include "translator.h"
 #include "basic/basic.h"
 
-class Recreator;
 class RpnList;
 class Table;
-class Translator;
 
 
-enum Operation
+enum class Operation
 {
-	Append_Operation,
-	Insert_Operation,
-	Change_Operation,
-	Remove_Operation
+	Append,
+	Insert,
+	Change,
+	Remove
 };
 
 
@@ -100,7 +100,7 @@ public:
 	{
 		if (line.size() > 0)
 		{
-			int oldSize = size();
+			int oldSize {size()};
 			resize(oldSize + line.size());
 			ProgramWord *lineBegin = data() + i;
 			if (i != oldSize)  // not inserting line at end?
@@ -137,7 +137,7 @@ public:
 			resize(count() - n + line.count());
 			offset = data() + i;  // get data, resize may move data
 
-			int moveCount = count() - i - line.count();
+			int moveCount {count() - i - line.count()};
 			if (moveCount > 0)  // not at end?
 			{
 				memmove(offset + line.count(), offset + n,
@@ -151,7 +151,7 @@ public:
 			{
 				// move program after line down before making program smaller
 				offset = data() + i;
-				int moveCount = count() - i - n;
+				int moveCount {count() - i - n};
 				if (moveCount > 0)  // not at end?
 				{
 					memmove(offset + line.count(), offset + n,
@@ -174,36 +174,35 @@ class ProgramModel : public QAbstractListModel
 
 public:
 	explicit ProgramModel(QObject *parent = 0);
-	~ProgramModel(void);
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 	void clear(void);
 
 	Dictionary *remDictionary(void) const
 	{
-		return m_remDictionary;
+		return m_remDictionary.get();
 	}
 
 	InfoDictionary *constNumDictionary(void) const
 	{
-		return m_constNumDictionary;
+		return m_constNumDictionary.get();
 	}
 	InfoDictionary *constStrDictionary(void) const
 	{
-		return m_constStrDictionary;
+		return m_constStrDictionary.get();
 	}
 
 	Dictionary *varDblDictionary(void) const
 	{
-		return m_varDblDictionary;
+		return m_varDblDictionary.get();
 	}
 	Dictionary *varIntDictionary(void) const
 	{
-		return m_varIntDictionary;
+		return m_varIntDictionary.get();
 	}
 	Dictionary *varStrDictionary(void) const
 	{
-		return m_varStrDictionary;
+		return m_varStrDictionary.get();
 	}
 
 	// NOTE temporary functions for testing
@@ -219,7 +218,7 @@ public:
 	{
 		if (m_lineInfo.at(lineIndex).errIndex == -1)
 		{
-			return NULL;
+			return nullptr;
 		}
 		else
 		{
@@ -307,13 +306,13 @@ private:
 	void updateError(int lineNumber, LineInfo &lineInfo,
 		const ErrorItem &errorItem, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
-	ProgramCode encode(RpnList *input);
+	ProgramCode encode(const RpnList &input);
 	void dereference(const LineInfo &lineInfo);
-	RpnList *decode(const LineInfo &lineInfo);
+	RpnList decode(const LineInfo &lineInfo);
 
 	Table &m_table;						// reference to the table object
-	Translator *m_translator;			// program unit translator instance
-	Recreator *m_recreator;				// program unit recreator instance
+	std::unique_ptr<Translator> m_translator;	// translator instance
+	std::unique_ptr<Recreator> m_recreator;		// recreator instance
 
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list
@@ -321,14 +320,14 @@ private:
 	ErrorList m_errors;					// list of program errors
 
 	// pointers to the global program dictionaries
-	Dictionary *m_remDictionary;
-	ConstNumDictionary *m_constNumDictionary;
-	ConstStrDictionary *m_constStrDictionary;
+	std::unique_ptr<Dictionary> m_remDictionary;
+	std::unique_ptr<ConstNumDictionary> m_constNumDictionary;
+	std::unique_ptr<ConstStrDictionary> m_constStrDictionary;
 
 	// pointers to the local unit dictionaries
-	Dictionary *m_varDblDictionary;
-	Dictionary *m_varIntDictionary;
-	Dictionary *m_varStrDictionary;
+	std::unique_ptr<Dictionary> m_varDblDictionary;
+	std::unique_ptr<Dictionary> m_varIntDictionary;
+	std::unique_ptr<Dictionary> m_varStrDictionary;
 };
 
 

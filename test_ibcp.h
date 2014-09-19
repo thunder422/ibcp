@@ -25,18 +25,22 @@
 #ifndef TEST_IBCP_H
 #define TEST_IBCP_H
 
+#include <memory>
+
 #include <QCoreApplication>
 #include <QStringList>
+
+#include "programmodel.h"
+#include "recreator.h"
+#include "translator.h"
 
 class QTextStream;
 
 class CommandLine;
 class Token;
-class Recreator;
+using TokenPtr = std::shared_ptr<Token>;
 class RpnItem;
 class RpnList;
-class Translator;
-class ProgramModel;
 
 class Tester
 {
@@ -44,7 +48,6 @@ class Tester
 
 public:
 	explicit Tester(const QStringList &args, QTextStream &cout);
-	~Tester(void);
 
 	static QStringList options(void);
 	bool run(CommandLine *commandLine);
@@ -75,11 +78,11 @@ private:
 		OptError = OptSizeOf
 	};
 
-	bool isOption(const QString &arg, const QString &exp,
-		enum Option option, QString name);
+	bool isOption(const QString &arg, const QString &exp, Option option,
+		QString name);
 	void parseInput(const QString &testInput);
-	RpnList *translateInput(const QString &testInput, bool exprMode,
-		const char *header = NULL);
+	RpnList translateInput(const QString &testInput, bool exprMode,
+		const char *header = nullptr);
 	void recreateInput(const QString &testInput);
 	void encodeInput(QString &testInput);
 	void printInput(const QString &inputLine)
@@ -87,7 +90,7 @@ private:
 		// no 'tr()' for this string - must match expected results file
 		m_cout << endl << "Input: " << inputLine << endl;
 	}
-	bool printToken(Token *token, bool tab);
+	bool printToken(const TokenPtr &token, bool tab);
 	void printError(int column, int length, const QString &error);
 
 	QString m_programName;			// name of program
@@ -96,9 +99,9 @@ private:
 	QString m_testName;				// name of test
 	QString m_testFileName;			// name of test file (OptFile only)
 	QTextStream &m_cout;			// reference to output device
-	Translator *m_translator;		// program line translator instance
-	ProgramModel *m_programUnit; 	// program unit (has translator instance)
-	Recreator *m_recreator;			// token list recreator instance
+	std::unique_ptr<Translator> m_translator;		// translator instance
+	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
+	std::unique_ptr<Recreator> m_recreator;			// recreator instance
 	QString m_errorMessage;			// message if error occurred
 };
 

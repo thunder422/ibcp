@@ -25,29 +25,18 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include <QCoreApplication>
-#include <QStack>
 #include <QString>
-#include <QStringList>
 
 #include "ibcp.h"
 
 
-// changes to TokenType may require changes to ibcp.cpp: Token::initialize()
-enum TokenType
-{
-	Command_TokenType,
-	Operator_TokenType,
-	IntFuncN_TokenType,
-	IntFuncP_TokenType,
-	Constant_TokenType,
-	DefFuncN_TokenType,
-	DefFuncP_TokenType,
-	NoParen_TokenType,
-	Paren_TokenType,
-	Error_TokenType,
-	sizeof_TokenType
-};
+class Token;
+using TokenPtr = std::shared_ptr<Token>;
 
 
 class Token
@@ -55,6 +44,78 @@ class Token
 	Q_DECLARE_TR_FUNCTIONS(Token)
 
 public:
+	// changes to Type may require changes to initializers
+	// for s_hasParen and s_precedence maps
+	enum class Type
+	{
+		Command,
+		Operator,
+		IntFuncN,
+		IntFuncP,
+		Constant,
+		DefFuncN,
+		DefFuncP,
+		NoParen,
+		Paren,
+		Error
+	};
+
+	enum class Status
+	{
+		Good,
+		Done,
+		Parser,
+		ExpCmd,
+		ExpExpr,
+		ExpExprOrEnd,
+		ExpOpOrEnd,
+		ExpBinOpOrEnd,
+		ExpEqualOrComma,
+		ExpComma,
+		ExpAssignItem,
+		ExpOpOrComma,
+		ExpOpCommaOrParen,
+		ExpOpOrParen,
+		ExpBinOpOrComma,
+		ExpBinOpCommaOrParen,
+		ExpBinOpOrParen,
+		ExpNumExpr,
+		ExpStrExpr,
+		ExpSemiCommaOrEnd,
+		ExpCommaSemiOrEnd,
+		ExpSemiOrComma,
+		ExpOpSemiOrComma,
+		ExpDblVar,
+		ExpIntVar,
+		ExpStrVar,
+		ExpVar,
+		ExpStrItem,
+		ExpEndStmt,
+		ExpExprPfnOrEnd,
+		ExpExprCommaPfnOrEnd,
+		ExpOpSemiCommaOrEnd,
+		ExpIntConst,
+		// the following statuses used during development
+		BUG_NotYetImplemented,
+		BUG_HoldStackNotEmpty,
+		BUG_DoneStackNotEmpty,
+		BUG_DoneStackEmptyFindCode,
+		BUG_UnexpectedCloseParen,
+		BUG_DoneStackEmpty,
+		BUG_InvalidDataType,
+		BUG_UnexpToken,
+		BUG_Debug1,
+		BUG_Debug2,
+		BUG_Debug3,
+		BUG_Debug4,
+		BUG_Debug5,
+		BUG_Debug6,
+		BUG_Debug7,
+		BUG_Debug8,
+		BUG_Debug9,
+		BUG_Debug
+	};
+
 	explicit Token(int column = -1)
 	{
 		m_column = column;
@@ -74,9 +135,6 @@ public:
 	{
 		return !(*this == other);
 	}
-	// overload new and delete operators for memory management
-	void *operator new(size_t size);
-	void operator delete(void *ptr);
 
 	// column and length access functions
 	int column(void) const
@@ -97,15 +155,15 @@ public:
 	}
 
 	// type access functions
-	TokenType type(void) const
+	Type type(void) const
 	{
 		return m_type;
 	}
-	void setType(TokenType type)
+	void setType(Type type)
 	{
 		m_type = type;
 	}
-	bool isType(TokenType type) const
+	bool isType(Type type) const
 	{
 		return type == m_type;
 	}
@@ -114,7 +172,7 @@ public:
 	DataType dataType(bool actual = false) const
 	{
 		return !actual && hasSubCode(Double_SubCode)
-			? Double_DataType : m_dataType;
+			? DataType::Double : m_dataType;
 	}
 	void setDataType(DataType dataType)
 	{
@@ -177,7 +235,11 @@ public:
 	}
 
 	// sub-code access functions
-	int hasSubCode(int subCode) const
+	bool hasSubCode() const
+	{
+		return m_subCode;
+	}
+	bool hasSubCode(int subCode) const
 	{
 		return m_subCode & subCode;
 	}
@@ -223,36 +285,36 @@ public:
 	}
 
 	// set error functions
-	void setError(const QString &msg, DataType dataType = Double_DataType)
+	void setError(const QString &msg, DataType dataType = DataType::Double)
 	{
 		m_length = 1;
-		m_type = Error_TokenType;
+		m_type = Type::Error;
 		m_dataType = dataType;
 		m_string = msg;
 	}
-	void setError(int column, const QString  &msg)
+	void setError(int column, const QString &msg)
 	{
 		m_length = -column;  // assume length=1, specifies alternate column
-		m_type = Error_TokenType;
-		m_dataType = Double_DataType;
+		m_type = Type::Error;
+		m_dataType = DataType::Double;
 		m_string = msg;
 	}
 	void setError(const QString &msg, int len)
 	{
 		m_length = len;
-		m_type = Error_TokenType;
-		m_dataType = Double_DataType;
+		m_type = Type::Error;
+		m_dataType = DataType::Double;
 		m_string = msg;
 	}
 
 	// token information functions
 	bool hasParen(void) const
 	{
-		return s_paren[m_type];
+		return s_hasParen[m_type];
 	}
 	int precedence(void) const
 	{
-		return s_prec[m_type];
+		return s_precendence[m_type];
 	}
 	bool isNull(void) const
 	{
@@ -260,63 +322,30 @@ public:
 	}
 
 	// set length to include second token
-	Token *setThrough(Token *token2)
+	void setThrough(const TokenPtr &token2)
 	{
 		m_length = token2->m_column - m_column + token2->m_length;
-		return this;
 	}
+
+	// other functions
+	Code convertCode(DataType toDataType) const;
 
 	// recreate text for token
-	QString text(bool withIndex = false);
+	std::string text();
 
 	// static member functions
-	static void initialize(void);
-	static const QString message(TokenStatus status)
-	{
-		return s_messageArray[status];
-	}
-	static void reportErrors(void)
-	{
-		s_used.reportErrors();
-		s_deleted.reportErrors();
-	}
+	static const QString message(Status status);
 
 private:
-	QString textOperand(bool withIndex);
-
 	// static members
-	static bool s_paren[sizeof_TokenType];
-	static int s_prec[sizeof_TokenType];
-	static const QString s_messageArray[sizeof_TokenStatus];
-
-	class FreeStack : public QStack<Token *>
-	{
-	public:
-		~FreeStack(void);
-	};
-	static FreeStack s_freeStack;
-
-	class UsedVector : public QVector<Token *>
-	{
-	public:
-		~UsedVector(void);
-		void reportErrors(void);
-	};
-	static UsedVector s_used;
-
-	class DeletedList : public QStringList
-	{
-	public:
-		~DeletedList(void);
-		void reportErrors(void);
-	};
-	static DeletedList s_deleted;
+	static std::unordered_map<Type, bool, EnumClassHash> s_hasParen;
+	static std::unordered_map<Type, int, EnumClassHash> s_precendence;
 
 	// instance members
 	int m_id;				// private ID (index) for detecting token leaks
 	int m_column;			// start column of token
 	int m_length;			// length of token
-	TokenType m_type;		// type of the token
+	Type m_type;			// type of the token
 	DataType m_dataType;	// data type of token
 	QString m_string;		// pointer to string of token
 	Code m_code;			// internal code of token (index of TableEntry)
@@ -325,21 +354,6 @@ private:
 	double m_value;			// double value for constant token
 	int m_valueInt;			// integer value for constant token (if possible)
 	int m_index;			// index within encoded program code line
-};
-
-
-// stack to hold tokens
-class TokenStack : public QStack<Token *>
-{
-public:
-	~TokenStack(void)
-	{
-		// delete any tokens left in stack when stack goes out of scope
-		while (!isEmpty())
-		{
-			delete pop();
-		}
-	}
 };
 
 

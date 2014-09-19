@@ -22,60 +22,47 @@
 //
 //	2013-03-30	initial version
 
+#include <sstream>
+#include <unordered_map>
+
 #include "rpnlist.h"
 #include "table.h"
 
 
-RpnList::~RpnList(void)
+// function to recreate text (abbreviated contents) of list
+QString RpnList::text()
 {
-	clear();
-}
+	std::stringstream ss;
+	std::unordered_map<RpnItemPtr, int> itemIndex;
+	int index {};
 
-
-// function to recreate text (abbreviated contents) of item
-QString RpnItem::text(bool withIndexes)
-{
-	QString string = m_token->text(withIndexes);
-	if (m_attached != NULL)
+	for (RpnItemPtr rpnItem : *this)
 	{
-		QChar separator('[');
-		for (int i = 0; i < m_attachedCount; i++)
+		if (ss.tellp() > 0)
 		{
-			string += separator + QString("%1:%2").arg(m_attached[i]->m_index)
-				.arg(m_attached[i]->m_token->text());
-			separator = ',';
+			ss << ' ';
 		}
-		string += ']';
-	}
-	return string;
-}
-
-
-// function to clear all of the RPN items from the list
-void RpnList::clear(void)
-{
-	while (!isEmpty())
-	{
-		// delete to free the RPN item that was in the list
-		delete takeLast();
-	}
-}
-
-
-// function to recreate text (abbreviated contents) of item
-QString RpnList::text(bool withIndexes)
-{
-	QString string;
-
-	for (int i = 0; i < count(); i++)
-	{
-		if (i > 0)
+		itemIndex[rpnItem] = index++;
+		ss << rpnItem->token()->text();
+		if (rpnItem->attachedCount() > 0)
 		{
-			string += ' ';
+			char separator {'['};
+			for (RpnItemPtr item : rpnItem->attached())
+			{
+				if (item)
+				{
+					ss << separator << itemIndex[item] << ':'
+						<< item->token()->text();
+					separator = ',';
+				}
+			}
+			if (separator != '[')
+			{
+				ss << ']';
+			}
 		}
-		string += at(i)->text(withIndexes);
 	}
-	return string;
+	return QString::fromStdString(ss.str());
 }
 
 // function to overload the comparison operator
@@ -89,40 +76,16 @@ bool RpnList::operator==(const RpnList &other) const
 	{
 		return false;  // miscompare if lists are different sizes
 	}
-	for (int i = 0; i < count(); i++)
+	auto otherIterator = other.begin();
+	for (RpnItemPtr rpnItem : *this)
 	{
-		if (*at(i) != *other.at(i))
+		if (*rpnItem != **otherIterator)
 		{
 			return false;
 		}
+		++otherIterator;
 	}
 	return true;
-}
-
-
-// function to create an rpn item for a token and append it to the list
-
-RpnItem *RpnList::append(Token *token, int attachedCount, RpnItem **attached)
-{
-	token->removeSubCode(UnUsed_SubCode);  // mark as used
-	RpnItem *rpnItem = new RpnItem(token, attachedCount, attached);
-	rpnItem->setIndex(count());
-	QList<RpnItem *>::append(rpnItem);
-	return rpnItem;
-}
-
-// function to create an rpn item for a token and insert it into the list
-//
-//   - the indexes of all items after the insertion point are incremented
-
-void RpnList::insert(int index, Token *token)
-{
-	QList<RpnItem *>::insert(index, new RpnItem(token));
-	// update indexes of all list items after insert point
-	while (++index < count())
-	{
-		at(index)->incrementIndex();
-	}
 }
 
 
@@ -132,14 +95,14 @@ void RpnList::insert(int index, Token *token)
 //   - sets code size required for encoded line
 //   - upon error returns token of code not yet implemented
 
-bool RpnList::setCodeSize(Table &table, Token *&token)
+bool RpnList::setCodeSize(Table &table, TokenPtr &token)
 {
 	// count number of program words needed
 	m_codeSize = 0;
-	for (int i = 0; i < count(); i++)
+	for (RpnItemPtr rpnItem : *this)
 	{
 		// assign position index to tokens (increment count for instruction)
-		token = at(i)->token();
+		token = rpnItem->token();
 		if (!token->hasValidCode())
 		{
 			return false;

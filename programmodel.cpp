@@ -23,10 +23,8 @@
 //	2013-03-15	initial version
 
 #include "programmodel.h"
-#include "recreator.h"
 #include "rpnlist.h"
 #include "table.h"
-#include "translator.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +40,7 @@ QString ProgramWord::instructionDebugText(void) const
 	Table &table = Table::instance();
 	QString string;
 
-	Code code = instructionCode();
+	Code code {instructionCode()};
 	string += table.debugName(code);
 
 	if (instructionHasSubCode(ProgramMask_SubCode))
@@ -54,7 +52,7 @@ QString ProgramWord::instructionDebugText(void) const
 		}
 		if (instructionHasSubCode(Option_SubCode))
 		{
-			QString option = table.optionName(code);
+			QString option {table.optionName(code)};
 			string += option.isEmpty() ? "BUG" : option;
 		}
 		if (instructionHasSubCode(Colon_SubCode))
@@ -84,31 +82,19 @@ QString ProgramWord::operandDebugText(QString text) const
 ProgramModel::ProgramModel(QObject *parent) :
 	QAbstractListModel(parent),
 	m_table(Table::instance()),
-	m_translator(new Translator),
-	m_recreator(new Recreator)
+
+	m_translator {new Translator},
+	m_recreator {new Recreator},
+
+	m_remDictionary {new Dictionary},
+	m_constNumDictionary {new ConstNumDictionary},
+	m_constStrDictionary {new ConstStrDictionary},
+
+	m_varDblDictionary {new Dictionary},
+	m_varIntDictionary {new Dictionary},
+	m_varStrDictionary {new Dictionary}
 {
-	m_remDictionary = new Dictionary;
-	m_constNumDictionary = new ConstNumDictionary;
-	m_constStrDictionary = new ConstStrDictionary;
 
-	m_varDblDictionary = new Dictionary;
-	m_varIntDictionary = new Dictionary;
-	m_varStrDictionary = new Dictionary;
-}
-
-
-ProgramModel::~ProgramModel(void)
-{
-	delete m_translator;
-	delete m_recreator;
-
-	delete m_remDictionary;
-	delete m_constNumDictionary;
-	delete m_constStrDictionary;
-
-	delete m_varDblDictionary;
-	delete m_varIntDictionary;
-	delete m_varStrDictionary;
 }
 
 
@@ -129,9 +115,9 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		string.append("]");
 	}
 
-	const ProgramWord *line = m_code.data() + m_lineInfo.at(lineIndex).offset;
-	int count = m_lineInfo.at(lineIndex).size;
-	for (int i = 0; i < count; i++)
+	const ProgramWord *line {m_code.data() + m_lineInfo.at(lineIndex).offset};
+	int count {m_lineInfo.at(lineIndex).size};
+	for (int i {}; i < count; i++)
 	{
 		if (i > 0 || fullInfo)
 		{
@@ -139,11 +125,11 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		}
 		string += QString("%1:%2").arg(i).arg(line[i].instructionDebugText());
 
-		Code code = line[i].instructionCode();
-		OperandTextFunction operandText = m_table.operandTextFunction(code);
-		if (operandText != NULL)
+		Code code {line[i].instructionCode()};
+		OperandTextFunction operandText {m_table.operandTextFunction(code)};
+		if (operandText)
 		{
-			const QString operand = operandText(this, line[++i].operand());
+			const QString operand {operandText(this, line[++i].operand())};
 			string += QString(" %1:%2").arg(i)
 				.arg(line[i].operandDebugText(operand));
 		}
@@ -151,7 +137,7 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 
 	if (fullInfo && lineInfo.errIndex != -1)
 	{
-		const ErrorItem &errorItem = m_errors[lineInfo.errIndex];
+		const ErrorItem &errorItem {m_errors[lineInfo.errIndex]};
 		string.append(QString(" ERROR %1:%2 %3").arg(errorItem.column())
 			.arg(errorItem.length()).arg(errorItem.message()));
 	}
@@ -183,9 +169,8 @@ QString ProgramModel::lineText(int lineIndex)
 	LineInfo &lineInfo = m_lineInfo[lineIndex];
 	if (lineInfo.errIndex == -1)
 	{
-		RpnList *rpnList = decode(lineInfo);
+		RpnList rpnList {decode(lineInfo)};
 		string = m_recreator->recreate(rpnList);
-		delete rpnList;
 	}
 	else  // line has error, return original text
 	{
@@ -249,15 +234,15 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	QStringList lines)
 {
 	int i;
-	int oldCount = m_lineInfo.count();
-	int count = lines.count();
+	int oldCount {m_lineInfo.count()};
+	int count {lines.count()};
 	for (i = 0; i < count - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
-		if (updateLine(Change_Operation, lineNumber, lines.at(i)))
+		if (updateLine(Operation::Change, lineNumber, lines.at(i)))
 		{
 			// need to emit signal that data changed
-			QModelIndex index = this->index(lineNumber);
+			QModelIndex index {this->index(lineNumber)};
 			emit dataChanged(index, index);
 		}
 		lineNumber++;
@@ -265,11 +250,11 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	if (linesDeleted > 0)
 	{
 		// delete lines from the program
-		int lastLineNumber = lineNumber + linesDeleted - 1;
+		int lastLineNumber {lineNumber + linesDeleted - 1};
 		beginRemoveRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (--linesDeleted >= 0)
 		{
-			updateLine(Remove_Operation, lineNumber);
+			updateLine(Operation::Remove, lineNumber);
 		}
 		endRemoveRows();
 	}
@@ -279,13 +264,13 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		if (lineNumber == -1)  // append to end of program?
 		{
 			lineNumber = oldCount;
-			operation = Append_Operation;
+			operation = Operation::Append;
 		}
 		else  // insert new lines into the program
 		{
-			operation = Insert_Operation;
+			operation = Operation::Insert;
 		}
-		int lastLineNumber = lineNumber + linesInserted - 1;
+		int lastLineNumber {lineNumber + linesInserted - 1};
 		beginInsertRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (i < count)
 		{
@@ -310,29 +295,28 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	const QString &line)
 {
-	RpnList *rpnList;
+	RpnList rpnList;
 	ProgramCode lineCode;
 	ErrorItem errorItem;
 
-	if (operation != Remove_Operation)
+	if (operation != Operation::Remove)
 	{
 		// compile line
 		// if line has error, line code vector will be empty
 		rpnList = m_translator->translate(line);
-		if (rpnList->hasError())
+		if (rpnList.hasError())
 		{
-			errorItem = ErrorItem(ErrorItem::Input, lineNumber,
-				rpnList->errorColumn(), rpnList->errorLength(),
-				rpnList->errorMessage());
+			errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
+				rpnList.errorColumn(), rpnList.errorLength(),
+				rpnList.errorMessage());
 		}
 	}
 
-	if (operation == Change_Operation)
+	if (operation == Operation::Change)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
-		RpnList *currentRpnList = decode(lineInfo);
-		bool changed = *rpnList != *currentRpnList;
-		delete currentRpnList;
+		RpnList currentRpnList {decode(lineInfo)};
+		bool changed {rpnList != currentRpnList};
 		if (changed)
 		{
 			// derefence old line
@@ -361,10 +345,9 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			emit programChange(lineNumber);  // only for non-error lines
 		}
-		delete rpnList;  // no longer needed
 		return changed;
 	}
-	else if (operation == Append_Operation || operation == Insert_Operation)
+	else if (operation == Operation::Append || operation == Operation::Insert)
 	{
 		LineInfo lineInfo;
 		lineInfo.errIndex = -1;
@@ -380,7 +363,6 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			lineInfo.text = line;
 		}
-		delete rpnList;  // no longer needed
 
 		// find offset to insert line
 		if (lineNumber < m_lineInfo.count())
@@ -397,13 +379,13 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		m_code.insertLine(lineInfo.offset, lineCode);
 
 		m_lineInfo.insert(lineNumber, lineInfo);
-		if (operation == Append_Operation || errorItem.isEmpty())
+		if (operation == Operation::Append || errorItem.isEmpty())
 		{
 			// only for appended lines or lines with no errors
 			emit programChange(lineNumber);
 		}
 	}
-	else if (operation == Remove_Operation)
+	else if (operation == Operation::Remove)
 	{
 		LineInfo &lineInfo = m_lineInfo[lineNumber];
 
@@ -441,7 +423,7 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	}
 
 	// find location in error list for line number
-	int errIndex = m_errors.find(lineNumber);
+	int errIndex {m_errors.find(lineNumber)};
 
 	if (!errorItem.isEmpty())
 	{
@@ -474,11 +456,11 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
 	int charsAdded, int charsRemoved)
 {
-	int errIndex = m_errors.findIndex(lineNumber);
+	int errIndex {m_errors.findIndex(lineNumber)};
 	if (errIndex != -1)  // line has error?
 	{
-		int errColumn = m_errors.at(errIndex).column();
-		int errLength = m_errors.at(errIndex).length();
+		int errColumn {m_errors.at(errIndex).column()};
+		int errLength {m_errors.at(errIndex).length()};
 
 		if (column - charsAdded <= errColumn + errLength)
 		{
@@ -560,7 +542,7 @@ bool ProgramModel::errorFindNext(int &lineNumber, int &column, bool &wrapped)
 	const
 {
 	wrapped = false;
-	int errIndex = m_errors.find(lineNumber);
+	int errIndex {m_errors.find(lineNumber)};
 	if (errIndex >= m_errors.count()
 		|| lineNumber > m_errors.at(errIndex).lineNumber()
 		|| (lineNumber == m_errors.at(errIndex).lineNumber()
@@ -597,7 +579,7 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 	const
 {
 	wrapped = false;
-	int errIndex = m_errors.find(lineNumber);
+	int errIndex {m_errors.find(lineNumber)};
 	if (errIndex >= m_errors.count()
 		|| lineNumber < m_errors.at(errIndex).lineNumber()
 		|| (lineNumber == m_errors.at(errIndex).lineNumber()
@@ -628,23 +610,23 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 // function to return error message for a line (blank if no error)
 QString ProgramModel::errorMessage(int lineNumber) const
 {
-	int errIndex = m_errors.findIndex(lineNumber);
+	int errIndex {m_errors.findIndex(lineNumber)};
 	return errIndex == -1 ? QString() : m_errors.at(errIndex).message();
 }
 
 
 // function to encode a translated RPN list
-ProgramCode ProgramModel::encode(RpnList *input)
+ProgramCode ProgramModel::encode(const RpnList &input)
 {
-	ProgramCode programLine(input->codeSize());
+	ProgramCode programLine(input.codeSize());
 
-	for (int i = 0; i < input->count(); i++)
+	for (RpnItemPtr rpnItem : input)
 	{
-		Token *token = input->at(i)->token();
+		TokenPtr token {rpnItem->token()};
 		programLine[token->index()].setInstruction(token->code(),
 			token->subCodes());
-		EncodeFunction encode = m_table.encodeFunction(token->code());
-		if (encode != NULL)
+		EncodeFunction encode {m_table.encodeFunction(token->code())};
+		if (encode)
 		{
 			programLine[token->index() + 1].setOperand(encode(this, token));
 		}
@@ -656,12 +638,12 @@ ProgramCode ProgramModel::encode(RpnList *input)
 // function to dereference contents of line to prepare for its removal
 void ProgramModel::dereference(const LineInfo &lineInfo)
 {
-	ProgramWord *line = m_code.data() + lineInfo.offset;
-	for (int i = 0; i < lineInfo.size; i++)
+	ProgramWord *line {m_code.data() + lineInfo.offset};
+	for (int i {}; i < lineInfo.size; i++)
 	{
-		Code code = line[i].instructionCode();
-		RemoveFunction remove = m_table.removeFunction(code);
-		if (remove != NULL)
+		Code code {line[i].instructionCode()};
+		RemoveFunction remove {m_table.removeFunction(code)};
+		if (remove)
 		{
 			remove(this, line[++i].operand());
 		}
@@ -670,23 +652,23 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 
 
 // function to decode a program line into an RPN list
-RpnList *ProgramModel::decode(const LineInfo &lineInfo)
+RpnList ProgramModel::decode(const LineInfo &lineInfo)
 {
-	RpnList *rpnList = new RpnList;
-	ProgramWord *line = m_code.data() + lineInfo.offset;
-	for (int i = 0; i < lineInfo.size; i++)
+	RpnList rpnList;
+	ProgramWord *line {m_code.data() + lineInfo.offset};
+	for (int i {}; i < lineInfo.size; i++)
 	{
-		Token *token = new Token;
+		TokenPtr token {new Token};
 		token->setCode(line[i].instructionCode());
 		token->addSubCode(line[i].instructionSubCode());
 
 		OperandTextFunction operandText
 			= m_table.operandTextFunction(token->code());
-		if (operandText != NULL)
+		if (operandText)
 		{
 			token->setString(operandText(this, line[++i].operand()));
 		}
-		rpnList->append(token);
+		rpnList.append(token);
 	}
 	return rpnList;
 }

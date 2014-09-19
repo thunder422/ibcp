@@ -25,57 +25,52 @@
 #ifndef TRANSLATOR_H
 #define TRANSLATOR_H
 
-#include <QList>
-#include <QStack>
+#include <stack>
 
-#include "donestack.h"
+#include "parser.h"
 #include "rpnlist.h"
 
 class Table;
-class Parser;
 
 
 class Translator
 {
 public:
 	explicit Translator(void);
-	~Translator(void);
 
-	enum TestMode {
-		No_TestMode,				// do normal translation
-		Expression_TestMode,		// translate as expression only
-		Yes_TestMode,				// don't set code size after translation
-		sizeof_TestMode
+	enum class TestMode {
+		No,				// do normal translation
+		Expression,		// translate as expression only
+		Yes				// don't set code size after translation
 	};
 
-	enum Reference {
-		None_Reference,
-		Variable_Reference,
-		VarDefFn_Reference,
-		All_Reference,
-		sizeof_Reference
+	enum class Reference {
+		None,
+		Variable,
+		VarDefFn,
+		All
 	};
 
 	// Main Function
-	RpnList *translate(const QString &input, TestMode testMode = No_TestMode);
+	RpnList translate(const QString &input, TestMode testMode = TestMode::No);
 
 	// Get Functions
-	TokenStatus getCommands(Token *&token);
-	TokenStatus getExpression(Token *&token, DataType dataType, int level = 0);
-	TokenStatus getOperand(Token *&token, DataType dataType,
-		Reference reference = None_Reference);
-	TokenStatus getToken(Token *&token, DataType dataType = No_DataType);
+	Token::Status getCommands(TokenPtr &token);
+	Token::Status getExpression(TokenPtr &token, DataType dataType,
+		int level = 0);
+	Token::Status getOperand(TokenPtr &token, DataType dataType,
+		Reference reference = Reference::None);
+	Token::Status getToken(TokenPtr &token, DataType dataType = DataType{});
 
 	// Public Processing Functions
-	TokenStatus processFinalOperand(Token *&token, Token *token2 = NULL,
-		int operandIndex = 0);
-	TokenStatus processDoneStackTop(Token *&token, int operandIndex = 0,
-		Token **first = NULL, Token **last = NULL);
+	Token::Status processFinalOperand(TokenPtr &token,
+		TokenPtr token2 = TokenPtr{}, int operandIndex = 0);
+	Token::Status processDoneStackTop(TokenPtr &token, int operandIndex = 0,
+		TokenPtr *first = nullptr, TokenPtr *last = nullptr);
 
 	// Public Support Functions
-	static DataType equivalentDataType(DataType dataType);
-	static TokenStatus expectedErrStatus(DataType dataType,
-		Reference reference = None_Reference);
+	static Token::Status expectedErrStatus(DataType dataType,
+		Reference reference = Reference::None);
 
 	// Table Access Function
 	Table &table(void) const
@@ -84,15 +79,11 @@ public:
 	}
 
 	// Done Stack Access Functions
-	RpnItem *doneStackPop(void)
+	void doneStackPop(void)
 	{
-		return m_doneStack.pop();
+		m_doneStack.pop();
 	}
-	void doneStackDrop(void)
-	{
-		 m_doneStack.drop();
-	}
-	Token *doneStackTopToken(void) const
+	TokenPtr doneStackTopToken(void) const
 	{
 		return m_doneStack.top().rpnItem->token();
 	}
@@ -100,70 +91,82 @@ public:
 	{
 		return m_doneStack.empty();
 	}
-	Token *doneStackPopErrorToken(void);
+	TokenPtr doneStackPopErrorToken(void);
 
 	// Output List Access Functions
 	int outputCount(void) const
 	{
-		return m_output->count();
+		return m_output.count();
 	}
-	Token *outputLastToken(void) const
+	TokenPtr outputLastToken(void) const
 	{
-		return m_output->last()->token();
+		return m_output.lastToken();
 	}
-	RpnItem *outputAppend(Token *token, int attachedCount = 0,
-		RpnItem **attached = NULL)
+	void outputAppend(TokenPtr token)
 	{
-		return m_output->append(token, attachedCount, attached);
+		m_output.append(std::move(token));
 	}
-	void outputInsert(int index, Token *token)
+	RpnItemList::iterator outputInsert(RpnItemList::iterator iterator,
+		TokenPtr token)
 	{
-		return m_output->insert(index, token);
+		return m_output.insert(iterator, token);
+	}
+	RpnItemList::iterator outputAppendIterator(TokenPtr token)
+	{
+		return m_output.appendIterator(std::move(token));
 	}
 
 private:
 	// Private Processing Functions
-	TokenStatus processCommand(Token *&commandToken);
-	TokenStatus processInternalFunction(Token *&token);
-	TokenStatus processParenToken(Token *&token);
-	TokenStatus processOperator(Token *&token);
-	TokenStatus processFirstOperand(Token *&token);
+	Token::Status processCommand(TokenPtr &commandToken);
+	Token::Status processInternalFunction(TokenPtr &token);
+	Token::Status processParenToken(TokenPtr &token);
+	Token::Status processOperator(TokenPtr &token);
+	Token::Status processFirstOperand(TokenPtr &token);
 
 	// Private Support Functions
-	void checkPendingParen(Token *token, bool popped);
+	enum class Popped {No, Yes};
+	void checkPendingParen(const TokenPtr &token, Popped popped);
 	void cleanUp(void);		// only called when error occurs
-
-	// Output List Function
-	TokenStatus outputAssignCodes(Token *&token);
 
 	struct HoldItem
 	{
-		Token *token;				// token pointer on hold stack
-		Token *first;				// operator token's first operand pointer
+		HoldItem(TokenPtr _token) : token{_token}, first{} {}
+		HoldItem(TokenPtr _token, TokenPtr _first) : token{_token},
+			first{_first} {}
+
+		TokenPtr token;				// token pointer on hold stack
+		TokenPtr first;				// operator token's first operand pointer
 	};
-	class HoldStack : public QStack<HoldItem>
+	using HoldStack = std::stack<HoldItem>;
+
+	struct DoneItem
 	{
-	public:
-		// drop the top item on stack (pop with no return)
-		void drop(void)
+		DoneItem(RpnItemPtr _rpnItem) : rpnItem{_rpnItem}, first{}, last{} {}
+		DoneItem(RpnItemPtr _rpnItem, TokenPtr _last) : rpnItem{_rpnItem},
+			first{}, last{_last} {}
+		DoneItem(RpnItemPtr _rpnItem, TokenPtr _first, TokenPtr _last) :
+			rpnItem{_rpnItem}, first{_first}, last{_last} {}
+
+		// replace the item's first and last operand token
+		void replaceFirstLast(TokenPtr _first, TokenPtr _last)
 		{
-			resize(size() - 1);
+			first = _first;
+			last = _last;
 		}
-		// push new item with token and first token
-		void push(Token *token, Token *first = NULL)
-		{
-			resize(size() + 1);
-			top().token = token;
-			top().first = first;
-		}
+
+		RpnItemPtr rpnItem;			// pointer to RPN item
+		TokenPtr first;				// operator token's first operand pointer
+		TokenPtr last;				// operator token's last operand pointer
 	};
+	using DoneStack = std::stack<DoneItem>;
 
 	Table &m_table;					// reference to the table instance
-	Parser *m_parser;				// pointer to parser instance
-	RpnList *m_output;				// pointer to RPN list output
+	std::unique_ptr<Parser> m_parser;	// pointer to parser instance
+	RpnList m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack
 	DoneStack m_doneStack;			// items processed stack
-	Token *m_pendingParen;			// closing parentheses token is pending
+	TokenPtr m_pendingParen;		// closing parentheses token is pending
 	int m_lastPrecedence;			// precedence of last op added during paren
 };
 

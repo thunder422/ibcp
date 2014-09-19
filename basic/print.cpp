@@ -30,35 +30,35 @@
 
 
 // PRINT command translate function
-TokenStatus printTranslate(Translator &translator, Token *commandToken,
-	Token *&token)
+Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token)
 {
-	TokenStatus status;
-	Token *lastSemiColon = NULL;
-	bool separator = false;
-	bool printFunction = false;
+	Token::Status status;
+	TokenPtr lastSemiColon;
+	bool separator {};
+	bool printFunction {};
 
 	forever
 	{
-		if ((status = translator.getExpression(token, None_DataType))
-			!= Done_TokenStatus)
+		if ((status = translator.getExpression(token, DataType::None))
+			!= Token::Status::Done)
 		{
-			if (status == Parser_TokenStatus
-				&& token->isDataType(None_DataType))
+			if (status == Token::Status::Parser
+				&& token->isDataType(DataType::None))
 			{
 				if (translator.doneStackEmpty())
 				{
-					status = ExpExprCommaPfnOrEnd_TokenStatus;
+					status = Token::Status::ExpExprCommaPfnOrEnd;
 				}
 				// change parser error if not inside paren
 				else if (translator.doneStackTopToken()
-					->isDataType(None_DataType))
+					->isDataType(DataType::None))
 				{
-					status = ExpSemiCommaOrEnd_TokenStatus;
+					status = Token::Status::ExpSemiCommaOrEnd;
 				}
 				else  // not a print function
 				{
-					status = ExpOpSemiCommaOrEnd_TokenStatus;
+					status = Token::Status::ExpOpSemiCommaOrEnd;
 				}
 			}
 			break;
@@ -66,80 +66,75 @@ TokenStatus printTranslate(Translator &translator, Token *commandToken,
 
 		if (!translator.doneStackEmpty())
 		{
-			if (translator.doneStackTopToken()->isDataType(None_DataType))
+			if (translator.doneStackTopToken()->isDataType(DataType::None))
 			{
-				translator.doneStackDrop();  // print function
+				translator.doneStackPop();  // print function
 				printFunction = true;
 			}
 			else  // append appropriate print code for done stack top item
 			{
-				Token *printToken = translator.table().newToken(PrintDbl_Code);
+				TokenPtr printToken
+					= translator.table().newToken(PrintDbl_Code);
 				translator.processFinalOperand(printToken);
 				printFunction = false;
 			}
 			separator = true;
-			delete lastSemiColon;
-			lastSemiColon = NULL;
+			lastSemiColon.reset();
 		}
 
 		if (token->isCode(Comma_Code))
 		{
-			if (lastSemiColon != NULL)
+			if (lastSemiColon)
 			{
-				status = ExpExprPfnOrEnd_TokenStatus;
+				status = Token::Status::ExpExprPfnOrEnd;
 				break;
 			}
-			translator.outputAppend(token);
-			delete lastSemiColon;
-			lastSemiColon = NULL;
+			translator.outputAppend(std::move(token));
+			lastSemiColon.reset();
 		}
 		else if (token->isCode(SemiColon_Code))
 		{
 			if (!separator)
 			{
-				status = lastSemiColon == NULL
-					? ExpExprCommaPfnOrEnd_TokenStatus
-					: ExpExprPfnOrEnd_TokenStatus;
+				status = lastSemiColon ? Token::Status::ExpExprPfnOrEnd
+					: Token::Status::ExpExprCommaPfnOrEnd;
 				break;
 			}
-			delete lastSemiColon;
-			lastSemiColon = token;
+			lastSemiColon = std::move(token);
 		}
 		else  // some other token, maybe end-of-statement
 		{
 			break;  // exit loop
 		}
 		separator = false;
-		token = NULL;
 	}
 
-	if (status != Done_TokenStatus)
+	if (status != Token::Status::Done)
 	{
-		delete lastSemiColon;
-		delete commandToken;
 		return status;
 	}
 
-	if (lastSemiColon != NULL)
+	if (lastSemiColon)
 	{
 		// append last semicolon token as command token
-		delete commandToken;
-		commandToken = lastSemiColon;
+		commandToken = std::move(lastSemiColon);
 	}
-	translator.outputAppend(commandToken);
+	translator.outputAppend(std::move(commandToken));
 
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
-		return printFunction
-			? ExpSemiCommaOrEnd_TokenStatus : ExpOpSemiCommaOrEnd_TokenStatus;
+		return printFunction ? Token::Status::ExpSemiCommaOrEnd
+			: Token::Status::ExpOpSemiCommaOrEnd;
 	}
-	return Done_TokenStatus;
+	return Token::Status::Done;
 }
 
 
 // function to recreate the print item code
-void printItemRecreate(Recreator &recreator, RpnItem *)
+void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
+	Q_UNUSED(rpnItem)
+
 	QString string;
 
 	if (recreator.separatorIsSet())
@@ -173,8 +168,10 @@ void printItemRecreate(Recreator &recreator, RpnItem *)
 
 
 // function to recreate the print comma code
-void printCommaRecreate(Recreator &recreator, RpnItem *)
+void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
+	Q_UNUSED(rpnItem)
+
 	QString string;
 
 	// get string on top of the stack if there is one
@@ -194,7 +191,7 @@ void printCommaRecreate(Recreator &recreator, RpnItem *)
 
 
 // function to recreate a print function code
-void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// process as internal function first then as an item
 	internalFunctionRecreate(recreator, rpnItem);
@@ -203,7 +200,7 @@ void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate the print semicolon code
-void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem)
+void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// push string on top of stack with final semicolon then recreate command
 	recreator.push(recreator.pop() + ';');
@@ -212,7 +209,7 @@ void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate the print code
-void printRecreate(Recreator &recreator, RpnItem *rpnItem)
+void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 

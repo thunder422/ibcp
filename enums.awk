@@ -54,7 +54,6 @@ BEGIN {
 		path = ""
 	}
 	table_source = path "table.cpp"
-	token_source = path "token.cpp"
 
 	while ((getline line < table_source) > 0)
 	{
@@ -97,62 +96,6 @@ BEGIN {
 		}
 	}
 
-	msg_array = 0
-	nts = 0
-	while ((getline line < token_source) > 0)
-	{
-		if (msg_array == 0)
-		{
-			if (line ~ /const QString Token::s_messageArray/)
-			{
-				# found start of token message array
-				msg_array = 1
-			}
-		}
-		else if (line ~ /};/)
-		{
-			# found end of token message array
-			msg_array = 0
-		}
-		else
-		{
-			nf = split(line, field)
-			if (field[1] == "//")
-			{
-				# remove the CR if present
-				name = field[2]
-				cr = index(name, "\r")
-				if (cr > 0)
-				{
-					name = substr(name, 0, cr - 1)
-				}
-			}
-			else
-			{
-				if (line !~ /BUG:/)
-				{
-					ts = name "_TokenStatus"
-				}
-				else
-				{
-					ts = "BUG_" name
-				}
-
-				# check for duplicates
-				if (ts in tokensts)
-				{
-					print "Duplicate token status found: ", ts
-					dups++
-				}
-				else
-				{
-					tokensts[ts] = 1
-				}
-				ts_array[nts++] = ts
-			}
-		}
-	}
-
 	if (dups == 0)
 	{
 		# write header to 'autoenums.h'
@@ -173,16 +116,6 @@ BEGIN {
 		printf "\tsizeof_Code\n" > "autoenums.h"
 		printf "};\n" > "autoenums.h"
 
-		# write 'enum TokenStatus' to 'autoenums.h'
-		printf "\n" > "autoenums.h"
-		printf "enum TokenStatus\n{\n" > "autoenums.h"
-		for (i = 0; i < nts; i++)
-		{
-			printf "\t%s,\n", ts_array[i] > "autoenums.h"
-		}
-		printf "\tsizeof_TokenStatus\n" > "autoenums.h"
-		printf "};\n" > "autoenums.h"
-
 		# write 'codes.txt'
 		for (i = 0; i < n; i++)
 		{
@@ -196,7 +129,6 @@ BEGIN {
 
 		# output summary
 		print "Size of Code enumeration:", n
-		print "Size of TokenStatus enumeration:", nts
 	}
 	else  # error found
 	{

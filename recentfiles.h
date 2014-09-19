@@ -51,10 +51,7 @@ private:
 	void updateActions(void);
 	QString fileName(const QString &path);
 
-	enum
-	{
-		MaxCount = 10				// maximum possible menu items
-	};
+	static constexpr int MaxCount {10};		// maximum possible menu items
 
 	QMenu *m_menu;					// menu that owns recent file menu items
 	QAction *m_actions[MaxCount];	// actions for all recent files

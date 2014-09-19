@@ -25,70 +25,46 @@
 #ifndef RPNLIST_H
 #define RPNLIST_H
 
-#include <QList>
+#include <list>
+#include <memory>
+#include <vector>
 
 #include "token.h"
 
 class Table;
+class RpnItem;
+using RpnItemPtr = std::shared_ptr<RpnItem>;
+using RpnItemVector = std::vector<RpnItemPtr>;
+using RpnItemList = std::list<RpnItemPtr>;
 
 
 // class for holding an item in the RPN output list
 class RpnItem
 {
 public:
-	RpnItem(Token *token, int attachedCount = 0, RpnItem **attached = NULL)
-	{
-		m_token = token;
-		m_index = -1;
-		m_attachedCount = attachedCount;
-		m_attached = attached;
-	}
-	~RpnItem()
-	{
-		delete m_token;
-		if (m_attachedCount > 0)
-		{
-			delete[] m_attached;
-		}
-	}
+	RpnItem(TokenPtr token) : m_token{token} {}
+	RpnItem(TokenPtr token, RpnItemVector attached) : m_token{token},
+		m_attached{attached} {}
 
 	// access functions
-	Token *token(void)
+	TokenPtr token(void)
 	{
 		return m_token;
 	}
-	void setToken(Token *token)
+
+	int attachedCount(void) const
 	{
-		m_token = token;
+		return m_attached.size();
+	}
+	const RpnItemVector attached() const
+	{
+		return m_attached;
 	}
 
-	int index(void) const
-	{
-		return m_index;
-	}
-	void setIndex(int index)
-	{
-		m_index = index;
-	}
-	void incrementIndex(int increment = 1)
-	{
-		m_index += increment;
-	}
-
-	int attachedCount(void)
-	{
-		return m_attachedCount;
-	}
-	RpnItem *attached(int index)
-	{
-		return m_attached[index];
-	}
-
-	QString text(bool withIndexes = false);
 	bool operator==(const RpnItem &other) const
 	{
 		return *m_token == *other.m_token
-			&& m_attachedCount == other.m_attachedCount;
+			&& m_attached.size() == other.m_attached.size();
 	}
 	bool operator!=(const RpnItem &other) const
 	{
@@ -96,37 +72,94 @@ public:
 	}
 
 private:
-	Token *m_token;				// pointer to token
-	int m_index;				// index within RPN list
-	int m_attachedCount;		// number of operands
-	RpnItem **m_attached;		// array of attached item pointers
+	TokenPtr m_token;				// pointer to token
+	RpnItemVector m_attached;		// array of attached item pointers
 };
 
 
 // class for holding a list of RPN items
-class RpnList : public QList<RpnItem *>
+class RpnList
 {
 public:
-	RpnList(void) : m_errorColumn(-1), m_errorLength(-1) {}
-	~RpnList(void);
-	void clear(void);
-	QString text(bool withIndexes = false);
+	RpnList(void) : m_errorColumn{-1}, m_errorLength{-1} {}
+	RpnList(RpnList &&other) :
+		m_list{other.m_list},
+		m_codeSize{other.m_codeSize},
+		m_errorColumn{other.m_errorColumn},
+		m_errorLength{other.m_errorLength},
+		m_errorMessage{other.m_errorMessage}
+	{
+		other.m_list.clear();
+		other.m_codeSize = 0;
+		other.m_errorColumn = -1;
+		other.m_errorLength = -1;
+		other.m_errorMessage.clear();
+	}
+	RpnList &operator=(RpnList &&other)
+	{
+		std::swap(m_list, other.m_list);
+		std::swap(m_codeSize, other.m_codeSize);
+		std::swap(m_errorColumn, other.m_errorColumn);
+		std::swap(m_errorLength, other.m_errorLength);
+		std::swap(m_errorMessage, other.m_errorMessage);
+		return *this;
+	}
+
+	QString text();
 	bool operator==(const RpnList &other) const;
 	bool operator!=(const RpnList &other) const
 	{
 		return !(*this == other);
 	}
 
-	RpnItem *append(Token *token, int attachedCount = 0,
-		RpnItem **attached = NULL);
-	void insert(int index, Token *token);
-	int codeSize(void)
+	RpnItemList::const_iterator begin() const
+	{
+		return m_list.begin();
+	}
+	RpnItemList::const_iterator end() const
+	{
+		return m_list.end();
+	}
+	int count() const
+	{
+		return m_list.size();
+	}
+	int empty() const
+	{
+		return m_list.empty();
+	}
+	RpnItemPtr back() const
+	{
+		return m_list.back();
+	}
+	TokenPtr lastToken(void) const
+	{
+		return m_list.back()->token();
+	}
+	void clear()
+	{
+		m_list.clear();
+	}
+
+	void append(TokenPtr token, RpnItemVector attached = RpnItemVector{})
+	{
+		m_list.emplace_back(RpnItemPtr{new RpnItem{token, attached}});
+	}
+	RpnItemList::iterator insert(RpnItemList::iterator iterator, TokenPtr token)
+	{
+		return m_list.emplace(iterator, RpnItemPtr{new RpnItem{token}});
+	}
+	RpnItemList::iterator appendIterator(TokenPtr token)
+	{
+		return insert(m_list.end(), token);
+	}
+	int codeSize(void) const
 	{
 		return m_codeSize;
 	}
-	bool setCodeSize(Table &table, Token *&token);
+	bool setCodeSize(Table &table, TokenPtr &token);
 
-	void setError(Token *errorToken)
+	void setError(const TokenPtr &errorToken)
 	{
 		m_errorColumn = errorToken->column();
 		m_errorLength = errorToken->length();
@@ -154,6 +187,7 @@ public:
 	}
 
 private:
+	RpnItemList m_list;				// list of rpn items
 	int m_codeSize;					// size of code required for list
 	int m_errorColumn;				// column of error that occurred
 	int m_errorLength;				// length of error that occurred

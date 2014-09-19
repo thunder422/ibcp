@@ -25,9 +25,12 @@
 #ifndef BASIC_H
 #define BASIC_H
 
+#include <memory>
+
 #include <QString>
 
 #include "ibcp.h"
+#include "token.h"
 #include "dictionary.h"
 
 class Translator;
@@ -35,6 +38,7 @@ class Token;
 class ProgramModel;
 class Recreator;
 class RpnItem;
+using RpnItemPtr = std::shared_ptr<RpnItem>;
 
 
 // constant definitions
@@ -44,7 +48,7 @@ class ConstNumInfo : public AbstractInfo
 public:
 	void clear(void);
 	void addElement(void);
-	void setElement(int index, Token *token);
+	void setElement(int index, const TokenPtr &token);
 
 	double *array(void)
 	{
@@ -65,16 +69,16 @@ class ConstNumDictionary : public InfoDictionary
 public:
 	ConstNumDictionary(void)
 	{
-		m_info = new ConstNumInfo;
+		m_info.reset(new ConstNumInfo);
 	}
 
 	double *array(void)
 	{
-		return ((ConstNumInfo *)m_info)->array();
+		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->array();
 	}
 	int *arrayInt(void)
 	{
-		return ((ConstNumInfo *)m_info)->arrayInt();
+		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->arrayInt();
 	}
 };
 
@@ -85,7 +89,7 @@ public:
 	~ConstStrInfo(void);
 	void clear(void);
 	void addElement(void);
-	void setElement(int index, Token *token);
+	void setElement(int index, const TokenPtr &token);
 	void clearElement(int index);
 
 	QString **array(void)
@@ -102,32 +106,32 @@ class ConstStrDictionary : public InfoDictionary
 public:
 	ConstStrDictionary(void)
 	{
-		m_info = new ConstStrInfo;
+		m_info.reset(new ConstStrInfo);
 	}
 
 	QString **array(void)
 	{
-		return ((ConstStrInfo *)m_info)->array();
+		return (dynamic_cast<ConstStrInfo *>(m_info.get()))->array();
 	}
 };
 
 
 // translate functions
-TokenStatus inputTranslate(Translator &translator, Token *commandToken,
-	Token *&token);
-TokenStatus letTranslate(Translator &translator, Token *commandToken,
-	Token *&token);
-TokenStatus printTranslate(Translator &translator, Token *commandToken,
-	Token *&token);
+Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token);
+Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token);
+Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
+	TokenPtr &token);
 
 
 // encode functions
-quint16 remEncode(ProgramModel *programUnit, Token *token);
-quint16 constNumEncode(ProgramModel *programUnit, Token *token);
-quint16 constStrEncode(ProgramModel *programUnit, Token *token);
-quint16 varDblEncode(ProgramModel *programUnit, Token *token);
-quint16 varIntEncode(ProgramModel *programUnit, Token *token);
-quint16 varStrEncode(ProgramModel *programUnit, Token *token);
+quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 constNumEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 varDblEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 varIntEncode(ProgramModel *programUnit, const TokenPtr &token);
+quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token);
 
 
 // operand text functions
@@ -154,30 +158,30 @@ void varStrRemove(ProgramModel *programUnit, quint16 operand);
 
 
 // recreate functions
-void operandRecreate(Recreator &recreator, RpnItem *rpnItem);
-void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
-void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem);
-void parenRecreate(Recreator &recreator, RpnItem *rpnItem);
-void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void arrayRecreate(Recreator &recreator, RpnItem *rpnItem);
-void functionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void blankRecreate(Recreator &recreator, RpnItem *rpnItem);
-void remRecreate(Recreator &recreator, RpnItem *rpnItem);
-void constStrRecreate(Recreator &recreator, RpnItem *rpnItem);
+void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void assignRecreate(Recreator &recreator, RpnItem *rpnItem);
-void assignStrRecreate(Recreator &recreator, RpnItem *rpnItem);
+void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void printItemRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printCommaRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printFunctionRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printSemicolonRecreate(Recreator &recreator, RpnItem *rpnItem);
-void printRecreate(Recreator &recreator, RpnItem *rpnItem);
+void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void inputPromptBeginRecreate(Recreator &recreator, RpnItem *rpnItem);
-void inputAssignRecreate(Recreator &recreator, RpnItem *rpnItem);
-void inputRecreate(Recreator &recreator, RpnItem *rpnItem);
+void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
+void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
 
 #endif // BASIC_H

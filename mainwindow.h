@@ -25,12 +25,16 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <memory>
+
 #include <QLabel>
 #include <QMainWindow>
 
+#include "commandline.h"
 #include "editbox.h"
 #include "program.h"
 #include "programlinedelegate.h"
+#include "ui_mainwindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -46,7 +50,7 @@ class MainWindow : public QMainWindow
 
 public:
 	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow(void);
+
 	bool isGuiActive(void) const
 	{
 		return m_guiActive;
@@ -94,10 +98,10 @@ private:
 	void settingsSave(void);
 
 	// member variables
-	Ui::MainWindow *ui;
+	std::unique_ptr<Ui::MainWindow> ui;
 	bool m_guiActive;
 	int m_returnCode;
-	CommandLine *m_commandLine;
+	std::unique_ptr<CommandLine> m_commandLine;
 
 	Program m_program;
 	EditBox *m_editBox;

@@ -36,16 +36,14 @@ Recreator::Recreator(void) :
 
 
 // function to recreate original program text from an rpn list
-QString Recreator::recreate(RpnList *rpnList, bool exprMode)
+QString Recreator::recreate(const RpnList &rpnList, bool exprMode)
 {
 	m_output = "";
-	for (int i = 0; i < rpnList->count(); i++)
+	for (RpnItemPtr rpnItem : rpnList)
 	{
-		RpnItem *rpnItem = rpnList->at(i);
 		RecreateFunction recreate;
 		if (!rpnItem->token()->hasValidCode()
-			|| (recreate = m_table.recreateFunction(rpnItem->token()->code()))
-			== NULL)
+			|| !(recreate = m_table.recreateFunction(rpnItem->token()->code())))
 		{
 			// if no recreate function, then it is missing from table
 			push('?' + rpnItem->token()->string() + '?');
@@ -128,10 +126,10 @@ void Recreator::pushWithOperands(QString &name, int count)
 {
 	QStack<QString> stack;			// local stack of operands
 
-	QString separator = ")";
-	for (int i = 0; i < count; i++)
+	QString separator {")"};
+	for (int i {}; i < count; i++)
 	{
-		QString string = pop();
+		QString string {pop()};
 		string.append(separator);
 		stack.push(string);
 		separator = ", ";
@@ -152,25 +150,25 @@ void Recreator::pushWithOperands(QString &name, int count)
 
 
 // function to recreate an operand
-void operandRecreate(Recreator &recreator, RpnItem *rpnItem)
+void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// just push the string of the token
 	recreator.push(rpnItem->token()->string());
 }
 
 // function to recreate a unary operator
-void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
+void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	int precedence = recreator.table().precedence(rpnItem->token()->code());
+	int precedence {recreator.table().precedence(rpnItem->token()->code())};
 
 	// get string of operand from stack
 	// (add parens if item on top of the stack is not a unary operator
 	// and operator precendence is higher than the operand)
-	QString operand = recreator.popWithParens(!recreator.top().unaryOperator
-		&& precedence > recreator.top().precedence);
+	QString operand {recreator.popWithParens(!recreator.top().unaryOperator
+		&& precedence > recreator.top().precedence)};
 
 	// get string for operator
-	QString string = recreator.table().name(rpnItem->token());
+	QString string {recreator.table().name(rpnItem->token())};
 	// if operator is a plain word operator or operand is a number,
 	//  then need to add a space
 	if (rpnItem->token()->code() < EndPlainWord_Code
@@ -187,10 +185,10 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to recreate a binary operator
-void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
+void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString string;
-	int precedence = recreator.table().precedence(rpnItem->token()->code());
+	int precedence {recreator.table().precedence(rpnItem->token()->code())};
 
 	// get string of second operand
 	// (add parens if operator precedence is higher than or same as operand
@@ -209,50 +207,50 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to surround item on top of the holding stack with parentheses
-void parenRecreate(Recreator &recreator, RpnItem *rpnItem)
+void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 
 	int precedence;
 	bool unaryOperator;
 
-	QString string = recreator.popWithParens(true, &precedence, &unaryOperator);
+	QString string {recreator.popWithParens(true, &precedence, &unaryOperator)};
 	recreator.push(string, precedence, unaryOperator);
 }
 
 
 // function to recreate an internal function
-void internalFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name = recreator.table().name(rpnItem->token());
-	int count = recreator.table().operandCount(rpnItem->token());
+	QString name {recreator.table().name(rpnItem->token())};
+	int count {recreator.table().operandCount(rpnItem->token())};
 	recreator.pushWithOperands(name, count);
 }
 
 
 // function to recreate an array
-void arrayRecreate(Recreator &recreator, RpnItem *rpnItem)
+void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name = rpnItem->token()->string();
+	QString name {rpnItem->token()->string()};
 	name.append('(');  // add close paren since it is not stored with name
 	recreator.pushWithOperands(name, rpnItem->attachedCount());
 }
 
 
 // function to recreate an array
-void functionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name = rpnItem->token()->string();
+	QString name {rpnItem->token()->string()};
 	name.append('(');  // add close paren since it is not stored with name
 	recreator.pushWithOperands(name, rpnItem->attachedCount());
 }
 
 
 // function to recreate an array
-void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
+void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name = rpnItem->token()->string();
-	int count = rpnItem->attachedCount();
+	QString name {rpnItem->token()->string()};
+	int count {rpnItem->attachedCount()};
 	if (count > 0)
 	{
 		name.append('(');  // add close paren since it is not stored with name
@@ -262,7 +260,7 @@ void defineFunctionRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to do nothing (for hidden codes)
-void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
+void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(recreator)
 	Q_UNUSED(rpnItem)
@@ -270,10 +268,10 @@ void blankRecreate(Recreator &recreator, RpnItem *rpnItem)
 
 
 // function to do nothing (for hidden codes)
-void remRecreate(Recreator &recreator, RpnItem *rpnItem)
+void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString string = recreator.table().name(rpnItem->token());
-	QString remark = rpnItem->token()->string();
+	QString string {recreator.table().name(rpnItem->token())};
+	QString remark {rpnItem->token()->string()};
 	if (remark.at(0).isLower())
 	{
 		string = string.toLower();
