@@ -30,10 +30,10 @@
 
 
 // PRINT command translate function
-Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
+Status printTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
-	Token::Status status;
+	Status status;
 	TokenPtr lastSemiColon;
 	bool separator {};
 	bool printFunction {};
@@ -41,24 +41,24 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 	forever
 	{
 		if ((status = translator.getExpression(token, DataType::None))
-			!= Token::Status::Done)
+			!= Status::Done)
 		{
-			if (status == Token::Status::Parser
+			if (status == Status::Parser
 				&& token->isDataType(DataType::None))
 			{
 				if (translator.doneStackEmpty())
 				{
-					status = Token::Status::ExpExprCommaPfnOrEnd;
+					status = Status::ExpExprCommaPfnOrEnd;
 				}
 				// change parser error if not inside paren
 				else if (translator.doneStackTopToken()
 					->isDataType(DataType::None))
 				{
-					status = Token::Status::ExpSemiCommaOrEnd;
+					status = Status::ExpSemiCommaOrEnd;
 				}
 				else  // not a print function
 				{
-					status = Token::Status::ExpOpSemiCommaOrEnd;
+					status = Status::ExpOpSemiCommaOrEnd;
 				}
 			}
 			break;
@@ -86,7 +86,7 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 		{
 			if (lastSemiColon)
 			{
-				status = Token::Status::ExpExprPfnOrEnd;
+				status = Status::ExpExprPfnOrEnd;
 				break;
 			}
 			translator.outputAppend(std::move(token));
@@ -96,8 +96,8 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 		{
 			if (!separator)
 			{
-				status = lastSemiColon ? Token::Status::ExpExprPfnOrEnd
-					: Token::Status::ExpExprCommaPfnOrEnd;
+				status = lastSemiColon ? Status::ExpExprPfnOrEnd
+					: Status::ExpExprCommaPfnOrEnd;
 				break;
 			}
 			lastSemiColon = std::move(token);
@@ -109,7 +109,7 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 		separator = false;
 	}
 
-	if (status != Token::Status::Done)
+	if (status != Status::Done)
 	{
 		return status;
 	}
@@ -123,10 +123,10 @@ Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
 
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
-		return printFunction ? Token::Status::ExpSemiCommaOrEnd
-			: Token::Status::ExpOpSemiCommaOrEnd;
+		return printFunction ? Status::ExpSemiCommaOrEnd
+			: Status::ExpOpSemiCommaOrEnd;
 	}
-	return Token::Status::Done;
+	return Status::Done;
 }
 
 

@@ -31,6 +31,64 @@
 #include "autoenums.h"
 
 
+// parser and translator status codes
+enum class Status
+{
+	Good,
+	Done,
+	Parser,
+	ExpCmd,
+	ExpExpr,
+	ExpExprOrEnd,
+	ExpOpOrEnd,
+	ExpBinOpOrEnd,
+	ExpEqualOrComma,
+	ExpComma,
+	ExpAssignItem,
+	ExpOpOrComma,
+	ExpOpCommaOrParen,
+	ExpOpOrParen,
+	ExpBinOpOrComma,
+	ExpBinOpCommaOrParen,
+	ExpBinOpOrParen,
+	ExpNumExpr,
+	ExpStrExpr,
+	ExpSemiCommaOrEnd,
+	ExpCommaSemiOrEnd,
+	ExpSemiOrComma,
+	ExpOpSemiOrComma,
+	ExpDblVar,
+	ExpIntVar,
+	ExpStrVar,
+	ExpVar,
+	ExpStrItem,
+	ExpEndStmt,
+	ExpExprPfnOrEnd,
+	ExpExprCommaPfnOrEnd,
+	ExpOpSemiCommaOrEnd,
+	ExpIntConst,
+	// the following statuses used during development
+	BUG_NotYetImplemented,
+	BUG_HoldStackNotEmpty,
+	BUG_DoneStackNotEmpty,
+	BUG_DoneStackEmptyFindCode,
+	BUG_UnexpectedCloseParen,
+	BUG_DoneStackEmpty,
+	BUG_InvalidDataType,
+	BUG_UnexpToken,
+	BUG_Debug1,
+	BUG_Debug2,
+	BUG_Debug3,
+	BUG_Debug4,
+	BUG_Debug5,
+	BUG_Debug6,
+	BUG_Debug7,
+	BUG_Debug8,
+	BUG_Debug9,
+	BUG_Debug
+};
+
+
 // code operator in-line functions for additional, increment and decrement
 inline Code operator +(Code code, int number)
 {

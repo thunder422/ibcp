@@ -76,7 +76,7 @@ class Recreator;
 class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 
-typedef Token::Status (*TranslateFunction)(Translator &translator,
+typedef Status (*TranslateFunction)(Translator &translator,
 	TokenPtr commandToken, TokenPtr &token);
 typedef quint16 (*EncodeFunction)(ProgramModel *programUnit,
 	const TokenPtr &token);

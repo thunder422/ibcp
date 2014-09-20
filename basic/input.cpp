@@ -29,10 +29,10 @@
 
 
 // INPUT command translate function
-Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
+Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
-	Token::Status status;
+	Status status;
 	bool done;
 	TokenPtr inputToken;
 
@@ -43,12 +43,11 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	else  // InputPrompt_Code
 	{
 		status = translator.getExpression(token, DataType::String);
-		if (status != Token::Status::Done)
+		if (status != Status::Done)
 		{
-			if (status == Token::Status::Parser
-				&& token->isDataType(DataType::None))
+			if (status == Status::Parser && token->isDataType(DataType::None))
 			{
-				status = Token::Status::ExpSemiOrComma;
+				status = Status::ExpSemiOrComma;
 			}
 			return status;
 		}
@@ -59,7 +58,7 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 		}
 		else if (!token->isCode(SemiColon_Code))
 		{
-			return Token::Status::ExpOpSemiOrComma;
+			return Status::ExpOpSemiOrComma;
 		}
 		token->setCode(InputBeginStr_Code);
 	}
@@ -72,15 +71,15 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	{
 		// get variable reference
 		if ((status = translator.getOperand(token, DataType::Any,
-			Translator::Reference::Variable)) != Token::Status::Good)
+			Translator::Reference::Variable)) != Status::Good)
 		{
 			break;
 		}
 
 		// get and check next token
-		if ((status = translator.getToken(token)) != Token::Status::Good)
+		if ((status = translator.getToken(token)) != Status::Good)
 		{
-			status = Token::Status::ExpCommaSemiOrEnd;
+			status = Status::ExpCommaSemiOrEnd;
 			break;
 		}
 		if (token->isCode(Comma_Code))
@@ -95,9 +94,9 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 			inputToken = std::move(token);
 
 			// get and check next token
-			if ((status = translator.getToken(token)) != Token::Status::Good)
+			if ((status = translator.getToken(token)) != Status::Good)
 			{
-				status = Token::Status::ExpEndStmt;
+				status = Status::ExpEndStmt;
 				break;
 			}
 		}
@@ -110,7 +109,7 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 		// change token to appropriate assign code and append to output
 		translator.table().setToken(inputToken, InputAssign_Code);
 		status = translator.processFinalOperand(inputToken);
-		if (status != Token::Status::Good)
+		if (status != Status::Good)
 		{
 			break;
 		}
@@ -123,7 +122,7 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	}
 	while (!done);
 
-	if (status != Token::Status::Good)
+	if (status != Status::Good)
 	{
 		return status;
 	}
@@ -132,10 +131,10 @@ Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	// check terminating token for end-of-statement
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
-		return Token::Status::ExpCommaSemiOrEnd;
+		return Status::ExpCommaSemiOrEnd;
 	}
 
-	return Token::Status::Done;
+	return Status::Done;
 }
 
 
