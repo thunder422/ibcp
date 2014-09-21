@@ -313,6 +313,23 @@ const QString Token::message(Status status)
 		return tr("expected operator, semicolon, comma or end-of-statement");
 	case Status::ExpIntConst:
 		return tr("expected valid integer constant");
+	// the following statuses are parser errors
+	case Status::UnrecognizedChar:
+		return tr("unrecognizable character");
+	case Status::ExpNonZeroDigit:
+		return tr("expected non-zero leading digit in numeric constant");
+	case Status::ExpDigitsOrSngDP:
+		return tr("expected digits or single decimal point in floating point "
+			"constant");
+	case Status::ExpManDigits:
+		return tr("expected digits in mantissa of floating point constant");
+	case Status::ExpExpDigits:
+		return tr("expected sign or digits for exponent in floating point "
+			"constant");
+	case Status::ExpDigits:
+		return tr("expected digits in floating point constant");
+	case Status::FPOutOfRange:
+		return tr("floating point constant is out of range");
 	// the following statuses used during development
 	case Status::BUG_NotYetImplemented:
 		return tr("BUG: not yet implemented");

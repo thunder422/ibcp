@@ -280,7 +280,8 @@ void Tester::parseInput(const QString &testInput)
 	do
 	{
 		TokenPtr token {parser.token()};
-		more = printToken(token, true) && !token->isCode(EOL_Code);
+		more = printToken(token, parser.errorStatus(), true)
+			&& !token->isCode(EOL_Code);
 	}
 	while (more);
 }
@@ -494,14 +495,15 @@ static const char *tokenTypeName(Token::Type type)
 
 
 // function to print the contents of a token
-bool Tester::printToken(const TokenPtr &token, bool tab)
+bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
 
 	if (token->isType(Token::Type::Error))
 	{
-		printError(token->column(), token->length(), token->string());
+		printError(token->column(), token->length(),
+			Token::message(errorStatus));
 		return false;
 	}
 	QString info("  ");
@@ -579,8 +581,7 @@ bool Tester::printToken(const TokenPtr &token, bool tab)
 
 
 // function to print a token with an error
-void Tester::printError(int column, int length,
-	const QString &error)
+void Tester::printError(int column, int length, const QString &error)
 {
 	if (length < 0)  // alternate column?
 	{

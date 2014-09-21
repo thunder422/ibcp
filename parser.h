@@ -25,7 +25,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <QCoreApplication>
 #include <QString>
 
 #include "token.h"
@@ -35,8 +34,6 @@ class Table;
 
 class Parser
 {
-	Q_DECLARE_TR_FUNCTIONS(Parser)
-
 public:
 	explicit Parser(void);
 	void setInput(const QString &input)
@@ -46,6 +43,10 @@ public:
 		m_operandState = false;
 	}
 	TokenPtr token(bool operandState = false);
+	Status errorStatus()
+	{
+		return m_errorStatus;
+	}
 
 private:
 	// main functions
@@ -54,6 +55,30 @@ private:
 	bool getNumber(void);
 	bool getString(void);
 	bool getOperator(void);
+
+	// set token error function
+	void setError(Status status, DataType dataType = DataType::Double)
+	{
+		m_errorStatus = status;
+		m_token->setType(Token::Type::Error);
+		m_token->setLength(1);
+		m_token->setDataType(dataType);
+	}
+	void setErrorColumn(Status status, int column)
+	{
+		m_errorStatus = status;
+		m_token->setType(Token::Type::Error);
+		// assumes length=1, specifies alternate column
+		m_token->setLength(-column);
+		m_token->setDataType(DataType::Double);
+	}
+	void setErrorLength(Status status, int len)
+	{
+		m_errorStatus = status;
+		m_token->setType(Token::Type::Error);
+		m_token->setLength(len);
+		m_token->setDataType(DataType::Double);
+	}
 
 	// support functions
 	void skipWhitespace();
@@ -64,6 +89,7 @@ private:
 	int m_pos;				// index to current position in input string
 	TokenPtr m_token;		// pointer to working token (to be returned)
 	bool m_operandState;	// currently operand state flag (2011-03-27)
+	Status m_errorStatus;	// status code of last detected error
 };
 
 

@@ -90,7 +90,7 @@ private:
 		// no 'tr()' for this string - must match expected results file
 		m_cout << endl << "Input: " << inputLine << endl;
 	}
-	bool printToken(const TokenPtr &token, bool tab);
+	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
 	void printError(int column, int length, const QString &error);
 
 	QString m_programName;			// name of program

@@ -117,10 +117,9 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 
 	if (status != Status::Done)
 	{
-		// error token is in the output list - don't delete it
 		m_output.setError(token);
-		m_output.setErrorMessage(status == Status::Parser
-			? token->string() : Token::message(status));
+		m_output.setErrorMessage(Token::message(status == Status::Parser
+			? m_parser->errorStatus() : status));
 		cleanUp();
 	}
 	return std::move(m_output);

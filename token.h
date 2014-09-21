@@ -228,29 +228,6 @@ public:
 		m_index = index;
 	}
 
-	// set error functions
-	void setError(const QString &msg, DataType dataType = DataType::Double)
-	{
-		m_length = 1;
-		m_type = Type::Error;
-		m_dataType = dataType;
-		m_string = msg;
-	}
-	void setError(int column, const QString &msg)
-	{
-		m_length = -column;  // assume length=1, specifies alternate column
-		m_type = Type::Error;
-		m_dataType = DataType::Double;
-		m_string = msg;
-	}
-	void setError(const QString &msg, int len)
-	{
-		m_length = len;
-		m_type = Type::Error;
-		m_dataType = DataType::Double;
-		m_string = msg;
-	}
-
 	// token information functions
 	bool hasParen(void) const
 	{

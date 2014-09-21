@@ -27,7 +27,8 @@
 
 
 Parser::Parser(void) :
-	m_table(Table::instance())
+	m_table(Table::instance()),
+	m_errorStatus {}
 {
 
 }
@@ -44,6 +45,7 @@ TokenPtr Parser::token(bool operandState)
 	m_operandState = operandState;
 	skipWhitespace();
 	m_token = std::make_shared<Token>(m_pos);  // create new token to return
+	m_errorStatus = Status{};
 	if (m_input[m_pos].isNull())
 	{
 		m_table.setToken(m_token, EOL_Code);
@@ -51,7 +53,7 @@ TokenPtr Parser::token(bool operandState)
 	else if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		m_token->setError(tr("unrecognizable character"), DataType::None);
+		setError(Status::UnrecognizedChar, DataType::None);
 	}
 	return std::move(m_token);  // token may contain an error
 }
@@ -272,17 +274,6 @@ void Parser::skipWhitespace(void)
 
 bool Parser::getNumber(void)
 {
-	QString ExpNonZeroDigit_ErrMsg(tr("expected non-zero leading digit in "
-		"numeric constant"));
-	QString ExpDigitsOrSngDP_ErrMsg(tr("expected digits or single decimal "
-		"point in floating point constant"));
-	QString ExpManDigits_ErrMsg(tr("expected digits in mantissa of floating "
-		"point constant"));
-	QString ExpExpDigits_ErrMsg(tr("expected sign or digits for exponent in "
-		"floating point constant"));
-	QString ExpDigits_ErrMsg(tr("expected digits in floating point constant"));
-	QString FPOutOfRange_ErrMsg(tr("floating point constant is out of range"));
-
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
 	bool sign {};				// have negative sign flag (2011-03-27)
@@ -310,7 +301,7 @@ bool Parser::getNumber(void)
 						// and second character is not a decimal point,
 						// and second character is a digit
 						// then this is in invalid number
-						m_token->setError(ExpNonZeroDigit_ErrMsg);
+						setError(Status::ExpNonZeroDigit);
 						return true;
 					}
 				}
@@ -322,7 +313,7 @@ bool Parser::getNumber(void)
 			{
 				if (!digits)  // no digits found?
 				{
-					m_token->setError(ExpDigitsOrSngDP_ErrMsg, 2);
+					setErrorLength(Status::ExpDigitsOrSngDP, 2);
 					return true;
 				}
 				break;  // exit loop to process string
@@ -342,7 +333,7 @@ bool Parser::getNumber(void)
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				m_token->setError(ExpManDigits_ErrMsg);
+				setError(Status::ExpManDigits);
 				return true;
 			}
 			pos++;  // move past 'e' or 'E'
@@ -359,7 +350,7 @@ bool Parser::getNumber(void)
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				m_token->setError(pos, ExpExpDigits_ErrMsg);
+				setErrorColumn(Status::ExpExpDigits, pos);
 				return true;
 			}
 			decimal = true;  // process as double
@@ -382,7 +373,7 @@ bool Parser::getNumber(void)
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				m_token->setError(ExpDigits_ErrMsg);
+				setError(Status::ExpDigits);
 				return true;
 			}
 			else
@@ -425,7 +416,7 @@ bool Parser::getNumber(void)
 	if (!ok)
 	{
 		// overflow or underflow, constant is not valid
-		m_token->setError(FPOutOfRange_ErrMsg, len);
+		setErrorLength(Status::FPOutOfRange, len);
 		return true;
 	}
 

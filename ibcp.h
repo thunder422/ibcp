@@ -67,6 +67,14 @@ enum class Status
 	ExpExprCommaPfnOrEnd,
 	ExpOpSemiCommaOrEnd,
 	ExpIntConst,
+	// the following are parser errors
+	UnrecognizedChar,
+	ExpNonZeroDigit,
+	ExpDigitsOrSngDP,
+	ExpManDigits,
+	ExpExpDigits,
+	ExpDigits,
+	FPOutOfRange,
 	// the following statuses used during development
 	BUG_NotYetImplemented,
 	BUG_HoldStackNotEmpty,
