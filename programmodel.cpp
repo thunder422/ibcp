@@ -308,7 +308,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
 				rpnList.errorColumn(), rpnList.errorLength(),
-				rpnList.errorMessage());
+				Token::message(rpnList.errorStatus()));
 		}
 	}
 

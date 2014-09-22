@@ -297,7 +297,7 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 	if (rpnList.hasError())
 	{
 		printError(rpnList.errorColumn(), rpnList.errorLength(),
-			rpnList.errorMessage());
+			Token::message(rpnList.errorStatus()));
 		rpnList.clear();  // return an empty list
 	}
 	else  // no error, translate line and if selected recreate it

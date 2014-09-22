@@ -118,8 +118,8 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	if (status != Status::Done)
 	{
 		m_output.setError(token);
-		m_output.setErrorMessage(Token::message(status == Status::Parser
-			? m_parser->errorStatus() : status));
+		m_output.setErrorStatus(status == Status::Parser
+			? m_parser->errorStatus() : status);
 		cleanUp();
 	}
 	return std::move(m_output);
