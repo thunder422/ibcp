@@ -91,7 +91,7 @@ private:
 		m_cout << endl << "Input: " << inputLine << endl;
 	}
 	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
-	void printError(int column, int length, const QString &error);
+	void printError(int column, int length, Status status);
 
 	QString m_programName;			// name of program
 	int m_option;					// selection option

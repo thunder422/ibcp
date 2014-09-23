@@ -131,7 +131,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	}
 
 	m_guiActive = true;
-	statusBarUpdate("");
+	statusBarUpdate(Status{});
 }
 
 
@@ -176,11 +176,12 @@ void MainWindow::statusBarCreate(void)
 
 // function to update the status bar
 
-void MainWindow::statusBarUpdate(const QString &message)
+void MainWindow::statusBarUpdate(Status status)
 {
 	m_statusPositionLabel->setText(QString(" %1:%2 ")
 		.arg(m_editBox->lineNumber()).arg(m_editBox->column() + 1));
-	m_statusMessageLabel->setText(message);
+	m_statusMessageLabel->setText(status == Status{}
+		? "" : Token::message(status));
 }
 
 
@@ -213,8 +214,8 @@ void MainWindow::editBoxSetActive(EditBox *editBox)
 	connect(editBox, SIGNAL(errorsAvailable(bool)),
 		ui->actionGoPrevError, SLOT(setEnabled(bool)));
 
-	connect(editBox, SIGNAL(cursorChanged(QString)),
-		this, SLOT(statusBarUpdate(QString)));
+	connect(editBox, SIGNAL(cursorChanged(Status)),
+		this, SLOT(statusBarUpdate(Status)));
 
 	// set context actions for edit box context menu
 	editBox->addActions(m_contextActions);

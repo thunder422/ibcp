@@ -297,7 +297,7 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 	if (rpnList.hasError())
 	{
 		printError(rpnList.errorColumn(), rpnList.errorLength(),
-			Token::message(rpnList.errorStatus()));
+			rpnList.errorStatus());
 		rpnList.clear();  // return an empty list
 	}
 	else  // no error, translate line and if selected recreate it
@@ -432,7 +432,7 @@ void Tester::encodeInput(QString &testInput)
 		if (errorItem)
 		{
 			printError(errorItem->column(), errorItem->length(),
-				errorItem->message());
+				errorItem->status());
 		}
 		else  // get text of encoded line and output it
 		{
@@ -502,8 +502,7 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 
 	if (token->isType(Token::Type::Error))
 	{
-		printError(token->column(), token->length(),
-			Token::message(errorStatus));
+		printError(token->column(), token->length(), errorStatus);
 		return false;
 	}
 	QString info("  ");
@@ -581,7 +580,7 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 
 
 // function to print a token with an error
-void Tester::printError(int column, int length, const QString &error)
+void Tester::printError(int column, int length, Status status)
 {
 	if (length < 0)  // alternate column?
 	{
@@ -589,7 +588,7 @@ void Tester::printError(int column, int length, const QString &error)
 		length	= 1;
 	}
 	m_cout << QString(" ").repeated(7 + column) << QString("^").repeated(length)
-		<< "-- " << error << endl;
+		<< "-- " << Token::message(status) << endl;
 }
 
 
