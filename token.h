@@ -29,7 +29,6 @@
 #include <string>
 #include <unordered_map>
 
-#include <QCoreApplication>
 #include <QString>
 
 #include "ibcp.h"
@@ -41,8 +40,6 @@ using TokenPtr = std::shared_ptr<Token>;
 
 class Token
 {
-	Q_DECLARE_TR_FUNCTIONS(Token)
-
 public:
 	// changes to Type may require changes to initializers
 	// for s_hasParen and s_precedence maps
@@ -253,9 +250,6 @@ public:
 
 	// recreate text for token
 	std::string text();
-
-	// static member functions
-	static const QString message(Status status);
 
 private:
 	// static members

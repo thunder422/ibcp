@@ -35,6 +35,7 @@
 #include "editbox.h"
 #include "programmodel.h"
 #include "recentfiles.h"
+#include "statusmessage.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -181,7 +182,7 @@ void MainWindow::statusBarUpdate(Status status)
 	m_statusPositionLabel->setText(QString(" %1:%2 ")
 		.arg(m_editBox->lineNumber()).arg(m_editBox->column() + 1));
 	m_statusMessageLabel->setText(status == Status{}
-		? "" : Token::message(status));
+		? "" : StatusMessage::text(status));
 }
 
 

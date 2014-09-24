@@ -32,6 +32,7 @@
 #include "commandline.h"
 #include "table.h"
 #include "parser.h"
+#include "statusmessage.h"
 
 
 // function to process a test input file specified on the command line
@@ -588,7 +589,7 @@ void Tester::printError(int column, int length, Status status)
 		length	= 1;
 	}
 	m_cout << QString(" ").repeated(7 + column) << QString("^").repeated(length)
-		<< "-- " << Token::message(status) << endl;
+		<< "-- " << StatusMessage::text(status) << endl;
 }
 
 

@@ -186,6 +186,7 @@ set(ibcp_SOURCES
 	recentfiles.cpp
 	recreator.cpp
 	rpnlist.cpp
+	statusmessage.cpp
 	table.cpp
 	token.cpp
 	translator.cpp

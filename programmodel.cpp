@@ -24,6 +24,7 @@
 
 #include "programmodel.h"
 #include "rpnlist.h"
+#include "statusmessage.h"
 #include "table.h"
 
 
@@ -139,7 +140,8 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 	{
 		const ErrorItem &errorItem {m_errors[lineInfo.errIndex]};
 		string.append(QString(" ERROR %1:%2 %3").arg(errorItem.column())
-			.arg(errorItem.length()).arg(Token::message(errorItem.status())));
+			.arg(errorItem.length())
+			.arg(StatusMessage::text(errorItem.status())));
 	}
 
 	return string;
