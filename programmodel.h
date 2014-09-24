@@ -244,7 +244,7 @@ public:
 	// error access functions
 	bool errorFindNext(int &lineNumber, int &column, bool &wrapped) const;
 	bool errorFindPrev(int &lineNumber, int &column, bool &wrapped) const;
-	QString errorMessage(int lineNumber) const;
+	Status errorStatus(int lineNumber) const;
 
 signals:
 	void lineCountChanged(int newLineCount);

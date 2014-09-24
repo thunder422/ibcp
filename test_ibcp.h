@@ -90,8 +90,8 @@ private:
 		// no 'tr()' for this string - must match expected results file
 		m_cout << endl << "Input: " << inputLine << endl;
 	}
-	bool printToken(const TokenPtr &token, bool tab);
-	void printError(int column, int length, const QString &error);
+	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
+	void printError(int column, int length, Status status);
 
 	QString m_programName;			// name of program
 	int m_option;					// selection option

@@ -117,11 +117,11 @@ public:
 
 
 // translate functions
-Token::Status inputTranslate(Translator &translator, TokenPtr commandToken,
+Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token);
-Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
+Status letTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token);
-Token::Status printTranslate(Translator &translator, TokenPtr commandToken,
+Status printTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token);
 
 

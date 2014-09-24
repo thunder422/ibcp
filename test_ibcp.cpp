@@ -32,6 +32,7 @@
 #include "commandline.h"
 #include "table.h"
 #include "parser.h"
+#include "statusmessage.h"
 
 
 // function to process a test input file specified on the command line
@@ -280,7 +281,8 @@ void Tester::parseInput(const QString &testInput)
 	do
 	{
 		TokenPtr token {parser.token()};
-		more = printToken(token, true) && !token->isCode(EOL_Code);
+		more = printToken(token, parser.errorStatus(), true)
+			&& !token->isCode(EOL_Code);
 	}
 	while (more);
 }
@@ -296,7 +298,7 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 	if (rpnList.hasError())
 	{
 		printError(rpnList.errorColumn(), rpnList.errorLength(),
-			rpnList.errorMessage());
+			rpnList.errorStatus());
 		rpnList.clear();  // return an empty list
 	}
 	else  // no error, translate line and if selected recreate it
@@ -431,7 +433,7 @@ void Tester::encodeInput(QString &testInput)
 		if (errorItem)
 		{
 			printError(errorItem->column(), errorItem->length(),
-				errorItem->message());
+				errorItem->status());
 		}
 		else  // get text of encoded line and output it
 		{
@@ -494,14 +496,14 @@ static const char *tokenTypeName(Token::Type type)
 
 
 // function to print the contents of a token
-bool Tester::printToken(const TokenPtr &token, bool tab)
+bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
 
 	if (token->isType(Token::Type::Error))
 	{
-		printError(token->column(), token->length(), token->string());
+		printError(token->column(), token->length(), errorStatus);
 		return false;
 	}
 	QString info("  ");
@@ -579,8 +581,7 @@ bool Tester::printToken(const TokenPtr &token, bool tab)
 
 
 // function to print a token with an error
-void Tester::printError(int column, int length,
-	const QString &error)
+void Tester::printError(int column, int length, Status status)
 {
 	if (length < 0)  // alternate column?
 	{
@@ -588,7 +589,7 @@ void Tester::printError(int column, int length,
 		length	= 1;
 	}
 	m_cout << QString(" ").repeated(7 + column) << QString("^").repeated(length)
-		<< "-- " << error << endl;
+		<< "-- " << StatusMessage::text(status) << endl;
 }
 
 

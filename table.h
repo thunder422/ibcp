@@ -25,6 +25,8 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include <QCoreApplication>
+
 #include <memory>
 
 #include "ibcp.h"
@@ -76,7 +78,7 @@ class Recreator;
 class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 
-typedef Token::Status (*TranslateFunction)(Translator &translator,
+typedef Status (*TranslateFunction)(Translator &translator,
 	TokenPtr commandToken, TokenPtr &token);
 typedef quint16 (*EncodeFunction)(ProgramModel *programUnit,
 	const TokenPtr &token);
@@ -88,7 +90,7 @@ typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 class Table
 {
-	Q_DECLARE_TR_FUNCTIONS(Test)
+	Q_DECLARE_TR_FUNCTIONS(Table)
 
 public:
 	// function to return a reference to the single table instance

@@ -55,21 +55,20 @@ public:
 	RpnList translate(const QString &input, TestMode testMode = TestMode::No);
 
 	// Get Functions
-	Token::Status getCommands(TokenPtr &token);
-	Token::Status getExpression(TokenPtr &token, DataType dataType,
-		int level = 0);
-	Token::Status getOperand(TokenPtr &token, DataType dataType,
+	Status getCommands(TokenPtr &token);
+	Status getExpression(TokenPtr &token, DataType dataType, int level = 0);
+	Status getOperand(TokenPtr &token, DataType dataType,
 		Reference reference = Reference::None);
-	Token::Status getToken(TokenPtr &token, DataType dataType = DataType{});
+	Status getToken(TokenPtr &token, DataType dataType = DataType{});
 
 	// Public Processing Functions
-	Token::Status processFinalOperand(TokenPtr &token,
+	Status processFinalOperand(TokenPtr &token,
 		TokenPtr token2 = TokenPtr{}, int operandIndex = 0);
-	Token::Status processDoneStackTop(TokenPtr &token, int operandIndex = 0,
+	Status processDoneStackTop(TokenPtr &token, int operandIndex = 0,
 		TokenPtr *first = nullptr, TokenPtr *last = nullptr);
 
 	// Public Support Functions
-	static Token::Status expectedErrStatus(DataType dataType,
+	static Status expectedErrStatus(DataType dataType,
 		Reference reference = Reference::None);
 
 	// Table Access Function
@@ -118,11 +117,11 @@ public:
 
 private:
 	// Private Processing Functions
-	Token::Status processCommand(TokenPtr &commandToken);
-	Token::Status processInternalFunction(TokenPtr &token);
-	Token::Status processParenToken(TokenPtr &token);
-	Token::Status processOperator(TokenPtr &token);
-	Token::Status processFirstOperand(TokenPtr &token);
+	Status processCommand(TokenPtr &commandToken);
+	Status processInternalFunction(TokenPtr &token);
+	Status processParenToken(TokenPtr &token);
+	Status processOperator(TokenPtr &token);
+	Status processFirstOperand(TokenPtr &token);
 
 	// Private Support Functions
 	enum class Popped {No, Yes};

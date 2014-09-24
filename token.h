@@ -29,7 +29,6 @@
 #include <string>
 #include <unordered_map>
 
-#include <QCoreApplication>
 #include <QString>
 
 #include "ibcp.h"
@@ -41,8 +40,6 @@ using TokenPtr = std::shared_ptr<Token>;
 
 class Token
 {
-	Q_DECLARE_TR_FUNCTIONS(Token)
-
 public:
 	// changes to Type may require changes to initializers
 	// for s_hasParen and s_precedence maps
@@ -58,62 +55,6 @@ public:
 		NoParen,
 		Paren,
 		Error
-	};
-
-	enum class Status
-	{
-		Good,
-		Done,
-		Parser,
-		ExpCmd,
-		ExpExpr,
-		ExpExprOrEnd,
-		ExpOpOrEnd,
-		ExpBinOpOrEnd,
-		ExpEqualOrComma,
-		ExpComma,
-		ExpAssignItem,
-		ExpOpOrComma,
-		ExpOpCommaOrParen,
-		ExpOpOrParen,
-		ExpBinOpOrComma,
-		ExpBinOpCommaOrParen,
-		ExpBinOpOrParen,
-		ExpNumExpr,
-		ExpStrExpr,
-		ExpSemiCommaOrEnd,
-		ExpCommaSemiOrEnd,
-		ExpSemiOrComma,
-		ExpOpSemiOrComma,
-		ExpDblVar,
-		ExpIntVar,
-		ExpStrVar,
-		ExpVar,
-		ExpStrItem,
-		ExpEndStmt,
-		ExpExprPfnOrEnd,
-		ExpExprCommaPfnOrEnd,
-		ExpOpSemiCommaOrEnd,
-		ExpIntConst,
-		// the following statuses used during development
-		BUG_NotYetImplemented,
-		BUG_HoldStackNotEmpty,
-		BUG_DoneStackNotEmpty,
-		BUG_DoneStackEmptyFindCode,
-		BUG_UnexpectedCloseParen,
-		BUG_DoneStackEmpty,
-		BUG_InvalidDataType,
-		BUG_UnexpToken,
-		BUG_Debug1,
-		BUG_Debug2,
-		BUG_Debug3,
-		BUG_Debug4,
-		BUG_Debug5,
-		BUG_Debug6,
-		BUG_Debug7,
-		BUG_Debug8,
-		BUG_Debug9,
-		BUG_Debug
 	};
 
 	explicit Token(int column = -1)
@@ -284,29 +225,6 @@ public:
 		m_index = index;
 	}
 
-	// set error functions
-	void setError(const QString &msg, DataType dataType = DataType::Double)
-	{
-		m_length = 1;
-		m_type = Type::Error;
-		m_dataType = dataType;
-		m_string = msg;
-	}
-	void setError(int column, const QString &msg)
-	{
-		m_length = -column;  // assume length=1, specifies alternate column
-		m_type = Type::Error;
-		m_dataType = DataType::Double;
-		m_string = msg;
-	}
-	void setError(const QString &msg, int len)
-	{
-		m_length = len;
-		m_type = Type::Error;
-		m_dataType = DataType::Double;
-		m_string = msg;
-	}
-
 	// token information functions
 	bool hasParen(void) const
 	{
@@ -332,9 +250,6 @@ public:
 
 	// recreate text for token
 	std::string text();
-
-	// static member functions
-	static const QString message(Status status);
 
 private:
 	// static members

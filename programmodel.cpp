@@ -24,6 +24,7 @@
 
 #include "programmodel.h"
 #include "rpnlist.h"
+#include "statusmessage.h"
 #include "table.h"
 
 
@@ -139,7 +140,8 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 	{
 		const ErrorItem &errorItem {m_errors[lineInfo.errIndex]};
 		string.append(QString(" ERROR %1:%2 %3").arg(errorItem.column())
-			.arg(errorItem.length()).arg(errorItem.message()));
+			.arg(errorItem.length())
+			.arg(StatusMessage::text(errorItem.status())));
 	}
 
 	return string;
@@ -308,7 +310,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		{
 			errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
 				rpnList.errorColumn(), rpnList.errorLength(),
-				rpnList.errorMessage());
+				rpnList.errorStatus());
 		}
 	}
 
@@ -607,11 +609,11 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 }
 
 
-// function to return error message for a line (blank if no error)
-QString ProgramModel::errorMessage(int lineNumber) const
+// function to return error status for a line (default if no error)
+Status ProgramModel::errorStatus(int lineNumber) const
 {
 	int errIndex {m_errors.findIndex(lineNumber)};
-	return errIndex == -1 ? QString() : m_errors.at(errIndex).message();
+	return errIndex == -1 ? Status{} : m_errors.at(errIndex).status();
 }
 
 

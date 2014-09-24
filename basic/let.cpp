@@ -29,10 +29,10 @@
 
 
 // LET command translate function
-Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
+Status letTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
-	Token::Status status;
+	Status status;
 	int column;
 	bool hidden;
 	bool done;
@@ -53,7 +53,7 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 	do
 	{
 		if ((status = translator.getOperand(token, dataType,
-			Translator::Reference::All)) != Token::Status::Good)
+			Translator::Reference::All)) != Status::Good)
 		{
 			if (token->column() > column)
 			{
@@ -61,18 +61,17 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 			}
 			// next token determines error
 			TokenPtr nextToken;
-			if ((status = translator.getToken(nextToken))
-				!= Token::Status::Good)
+			if ((status = translator.getToken(nextToken)) != Status::Good)
 			{
-				status = Token::Status::ExpCmd;
+				status = Status::ExpCmd;
 			}
 			if (nextToken->isCode(Comma_Code) || nextToken->isCode(Eq_Code))
 			{
-				status = Token::Status::ExpAssignItem;
+				status = Status::ExpAssignItem;
 			}
 			else
 			{
-				status = Token::Status::ExpCmd;
+				status = Status::ExpCmd;
 			}
 			return status;
 		}
@@ -94,7 +93,7 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 			{
 				translator.doneStackPop();
 			}
-			return Token::Status::ExpEqualOrComma;
+			return Status::ExpEqualOrComma;
 		}
 
 		// check if this is a sub-string assignment
@@ -117,7 +116,7 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 			// change token to appropriate assign code
 			translator.table().setToken(token, Assign_Code);
 			status = translator.processDoneStackTop(token);
-			if (status != Token::Status::Good)
+			if (status != Status::Good)
 			{
 				return status;
 			}
@@ -134,13 +133,11 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 	while (!done);
 
 	// get expression for value to assign
-	if ((status = translator.getExpression(token, dataType))
-		!= Token::Status::Done)
+	if ((status = translator.getExpression(token, dataType)) != Status::Done)
 	{
-		if (status == Token::Status::Parser
-			&& token->isDataType(DataType::None))
+		if (status == Status::Parser && token->isDataType(DataType::None))
 		{
-			status = Token::Status::ExpOpOrEnd;
+			status = Status::ExpOpOrEnd;
 		}
 		return status;
 	}
@@ -185,10 +182,10 @@ Token::Status letTranslate(Translator &translator, TokenPtr commandToken,
 	// check terminating token for end-of-statement
 	if (!translator.table().hasFlag(token, EndStmt_Flag))
 	{
-		return Token::Status::ExpOpOrEnd;
+		return Status::ExpOpOrEnd;
 	}
 
-	return Token::Status::Done;
+	return Status::Done;
 }
 
 

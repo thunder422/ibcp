@@ -30,6 +30,7 @@
 #include <QLabel>
 #include <QMainWindow>
 
+#include "ibcp.h"
 #include "commandline.h"
 #include "editbox.h"
 #include "program.h"
@@ -64,7 +65,7 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void statusBarUpdate(const QString &message);
+	void statusBarUpdate(Status status);
 	void on_actionNew_triggered(void);
 	void on_actionOpen_triggered(void);
 	void on_actionClearRecent_triggered(void);

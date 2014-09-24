@@ -489,7 +489,7 @@ void EditBox::cursorMoved(void)
 		// there is a modified line and cursor moved from that line
 		captureModifiedLine();
 	}
-	emit cursorChanged(m_programUnit->errorMessage(lineNumber()));
+	emit cursorChanged(m_programUnit->errorStatus(lineNumber()));
 }
 
 

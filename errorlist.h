@@ -28,6 +28,8 @@
 #include <QList>
 #include <QString>
 
+#include "ibcp.h"
+
 
 // class for holding details for an error of a program line
 class ErrorItem
@@ -41,8 +43,8 @@ public:
 	};
 	ErrorItem() : m_type {Type::None} {}
 	ErrorItem(Type type, int lineNumber, int column, int length,
-		const QString &message) :  m_type {type}, m_lineNumber {lineNumber},
-		m_column {column}, m_length {length}, m_message {message} {}
+		Status status) :  m_type {type}, m_lineNumber {lineNumber},
+		m_column {column}, m_length {length}, m_status {status} {}
 
 	bool isEmpty(void) const
 	{
@@ -76,9 +78,9 @@ public:
 	{
 		return m_length >= 0 ? m_length : 1;
 	}
-	QString message(void) const
+	Status status(void) const
 	{
-		return m_message;
+		return m_status;
 	}
 
 private:
@@ -86,7 +88,7 @@ private:
 	int m_lineNumber;				// line number of error
 	int m_column;					// column of error
 	int m_length;					// length of error
-	QString m_message;				// message of error
+	Status m_status;				// status code of error
 };
 
 

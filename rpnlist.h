@@ -87,13 +87,13 @@ public:
 		m_codeSize{other.m_codeSize},
 		m_errorColumn{other.m_errorColumn},
 		m_errorLength{other.m_errorLength},
-		m_errorMessage{other.m_errorMessage}
+		m_errorStatus{other.m_errorStatus}
 	{
 		other.m_list.clear();
 		other.m_codeSize = 0;
 		other.m_errorColumn = -1;
 		other.m_errorLength = -1;
-		other.m_errorMessage.clear();
+		other.m_errorStatus = Status{};
 	}
 	RpnList &operator=(RpnList &&other)
 	{
@@ -101,7 +101,7 @@ public:
 		std::swap(m_codeSize, other.m_codeSize);
 		std::swap(m_errorColumn, other.m_errorColumn);
 		std::swap(m_errorLength, other.m_errorLength);
-		std::swap(m_errorMessage, other.m_errorMessage);
+		std::swap(m_errorStatus, other.m_errorStatus);
 		return *this;
 	}
 
@@ -177,13 +177,13 @@ public:
 		return m_errorLength;
 	}
 
-	void setErrorMessage(QString errorMessage)
+	void setErrorStatus(Status errorStatus)
 	{
-		m_errorMessage = errorMessage;
+		m_errorStatus = errorStatus;
 	}
-	QString errorMessage(void) const
+	Status errorStatus(void) const
 	{
-		return m_errorMessage;
+		return m_errorStatus;
 	}
 
 private:
@@ -191,7 +191,7 @@ private:
 	int m_codeSize;					// size of code required for list
 	int m_errorColumn;				// column of error that occurred
 	int m_errorLength;				// length of error that occurred
-	QString m_errorMessage;			// message of error that occurred
+	Status m_errorStatus;			// message of error that occurred
 };
 
 

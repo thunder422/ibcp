@@ -66,7 +66,7 @@ protected:
 	void resizeEvent(QResizeEvent *event);
 
 signals:
-	void cursorChanged(const QString &message);
+	void cursorChanged(Status status);
 	void errorsAvailable(bool available);
 
 public slots:
