@@ -22,60 +22,67 @@
 //
 //	2013-04-10	initial version
 
+#include <algorithm>
+#include <utility>
+
 #include "errorlist.h"
 
 
 // function to look for an error by line number
 //
-//   - uses a binary search to find the line number
+//   - uses standard lower bound to find the line number
 //   - returns the index of the line number in the error list
-//   - returns the index of the closet error if the line number
-//     specified does not have an error
+//   - returns iterator to closet error if line number does not have error
+//   - returns end iterator if line number is higher than last line number
+
+std::vector<ErrorItem>::const_iterator ErrorList::findIterator(int lineNumber)
+	const
+{
+	// lamda function for comparing error items
+	auto less = [](const ErrorItem &a, const ErrorItem &b)
+	{
+		return a.lineNumber() < b.lineNumber();
+	};
+
+	// return iterator for line number (or closest if line does not have error)
+	return std::lower_bound(m_list.begin(), m_list.end(),
+		ErrorItem {lineNumber}, less);
+}
+
+
+// function to look for an error by line number
+//
+//   - first gets iterator to error for line number
+//   - converts iterator to index by subtracting begin iterator
+//   - returns the index of the line number in the error list
+//   - returns the index of closet error if line number does not have error
 //   - returns one past end of list if line number higher than last line number
 
-int ErrorList::find(int lineNumber) const
+size_t ErrorList::find(int lineNumber) const
 {
-	int lo {0};
-	int hi {count()};
-	int mid;
-
-	while ((mid = lo + (hi - lo) / 2) < hi)
-	{
-		int match {lineNumber - at(mid).lineNumber()};
-		if (match == 0)
-		{
-			break;
-		}
-		else if (match < 0)
-		{
-			hi = mid;
-		}
-		else
-		{
-			lo = mid + 1;
-		}
-	}
-	return mid;
+	return findIterator(lineNumber) - m_list.begin();
 }
 
 
 // function to find the index of the error for a line number
 //
 //   - returns index of error in list for line number
-//   - returns -1 if the line number does not have an error
+//   - returns size of list if the line number does not have an error
 
-int ErrorList::findIndex(int lineNumber) const
+size_t ErrorList::findIndex(int lineNumber) const
 {
-	int errIndex {find(lineNumber)};
-	return errIndex < size() && lineNumber == at(errIndex).lineNumber()
-		? errIndex : -1;
+	auto iterator = findIterator(lineNumber);
+	if (iterator != m_list.end() && lineNumber != iterator->lineNumber()) {
+		iterator = m_list.end();
+	}
+	return iterator - m_list.begin();
 }
 
 
 // overloaded function for inserting an error into the list
 void ErrorList::insert(int index, const ErrorItem &value)
 {
-	QList<ErrorItem>::insert(index, value);
+	m_list.insert(m_list.begin() + index, value);
 	m_changed = true;
 }
 
@@ -83,7 +90,7 @@ void ErrorList::insert(int index, const ErrorItem &value)
 // overloaded function for removing an error from the list
 void ErrorList::removeAt(int index)
 {
-	QList<ErrorItem>::removeAt(index);
+	m_list.erase(m_list.begin() + index);
 	m_changed = true;
 }
 
@@ -91,7 +98,7 @@ void ErrorList::removeAt(int index)
 // overloaded function for replacing an error in the list
 void ErrorList::replace(int index, const ErrorItem &value)
 {
-	QList<ErrorItem>::replace(index, value);
+	m_list[index] = value;
 	m_changed = true;
 }
 
@@ -99,7 +106,7 @@ void ErrorList::replace(int index, const ErrorItem &value)
 // function to increment line number of an error in the list
 void ErrorList::incrementLineNumber(int index)
 {
-	(*this)[index].incrementLineNumber();
+	m_list[index].incrementLineNumber();
 	m_changed = true;
 }
 
@@ -107,7 +114,7 @@ void ErrorList::incrementLineNumber(int index)
 // function to decrement line number of an error in the list
 void ErrorList::decrementLineNumber(int index)
 {
-	(*this)[index].decrementLineNumber();
+	m_list[index].decrementLineNumber();
 	m_changed = true;
 }
 
@@ -115,7 +122,7 @@ void ErrorList::decrementLineNumber(int index)
 // function to move the error due to inserted or deleted characters
 void ErrorList::moveColumn(int index, int chars)
 {
-	(*this)[index].moveColumn(chars);
+	m_list[index].moveColumn(chars);
 	m_changed = true;
 }
 

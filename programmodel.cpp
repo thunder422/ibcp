@@ -425,7 +425,7 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	}
 
 	// find location in error list for line number
-	int errIndex {m_errors.find(lineNumber)};
+	auto errIndex = m_errors.find(lineNumber);
 
 	if (!errorItem.isEmpty())
 	{
@@ -458,9 +458,10 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
 	int charsAdded, int charsRemoved)
 {
-	int errIndex {m_errors.findIndex(lineNumber)};
-	if (errIndex != -1)  // line has error?
+	auto errIndex = m_errors.findIndex(lineNumber);
+	if (errIndex < m_errors.count())  // line has error?
 	{
+		// WORK can use iterator for these
 		int errColumn {m_errors.at(errIndex).column()};
 		int errLength {m_errors.at(errIndex).length()};
 
@@ -491,7 +492,7 @@ void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
 void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 	bool lineDeleted)
 {
-	int errIndex;
+	size_t errIndex;
 	bool hadError;
 
 	if (lineInfo.errIndex != -1)  // has error?
@@ -544,7 +545,7 @@ bool ProgramModel::errorFindNext(int &lineNumber, int &column, bool &wrapped)
 	const
 {
 	wrapped = false;
-	int errIndex {m_errors.find(lineNumber)};
+	auto errIndex  = m_errors.find(lineNumber);
 	if (errIndex >= m_errors.count()
 		|| lineNumber > m_errors.at(errIndex).lineNumber()
 		|| (lineNumber == m_errors.at(errIndex).lineNumber()
@@ -581,7 +582,7 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 	const
 {
 	wrapped = false;
-	int errIndex {m_errors.find(lineNumber)};
+	auto errIndex = m_errors.find(lineNumber);
 	if (errIndex >= m_errors.count()
 		|| lineNumber < m_errors.at(errIndex).lineNumber()
 		|| (lineNumber == m_errors.at(errIndex).lineNumber()
@@ -591,7 +592,7 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 		// before current error, go to previous error
 		errIndex--;
 	}
-	if (errIndex < 0)  // past first error?
+	if (errIndex > m_errors.count())  // past first error?
 	{
 		errIndex = m_errors.count() - 1;
 		// check if already at beginning of single error in the program
@@ -612,8 +613,9 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 // function to return error status for a line (default if no error)
 Status ProgramModel::errorStatus(int lineNumber) const
 {
-	int errIndex {m_errors.findIndex(lineNumber)};
-	return errIndex == -1 ? Status{} : m_errors.at(errIndex).status();
+	auto errIndex = m_errors.findIndex(lineNumber);
+	return errIndex == m_errors.count()
+		? Status{} : m_errors.at(errIndex).status();
 }
 
 
