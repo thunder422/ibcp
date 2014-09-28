@@ -27,14 +27,11 @@
 
 #include <memory>
 
-#include <QCoreApplication>
 #include <QStringList>
 
 #include "programmodel.h"
 #include "recreator.h"
 #include "translator.h"
-
-class QTextStream;
 
 class CommandLine;
 class Token;
@@ -47,7 +44,7 @@ class Tester
 	Q_DECLARE_TR_FUNCTIONS(Test)
 
 public:
-	explicit Tester(const QStringList &args, QTextStream &cout);
+	explicit Tester(const QStringList &args, std::ostream &cout);
 
 	static QStringList options(void);
 	bool run(CommandLine *commandLine);
@@ -88,7 +85,7 @@ private:
 	void printInput(const QString &inputLine)
 	{
 		// no 'tr()' for this string - must match expected results file
-		m_cout << endl << "Input: " << inputLine << endl;
+		m_cout << "\nInput: " << inputLine.toStdString() << '\n';
 	}
 	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
 	void printError(int column, int length, Status status);
@@ -98,7 +95,7 @@ private:
 	bool m_recreate;				// recreate testing
 	QString m_testName;				// name of test
 	QString m_testFileName;			// name of test file (OptFile only)
-	QTextStream &m_cout;			// reference to output device
+	std::ostream &m_cout;			// reference to output stream
 	std::unique_ptr<Translator> m_translator;		// translator instance
 	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
 	std::unique_ptr<Recreator> m_recreator;			// recreator instance

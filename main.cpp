@@ -23,7 +23,6 @@
 //	2010-03-13	initial version
 
 #include <QtGui/QApplication>
-#include <QTextStream>
 
 #include "ibcp_config.h"  // for cmake
 #include "table.h"

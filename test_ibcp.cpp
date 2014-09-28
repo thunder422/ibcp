@@ -22,6 +22,8 @@
 //
 //	2010-03-01	initial version
 
+#include <iomanip>
+
 #include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
@@ -37,7 +39,7 @@
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
-Tester::Tester(const QStringList &args, QTextStream &cout) :
+Tester::Tester(const QStringList &args, std::ostream &cout) :
 	m_cout(cout),
 	m_translator {new Translator},
 	m_programUnit {new ProgramModel},
@@ -168,33 +170,35 @@ bool Tester::run(CommandLine *commandLine)
 
 	if (inputMode)
 	{
-		m_cout << endl;
+		m_cout << '\n';
 
 		const char *copyright {commandLine->copyrightStatement()};
 		QString line {tr(copyright).arg(commandLine->programName())
 			.arg(commandLine->copyrightYear())};
-		m_cout << line << endl;
+		m_cout << line.toStdString() << '\n';
 
 		const char **warranty {commandLine->warrantyStatement()};
 		for (int i {}; warranty[i]; i++)
 		{
 			QString line {tr(warranty[i])};
-			m_cout << line << endl;
+			m_cout << line.toStdString() << '\n';
 		}
 
-		m_cout << endl << tr("Table initialization successful.") << endl;
+		m_cout << '\n' << tr("Table initialization successful.").toStdString()
+			<< '\n';
 	}
 
 	if (inputMode)
 	{
-		m_cout << endl << tr("Testing %1...").arg(m_testName);
+		m_cout << '\n' << tr("Testing ").toStdString()
+			+ m_testName.toStdString();
 	}
 
 	for (int lineno {1};; lineno++)
 	{
 		if (inputMode)
 		{
-			m_cout << endl << tr("Input: ") << flush;
+			m_cout << '\n' << tr("Input: ").toStdString() << std::flush;
 			inputLine = input.readLine();
 			if (inputLine.isEmpty() || inputLine[0] == '\n')
 			{
@@ -243,26 +247,28 @@ bool Tester::run(CommandLine *commandLine)
 		file.close();
 		if (m_option != OptParser)
 		{
-			m_cout << endl;  // not for parser testing
+			m_cout << '\n';  // not for parser testing
 		}
 	}
 
 	if (m_option == OptEncoder)
 	{
 		// for encoder testing, output program lines
-		m_cout << "Program:" << endl;
+		m_cout << "Program:\n";
 		for (int i {}; i < m_programUnit->rowCount(); i++)
 		{
-			m_cout << i << ": " << m_programUnit->debugText(i, true) << endl;
+			m_cout << i << ": "
+				<< m_programUnit->debugText(i, true).toStdString() << '\n';
 		}
-		m_cout << m_programUnit->dictionariesDebugText();
+		m_cout << m_programUnit->dictionariesDebugText().toStdString();
 
 		if (m_recreate)
 		{
-			m_cout << endl << "Output:" << endl;
+			m_cout << "\nOutput:\n";
 			for (int i {}; i < m_programUnit->rowCount(); i++)
 			{
-				m_cout << i << ": " << m_programUnit->lineText(i) << endl;
+				m_cout << i << ": " << m_programUnit->lineText(i).toStdString()
+					<< '\n';
 			}
 		}
 	}
@@ -318,7 +324,7 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 			header = "Output";
 			rpnList.clear();
 		}
-		m_cout << header << ": " << output << ' ' << endl;
+		m_cout << header << ": " << output.toStdString() << " \n";
 	}
 	return rpnList;
 }
@@ -333,7 +339,7 @@ void Tester::recreateInput(const QString &testInput)
 	{
 		// recreate text from rpn list
 		QString output {m_recreator->recreate(rpnList)};
-		m_cout << "Output: " << output << ' ' << endl;
+		m_cout << "Output: " << output.toStdString() << " \n";
 	}
 }
 
@@ -383,7 +389,7 @@ void Tester::encodeInput(QString &testInput)
 		else  // no line index number after + or -
 		{
 			printInput(testInput);
-			m_cout << QString("        ^-- expected line index number") << endl;
+			m_cout << "        ^-- expected line index number\n";
 			return;
 		}
 	}
@@ -394,16 +400,15 @@ void Tester::encodeInput(QString &testInput)
 			&& lineIndex == m_programUnit->rowCount()))
 		{
 			printInput(testInput);
-			m_cout << QString("       %1^-- line index number out of range")
-				.arg(operation == Operation::Change ? "" : " ") << endl;
+			m_cout << "       " << (operation == Operation::Change ? "" : " ")
+				<< "^-- line index number out of range\n";
 			return;
 		}
 		if (operation == Operation::Remove && pos < testInput.length())
 		{
 			printInput(testInput);
-			m_cout << QString(" ").repeated(7 + pos)
-				<< QString("^-- no statement expected with remove line")
-				<< endl;
+			m_cout << std::string(7 + pos, ' ')
+				<< "^-- no statement expected with remove line\n";
 			return;
 		}
 	}
@@ -437,7 +442,8 @@ void Tester::encodeInput(QString &testInput)
 		}
 		else  // get text of encoded line and output it
 		{
-			m_cout << "Output: " << m_programUnit->debugText(lineIndex) << endl;
+			m_cout << "Output: "
+				<< m_programUnit->debugText(lineIndex).toStdString() << '\n';
 		}
 	}
 }
@@ -506,7 +512,7 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 		printError(token->column(), token->length(), errorStatus);
 		return false;
 	}
-	QString info("  ");
+	std::string info {"  "};
 	if (token->hasParen())
 	{
 		info = "()";
@@ -520,24 +526,22 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 	{
 		m_cout << '\t';
 	}
-	m_cout << qSetFieldWidth(2) << right << token->column() << qSetFieldWidth(0)
-		<< left << ": " << qSetFieldWidth(10) << tokenTypeName(token->type())
-		<< qSetFieldWidth(0) << info;
+	m_cout << std::setw(2) << std::right << token->column() << std::left << ": "
+		<< std::setw(10) << tokenTypeName(token->type()) << info;
 	switch (token->type())
 	{
 	case Token::Type::DefFuncN:
 	case Token::Type::NoParen:
-		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
-			<< qSetFieldWidth(0) << " |" << token->string() << '|';
+		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
+			<< " |" << token->string().toStdString() << '|';
 		break;
 	case Token::Type::DefFuncP:
 	case Token::Type::Paren:
-		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
-			<< qSetFieldWidth(0) << " |" << token->string() << "(|";
+		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
+			<< " |" << token->string().toStdString() << "(|";
 		break;
 	case Token::Type::Constant:
-		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
-			<< qSetFieldWidth(0);
+		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
 		switch (token->dataType(true))
 		{
 		case DataType::Integer:
@@ -546,13 +550,14 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 			{
 				m_cout << "," << token->value();
 			}
-			m_cout << " |" << token->string() << '|';
+			m_cout << " |" << token->string().toStdString() << '|';
 			break;
 		case DataType::Double:
-			m_cout << ' ' << token->value() << " |" << token->string() << '|';
+			m_cout << ' ' << token->value() << " |"
+				<< token->string().toStdString() << '|';
 			break;
 		case DataType::String:
-			m_cout << " |" << token->string() << '|';
+			m_cout << " |" << token->string().toStdString() << '|';
 			break;
 		default:
 		    break;
@@ -561,21 +566,20 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 	case Token::Type::Operator:
 	case Token::Type::IntFuncN:
 	case Token::Type::IntFuncP:
-		m_cout << ' ' << qSetFieldWidth(7) << dataTypeName(token->dataType())
-			<< qSetFieldWidth(0);
+		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
 		// fall thru
 	case Token::Type::Command:
 		m_cout << " " << code_name[token->code()];
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
-			m_cout << " |" << token->string() << '|';
+			m_cout << " |" << token->string().toStdString() << '|';
 		}
 		break;
 	default:
 		// nothing more to output
 		break;
 	}
-	m_cout << endl;
+	m_cout << '\n';
 	return true;
 }
 
@@ -588,8 +592,8 @@ void Tester::printError(int column, int length, Status status)
 		column = -length;
 		length	= 1;
 	}
-	m_cout << QString(" ").repeated(7 + column) << QString("^").repeated(length)
-		<< "-- " << StatusMessage::text(status) << endl;
+	m_cout << std::string(7 + column, ' ') << std::string(length, '^')
+		<< "-- " << StatusMessage::text(status).toStdString() << '\n';
 }
 
 

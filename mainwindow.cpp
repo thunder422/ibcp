@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QStringListModel>
+#include <QTextStream>
 #include <QTimer>
 
 #include "mainwindow.h"

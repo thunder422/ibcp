@@ -25,9 +25,10 @@
 #ifndef COMMANDLINE_H
 #define COMMANDLINE_H
 
+#include <iostream>
+
 #include <QCoreApplication>
 #include <QStringList>
-#include <QTextStream>
 
 class CommandLine
 {
@@ -35,7 +36,6 @@ class CommandLine
 
 public:
 	explicit CommandLine(const QStringList &args);
-	~CommandLine();
 
 	bool processed(void) const  // if processed then exit program
 	{
@@ -48,10 +48,6 @@ public:
 	QString programName(void) const
 	{
 		return m_programName;
-	}
-	QString usage(void) const
-	{
-		return m_usage;
 	}
 	QString version(void) const;
 	int copyrightYear(void) const;
@@ -69,8 +65,7 @@ public:
 	}
 
 private:
-	QTextStream &cout(FILE *stream = stdout);
-	void coutClose(void);
+	std::ostream &cout(std::ostream *stream = &std::cout);
 	bool isVersionOption(const QStringList &args);
 	bool isHelpOption(const QStringList &args) const;
 
@@ -79,8 +74,7 @@ private:
 
 	QString m_programName;
 	int m_returnCode;
-	QTextStream m_cout;
-	QString m_usage;
+	std::ostream *m_cout;
 	QString m_fileName;
 };
 

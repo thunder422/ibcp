@@ -22,6 +22,8 @@
 //
 //	2012-11-25	initial version
 
+#include <iostream>
+
 #include <QFileInfo>
 
 #include "ibcp_config.h"  // for cmake
@@ -42,7 +44,8 @@ const char *CommandLine::s_warrantyStatement[] = {
 };
 
 
-CommandLine::CommandLine(const QStringList &args)
+CommandLine::CommandLine(const QStringList &args) :
+	m_cout {nullptr}
 {
 	// get base file name of program from first argument
 	m_programName = QFileInfo(args.at(0)).baseName();
@@ -53,7 +56,8 @@ CommandLine::CommandLine(const QStringList &args)
 	QStringList options {Tester::options()};
 	// append any other options here
 	options.prepend("<program file>|-h|-?|-v");
-	m_usage = tr("usage: %1 [%2]").arg(m_programName).arg(options.join("|"));
+	std::string usage = "usage: " + m_programName.toStdString()
+		+ options.join("|").toStdString();
 
 	if (args.count() == 1)
 	{
@@ -71,8 +75,7 @@ CommandLine::CommandLine(const QStringList &args)
 	Tester tester(args, cout());
 	if (tester.hasError())
 	{
-		coutClose();  // close stdout
-		cout(stderr) << tester.errorMessage() << endl;
+		cout(&std::cerr) << tester.errorMessage().toStdString() << '\n';
 		m_returnCode = 1;
 		return;
 	}
@@ -84,8 +87,7 @@ CommandLine::CommandLine(const QStringList &args)
 		}
 		else
 		{
-			coutClose();  // close stdout
-			cout(stderr) << tester.errorMessage() << endl;
+			cout(&std::cerr) << tester.errorMessage().toStdString() << '\n';
 			m_returnCode = 1;
 		}
 		return;
@@ -101,37 +103,14 @@ CommandLine::CommandLine(const QStringList &args)
 
 	// unsupported option (NOTE: other options get checked before this)
 	m_returnCode = isHelpOption(args) ? 0 : 1;  // error if not help option
-	cout(m_returnCode == 0 ? stdout : stderr) << m_usage << endl;
+	cout(m_returnCode == 0 ? &std::cout : &std::cerr) << usage << '\n';
 }
 
 
-CommandLine::~CommandLine()
+std::ostream &CommandLine::cout(std::ostream *stream)
 {
-	coutClose();
-}
-
-
-QTextStream &CommandLine::cout(FILE *stream)
-{
-	if (!m_cout.device())
-	{
-		// setup standard output stream first time
-		QFile *output {new QFile};
-		output->open(stream, QIODevice::WriteOnly | QIODevice::Unbuffered);
-		m_cout.setDevice(output);
-	}
-	return m_cout;
-}
-
-
-
-void CommandLine::coutClose(void)
-{
-	if (m_cout.device())
-	{
-		std::unique_ptr<QIODevice> output {m_cout.device()};
-		m_cout.setDevice(0);
-	}
+	m_cout = stream;
+	return *m_cout;
 }
 
 
@@ -142,7 +121,8 @@ bool CommandLine::isVersionOption(const QStringList &args)
 	{
 		return false;  // not our option or extra/invalid options
 	}
-	cout() << tr("%1 version %2").arg(m_programName).arg(version()) << endl;
+	cout() << m_programName.toStdString() + " version "
+		+ version().toStdString() << '\n';
 	return true;
 }
 
