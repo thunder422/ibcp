@@ -105,7 +105,6 @@ public:
 		return *this;
 	}
 
-	QString text();
 	bool operator==(const RpnList &other) const;
 	bool operator!=(const RpnList &other) const
 	{

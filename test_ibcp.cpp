@@ -37,6 +37,42 @@
 #include "statusmessage.h"
 
 
+// overloaded output stream operator for abbreviated contents of rpn list
+std::ostream &operator<<(std::ostream &os, const RpnList &rpnList)
+{
+	std::unordered_map<RpnItemPtr, int> itemIndex;
+	int index {};
+
+	for (RpnItemPtr rpnItem : rpnList)
+	{
+		if (index > 0)
+		{
+			os << ' ';
+		}
+		itemIndex[rpnItem] = index++;
+		os << rpnItem->token()->text();
+		if (rpnItem->attachedCount() > 0)
+		{
+			char separator {'['};
+			for (RpnItemPtr item : rpnItem->attached())
+			{
+				if (item)
+				{
+					os << separator << itemIndex[item] << ':'
+						<< item->token()->text();
+					separator = ',';
+				}
+			}
+			if (separator != '[')
+			{
+				os << ']';
+			}
+		}
+	}
+	return os;
+}
+
+
 // function to process a test input file specified on the command line
 // or accept input lines from the user
 Tester::Tester(const QStringList &args, std::ostream &cout) :
@@ -309,22 +345,22 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 	}
 	else  // no error, translate line and if selected recreate it
 	{
-		QString output;
+		if (!header)
+		{
+			m_cout << "Output";
+		}
+		m_cout << ": ";
 		if (m_recreate)
 		{
 			// recreate text from rpn list
-			output = m_recreator->recreate(rpnList, exprMode);
+			QString output = m_recreator->recreate(rpnList, exprMode);
+			m_cout << output.toStdString();
 		}
 		else
 		{
-			output = rpnList.text();
+			m_cout << rpnList;
 		}
-		if (!header)
-		{
-			header = "Output";
-			rpnList.clear();
-		}
-		m_cout << header << ": " << output.toStdString() << " \n";
+		m_cout << " \n";
 	}
 	return rpnList;
 }

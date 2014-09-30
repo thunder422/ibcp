@@ -22,48 +22,9 @@
 //
 //	2013-03-30	initial version
 
-#include <sstream>
-#include <unordered_map>
-
 #include "rpnlist.h"
 #include "table.h"
 
-
-// function to recreate text (abbreviated contents) of list
-QString RpnList::text()
-{
-	std::stringstream ss;
-	std::unordered_map<RpnItemPtr, int> itemIndex;
-	int index {};
-
-	for (RpnItemPtr rpnItem : *this)
-	{
-		if (ss.tellp() > 0)
-		{
-			ss << ' ';
-		}
-		itemIndex[rpnItem] = index++;
-		ss << rpnItem->token()->text();
-		if (rpnItem->attachedCount() > 0)
-		{
-			char separator {'['};
-			for (RpnItemPtr item : rpnItem->attached())
-			{
-				if (item)
-				{
-					ss << separator << itemIndex[item] << ':'
-						<< item->token()->text();
-					separator = ',';
-				}
-			}
-			if (separator != '[')
-			{
-				ss << ']';
-			}
-		}
-	}
-	return QString::fromStdString(ss.str());
-}
 
 // function to overload the comparison operator
 bool RpnList::operator==(const RpnList &other) const
