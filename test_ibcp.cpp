@@ -37,6 +37,137 @@
 #include "statusmessage.h"
 
 
+// overloaded output stream operator for abbreviated contents of a token
+std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
+{
+	Table &table = Table::instance();
+	bool second {};
+
+	switch (token->type())
+	{
+	case Token::Type::DefFuncN:
+		os << token->string().toStdString();
+		break;
+
+	case Token::Type::NoParen:
+		if (token->code() == Invalid_Code)
+		{
+			os << '?';
+		}
+		os << token->string().toStdString();
+		if (table.hasFlag(token->code(), Reference_Flag))
+		{
+			os << "<ref>";
+		}
+		break;
+
+	case Token::Type::DefFuncP:
+	case Token::Type::Paren:
+		os << token->string().toStdString() << '(';
+		break;
+
+	case Token::Type::Constant:
+		if (token->code() == Invalid_Code)
+		{
+			os << '?';
+		}
+		switch (token->dataType())
+		{
+		case DataType::Integer:
+		case DataType::Double:
+			os << token->string().toStdString();
+			if (token->dataType() == DataType::Integer)
+			{
+				os << "%";
+			}
+			break;
+
+		case DataType::String:
+			os << '"' << token->string().toStdString() << '"';
+			break;
+		default:
+			break;
+		}
+		break;
+
+	case Token::Type::Operator:
+		if (token->isCode(RemOp_Code))
+		{
+			os << table.name(token->code()).toStdString();
+			second = true;
+		}
+		else
+		{
+			os << table.debugName(token->code()).toStdString();
+		}
+		break;
+
+	case Token::Type::IntFuncN:
+	case Token::Type::IntFuncP:
+		os << table.debugName(token->code()).toStdString();
+		break;
+
+	case Token::Type::Command:
+		if (token->isCode(Rem_Code))
+		{
+			os << table.name(token->code()).toStdString();
+			second = true;
+		}
+		else
+		{
+			os << table.name(token->code()).toStdString();
+			if (!table.name2(token->code()).isEmpty())
+			{
+				os << '-' << table.name2(token->code()).toStdString();
+			}
+		}
+		break;
+
+	default:
+		// nothing more to output
+		break;
+	}
+	if (token->reference())
+	{
+		os << "<ref>";
+	}
+	if (token->hasSubCode())
+	{
+		os << '\'';
+		if (token->hasSubCode(Paren_SubCode))
+		{
+			os << ')';
+		}
+		if (token->hasSubCode(Option_SubCode))
+		{
+			std::string option {table.optionName(token->code()).toStdString()};
+			if (option.empty())
+			{
+				os << "BUG";
+			}
+			else
+			{
+				os << option;
+			}
+		}
+		if (token->hasSubCode(Colon_SubCode))
+		{
+			os << ':';
+		}
+		if (token->hasSubCode(Double_SubCode))
+		{
+			os << "Double";
+		}
+		os << '\'';
+	}
+	if (second)
+	{
+		os << '|' << token->string().toStdString() << '|';
+	}
+	return os;
+}
+
+
 // overloaded output stream operator for abbreviated contents of rpn list
 std::ostream &operator<<(std::ostream &os, const RpnList &rpnList)
 {
@@ -50,7 +181,7 @@ std::ostream &operator<<(std::ostream &os, const RpnList &rpnList)
 			os << ' ';
 		}
 		itemIndex[rpnItem] = index++;
-		os << rpnItem->token()->text();
+		os << rpnItem->token();
 		if (rpnItem->attachedCount() > 0)
 		{
 			char separator {'['};
@@ -58,8 +189,7 @@ std::ostream &operator<<(std::ostream &os, const RpnList &rpnList)
 			{
 				if (item)
 				{
-					os << separator << itemIndex[item] << ':'
-						<< item->token()->text();
+					os << separator << itemIndex[item] << ':' << item->token();
 					separator = ',';
 				}
 			}
