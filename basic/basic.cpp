@@ -32,17 +32,18 @@
 
 quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
-	return programUnit->remDictionary()->add(token, Qt::CaseSensitive);
+	return programUnit->remDictionary()->add(token, CaseSensitive::Yes);
 }
 
-const QString remOperandText(const ProgramModel *programUnit, quint16 operand)
+const std::string remOperandText(const ProgramModel *programUnit,
+	quint16 operand)
 {
 	return programUnit->remDictionary()->string(operand);
 }
 
 void remRemove(ProgramModel *programUnit, quint16 operand)
 {
-	programUnit->remDictionary()->remove(operand, Qt::CaseSensitive);
+	programUnit->remDictionary()->remove(operand, CaseSensitive::Yes);
 }
 
 
@@ -71,7 +72,7 @@ quint16 constNumEncode(ProgramModel *programUnit, const TokenPtr &token)
 	return programUnit->constNumDictionary()->add(token);
 }
 
-const QString constNumOperandText(const ProgramModel *programUnit,
+const std::string constNumOperandText(const ProgramModel *programUnit,
 	quint16 operand)
 {
 	return programUnit->constNumDictionary()->string(operand);
@@ -114,10 +115,10 @@ ConstStrInfo::~ConstStrInfo(void)
 
 quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
-	return programUnit->constStrDictionary()->add(token, Qt::CaseSensitive);
+	return programUnit->constStrDictionary()->add(token, CaseSensitive::Yes);
 }
 
-const QString constStrOperandText(const ProgramModel *programUnit,
+const std::string constStrOperandText(const ProgramModel *programUnit,
 	quint16 operand)
 {
 	return programUnit->constStrDictionary()->string(operand);
@@ -125,7 +126,7 @@ const QString constStrOperandText(const ProgramModel *programUnit,
 
 void constStrRemove(ProgramModel *programUnit, quint16 operand)
 {
-	programUnit->constStrDictionary()->remove(operand, Qt::CaseSensitive);
+	programUnit->constStrDictionary()->remove(operand, CaseSensitive::Yes);
 }
 
 void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
@@ -155,19 +156,19 @@ quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 }
 
 
-const QString varDblOperandText(const ProgramModel *programUnit,
+const std::string varDblOperandText(const ProgramModel *programUnit,
 	quint16 operand)
 {
 	return programUnit->varDblDictionary()->string(operand);
 }
 
-const QString varIntOperandText(const ProgramModel *programUnit,
+const std::string varIntOperandText(const ProgramModel *programUnit,
 	quint16 operand)
 {
 	return programUnit->varIntDictionary()->string(operand);
 }
 
-const QString varStrOperandText(const ProgramModel *programUnit,
+const std::string varStrOperandText(const ProgramModel *programUnit,
 	quint16 operand)
 {
 	return programUnit->varStrDictionary()->string(operand);

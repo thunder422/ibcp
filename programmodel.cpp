@@ -130,9 +130,9 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		OperandTextFunction operandText {m_table.operandTextFunction(code)};
 		if (operandText)
 		{
-			const QString operand {operandText(this, line[++i].operand())};
+			const std::string operand {operandText(this, line[++i].operand())};
 			string += QString(" %1:%2").arg(i)
-				.arg(line[i].operandDebugText(operand));
+				.arg(line[i].operandDebugText(QString::fromStdString(operand)));
 		}
 	}
 
@@ -670,7 +670,8 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 			= m_table.operandTextFunction(token->code());
 		if (operandText)
 		{
-			token->setString(operandText(this, line[++i].operand()));
+			token->setString(QString::fromStdString(operandText(this,
+				line[++i].operand())));
 		}
 		rpnList.append(token);
 	}

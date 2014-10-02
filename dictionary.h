@@ -26,13 +26,15 @@
 #define DICTIONARY_H
 
 #include <memory>
+#include <stack>
+#include <vector>
 
 #include <QHash>
-#include <QStack>
-#include <QStringList>
 
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
+
+enum class CaseSensitive {No, Yes};
 
 
 class Dictionary
@@ -46,21 +48,21 @@ public:
 	};
 
 	void clear(void);
-	quint16 add(const TokenPtr &token,
-		Qt::CaseSensitivity cs = Qt::CaseInsensitive,
+	uint16_t add(const TokenPtr &token,
+		CaseSensitive cs = CaseSensitive::No,
 		EntryType *returnNewEntry = nullptr);
-	int remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
-	QString string(int index) const
+	int remove(uint16_t index, CaseSensitive cs = CaseSensitive::No);
+	std::string string(int index) const
 	{
-		return m_keyList.at(index);
+		return m_keyList[index];
 	}
 	QString debugText(const QString header);
 
 private:
-	QStack<quint16> m_freeStack;		// stack of free items
-	QStringList m_keyList;				// list of keys
+	std::stack<uint16_t> m_freeStack;	// stack of free items
+	std::vector<std::string> m_keyList;	// list of keys
 	QHash<QString, int> m_keyHash;		// hash map of keys to indexes
-	QList<quint16> m_useCount;			// list of key use counts
+	std::vector<uint16_t> m_useCount;	// list of key use counts
 };
 
 
@@ -73,12 +75,12 @@ public:
 	virtual void addElement(void) {}
 	virtual void setElement(int index, const TokenPtr &token)
 	{
-		Q_UNUSED(index)
-		Q_UNUSED(token)
+		(void)index;
+		(void)token;
 	}
 	virtual void clearElement(int index)
 	{
-		Q_UNUSED(index)
+		(void)index;
 	}
 };
 
@@ -89,9 +91,9 @@ public:
 	InfoDictionary() {}
 
 	void clear(void);
-	quint16 add(const TokenPtr &token,
-		Qt::CaseSensitivity cs = Qt::CaseInsensitive);
-	void remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+	uint16_t add(const TokenPtr &token,
+		CaseSensitive cs = CaseSensitive::No);
+	void remove(uint16_t index, CaseSensitive cs = CaseSensitive::No);
 
 protected:
 	std::unique_ptr<AbstractInfo> m_info;	// pointer to additional information

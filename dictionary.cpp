@@ -35,36 +35,37 @@
 
 void Dictionary::clear(void)
 {
-	m_freeStack.clear();
+	m_freeStack = {};
 	m_keyList.clear();
 	m_keyHash.clear();
 	m_useCount.clear();
 }
 
 
-quint16 Dictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs,
+uint16_t Dictionary::add(const TokenPtr &token, CaseSensitive cs,
 	Dictionary::EntryType *returnNewEntry)
 {
 	EntryType newEntry;
 
 	// if requested, store upper case of key in hash to make search case
 	// insensitive (first actual string will be stored in key list)
-	QString hashKey {cs == Qt::CaseInsensitive
+	QString hashKey {cs == CaseSensitive::No
 		? token->string().toUpper() : token->string()};
 	int index {m_keyHash.value(hashKey, -1)};
 	if (index == -1)  // string not present?
 	{
 		if (m_freeStack.empty())  // no free indexes available?
 		{
-			index = m_keyList.count();
-			m_keyList.append(token->string());
-			m_useCount.append(1);
+			index = m_keyList.size();
+			m_keyList.emplace_back(token->string().toStdString());
+			m_useCount.emplace_back(1);
 			newEntry = EntryType::New;
 		}
 		else  // use a previously freed index
 		{
-			index = m_freeStack.pop();
-			m_keyList[index] = token->string();
+			index = m_freeStack.top();
+			m_freeStack.pop();
+			m_keyList[index] = token->string().toStdString();
 			m_useCount[index] = 1;
 			newEntry = EntryType::Reused;
 		}
@@ -83,18 +84,18 @@ quint16 Dictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs,
 }
 
 
-int Dictionary::remove(quint16 index, Qt::CaseSensitivity cs)
+int Dictionary::remove(uint16_t index, CaseSensitive cs)
 {
 	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
 	{
-		QString hashKey {m_keyList.at(index)};
-		if (cs == Qt::CaseInsensitive)
+		QString hashKey {QString::fromStdString(m_keyList[index])};
+		if (cs == CaseSensitive::No)
 		{
 			hashKey = hashKey.toUpper();
 		}
 		m_keyHash.remove(hashKey);  // remove key/index from hash map
 		m_keyList[index].clear();
-		m_freeStack.push(index);
+		m_freeStack.emplace(index);
 		return true;
 	}
 	return false;
@@ -104,32 +105,35 @@ int Dictionary::remove(quint16 index, Qt::CaseSensitivity cs)
 QString Dictionary::debugText(const QString header)
 {
 	QString string {QString("\n%1:\n").arg(header)};
-	for (int i {}; i < m_keyList.count(); i++)
+	for (size_t i {}; i < m_keyList.size(); i++)
 	{
-		if (m_useCount.at(i) != 0)
+		if (m_useCount[i] != 0)
 		{
-			string.append(QString("%1: %2 |%3|\n").arg(i).arg(m_useCount.at(i))
-				.arg(m_keyList.at(i)));
+			string.append(QString("%1: %2 |%3|\n").arg(i).arg(m_useCount[i])
+				.arg(QString::fromStdString(m_keyList[i])));
 		}
 	}
 	string.append("Free:");
-	if (m_freeStack.isEmpty())
+	if (m_freeStack.empty())
 	{
 		string.append(" none");
 	}
 	else
 	{
-		for (int i {}; i < m_freeStack.count(); i++)
+		std::stack<uint16_t> tempStack = m_freeStack;
+		while (!tempStack.empty())
 		{
-			int index {m_freeStack.at(i)};
+			int index {tempStack.top()};
+			tempStack.pop();
 			string.append(QString(" %1").arg(index));
-			if (m_useCount.at(index) != 0)
+			if (m_useCount[index] != 0)
 			{
-				string.append(QString("'%1'").arg(m_useCount.at(index)));
+				string.append(QString("'%1'").arg(m_useCount[index]));
 			}
-			if (!m_keyList.at(index).isEmpty())
+			if (!m_keyList[index].empty())
 			{
-				string.append(QString("|%1|").arg(m_keyList.at(index)));
+				string.append(QString("|%1|")
+					.arg(QString::fromStdString(m_keyList[index])));
 			}
 		}
 	}
@@ -154,7 +158,7 @@ void InfoDictionary::clear(void)
 
 
 // function to possibly add a new dictionary entry and return its index
-quint16 InfoDictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs)
+uint16_t InfoDictionary::add(const TokenPtr &token, CaseSensitive cs)
 {
 	EntryType returnNewEntry;
 	int index {Dictionary::add(token, cs, &returnNewEntry)};
@@ -175,7 +179,7 @@ quint16 InfoDictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs)
 
 
 // function to remove an entry from the dictionary
-void InfoDictionary::remove(quint16 index, Qt::CaseSensitivity cs)
+void InfoDictionary::remove(uint16_t index, CaseSensitive cs)
 {
 	if (Dictionary::remove(index, cs))
 	{

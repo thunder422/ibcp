@@ -82,8 +82,8 @@ typedef Status (*TranslateFunction)(Translator &translator,
 	TokenPtr commandToken, TokenPtr &token);
 typedef quint16 (*EncodeFunction)(ProgramModel *programUnit,
 	const TokenPtr &token);
-typedef const QString (*OperandTextFunction)(const ProgramModel *programUnit,
-	quint16 operand);
+typedef const std::string (*OperandTextFunction)
+	(const ProgramModel *programUnit, quint16 operand);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
