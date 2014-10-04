@@ -42,7 +42,7 @@ void Dictionary::clear(void)
 }
 
 
-uint16_t Dictionary::add(const TokenPtr &token, CaseSensitive cs,
+uint16_t Dictionary::add(const TokenPtr &token,
 	Dictionary::EntryType *returnNewEntry)
 {
 	EntryType newEntry;
@@ -50,7 +50,7 @@ uint16_t Dictionary::add(const TokenPtr &token, CaseSensitive cs,
 	// if requested, store upper case of key in hash to make search case
 	// insensitive (actual string will be stored in key list)
 	std::string key {token->string().toStdString()};
-	if (cs == CaseSensitive::No)
+	if (m_caseSensitive == CaseSensitive::No)
 	{
 		std::transform(key.begin(), key.end(), key.begin(), toupper);
 	}
@@ -89,12 +89,12 @@ uint16_t Dictionary::add(const TokenPtr &token, CaseSensitive cs,
 }
 
 
-int Dictionary::remove(uint16_t index, CaseSensitive cs)
+int Dictionary::remove(uint16_t index)
 {
 	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
 	{
 		std::string key {m_keyList[index]};
-		if (cs == CaseSensitive::No)
+		if (m_caseSensitive == CaseSensitive::No)
 		{
 			std::transform(key.begin(), key.end(), key.begin(), toupper);
 		}
@@ -163,10 +163,10 @@ void InfoDictionary::clear(void)
 
 
 // function to possibly add a new dictionary entry and return its index
-uint16_t InfoDictionary::add(const TokenPtr &token, CaseSensitive cs)
+uint16_t InfoDictionary::add(const TokenPtr &token)
 {
 	EntryType returnNewEntry;
-	int index {Dictionary::add(token, cs, &returnNewEntry)};
+	int index {Dictionary::add(token, &returnNewEntry)};
 	if (returnNewEntry == EntryType::New)
 	{
 		// a new entry was added to the dictionary
@@ -184,9 +184,9 @@ uint16_t InfoDictionary::add(const TokenPtr &token, CaseSensitive cs)
 
 
 // function to remove an entry from the dictionary
-void InfoDictionary::remove(uint16_t index, CaseSensitive cs)
+void InfoDictionary::remove(uint16_t index)
 {
-	if (Dictionary::remove(index, cs))
+	if (Dictionary::remove(index))
 	{
 		// clear the additional information if the entry was removed
 		m_info->clearElement(index);

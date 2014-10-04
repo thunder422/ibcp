@@ -105,7 +105,7 @@ private:
 class ConstStrDictionary : public InfoDictionary
 {
 public:
-	ConstStrDictionary(void)
+	ConstStrDictionary(void) : InfoDictionary(CaseSensitive::Yes)
 	{
 		m_info.reset(new ConstStrInfo);
 	}

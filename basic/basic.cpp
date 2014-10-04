@@ -32,7 +32,7 @@
 
 quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
-	return programUnit->remDictionary()->add(token, CaseSensitive::Yes);
+	return programUnit->remDictionary()->add(token);
 }
 
 const std::string remOperandText(const ProgramModel *programUnit,
@@ -43,7 +43,7 @@ const std::string remOperandText(const ProgramModel *programUnit,
 
 void remRemove(ProgramModel *programUnit, quint16 operand)
 {
-	programUnit->remDictionary()->remove(operand, CaseSensitive::Yes);
+	programUnit->remDictionary()->remove(operand);
 }
 
 
@@ -115,7 +115,7 @@ ConstStrInfo::~ConstStrInfo(void)
 
 quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
-	return programUnit->constStrDictionary()->add(token, CaseSensitive::Yes);
+	return programUnit->constStrDictionary()->add(token);
 }
 
 const std::string constStrOperandText(const ProgramModel *programUnit,
@@ -126,7 +126,7 @@ const std::string constStrOperandText(const ProgramModel *programUnit,
 
 void constStrRemove(ProgramModel *programUnit, quint16 operand)
 {
-	programUnit->constStrDictionary()->remove(operand, CaseSensitive::Yes);
+	programUnit->constStrDictionary()->remove(operand);
 }
 
 void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)

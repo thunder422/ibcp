@@ -87,7 +87,7 @@ ProgramModel::ProgramModel(QObject *parent) :
 	m_translator {new Translator},
 	m_recreator {new Recreator},
 
-	m_remDictionary {new Dictionary},
+	m_remDictionary {new Dictionary(CaseSensitive::Yes)},
 	m_constNumDictionary {new ConstNumDictionary},
 	m_constStrDictionary {new ConstStrDictionary},
 
@@ -461,7 +461,6 @@ void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
 	auto errIndex = m_errors.findIndex(lineNumber);
 	if (errIndex < m_errors.count())  // line has error?
 	{
-		// WORK can use iterator for these
 		int errColumn {m_errors.at(errIndex).column()};
 		int errLength {m_errors.at(errIndex).length()};
 

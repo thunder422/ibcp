@@ -48,11 +48,12 @@ public:
 		Exists
 	};
 
+	Dictionary(CaseSensitive caseSensitive = CaseSensitive::No) :
+		m_caseSensitive {caseSensitive} {}
+
 	void clear(void);
-	uint16_t add(const TokenPtr &token,
-		CaseSensitive cs = CaseSensitive::No,
-		EntryType *returnNewEntry = nullptr);
-	int remove(uint16_t index, CaseSensitive cs = CaseSensitive::No);
+	uint16_t add(const TokenPtr &token, EntryType *returnNewEntry = nullptr);
+	int remove(uint16_t index);
 	std::string string(int index) const
 	{
 		return m_keyList[index];
@@ -62,6 +63,7 @@ public:
 private:
 	using KeyMap = std::unordered_map<std::string, int>;
 
+	CaseSensitive m_caseSensitive;		// case sensitive keys
 	std::stack<uint16_t> m_freeStack;	// stack of free items
 	std::vector<std::string> m_keyList;	// list of keys
 	KeyMap m_keyMap;					// hash map of keys to indexes
@@ -91,12 +93,12 @@ public:
 class InfoDictionary : public Dictionary
 {
 public:
-	InfoDictionary() {}
+	InfoDictionary(CaseSensitive caseSensitive = CaseSensitive::No) :
+		Dictionary {caseSensitive} {}
 
 	void clear(void);
-	uint16_t add(const TokenPtr &token,
-		CaseSensitive cs = CaseSensitive::No);
-	void remove(uint16_t index, CaseSensitive cs = CaseSensitive::No);
+	uint16_t add(const TokenPtr &token);
+	void remove(uint16_t index);
 
 protected:
 	std::unique_ptr<AbstractInfo> m_info;	// pointer to additional information
