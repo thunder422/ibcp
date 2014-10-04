@@ -61,13 +61,20 @@ public:
 	QString debugText(const QString header);
 
 private:
-	using KeyMap = std::unordered_map<std::string, int>;
+	struct EntryValue
+	{
+		EntryValue(uint16_t index) : m_index {index}, m_useCount {1} {}
+
+		uint16_t m_index;						// index of entry
+		uint16_t m_useCount;					// use count of entry
+	};
+
+	using KeyMap = std::unordered_map<std::string, EntryValue>;
 
 	CaseSensitive m_caseSensitive;		// case sensitive keys
 	std::stack<uint16_t> m_freeStack;	// stack of free items
 	std::vector<std::string> m_keyList;	// list of keys
 	KeyMap m_keyMap;					// hash map of keys to indexes
-	std::vector<uint16_t> m_useCount;	// list of key use counts
 };
 
 
