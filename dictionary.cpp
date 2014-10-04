@@ -37,7 +37,7 @@ void Dictionary::clear(void)
 {
 	m_freeStack = {};
 	m_keyList.clear();
-	m_keyHash.clear();
+	m_keyMap.clear();
 	m_useCount.clear();
 }
 
@@ -48,11 +48,15 @@ uint16_t Dictionary::add(const TokenPtr &token, CaseSensitive cs,
 	EntryType newEntry;
 
 	// if requested, store upper case of key in hash to make search case
-	// insensitive (first actual string will be stored in key list)
-	QString hashKey {cs == CaseSensitive::No
-		? token->string().toUpper() : token->string()};
-	int index {m_keyHash.value(hashKey, -1)};
-	if (index == -1)  // string not present?
+	// insensitive (actual string will be stored in key list)
+	std::string key {token->string().toStdString()};
+	if (cs == CaseSensitive::No)
+	{
+		std::transform(key.begin(), key.end(), key.begin(), toupper);
+	}
+	auto iterator = m_keyMap.find(key);
+	int index;
+	if (iterator == m_keyMap.end())  // string not present?
 	{
 		if (m_freeStack.empty())  // no free indexes available?
 		{
@@ -69,10 +73,11 @@ uint16_t Dictionary::add(const TokenPtr &token, CaseSensitive cs,
 			m_useCount[index] = 1;
 			newEntry = EntryType::Reused;
 		}
-		m_keyHash[hashKey] = index;  // save key/index in map
+		m_keyMap[key] = index;  // save key/index in map
 	}
 	else  // string already present, update use count
 	{
+		index = iterator->second;
 		m_useCount[index]++;
 		newEntry = EntryType::Exists;
 	}
@@ -88,12 +93,12 @@ int Dictionary::remove(uint16_t index, CaseSensitive cs)
 {
 	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
 	{
-		QString hashKey {QString::fromStdString(m_keyList[index])};
+		std::string key {m_keyList[index]};
 		if (cs == CaseSensitive::No)
 		{
-			hashKey = hashKey.toUpper();
+			std::transform(key.begin(), key.end(), key.begin(), toupper);
 		}
-		m_keyHash.remove(hashKey);  // remove key/index from hash map
+		m_keyMap.erase(key);
 		m_keyList[index].clear();
 		m_freeStack.emplace(index);
 		return true;

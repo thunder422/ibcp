@@ -27,9 +27,10 @@
 
 #include <memory>
 #include <stack>
+#include <unordered_map>
 #include <vector>
 
-#include <QHash>
+#include <QString>
 
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
@@ -59,9 +60,11 @@ public:
 	QString debugText(const QString header);
 
 private:
+	using KeyMap = std::unordered_map<std::string, int>;
+
 	std::stack<uint16_t> m_freeStack;	// stack of free items
 	std::vector<std::string> m_keyList;	// list of keys
-	QHash<QString, int> m_keyHash;		// hash map of keys to indexes
+	KeyMap m_keyMap;					// hash map of keys to indexes
 	std::vector<uint16_t> m_useCount;	// list of key use counts
 };
 
