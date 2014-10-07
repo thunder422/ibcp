@@ -49,14 +49,14 @@ public:
 	};
 
 	Dictionary(CaseSensitive caseSensitive = CaseSensitive::No) :
-		m_caseSensitive {caseSensitive} {}
+		m_keyMap {10, KeyHash {caseSensitive}, KeyEqual {caseSensitive}} {}
 
 	void clear(void);
 	uint16_t add(const TokenPtr &token, EntryType *returnNewEntry = nullptr);
 	int remove(uint16_t index);
 	std::string string(int index) const
 	{
-		return m_keyList[index];
+		return m_iterator[index]->first;
 	}
 	QString debugText(const QString header);
 
@@ -69,12 +69,56 @@ private:
 		uint16_t m_useCount;					// use count of entry
 	};
 
-	using KeyMap = std::unordered_map<std::string, EntryValue>;
+	// case sensitive optional key hash function operator
+	struct KeyHash
+	{
+		CaseSensitive caseSensitive;
 
-	CaseSensitive m_caseSensitive;		// case sensitive keys
-	std::stack<uint16_t> m_freeStack;	// stack of free items
-	std::vector<std::string> m_keyList;	// list of keys
-	KeyMap m_keyMap;					// hash map of keys to indexes
+		size_t operator()(const std::string &s) const
+		{
+			if (caseSensitive != CaseSensitive::No)
+			{
+				return std::hash<std::string>{}(s);
+			}
+			std::string s2;
+			std::transform(s.begin(), s.end(), std::back_inserter(s2), toupper);
+			return std::hash<std::string>{}(s2);
+		}
+	};
+
+	// case sensitive optional key equal function operator
+	struct KeyEqual
+	{
+		CaseSensitive caseSensitive;
+
+		bool operator()(const std::string &s1, const std::string &s2) const
+		{
+			if (caseSensitive != CaseSensitive::No)
+			{
+				return s1 == s2;
+			}
+			if (s1.size() != s2.size())
+			{
+				return false;
+			}
+			for (size_t i = 0; i < s1.size(); ++i)
+			{
+				if (toupper(s1[i]) != toupper(s2[i]))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+	};
+
+	using KeyMap = std::unordered_map<std::string, EntryValue, KeyHash,
+		KeyEqual>;
+	using KeyIterator = KeyMap::iterator;
+
+	std::stack<uint16_t> m_freeStack;		// stack of free entries
+	std::vector<KeyIterator> m_iterator;	// iterators to entries (by index)
+	KeyMap m_keyMap;						// map of key entries
 };
 
 

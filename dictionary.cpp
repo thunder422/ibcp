@@ -36,7 +36,7 @@
 void Dictionary::clear(void)
 {
 	m_freeStack = {};
-	m_keyList.clear();
+	m_iterator.clear();
 	m_keyMap.clear();
 }
 
@@ -49,28 +49,23 @@ uint16_t Dictionary::add(const TokenPtr &token,
 	// if requested, store upper case of key in hash to make search case
 	// insensitive (actual string will be stored in key list)
 	std::string key {token->string().toStdString()};
-	if (m_caseSensitive == CaseSensitive::No)
-	{
-		std::transform(key.begin(), key.end(), key.begin(), toupper);
-	}
 	auto iterator = m_keyMap.find(key);
 	int index;
 	if (iterator == m_keyMap.end())  // string not present?
 	{
 		if (m_freeStack.empty())  // no free indexes available?
 		{
-			index = m_keyList.size();
-			m_keyList.emplace_back(token->string().toStdString());
+			index = m_iterator.size();
 			newEntry = EntryType::New;
+			m_iterator.emplace_back(m_keyMap.emplace(key, index).first);
 		}
 		else  // use a previously freed index
 		{
 			index = m_freeStack.top();
 			m_freeStack.pop();
-			m_keyList[index] = token->string().toStdString();
 			newEntry = EntryType::Reused;
+			m_iterator[index] = m_keyMap.emplace(key, index).first;
 		}
-		m_keyMap.emplace(key, index);
 	}
 	else  // string already present, update use count
 	{
@@ -88,17 +83,12 @@ uint16_t Dictionary::add(const TokenPtr &token,
 
 int Dictionary::remove(uint16_t index)
 {
-	std::string key {m_keyList[index]};
-	if (m_caseSensitive == CaseSensitive::No)
-	{
-		std::transform(key.begin(), key.end(), key.begin(), toupper);
-	}
-	auto iterator = m_keyMap.find(key);
+	auto iterator = m_iterator[index];
 	if (iterator != m_keyMap.end() && --iterator->second.m_useCount == 0)
 	{
-		m_keyList[iterator->second.m_index].clear();
 		m_freeStack.emplace(iterator->second.m_index);
 		m_keyMap.erase(iterator);
+		m_iterator[index] = m_keyMap.end();
 		return true;
 	}
 	return false;
@@ -108,27 +98,14 @@ int Dictionary::remove(uint16_t index)
 QString Dictionary::debugText(const QString header)
 {
 	QString string {QString("\n%1:\n").arg(header)};
-	for (size_t i {}; i < m_keyList.size(); i++)
+	for (size_t i {}; i < m_iterator.size(); i++)
 	{
-		if (!m_keyList[i].empty())
+		if (m_iterator[i] != m_keyMap.end())
 		{
-			std::string key {m_keyList[i]};
-			if (m_caseSensitive == CaseSensitive::No)
-			{
-				std::transform(key.begin(), key.end(), key.begin(), toupper);
-			}
-			auto iterator = m_keyMap.find(key);
-			if (iterator == m_keyMap.end())
-			{
-				string.append(QString("%1: |%2| key not found\n").arg(i)
-					.arg(QString::fromStdString(m_keyList[i])));
-			}
-			else
-			{
-				string.append(QString("%1: %2 |%3|\n").arg(i)
-					.arg(iterator->second.m_useCount)
-					.arg(QString::fromStdString(m_keyList[i])));
-			}
+			auto iterator = m_iterator[i];
+			string.append(QString("%1: %2 |%3|\n").arg(i)
+				.arg(iterator->second.m_useCount)
+				.arg(QString::fromStdString(iterator->first)));
 		}
 	}
 	string.append("Free:");
@@ -144,10 +121,10 @@ QString Dictionary::debugText(const QString header)
 			int index {tempStack.top()};
 			tempStack.pop();
 			string.append(QString(" %1").arg(index));
-			if (!m_keyList[index].empty())
+			if (m_iterator[index] != m_keyMap.end())
 			{
 				string.append(QString("|%1|")
-					.arg(QString::fromStdString(m_keyList[index])));
+					.arg(QString::fromStdString(m_iterator[index]->first)));
 			}
 		}
 	}
