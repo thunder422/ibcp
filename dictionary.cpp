@@ -95,44 +95,6 @@ int Dictionary::remove(uint16_t index)
 }
 
 
-QString Dictionary::debugText(const QString header)
-{
-	QString string {QString("\n%1:\n").arg(header)};
-	for (size_t i {}; i < m_iterator.size(); i++)
-	{
-		if (m_iterator[i] != m_keyMap.end())
-		{
-			auto iterator = m_iterator[i];
-			string.append(QString("%1: %2 |%3|\n").arg(i)
-				.arg(iterator->second.m_useCount)
-				.arg(QString::fromStdString(iterator->first)));
-		}
-	}
-	string.append("Free:");
-	if (m_freeStack.empty())
-	{
-		string.append(" none");
-	}
-	else
-	{
-		std::stack<uint16_t> tempStack = m_freeStack;
-		while (!tempStack.empty())
-		{
-			int index {tempStack.top()};
-			tempStack.pop();
-			string.append(QString(" %1").arg(index));
-			if (m_iterator[index] != m_keyMap.end())
-			{
-				string.append(QString("|%1|")
-					.arg(QString::fromStdString(m_iterator[index]->first)));
-			}
-		}
-	}
-	string.append("\n");
-	return string;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 //                      INFORMATION DICTIONARY FUNCTIONS                      //

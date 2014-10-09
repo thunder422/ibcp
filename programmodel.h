@@ -226,7 +226,6 @@ public:
 		}
 	}
 	QString debugText(int lineIndex, bool fullInfo = false) const;
-	QString dictionariesDebugText(void);
 
 	// program model access functions
 	QString lineText(int lineIndex);

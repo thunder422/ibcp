@@ -25,12 +25,11 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
+#include <algorithm>
 #include <memory>
 #include <stack>
 #include <unordered_map>
 #include <vector>
-
-#include <QString>
 
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
@@ -58,7 +57,9 @@ public:
 	{
 		return m_iterator[index]->first;
 	}
-	QString debugText(const QString header);
+
+	friend std::ostream &operator<<(std::ostream &os,
+		const Dictionary *const dictionary);
 
 private:
 	struct EntryValue

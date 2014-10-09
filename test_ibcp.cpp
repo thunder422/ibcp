@@ -203,6 +203,42 @@ std::ostream &operator<<(std::ostream &os, const RpnList &rpnList)
 }
 
 
+// overloaded output stream operator for abbreviated contents of rpn list
+std::ostream &operator<<(std::ostream &os, const Dictionary *const dictionary)
+{
+	for (size_t i {}; i < dictionary->m_iterator.size(); i++)
+	{
+		if (dictionary->m_iterator[i] != dictionary->m_keyMap.end())
+		{
+			auto iterator = dictionary->m_iterator[i];
+			os << i << ": " << iterator->second.m_useCount << " |"
+				<< iterator->first << "|\n";
+		}
+	}
+	os << "Free:";
+	if (dictionary->m_freeStack.empty())
+	{
+		os << " none";
+	}
+	else
+	{
+		std::stack<uint16_t> tempStack = dictionary->m_freeStack;
+		while (!tempStack.empty())
+		{
+			int index {tempStack.top()};
+			tempStack.pop();
+			os << ' ' << index;
+			if (dictionary->m_iterator[index] != dictionary->m_keyMap.end())
+			{
+				os << '|' << dictionary->m_iterator[index]->first << '|';
+			}
+		}
+	}
+	os << '\n';
+	return os;
+}
+
+
 // function to process a test input file specified on the command line
 // or accept input lines from the user
 Tester::Tester(const QStringList &args, std::ostream &cout) :
@@ -426,7 +462,15 @@ bool Tester::run(CommandLine *commandLine)
 			m_cout << i << ": "
 				<< m_programUnit->debugText(i, true).toStdString() << '\n';
 		}
-		m_cout << m_programUnit->dictionariesDebugText().toStdString();
+
+		m_cout << "\nRemarks:\n" << m_programUnit->remDictionary();
+		m_cout << "\nNumber Constants:\n"
+			<< m_programUnit->constNumDictionary();
+		m_cout << "\nString Constants:\n"
+			<< m_programUnit->constStrDictionary();
+		m_cout << "\nDouble Variables:\n" << m_programUnit->varDblDictionary();
+		m_cout << "\nInteger Variables:\n" << m_programUnit->varIntDictionary();
+		m_cout << "\nString Variables:\n" << m_programUnit->varStrDictionary();
 
 		if (m_recreate)
 		{
