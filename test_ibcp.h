@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include <QCoreApplication>
 #include <QStringList>
 
 #include "programmodel.h"
@@ -50,11 +51,11 @@ public:
 	bool run(CommandLine *commandLine);
 	bool hasOption(void) const  // has a test option been specified?
 	{
-		return m_option != OptNone;
+		return m_option != Option{};
 	}
 	bool hasError(void) const  // does test arguments contain an error?
 	{
-		return m_option == OptError;
+		return !m_errorMessage.isEmpty();
 	}
 	QString errorMessage(void) const  // message of error
 	{
@@ -62,21 +63,16 @@ public:
 	}
 
 private:
-	enum Option {
-		OptNone = -1,
-		OptFirst,
-		OptParser = OptFirst,
-		OptExpression,
-		OptTranslator,
-		OptEncoder,
-		OptNumberOf,
-		OptRecreator,
-		OptSizeOf,
-		OptError = OptSizeOf
+	enum class Option {
+		Parser = 1,
+		Expression,
+		Translator,
+		Encoder,
+		Recreator
 	};
 
-	bool isOption(const QString &arg, const QString &exp, Option option,
-		QString name);
+	bool isOption(const std::string &arg, const std::string &exp, Option option,
+		std::string name);
 	void parseInput(const QString &testInput);
 	RpnList translateInput(const QString &testInput, bool exprMode,
 		const char *header = nullptr);
@@ -91,9 +87,9 @@ private:
 	void printError(int column, int length, Status status);
 
 	QString m_programName;			// name of program
-	int m_option;					// selection option
+	Option m_option;				// selection option
 	bool m_recreate;				// recreate testing
-	QString m_testName;				// name of test
+	std::string m_testName;			// name of test
 	QString m_testFileName;			// name of test file (OptFile only)
 	std::ostream &m_cout;			// reference to output stream
 	std::unique_ptr<Translator> m_translator;		// translator instance

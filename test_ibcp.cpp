@@ -247,27 +247,31 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 	m_programUnit {new ProgramModel},
 	m_recreator {new Recreator}
 {
-	QString name[OptSizeOf];
-	name[OptParser] = "parser";
-	name[OptExpression] = "expression";
-	name[OptTranslator] = "translator";
-	name[OptEncoder] = "encoder";
-	name[OptRecreator] = "recreator";
+	std::unordered_map<Option, std::string, EnumClassHash> name {
+		{Option::Parser,     "parser"},
+		{Option::Expression, "expression"},
+		{Option::Translator, "translator"},
+		{Option::Encoder,    "encoder"}
+	};
 
 	// get base file name of program from first argument
 	m_programName = QFileInfo(args.at(0)).baseName();
 
 	// scan arguments for test options (ignore others)
-	m_option = OptNone;
+	m_option = Option{};
 	m_recreate = false;
+	std::string arg1;
 	switch (args.count())
 	{
 	case 2:
-		if (isOption(args.at(1), "-tp", OptParser, name[OptParser])
-			|| isOption(args.at(1), "-te", OptExpression, name[OptExpression])
-			|| isOption(args.at(1), "-tt", OptTranslator, name[OptTranslator])
-			|| isOption(args.at(1), "-tc", OptEncoder, name[OptEncoder])
-			|| isOption(args.at(1), "-tr", OptRecreator, name[OptRecreator]))
+		arg1 = args.at(1).toStdString();
+		if (isOption(arg1, "-tp", Option::Parser, name[Option::Parser])
+			|| isOption(arg1, "-te", Option::Expression,
+			name[Option::Expression])
+			|| isOption(arg1, "-tt", Option::Translator,
+			name[Option::Translator])
+			|| isOption(arg1, "-tc", Option::Encoder, name[Option::Encoder])
+			|| isOption(arg1, "-tr", Option::Recreator, "recreator"))
 		{
 			break;
 		}
@@ -283,7 +287,6 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 		}
 		if (args.count() == 2)
 		{
-			m_option = OptError;
 			m_errorMessage = tr("%1: missing test file name")
 				.arg(m_programName);
 		}
@@ -291,33 +294,42 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 		{
 			// find start of file name less path
 			m_testFileName = args.at(2);
-			QString baseName {QFileInfo(m_testFileName).baseName()};
+			std::string baseName
+				{QFileInfo(m_testFileName).baseName().toStdString()};
 
-			for (int i {OptFirst}; i < OptNumberOf; i++)
+			for (auto iterator : name)
 			{
-				// check beginning of file name
-				if (baseName.startsWith(name[i], Qt::CaseInsensitive))
+				auto noCaseCompare = [](char c1, char c2)
 				{
-					m_option = i;
-					m_testName = name[i];
+					return toupper(c1) == toupper(c2);
+				};
+
+				// check beginning of file name
+				if (baseName.size() >= iterator.second.size()
+					&& std::equal(iterator.second.begin(),
+					iterator.second.end(), baseName.begin(), noCaseCompare))
+				{
+					m_option = iterator.first;
+					m_testName = iterator.second;
 					break;
 				}
 			}
-			if (m_option == OptNone)  // no matching names?
+			if (m_option == Option{})  // no matching names?
 			{
-				m_option = OptError;
 				QString parser {m_recreate
-					? "" : QString("%1|").arg(name[OptParser])};
+					? "" : QString("%1|")
+					.arg(QString::fromStdString(name[Option::Parser]))};
 				m_errorMessage = QString("%1: %2 -t%3 (%4%5|%6)[xx]")
 					.arg(tr("usage")).arg(m_programName).arg(parser)
-					.arg(m_recreate ? "o" : "").arg(name[OptExpression])
-					.arg(name[OptTranslator]);
+					.arg(m_recreate ? "o" : "")
+					.arg(QString::fromStdString(name[Option::Expression]))
+					.arg(QString::fromStdString(name[Option::Translator]));
 			}
-			else if (m_option == OptParser && m_recreate)
+			else if (m_option == Option::Parser && m_recreate)
 			{
-				m_option = OptError;
 				m_errorMessage = QString("%1: cannot use -to with %2 files")
-					.arg(m_programName).arg(name[OptParser]);
+					.arg(m_programName)
+					.arg(QString::fromStdString(name[Option::Parser]));
 			}
 		}
 	}
@@ -326,8 +338,8 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 
 
 // function to see if argument is expected option
-bool Tester::isOption(const QString &arg, const QString &exp, Option option,
-	QString name)
+bool Tester::isOption(const std::string &arg, const std::string &exp,
+	Option option, std::string name)
 {
 	if (arg == exp)
 	{
@@ -392,8 +404,7 @@ bool Tester::run(CommandLine *commandLine)
 
 	if (inputMode)
 	{
-		m_cout << '\n' << tr("Testing ").toStdString()
-			+ m_testName.toStdString();
+		m_cout << '\n' << tr("Testing ").toStdString() + m_testName;
 	}
 
 	for (int lineno {1};; lineno++)
@@ -415,11 +426,11 @@ bool Tester::run(CommandLine *commandLine)
 			}
 			inputLine = input.readLine();
 			if (inputLine[0] == '#'
-				|| (m_option != OptEncoder && inputLine.isEmpty()))
+				|| (m_option != Option::Encoder && inputLine.isEmpty()))
 			{
 				continue;  // skip blank and comment lines
 			}
-			if (m_option != OptEncoder)
+			if (m_option != Option::Encoder)
 			{
 				printInput(inputLine);
 			}
@@ -427,19 +438,19 @@ bool Tester::run(CommandLine *commandLine)
 
 		switch (m_option)
 		{
-		case OptParser:
+		case Option::Parser:
 			parseInput(inputLine);
 			break;
-		case OptExpression:
+		case Option::Expression:
 			translateInput(inputLine, true);
 			break;
-		case OptTranslator:
+		case Option::Translator:
 			translateInput(inputLine, false);
 			break;
-		case OptEncoder:
+		case Option::Encoder:
 			encodeInput(inputLine);
 			break;
-		case OptRecreator:
+		case Option::Recreator:
 			recreateInput(inputLine);
 			break;
 		}
@@ -447,13 +458,13 @@ bool Tester::run(CommandLine *commandLine)
 	if (!inputMode)
 	{
 		file.close();
-		if (m_option != OptParser)
+		if (m_option != Option::Parser)
 		{
 			m_cout << '\n';  // not for parser testing
 		}
 	}
 
-	if (m_option == OptEncoder)
+	if (m_option == Option::Encoder)
 	{
 		// for encoder testing, output program lines
 		m_cout << "Program:\n";
