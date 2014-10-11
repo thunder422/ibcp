@@ -44,6 +44,13 @@ const char *CommandLine::s_warrantyStatement[] = {
 };
 
 
+// function to retrieve a base file name from a file path string
+std::string CommandLine::baseFileName(const std::string &filePath)
+{
+	return QFileInfo(QString::fromStdString(filePath)).baseName().toStdString();
+}
+
+
 CommandLine::CommandLine(const QStringList &args) :
 	m_cout {nullptr}
 {
@@ -75,7 +82,7 @@ CommandLine::CommandLine(const QStringList &args) :
 	Tester tester(args, cout());
 	if (tester.hasError())
 	{
-		cout(&std::cerr) << tester.errorMessage().toStdString() << '\n';
+		cout(&std::cerr) << tester.errorMessage() << '\n';
 		m_returnCode = 1;
 		return;
 	}
@@ -87,7 +94,7 @@ CommandLine::CommandLine(const QStringList &args) :
 		}
 		else
 		{
-			cout(&std::cerr) << tester.errorMessage().toStdString() << '\n';
+			cout(&std::cerr) << tester.errorMessage() << '\n';
 			m_returnCode = 1;
 		}
 		return;

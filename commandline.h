@@ -55,6 +55,9 @@ public:
 	{
 		return m_fileName;
 	}
+
+	static std::string baseFileName(const std::string &filePath);
+
 	static const char *copyrightStatement(void)
 	{
 		return s_copyrightStatement;

@@ -55,9 +55,9 @@ public:
 	}
 	bool hasError(void) const  // does test arguments contain an error?
 	{
-		return !m_errorMessage.isEmpty();
+		return !m_errorMessage.empty();
 	}
-	QString errorMessage(void) const  // message of error
+	std::string errorMessage(void) const  // message of error
 	{
 		return m_errorMessage;
 	}
@@ -86,16 +86,16 @@ private:
 	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
 	void printError(int column, int length, Status status);
 
-	QString m_programName;			// name of program
+	std::string m_programName;		// name of program
 	Option m_option;				// selection option
 	bool m_recreate;				// recreate testing
 	std::string m_testName;			// name of test
-	QString m_testFileName;			// name of test file (OptFile only)
+	std::string m_testFileName;		// name of test file (OptFile only)
 	std::ostream &m_cout;			// reference to output stream
 	std::unique_ptr<Translator> m_translator;		// translator instance
 	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
 	std::unique_ptr<Recreator> m_recreator;			// recreator instance
-	QString m_errorMessage;			// message if error occurred
+	std::string m_errorMessage;		// message if error occurred
 };
 
 

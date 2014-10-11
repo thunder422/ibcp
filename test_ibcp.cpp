@@ -255,7 +255,7 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 	};
 
 	// get base file name of program from first argument
-	m_programName = QFileInfo(args.at(0)).baseName();
+	m_programName = CommandLine::baseFileName(args.at(0).toStdString());
 
 	// scan arguments for test options (ignore others)
 	m_option = Option{};
@@ -287,15 +287,13 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 		}
 		if (args.count() == 2)
 		{
-			m_errorMessage = tr("%1: missing test file name")
-				.arg(m_programName);
+			m_errorMessage = m_programName + ": missing test file name";
 		}
 		else
 		{
 			// find start of file name less path
-			m_testFileName = args.at(2);
-			std::string baseName
-				{QFileInfo(m_testFileName).baseName().toStdString()};
+			m_testFileName = args.at(2).toStdString();
+			std::string baseName {CommandLine::baseFileName(m_testFileName)};
 
 			for (auto iterator : name)
 			{
@@ -316,20 +314,23 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 			}
 			if (m_option == Option{})  // no matching names?
 			{
-				QString parser {m_recreate
-					? "" : QString("%1|")
-					.arg(QString::fromStdString(name[Option::Parser]))};
-				m_errorMessage = QString("%1: %2 -t%3 (%4%5|%6)[xx]")
-					.arg(tr("usage")).arg(m_programName).arg(parser)
-					.arg(m_recreate ? "o" : "")
-					.arg(QString::fromStdString(name[Option::Expression]))
-					.arg(QString::fromStdString(name[Option::Translator]));
+				m_errorMessage = "usage: " + m_programName + " -t";
+				if (m_recreate)
+				{
+					m_errorMessage += 'o';
+				}
+				m_errorMessage += " (";
+				if (m_recreate)
+				{
+					m_errorMessage += name[Option::Parser] + '|';
+				}
+				m_errorMessage += name[Option::Expression] + '|'
+					+ name[Option::Translator] + ")[xx]";
 			}
 			else if (m_option == Option::Parser && m_recreate)
 			{
-				m_errorMessage = QString("%1: cannot use -to with %2 files")
-					.arg(m_programName)
-					.arg(QString::fromStdString(name[Option::Parser]));
+				m_errorMessage = m_programName + ": cannot use -to with "
+					+ name[Option::Parser] + " files";
 			}
 		}
 	}
@@ -366,18 +367,18 @@ bool Tester::run(CommandLine *commandLine)
 	QTextStream input(&file);
 	QString inputLine;
 
-	bool inputMode {m_testFileName.isEmpty()};
+	bool inputMode {m_testFileName.empty()};
 	if (inputMode)
 	{
 		file.open(stdin, QIODevice::ReadOnly);
 	}
 	else
 	{
-		file.setFileName(m_testFileName);
+		file.setFileName(QString::fromStdString(m_testFileName));
 		if (!file.open(QIODevice::ReadOnly))
 		{
-			m_errorMessage = tr("%1: error opening '%2'").arg(m_programName)
-				.arg(m_testFileName);
+			m_errorMessage = m_programName + ": error opening '"
+				 + m_testFileName + '\'';
 			return false;
 		}
 	}
