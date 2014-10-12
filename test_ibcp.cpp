@@ -351,10 +351,9 @@ bool Tester::isOption(const std::string &arg, const std::string &exp,
 
 
 // function to return list of valid options
-QStringList Tester::options(void)
+std::string Tester::options(void)
 {
-	return QStringList() << "-t <test_file>" << "-tp" << "-te" << "-tt" << "-tc"
-		<< "-tr" << "-to <test_file>";
+	return "-t <test_file>|-tp|-te|-tt|-tc|-tr|-to <test_file>";
 }
 
 

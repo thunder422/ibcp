@@ -47,7 +47,7 @@ public:
 	explicit Tester(const std::string &programName,
 		const std::list<std::string> &args, std::ostream &cout);
 
-	static QStringList options(void);
+	static std::string options(void);
 	bool run(CommandLine *commandLine);
 	bool hasOption(void) const  // has a test option been specified?
 	{

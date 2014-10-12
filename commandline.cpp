@@ -61,11 +61,9 @@ CommandLine::CommandLine(std::list<std::string> args) :
 	// NOTE: leave m_returnCode set to -1 to start GUI,
 
 	// create usage string
-	QStringList options {Tester::options()};
 	// append any other options here
-	options.prepend("<program file>|-h|-?|-v");
-	std::string usage = "usage: " + m_programName
-		+ options.join("|").toStdString();
+	std::string usage = "usage: " + m_programName + "<program file>|-h|-?|-v|"
+		+ Tester::options();
 
 	if (args.size() == 0)
 	{
