@@ -50,11 +50,13 @@ std::string CommandLine::baseFileName(const std::string &filePath)
 }
 
 
-CommandLine::CommandLine(const QStringList &args) :
+CommandLine::CommandLine(std::list<std::string> args) :
 	m_cout {nullptr}
 {
 	// get base file name of program from first argument
-	m_programName = QFileInfo(args.at(0)).baseName();
+	m_programName = baseFileName(args.front());
+	args.pop_front();  // remove program name
+
 	m_returnCode = -1;
 	// NOTE: leave m_returnCode set to -1 to start GUI,
 
@@ -62,10 +64,10 @@ CommandLine::CommandLine(const QStringList &args) :
 	QStringList options {Tester::options()};
 	// append any other options here
 	options.prepend("<program file>|-h|-?|-v");
-	std::string usage = "usage: " + m_programName.toStdString()
+	std::string usage = "usage: " + m_programName
 		+ options.join("|").toStdString();
 
-	if (args.count() == 1)
+	if (args.size() == 0)
 	{
 		// no options, start GUI
 		return;
@@ -78,7 +80,7 @@ CommandLine::CommandLine(const QStringList &args) :
 		return;
 	}
 
-	Tester tester(args, cout());
+	Tester tester(m_programName, args, cout());
 	if (tester.hasError())
 	{
 		cout(&std::cerr) << tester.errorMessage() << '\n';
@@ -100,10 +102,10 @@ CommandLine::CommandLine(const QStringList &args) :
 	}
 
 	// check if a possible file name was specified
-	if (args.count() == 2 && !args.at(1).startsWith("-"))
+	if (args.size() == 1 && !args.front().front() == '-')
 	{
 		// not an option so assume argument is a file name
-		m_fileName = args.at(1);
+		m_fileName = QString::fromStdString(args.front());
 		return;
 	}
 
@@ -121,22 +123,21 @@ std::ostream &CommandLine::cout(std::ostream *stream)
 
 
 // function to check if version option was specified and to process it
-bool CommandLine::isVersionOption(const QStringList &args)
+bool CommandLine::isVersionOption(const std::list<std::string> &args)
 {
-	if (args.count() != 2 || args.at(1) != "-v")
+	if (args.size() != 1 || args.front() != "-v")
 	{
 		return false;  // not our option or extra/invalid options
 	}
-	cout() << m_programName.toStdString() + " version "
-		+ version().toStdString() << '\n';
+	cout() << m_programName + " version " + version().toStdString() << '\n';
 	return true;
 }
 
 
 // function to check for help options
-bool CommandLine::isHelpOption(const QStringList &args) const
+bool CommandLine::isHelpOption(const std::list<std::string> &args) const
 {
-	return args.count() == 2 && (args.at(1) == "-?" || args.at(1) == "-h");
+	return args.size() == 1 && (args.front() == "-?" || args.front() == "-h");
 }
 
 

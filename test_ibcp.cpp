@@ -241,7 +241,9 @@ std::ostream &operator<<(std::ostream &os, const Dictionary *const dictionary)
 
 // function to process a test input file specified on the command line
 // or accept input lines from the user
-Tester::Tester(const QStringList &args, std::ostream &cout) :
+Tester::Tester(const std::string &programName,
+	const std::list<std::string> &args, std::ostream &cout) :
+	m_programName {programName},
 	m_cout(cout),
 	m_translator {new Translator},
 	m_programUnit {new ProgramModel},
@@ -254,45 +256,41 @@ Tester::Tester(const QStringList &args, std::ostream &cout) :
 		{Option::Encoder,    "encoder"}
 	};
 
-	// get base file name of program from first argument
-	m_programName = CommandLine::baseFileName(args.at(0).toStdString());
-
 	// scan arguments for test options (ignore others)
 	m_option = Option{};
 	m_recreate = false;
-	std::string arg1;
-	switch (args.count())
+	switch (args.size())
 	{
-	case 2:
-		arg1 = args.at(1).toStdString();
-		if (isOption(arg1, "-tp", Option::Parser, name[Option::Parser])
-			|| isOption(arg1, "-te", Option::Expression,
-			name[Option::Expression])
-			|| isOption(arg1, "-tt", Option::Translator,
-			name[Option::Translator])
-			|| isOption(arg1, "-tc", Option::Encoder, name[Option::Encoder])
-			|| isOption(arg1, "-tr", Option::Recreator, "recreator"))
+	case 1:
+		if (isOption(args.front(), "-tp", Option::Parser, name[Option::Parser])
+			|| isOption(args.front(), "-te", Option::Expression,
+				name[Option::Expression])
+			|| isOption(args.front(), "-tt", Option::Translator,
+				name[Option::Translator])
+			|| isOption(args.front(), "-tc", Option::Encoder,
+				name[Option::Encoder])
+			|| isOption(args.front(), "-tr", Option::Recreator, "recreator"))
 		{
 			break;
 		}
 		// not one of the above options, fall through
-	case 3:
-		if (args.at(1) == "-to")
+	case 2:
+		if (args.front() == "-to")
 		{
 			m_recreate = true;
 		}
-		else if (args.at(1) != "-t")
+		else if (args.front() != "-t")
 		{
 			break;  // no test option found
 		}
-		if (args.count() == 2)
+		if (args.size() == 1)
 		{
 			m_errorMessage = m_programName + ": missing test file name";
 		}
 		else
 		{
 			// find start of file name less path
-			m_testFileName = args.at(2).toStdString();
+			m_testFileName = args.back();
 			std::string baseName {CommandLine::baseFileName(m_testFileName)};
 
 			for (auto iterator : name)
@@ -518,11 +516,7 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 	}
 	else  // no error, translate line and if selected recreate it
 	{
-		if (!header)
-		{
-			m_cout << "Output";
-		}
-		m_cout << ": ";
+		m_cout << (header ? header : "Output") << ": ";
 		if (m_recreate)
 		{
 			// recreate text from rpn list

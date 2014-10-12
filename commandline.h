@@ -26,6 +26,8 @@
 #define COMMANDLINE_H
 
 #include <iostream>
+#include <list>
+#include <string>
 
 #include <QCoreApplication>
 #include <QStringList>
@@ -35,7 +37,7 @@ class CommandLine
 	Q_DECLARE_TR_FUNCTIONS(CommandLine)
 
 public:
-	explicit CommandLine(const QStringList &args);
+	explicit CommandLine(std::list<std::string> args);
 
 	bool processed(void) const  // if processed then exit program
 	{
@@ -44,10 +46,6 @@ public:
 	int returnCode(void) const  // valid only if processed
 	{
 		return m_returnCode;
-	}
-	QString programName(void) const
-	{
-		return m_programName;
 	}
 	QString version(void) const;
 	QString fileName(void) const
@@ -60,10 +58,10 @@ public:
 
 private:
 	std::ostream &cout(std::ostream *stream = &std::cout);
-	bool isVersionOption(const QStringList &args);
-	bool isHelpOption(const QStringList &args) const;
+	bool isVersionOption(const std::list<std::string> &args);
+	bool isHelpOption(const std::list<std::string> &args) const;
 
-	QString m_programName;
+	std::string m_programName;
 	int m_returnCode;
 	std::ostream *m_cout;
 	QString m_fileName;

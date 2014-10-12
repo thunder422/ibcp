@@ -43,7 +43,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow {parent},
 	ui {new Ui::MainWindow}
 {
-	m_commandLine.reset(new CommandLine(qApp->arguments()));
+	// convert arguments to standard list of standard strings
+	std::list<std::string> args;
+	foreach (QString arg, qApp->arguments())
+	{
+		args.emplace_back(arg.toStdString());
+	}
+
+	m_commandLine.reset(new CommandLine {std::move(args)});
 	if (m_commandLine->processed())
 	{
 		// don't start GUI and retrieve the return code

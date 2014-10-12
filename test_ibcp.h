@@ -25,7 +25,9 @@
 #ifndef TEST_IBCP_H
 #define TEST_IBCP_H
 
+#include <list>
 #include <memory>
+#include <string>
 
 #include <QStringList>
 
@@ -42,7 +44,8 @@ class RpnList;
 class Tester
 {
 public:
-	explicit Tester(const QStringList &args, std::ostream &cout);
+	explicit Tester(const std::string &programName,
+		const std::list<std::string> &args, std::ostream &cout);
 
 	static QStringList options(void);
 	bool run(CommandLine *commandLine);
