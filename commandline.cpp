@@ -23,6 +23,7 @@
 //	2012-11-25	initial version
 
 #include <iostream>
+#include <sstream>
 
 #include <QFileInfo>
 
@@ -31,17 +32,15 @@
 #include "test_ibcp.h"
 
 
-// create copyright statement string
-const char *CommandLine::s_copyrightStatement =
-	QT_TR_NOOP("%1  Copyright (C) 2010-%2  Thunder422");
+// function to generate the copyright statement
+const std::string CommandLine::copyrightStatement()
+{
+	std::ostringstream ss;
 
-// create warranty statement string list
-const char *CommandLine::s_warrantyStatement[] = {
-	QT_TR_NOOP("This program comes with ABSOLUTELY NO WARRANTY."),
-	QT_TR_NOOP("This is free software, and you are welcome to"),
-	QT_TR_NOOP("redistribute it under certain conditions."),
-	nullptr
-};
+	ss << "  " << tr("Copyright").toStdString() << "(C) 2010-"
+		<< ibcp_COPYRIGHT_YEAR << "  Thunder422";
+	return ss.str();
+}
 
 
 // function to retrieve a base file name from a file path string
@@ -138,13 +137,6 @@ bool CommandLine::isVersionOption(const QStringList &args)
 bool CommandLine::isHelpOption(const QStringList &args) const
 {
 	return args.count() == 2 && (args.at(1) == "-?" || args.at(1) == "-h");
-}
-
-
-// function to return the copyright year value
-int CommandLine::copyrightYear(void) const
-{
-	return ibcp_COPYRIGHT_YEAR;
 }
 
 

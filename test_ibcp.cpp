@@ -355,9 +355,8 @@ bool Tester::isOption(const std::string &arg, const std::string &exp,
 // function to return list of valid options
 QStringList Tester::options(void)
 {
-	return QStringList() << QString("-t <%1>").arg(tr("test_file")) << "-tp"
-		<< "-te" << "-tt" << "-tc" << "-tr"
-		<< QString("-to <%1>").arg(tr("test_file"));
+	return QStringList() << "-t <test_file>" << "-tp" << "-te" << "-tt" << "-tc"
+		<< "-tr" << "-to <test_file>";
 }
 
 
@@ -385,34 +384,22 @@ bool Tester::run(CommandLine *commandLine)
 
 	if (inputMode)
 	{
-		m_cout << '\n';
+		m_cout << m_programName << commandLine->copyrightStatement() << "\n\n";
 
-		const char *copyright {commandLine->copyrightStatement()};
-		QString line {tr(copyright).arg(commandLine->programName())
-			.arg(commandLine->copyrightYear())};
-		m_cout << line.toStdString() << '\n';
+		m_cout << "This program comes with ABSOLUTELY NO WARRANTY.\n";
+		m_cout << "This is free software, and you are welcome to\n";
+		m_cout << "redistribute it under certain conditions.\n";
 
-		const char **warranty {commandLine->warrantyStatement()};
-		for (int i {}; warranty[i]; i++)
-		{
-			QString line {tr(warranty[i])};
-			m_cout << line.toStdString() << '\n';
-		}
+		m_cout << "\nTable initialization successful.\n";
 
-		m_cout << '\n' << tr("Table initialization successful.").toStdString()
-			<< '\n';
-	}
-
-	if (inputMode)
-	{
-		m_cout << '\n' << tr("Testing ").toStdString() + m_testName;
+		m_cout << "\nTesting " << m_testName;
 	}
 
 	for (int lineno {1};; lineno++)
 	{
 		if (inputMode)
 		{
-			m_cout << '\n' << tr("Input: ").toStdString() << std::flush;
+			m_cout << "\nInput: " << std::flush;
 			inputLine = input.readLine();
 			if (inputLine.isEmpty() || inputLine[0] == '\n')
 			{

@@ -392,10 +392,9 @@ void MainWindow::on_actionAbout_triggered(void)
 	// build up about box string
 	QString aboutString(tr("<h3>Interactive BASIC Compiler Project</h3>"));
 
-	const char *copyright {m_commandLine->copyrightStatement()};
 	// add version and copyright year to string
-	aboutString.append(tr(copyright).arg(tr("Version %1")
-		.arg(m_commandLine->version())).arg(m_commandLine->copyrightYear()));
+	aboutString.append(tr("Version ")).append(m_commandLine->version());
+	aboutString.append(m_commandLine->copyrightStatement().c_str());
 
 	// add license statements
 	aboutString.append(tr("<p>This program is free software: you can "

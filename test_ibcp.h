@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include <QCoreApplication>
 #include <QStringList>
 
 #include "programmodel.h"
@@ -42,8 +41,6 @@ class RpnList;
 
 class Tester
 {
-	Q_DECLARE_TR_FUNCTIONS(Test)
-
 public:
 	explicit Tester(const QStringList &args, std::ostream &cout);
 

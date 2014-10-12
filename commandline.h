@@ -50,30 +50,18 @@ public:
 		return m_programName;
 	}
 	QString version(void) const;
-	int copyrightYear(void) const;
 	QString fileName(void) const
 	{
 		return m_fileName;
 	}
 
+	static const std::string copyrightStatement();
 	static std::string baseFileName(const std::string &filePath);
-
-	static const char *copyrightStatement(void)
-	{
-		return s_copyrightStatement;
-	}
-	static const char **warrantyStatement(void)
-	{
-		return s_warrantyStatement;
-	}
 
 private:
 	std::ostream &cout(std::ostream *stream = &std::cout);
 	bool isVersionOption(const QStringList &args);
 	bool isHelpOption(const QStringList &args) const;
-
-	static const char *s_copyrightStatement;
-	static const char *s_warrantyStatement[];
 
 	QString m_programName;
 	int m_returnCode;

@@ -24,10 +24,10 @@
 
 // the configured options and settings for ibcp
 // (for passing values from cmake to ibcp source files)
-#define ibcp_RELEASE_MAJOR   @ibcp_RELEASE_MAJOR@
-#define ibcp_RELEASE_MINOR   @ibcp_RELEASE_MINOR@
-#define ibcp_RELEASE_PATCH   @ibcp_RELEASE_PATCH@
+constexpr int ibcp_RELEASE_MAJOR = @ibcp_RELEASE_MAJOR@;
+constexpr int ibcp_RELEASE_MINOR = @ibcp_RELEASE_MINOR@;
+constexpr int ibcp_RELEASE_PATCH = @ibcp_RELEASE_PATCH@;
 
-#define ibcp_COPYRIGHT_YEAR  @ibcp_COPYRIGHT_YEAR@
+constexpr int ibcp_COPYRIGHT_YEAR = @ibcp_COPYRIGHT_YEAR@;
 
-#define ibcp_RELEASE_STRING  "@ibcp_RELEASE_STRING@"
+constexpr const char *ibcp_RELEASE_STRING = "@ibcp_RELEASE_STRING@";
