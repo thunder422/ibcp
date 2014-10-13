@@ -22,13 +22,9 @@
 //
 //	2010-03-01	initial version
 
+#include <fstream>
 #include <iomanip>
-
-#include <QCoreApplication>
-#include <QFile>
-#include <QFileInfo>
-#include <QString>
-#include <QTextStream>
+#include <iostream>
 
 #include "test_ibcp.h"
 #include "commandline.h"
@@ -359,19 +355,13 @@ std::string Tester::options(void)
 
 bool Tester::run(CommandLine *commandLine)
 {
-	QFile file;
-	QTextStream input(&file);
-	QString inputLine;
+	std::ifstream ifs;
 
 	bool inputMode {m_testFileName.empty()};
-	if (inputMode)
+	if (!inputMode)
 	{
-		file.open(stdin, QIODevice::ReadOnly);
-	}
-	else
-	{
-		file.setFileName(QString::fromStdString(m_testFileName));
-		if (!file.open(QIODevice::ReadOnly))
+		ifs.open(m_testFileName);
+		if (!ifs.is_open())
 		{
 			m_errorMessage = m_programName + ": error opening '"
 				 + m_testFileName + '\'';
@@ -394,30 +384,34 @@ bool Tester::run(CommandLine *commandLine)
 
 	for (int lineno {1};; lineno++)
 	{
+		std::string inputLine;
+
 		if (inputMode)
 		{
 			m_cout << "\nInput: " << std::flush;
-			inputLine = input.readLine();
-			if (inputLine.isEmpty() || inputLine[0] == '\n')
+			std::getline(std::cin, inputLine);
+			if (inputLine.empty() || inputLine[0] == '\n')
 			{
 				break;
 			}
 		}
 		else
 		{
-			if (input.atEnd())
+			if (!std::getline(ifs, inputLine))
 			{
-				break;
-			}
-			inputLine = input.readLine();
-			if (inputLine[0] == '#'
-				|| (m_option != Option::Encoder && inputLine.isEmpty()))
-			{
-				continue;  // skip blank and comment lines
+				break;  // no more lines
 			}
 			if (m_option != Option::Encoder)
 			{
+				if (inputLine.empty() || inputLine[0] == '#')
+				{
+					continue;  // skip blank and comment lines
+				}
 				printInput(inputLine);
+			}
+			else if (!inputLine.empty() && inputLine[0] == '#')
+			{
+				continue;  // skip comment lines
 			}
 		}
 
@@ -433,20 +427,16 @@ bool Tester::run(CommandLine *commandLine)
 			translateInput(inputLine, false);
 			break;
 		case Option::Encoder:
-			encodeInput(inputLine);
+			encodeInput(std::move(inputLine));
 			break;
 		case Option::Recreator:
 			recreateInput(inputLine);
 			break;
 		}
 	}
-	if (!inputMode)
+	if (!inputMode && m_option != Option::Parser)
 	{
-		file.close();
-		if (m_option != Option::Parser)
-		{
-			m_cout << '\n';  // not for parser testing
-		}
+		m_cout << '\n';  // not for parser testing
 	}
 
 	if (m_option == Option::Encoder)
@@ -484,12 +474,13 @@ bool Tester::run(CommandLine *commandLine)
 
 
 // function to parse an input line and print the resulting tokens
-void Tester::parseInput(const QString &testInput)
+void Tester::parseInput(const std::string &testInput)
 {
 	Parser parser;
 	bool more;
 
-	parser.setInput(QString(testInput));
+	QString tmp {testInput.c_str()};
+	parser.setInput(tmp);
 	do
 	{
 		TokenPtr token {parser.token()};
@@ -502,10 +493,11 @@ void Tester::parseInput(const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-RpnList Tester::translateInput(const QString &testInput, bool exprMode,
+RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
 	const char *header)
 {
-	RpnList rpnList {m_translator->translate(testInput, exprMode
+	QString tmp {testInput.c_str()};
+	RpnList rpnList {m_translator->translate(tmp, exprMode
 		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
 	if (rpnList.hasError())
 	{
@@ -534,7 +526,7 @@ RpnList Tester::translateInput(const QString &testInput, bool exprMode,
 
 // function to parse an input line, translate to an RPN list,
 // recreate the line and output the resulting recreated text
-void Tester::recreateInput(const QString &testInput)
+void Tester::recreateInput(const std::string &testInput)
 {
 	RpnList rpnList {translateInput(testInput, false, "Tokens")};
 	if (!rpnList.empty())
@@ -548,29 +540,29 @@ void Tester::recreateInput(const QString &testInput)
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
-void Tester::encodeInput(QString &testInput)
+void Tester::encodeInput(std::string testInput)
 {
 	// parse beginning of line for line number program operation
 	Operation operation {Operation::Change};
-	int pos {};
+	size_t pos = 0;
 	if (pos < testInput.length())
 	{
-		if (testInput.at(pos) == '+')
+		if (testInput[pos] == '+')
 		{
 			operation = Operation::Insert;
 			pos++;
 		}
-		else if (testInput.at(pos) == '-')
+		else if (testInput[pos] == '-')
 		{
 			operation = Operation::Remove;
 			pos++;
 		}
 	}
-	int digitCount {};
-	int lineIndex {};
-	while (pos < testInput.length() && testInput.at(pos).isDigit())
+	int digitCount = 0;
+	int lineIndex = 0;
+	while (pos < testInput.length() && isdigit(testInput[pos]))
 	{
-		int digit {testInput.at(pos).toAscii() - '0'};
+		int digit {testInput[pos] - '0'};
 		lineIndex = lineIndex * 10 + digit;
 		pos++;
 		digitCount++;
@@ -615,11 +607,11 @@ void Tester::encodeInput(QString &testInput)
 		}
 	}
 	// skip spaces
-	while (pos < testInput.length() && testInput.at(pos).isSpace())
+	while (pos < testInput.length() && isspace(testInput[pos]))
 	{
 		pos++;
 	}
-	testInput.remove(0, pos);  // remove operation, number and any spaces
+	testInput.erase(0, pos);  // remove operation, number and any spaces
 
 	// call update with arguments dependent on operation
 	if (operation == Operation::Remove)
@@ -629,7 +621,8 @@ void Tester::encodeInput(QString &testInput)
 	else  // Change_Operation or Insert_Operation
 	{
 		m_programUnit->update(lineIndex, 0,
-			operation == Operation::Insert ? 1 : 0, QStringList() << testInput);
+			operation == Operation::Insert ? 1 : 0,
+			QStringList() << testInput.c_str());
 	}
 
 	const ErrorItem *errorItem {m_programUnit->lineError(lineIndex)};
@@ -792,7 +785,7 @@ void Tester::printError(int column, int length, Status status)
 	if (length < 0)  // alternate column?
 	{
 		column = -length;
-		length	= 1;
+		length = 1;
 	}
 	m_cout << std::string(7 + column, ' ') << std::string(length, '^')
 		<< "-- " << StatusMessage::text(status).toStdString() << '\n';

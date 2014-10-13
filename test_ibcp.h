@@ -29,8 +29,6 @@
 #include <memory>
 #include <string>
 
-#include <QStringList>
-
 #include "programmodel.h"
 #include "recreator.h"
 #include "translator.h"
@@ -73,15 +71,14 @@ private:
 
 	bool isOption(const std::string &arg, const std::string &exp, Option option,
 		std::string name);
-	void parseInput(const QString &testInput);
-	RpnList translateInput(const QString &testInput, bool exprMode,
+	void parseInput(const std::string &testInput);
+	RpnList translateInput(const std::string &testInput, bool exprMode,
 		const char *header = nullptr);
-	void recreateInput(const QString &testInput);
-	void encodeInput(QString &testInput);
-	void printInput(const QString &inputLine)
+	void recreateInput(const std::string &testInput);
+	void encodeInput(std::string testInput);
+	void printInput(const std::string &inputLine)
 	{
-		// no 'tr()' for this string - must match expected results file
-		m_cout << "\nInput: " << inputLine.toStdString() << '\n';
+		m_cout << "\nInput: " << inputLine << '\n';
 	}
 	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
 	void printError(int column, int length, Status status);
