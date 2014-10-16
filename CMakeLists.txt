@@ -133,14 +133,27 @@ if (NOT WIN32)
 		"${PROJECT_SOURCE_DIR}/memtest.in"
 		"${PROJECT_BINARY_DIR}/memtest" @ONLY
 	)
-	# build memory error suppression file for specific Qt version
-	set(ibcp_QT_VERSION
-		${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}
-	)
-	configure_file(
-		"${PROJECT_SOURCE_DIR}/test/ibcp.supp.in"
-		"${PROJECT_BINARY_DIR}/ibcp.supp" @ONLY
-	)
+	# determine if ld-2.19.so is present
+	find_file(LD219 ld-2.19.so PATHS /lib/x86_64-linux-gnu)
+	if (NOT LD219)
+		find_file(LD219 ld-2.19.so PATHS /lib/i386-linux-gnu)
+	endif ()
+	if (NOT LD219)
+		# build memory error suppression file for specific Qt version
+		set(ibcp_QT_VERSION
+			${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}
+		)
+		configure_file(
+			"${PROJECT_SOURCE_DIR}/test/ibcp.supp.in"
+			"${PROJECT_BINARY_DIR}/ibcp.supp" @ONLY
+		)
+	else ()
+		# copy memory error suppression file for ld2.19.so
+		configure_file(
+			"${PROJECT_SOURCE_DIR}/test/ibcp-ld2.19.supp"
+			"${PROJECT_BINARY_DIR}/ibcp.supp" @ONLY
+		)
+	endif ()
 endif (NOT WIN32)
 
 # add the binary tree to the search path for include files
