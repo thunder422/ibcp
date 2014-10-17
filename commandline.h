@@ -29,13 +29,8 @@
 #include <list>
 #include <string>
 
-#include <QCoreApplication>
-#include <QStringList>
-
 class CommandLine
 {
-	Q_DECLARE_TR_FUNCTIONS(CommandLine)
-
 public:
 	explicit CommandLine(std::list<std::string> args);
 
@@ -47,13 +42,19 @@ public:
 	{
 		return m_returnCode;
 	}
-	QString version(void) const;
-	QString fileName(void) const
+
+	const std::string programName() const
+	{
+		return m_programName;
+	}
+	std::string fileName(void) const
 	{
 		return m_fileName;
 	}
 
-	static const std::string copyrightStatement();
+	static const std::string copyrightStatement(const char *copyright
+		= "Copyright");
+	static std::string version(void);
 	static std::string baseFileName(const std::string &filePath);
 
 private:
@@ -64,7 +65,7 @@ private:
 	std::string m_programName;
 	int m_returnCode;
 	std::ostream *m_cout;
-	QString m_fileName;
+	std::string m_fileName;
 };
 
 

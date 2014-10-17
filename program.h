@@ -44,11 +44,11 @@ public:
 	void settingsSave(QSettings &settings);
 
 	// access functions
-	const QString fileName(void)
+	const std::string fileName(void)
 	{
 		return m_fileName;
 	}
-	void setFileName(QString fileName)
+	void setFileName(const std::string &fileName)
 	{
 		m_fileName = fileName;
 	}
@@ -62,7 +62,7 @@ signals:
 public slots:
 
 private:
-	QString m_fileName;						// file name of current program
+	std::string m_fileName;					// file name of current program
 	ProgramModel *m_unit;					// program unit for main routine
 };
 

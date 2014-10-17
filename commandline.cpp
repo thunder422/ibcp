@@ -33,20 +33,32 @@
 
 
 // function to generate the copyright statement
-const std::string CommandLine::copyrightStatement()
+const std::string CommandLine::copyrightStatement(const char *copyright)
 {
 	std::ostringstream ss;
 
-	ss << "  " << tr("Copyright").toStdString() << "(C) 2010-"
-		<< ibcp_COPYRIGHT_YEAR << "  Thunder422";
+	ss << "  " << copyright << "(C) 2010-" << ibcp_COPYRIGHT_YEAR
+		<< "  Thunder422";
 	return ss.str();
+}
+
+
+// function to return the version number string
+std::string CommandLine::version(void)
+{
+	const char *p = ibcp_RELEASE_STRING;
+	while (!isdigit(*p) && *p)
+	{
+		++p;
+	}
+	return std::string(p);
 }
 
 
 // function to retrieve a base file name from a file path string
 std::string CommandLine::baseFileName(const std::string &filePath)
 {
-	return QFileInfo(QString::fromStdString(filePath)).baseName().toStdString();
+	return QFileInfo(filePath.c_str()).baseName().toStdString();
 }
 
 
@@ -100,10 +112,10 @@ CommandLine::CommandLine(std::list<std::string> args) :
 	}
 
 	// check if a possible file name was specified
-	if (args.size() == 1 && !args.front().front() == '-')
+	if (args.size() == 1 && args.front().front() != '-')
 	{
 		// not an option so assume argument is a file name
-		m_fileName = QString::fromStdString(args.front());
+		m_fileName = args.front();
 		return;
 	}
 
@@ -127,7 +139,7 @@ bool CommandLine::isVersionOption(const std::list<std::string> &args)
 	{
 		return false;  // not our option or extra/invalid options
 	}
-	cout() << m_programName + " version " + version().toStdString() << '\n';
+	cout() << m_programName + " version " + version() << '\n';
 	return true;
 }
 
@@ -136,15 +148,6 @@ bool CommandLine::isVersionOption(const std::list<std::string> &args)
 bool CommandLine::isHelpOption(const std::list<std::string> &args) const
 {
 	return args.size() == 1 && (args.front() == "-?" || args.front() == "-h");
-}
-
-
-// function to return the version number string
-QString CommandLine::version(void) const
-{
-	QString versionString(ibcp_RELEASE_STRING);
-	int start {versionString.indexOf(QRegExp("\\d"))};
-	return versionString.mid(start);
 }
 
 
