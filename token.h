@@ -248,9 +248,6 @@ public:
 	// other functions
 	Code convertCode(DataType toDataType) const;
 
-	// recreate text for token
-	std::string text();
-
 private:
 	// static members
 	static std::unordered_map<Type, bool, EnumClassHash> s_hasParen;

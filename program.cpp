@@ -51,14 +51,15 @@ void Program::clear(void)
 // function to restore the settings saved the last time the program was run
 void Program::settingsRestore(QSettings &settings)
 {
-	m_fileName = settings.value(curProgramSettingsName).toString();
+	m_fileName = settings.value(curProgramSettingsName).toString()
+		.toStdString();
 }
 
 
 // function to save the settings for the program to be restored later
 void Program::settingsSave(QSettings &settings)
 {
-	settings.setValue(curProgramSettingsName, m_fileName);
+	settings.setValue(curProgramSettingsName, m_fileName.c_str());
 }
 
 

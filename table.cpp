@@ -26,6 +26,7 @@
 
 #include <QChar>
 #include <QString>
+#include <QStringList>
 
 #include "table.h"
 #include "basic/basic.h"

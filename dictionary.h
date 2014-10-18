@@ -25,14 +25,16 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
+#include <algorithm>
 #include <memory>
-
-#include <QHash>
-#include <QStack>
-#include <QStringList>
+#include <stack>
+#include <unordered_map>
+#include <vector>
 
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
+
+enum class CaseSensitive {No, Yes};
 
 
 class Dictionary
@@ -45,22 +47,79 @@ public:
 		Exists
 	};
 
+	Dictionary(CaseSensitive caseSensitive = CaseSensitive::No) :
+		m_keyMap {10, KeyHash {caseSensitive}, KeyEqual {caseSensitive}} {}
+
 	void clear(void);
-	quint16 add(const TokenPtr &token,
-		Qt::CaseSensitivity cs = Qt::CaseInsensitive,
-		EntryType *returnNewEntry = nullptr);
-	int remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
-	QString string(int index) const
+	uint16_t add(const TokenPtr &token, EntryType *returnNewEntry = nullptr);
+	int remove(uint16_t index);
+	std::string string(int index) const
 	{
-		return m_keyList.at(index);
+		return m_iterator[index]->first;
 	}
-	QString debugText(const QString header);
+
+	friend std::ostream &operator<<(std::ostream &os,
+		const Dictionary *const dictionary);
 
 private:
-	QStack<quint16> m_freeStack;		// stack of free items
-	QStringList m_keyList;				// list of keys
-	QHash<QString, int> m_keyHash;		// hash map of keys to indexes
-	QList<quint16> m_useCount;			// list of key use counts
+	struct EntryValue
+	{
+		EntryValue(uint16_t index) : m_index {index}, m_useCount {1} {}
+
+		uint16_t m_index;						// index of entry
+		uint16_t m_useCount;					// use count of entry
+	};
+
+	// case sensitive optional key hash function operator
+	struct KeyHash
+	{
+		CaseSensitive caseSensitive;
+
+		size_t operator()(const std::string &s) const
+		{
+			if (caseSensitive != CaseSensitive::No)
+			{
+				return std::hash<std::string>{}(s);
+			}
+			std::string s2;
+			std::transform(s.begin(), s.end(), std::back_inserter(s2), toupper);
+			return std::hash<std::string>{}(s2);
+		}
+	};
+
+	// case sensitive optional key equal function operator
+	struct KeyEqual
+	{
+		CaseSensitive caseSensitive;
+
+		bool operator()(const std::string &s1, const std::string &s2) const
+		{
+			if (caseSensitive != CaseSensitive::No)
+			{
+				return s1 == s2;
+			}
+			if (s1.size() != s2.size())
+			{
+				return false;
+			}
+			for (size_t i = 0; i < s1.size(); ++i)
+			{
+				if (toupper(s1[i]) != toupper(s2[i]))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+	};
+
+	using KeyMap = std::unordered_map<std::string, EntryValue, KeyHash,
+		KeyEqual>;
+	using KeyIterator = KeyMap::iterator;
+
+	std::stack<uint16_t> m_freeStack;		// stack of free entries
+	std::vector<KeyIterator> m_iterator;	// iterators to entries (by index)
+	KeyMap m_keyMap;						// map of key entries
 };
 
 
@@ -73,12 +132,12 @@ public:
 	virtual void addElement(void) {}
 	virtual void setElement(int index, const TokenPtr &token)
 	{
-		Q_UNUSED(index)
-		Q_UNUSED(token)
+		(void)index;
+		(void)token;
 	}
 	virtual void clearElement(int index)
 	{
-		Q_UNUSED(index)
+		(void)index;
 	}
 };
 
@@ -86,12 +145,12 @@ public:
 class InfoDictionary : public Dictionary
 {
 public:
-	InfoDictionary() {}
+	InfoDictionary(CaseSensitive caseSensitive = CaseSensitive::No) :
+		Dictionary {caseSensitive} {}
 
 	void clear(void);
-	quint16 add(const TokenPtr &token,
-		Qt::CaseSensitivity cs = Qt::CaseInsensitive);
-	void remove(quint16 index, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+	uint16_t add(const TokenPtr &token);
+	void remove(uint16_t index);
 
 protected:
 	std::unique_ptr<AbstractInfo> m_info;	// pointer to additional information

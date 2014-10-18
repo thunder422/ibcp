@@ -89,10 +89,10 @@ private:
 	void editBoxSetActive(EditBox *editBox);
 
 	bool isOkToContinue(void);
-	void setCurProgram(const QString &programPath);
+	void setCurProgram(const std::string &programPath);
 
-	bool programLoad(const QString &programPath);
-	bool programSave(const QString &programPath);
+	bool programLoad(const std::string &programPath);
+	bool programSave(const std::string &programPath);
 	void programCaptureEditChanges(void);
 
 	void settingsRestore(void);

@@ -22,6 +22,9 @@
 //
 //	2012-11-28	initial version
 
+#include <fstream>
+#include <string>
+
 #include <QApplication>
 #include <QCloseEvent>
 #include <QFileDialog>
@@ -29,6 +32,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QStringListModel>
+#include <QTextStream>
 #include <QTimer>
 
 #include "mainwindow.h"
@@ -40,13 +44,20 @@
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow {parent},
-	ui {new Ui::MainWindow}
+	ui {new Ui::MainWindow},
+	m_guiActive {false}
 {
-	m_commandLine.reset(new CommandLine(qApp->arguments()));
+	// convert arguments to standard list of standard strings
+	std::list<std::string> args;
+	foreach (QString arg, qApp->arguments())
+	{
+		args.emplace_back(arg.toStdString());
+	}
+
+	m_commandLine.reset(new CommandLine {std::move(args)});
 	if (m_commandLine->processed())
 	{
 		// don't start GUI and retrieve the return code
-		m_guiActive = false;
 		m_returnCode = m_commandLine->returnCode();
 		return;
 	}
@@ -111,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// if a file name was specified on the command line
 	// then it overrides the restored program
-	if (!m_commandLine->fileName().isEmpty())
+	if (!m_commandLine->fileName().empty())
 	{
 		setCurProgram(m_commandLine->fileName());
 	}
@@ -122,13 +133,25 @@ MainWindow::MainWindow(QWidget *parent) :
 	}
 
 	// load program if one was saved or specified on command line
-	if (!m_program.fileName().isEmpty()					// load a program?
-			&& (!QFile::exists(m_program.fileName())	// program not found?
-			|| !programLoad(m_program.fileName()))		// program not loaded?
-			&& m_commandLine->fileName().isEmpty())		// no program argument
+	if (!m_program.fileName().empty()					// load a program?
+		&& (!std::ifstream(m_program.fileName()).good()	// program not found?
+		|| !programLoad(m_program.fileName())))			// program not loaded?
 	{
-		setCurProgram("");  // clear program path that was restored/set
-		// TODO should an warning message be issued here?
+		if (m_commandLine->fileName().empty())			// no program argument
+		{
+			QMessageBox::warning(this, tr("IBCP"),
+				QString(tr("Last used program '%1' no longer exists!"))
+				.arg(QString(m_program.fileName().c_str())));
+			setCurProgram("");  // clear program path that was restored/set
+		}
+		else  // command line program does not exist
+		{
+			// don't start GUI and set bad return code
+			std::cerr << m_commandLine->programName() << ": "
+				<< m_program.fileName() << ": No such file or directory\n";
+			m_returnCode = 1;
+			return;
+		}
 	}
 
 	m_guiActive = true;
@@ -256,7 +279,7 @@ void MainWindow::on_actionOpen_triggered(void)
 			tr("Open Program"), m_curDirectory, tr("Program files (*.*)"))};
 		if (!programPath.isEmpty())
 		{
-			programLoad(programPath);
+			programLoad(programPath.toStdString());
 			m_curDirectory = QFileInfo(programPath).path();
 		}
 	}
@@ -278,7 +301,7 @@ void MainWindow::on_actionClearRecent_triggered(void)
 
 bool MainWindow::on_actionSave_triggered(void)
 {
-	if (m_program.fileName().isEmpty())
+	if (m_program.fileName().empty())
 	{
 		return on_actionSaveAs_triggered();
 	}
@@ -296,7 +319,7 @@ bool MainWindow::on_actionSave_triggered(void)
 
 bool MainWindow::on_actionSaveAs_triggered(void)
 {
-	QString programPath {m_program.fileName()};
+	QString programPath {m_program.fileName().c_str()};
 	if (programPath.isEmpty())
 	{
 		programPath = m_curDirectory;
@@ -308,7 +331,7 @@ bool MainWindow::on_actionSaveAs_triggered(void)
 		return false;
 	}
 	m_curDirectory = QFileInfo(programPath).path();
-	return programSave(programPath);
+	return programSave(programPath.toStdString());
 }
 
 
@@ -391,10 +414,10 @@ void MainWindow::on_actionAbout_triggered(void)
 	// build up about box string
 	QString aboutString(tr("<h3>Interactive BASIC Compiler Project</h3>"));
 
-	const char *copyright {m_commandLine->copyrightStatement()};
 	// add version and copyright year to string
-	aboutString.append(tr(copyright).arg(tr("Version %1")
-		.arg(m_commandLine->version())).arg(m_commandLine->copyrightYear()));
+	aboutString.append(tr("Version ")).append(m_commandLine->version().c_str());
+	aboutString.append(m_commandLine->copyrightStatement(tr("Copyright")
+		.toStdString().c_str()).c_str());
 
 	// add license statements
 	aboutString.append(tr("<p>This program is free software: you can "
@@ -428,13 +451,14 @@ void MainWindow::on_actionAboutQt_triggered(void)
 
 
 // function the sets the current program path and sets the window title
-void MainWindow::setCurProgram(const QString &programPath)
+void MainWindow::setCurProgram(const std::string &programPath)
 {
 	m_program.setFileName(programPath);
 	QString program {tr("Untitled")};
-	if (!m_program.fileName().isEmpty())
+	if (!m_program.fileName().empty())
 	{
-		program = m_recentPrograms->addFile(m_program.fileName());
+		program
+			= m_recentPrograms->addFile(QString(m_program.fileName().c_str()));
 	}
 	setWindowTitle(tr("%1[*] - %2").arg(program).arg(tr("IBCP")));
 }
@@ -469,7 +493,7 @@ void MainWindow::programOpen(const QString programPath)
 {
 	if (isOkToContinue())
 	{
-		programLoad(programPath);
+		programLoad(programPath.toStdString());
 	}
 }
 
@@ -479,9 +503,9 @@ void MainWindow::programOpen(const QString programPath)
 //   - for now just reads a text file and puts the text in the edit box
 //   - eventually it will need to be parsed, translated, encoded and stored
 
-bool MainWindow::programLoad(const QString &programPath)
+bool MainWindow::programLoad(const std::string &programPath)
 {
-	QFile file {programPath};
+	QFile file {programPath.c_str()};
 
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -508,9 +532,9 @@ bool MainWindow::programLoad(const QString &programPath)
 //     text representation of the stored program, but may also need to
 //     collect the text from other edit boxes and/or subroutine/functions
 
-bool MainWindow::programSave(const QString &programPath)
+bool MainWindow::programSave(const std::string &programPath)
 {
-	QFile file {programPath};
+	QFile file {programPath.c_str()};
 
 	programCaptureEditChanges();
 

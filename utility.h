@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: main.cpp - main function source file
-//	Copyright (C) 2010-2012  Thunder422
+//	File: utility.h - utility class header file
+//	Copyright (C) 2014
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,27 +20,19 @@
 //
 //	Change History:
 //
-//	2010-03-13	initial version
+//	2014-10-18	initial version (parts removed from commandline.h)
 
-#include <QtGui/QApplication>
+#ifndef UTILITY_H
+#define UTILITY_H
 
-#include "ibcp_config.h"  // for cmake
-#include "table.h"
-#include "mainwindow.h"
+#include <string>
 
 
-int main(int argc, char *argv[])
+class Utility final  // final prevents derived classes
 {
-	QApplication app(argc, argv);
+	Utility() = delete;  // prevent instances;
+public:
+	static std::string baseFileName(const std::string &filePath);
+};
 
-	MainWindow mainWindow;
-	if (!mainWindow.isGuiActive())
-	{
-		return mainWindow.returnCode();
-	}
-	mainWindow.show();
-	return app.exec();
-}
-
-
-// end: main.cpp
+#endif // UTILITY_H

@@ -25,17 +25,14 @@
 #ifndef COMMANDLINE_H
 #define COMMANDLINE_H
 
-#include <QCoreApplication>
-#include <QStringList>
-#include <QTextStream>
+#include <iostream>
+#include <list>
+#include <string>
 
 class CommandLine
 {
-	Q_DECLARE_TR_FUNCTIONS(CommandLine)
-
 public:
-	explicit CommandLine(const QStringList &args);
-	~CommandLine();
+	explicit CommandLine(std::list<std::string> args);
 
 	bool processed(void) const  // if processed then exit program
 	{
@@ -45,43 +42,29 @@ public:
 	{
 		return m_returnCode;
 	}
-	QString programName(void) const
+
+	const std::string programName() const
 	{
 		return m_programName;
 	}
-	QString usage(void) const
-	{
-		return m_usage;
-	}
-	QString version(void) const;
-	int copyrightYear(void) const;
-	QString fileName(void) const
+	std::string fileName(void) const
 	{
 		return m_fileName;
 	}
-	static const char *copyrightStatement(void)
-	{
-		return s_copyrightStatement;
-	}
-	static const char **warrantyStatement(void)
-	{
-		return s_warrantyStatement;
-	}
+
+	static const std::string copyrightStatement(const char *copyright
+		= "Copyright");
+	static std::string version(void);
 
 private:
-	QTextStream &cout(FILE *stream = stdout);
-	void coutClose(void);
-	bool isVersionOption(const QStringList &args);
-	bool isHelpOption(const QStringList &args) const;
+	std::ostream &cout(std::ostream *stream = &std::cout);
+	bool isVersionOption(const std::list<std::string> &args);
+	bool isHelpOption(const std::list<std::string> &args) const;
 
-	static const char *s_copyrightStatement;
-	static const char *s_warrantyStatement[];
-
-	QString m_programName;
+	std::string m_programName;
 	int m_returnCode;
-	QTextStream m_cout;
-	QString m_usage;
-	QString m_fileName;
+	std::ostream *m_cout;
+	std::string m_fileName;
 };
 
 

@@ -28,6 +28,7 @@
 #include <memory>
 
 #include <QString>
+#include <QVector>
 
 #include "ibcp.h"
 #include "token.h"
@@ -104,7 +105,7 @@ private:
 class ConstStrDictionary : public InfoDictionary
 {
 public:
-	ConstStrDictionary(void)
+	ConstStrDictionary(void) : InfoDictionary(CaseSensitive::Yes)
 	{
 		m_info.reset(new ConstStrInfo);
 	}
@@ -135,16 +136,17 @@ quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token);
 
 
 // operand text functions
-const QString remOperandText(const ProgramModel *programUnit, quint16 operand);
-const QString constNumOperandText(const ProgramModel *programUnit,
+const std::string remOperandText(const ProgramModel *programUnit,
 	quint16 operand);
-const QString constStrOperandText(const ProgramModel *programUnit,
+const std::string constNumOperandText(const ProgramModel *programUnit,
 	quint16 operand);
-const QString varDblOperandText(const ProgramModel *programUnit,
+const std::string constStrOperandText(const ProgramModel *programUnit,
 	quint16 operand);
-const QString varIntOperandText(const ProgramModel *programUnit,
+const std::string varDblOperandText(const ProgramModel *programUnit,
 	quint16 operand);
-const QString varStrOperandText(const ProgramModel *programUnit,
+const std::string varIntOperandText(const ProgramModel *programUnit,
+	quint16 operand);
+const std::string varStrOperandText(const ProgramModel *programUnit,
 	quint16 operand);
 
 

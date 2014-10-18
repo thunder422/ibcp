@@ -25,16 +25,13 @@
 #ifndef TEST_IBCP_H
 #define TEST_IBCP_H
 
+#include <list>
 #include <memory>
-
-#include <QCoreApplication>
-#include <QStringList>
+#include <string>
 
 #include "programmodel.h"
 #include "recreator.h"
 #include "translator.h"
-
-class QTextStream;
 
 class CommandLine;
 class Token;
@@ -44,65 +41,58 @@ class RpnList;
 
 class Tester
 {
-	Q_DECLARE_TR_FUNCTIONS(Test)
-
 public:
-	explicit Tester(const QStringList &args, QTextStream &cout);
+	explicit Tester(const std::string &programName,
+		const std::list<std::string> &args, std::ostream &cout);
 
-	static QStringList options(void);
-	bool run(CommandLine *commandLine);
+	static std::string options(void);
+	bool run(std::string copyrightStatement);
 	bool hasOption(void) const  // has a test option been specified?
 	{
-		return m_option != OptNone;
+		return m_option != Option{};
 	}
 	bool hasError(void) const  // does test arguments contain an error?
 	{
-		return m_option == OptError;
+		return !m_errorMessage.empty();
 	}
-	QString errorMessage(void) const  // message of error
+	std::string errorMessage(void) const  // message of error
 	{
 		return m_errorMessage;
 	}
 
 private:
-	enum Option {
-		OptNone = -1,
-		OptFirst,
-		OptParser = OptFirst,
-		OptExpression,
-		OptTranslator,
-		OptEncoder,
-		OptNumberOf,
-		OptRecreator,
-		OptSizeOf,
-		OptError = OptSizeOf
+	enum class Option {
+		Parser = 1,
+		Expression,
+		Translator,
+		Encoder,
+		Recreator
 	};
 
-	bool isOption(const QString &arg, const QString &exp, Option option,
-		QString name);
-	void parseInput(const QString &testInput);
-	RpnList translateInput(const QString &testInput, bool exprMode,
+	bool isOption(const std::string &arg, const std::string &exp, Option option,
+		std::string name);
+	void parseInput(const std::string &testInput);
+	RpnList translateInput(const std::string &testInput, bool exprMode,
 		const char *header = nullptr);
-	void recreateInput(const QString &testInput);
-	void encodeInput(QString &testInput);
-	void printInput(const QString &inputLine)
+	void recreateInput(const std::string &testInput);
+	void encodeInput(std::string testInput);
+	void printInput(const std::string &inputLine)
 	{
-		// no 'tr()' for this string - must match expected results file
-		m_cout << endl << "Input: " << inputLine << endl;
+		m_cout << "\nInput: " << inputLine << '\n';
 	}
 	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
 	void printError(int column, int length, Status status);
 
-	QString m_programName;			// name of program
-	int m_option;					// selection option
+	std::string m_programName;		// name of program
+	Option m_option;				// selection option
 	bool m_recreate;				// recreate testing
-	QString m_testName;				// name of test
-	QString m_testFileName;			// name of test file (OptFile only)
-	QTextStream &m_cout;			// reference to output device
+	std::string m_testName;			// name of test
+	std::string m_testFileName;		// name of test file (OptFile only)
+	std::ostream &m_cout;			// reference to output stream
 	std::unique_ptr<Translator> m_translator;		// translator instance
 	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
 	std::unique_ptr<Recreator> m_recreator;			// recreator instance
-	QString m_errorMessage;			// message if error occurred
+	std::string m_errorMessage;		// message if error occurred
 };
 
 

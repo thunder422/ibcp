@@ -87,7 +87,7 @@ ProgramModel::ProgramModel(QObject *parent) :
 	m_translator {new Translator},
 	m_recreator {new Recreator},
 
-	m_remDictionary {new Dictionary},
+	m_remDictionary {new Dictionary(CaseSensitive::Yes)},
 	m_constNumDictionary {new ConstNumDictionary},
 	m_constStrDictionary {new ConstStrDictionary},
 
@@ -130,9 +130,9 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		OperandTextFunction operandText {m_table.operandTextFunction(code)};
 		if (operandText)
 		{
-			const QString operand {operandText(this, line[++i].operand())};
+			const std::string operand {operandText(this, line[++i].operand())};
 			string += QString(" %1:%2").arg(i)
-				.arg(line[i].operandDebugText(operand));
+				.arg(line[i].operandDebugText(operand.c_str()));
 		}
 	}
 
@@ -144,21 +144,6 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 			.arg(StatusMessage::text(errorItem.status())));
 	}
 
-	return string;
-}
-
-
-// NOTE temporary function to return debug text of all the dictionary
-QString ProgramModel::dictionariesDebugText(void)
-{
-	QString string;
-
-	string.append(m_remDictionary->debugText("Remarks"));
-	string.append(m_constNumDictionary->debugText("Number Constants"));
-	string.append(m_constStrDictionary->debugText("String Constants"));
-	string.append(m_varDblDictionary->debugText("Double Variables"));
-	string.append(m_varIntDictionary->debugText("Integer Variables"));
-	string.append(m_varStrDictionary->debugText("String Variables"));
 	return string;
 }
 
@@ -425,7 +410,7 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 	}
 
 	// find location in error list for line number
-	int errIndex {m_errors.find(lineNumber)};
+	auto errIndex = m_errors.find(lineNumber);
 
 	if (!errorItem.isEmpty())
 	{
@@ -458,8 +443,8 @@ void ProgramModel::updateError(int lineNumber, LineInfo &lineInfo,
 void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
 	int charsAdded, int charsRemoved)
 {
-	int errIndex {m_errors.findIndex(lineNumber)};
-	if (errIndex != -1)  // line has error?
+	auto errIndex = m_errors.findIndex(lineNumber);
+	if (errIndex < m_errors.count())  // line has error?
 	{
 		int errColumn {m_errors.at(errIndex).column()};
 		int errLength {m_errors.at(errIndex).length()};
@@ -491,7 +476,7 @@ void ProgramModel::lineEdited(int lineNumber, int column, bool atLineEnd,
 void ProgramModel::removeError(int lineNumber, LineInfo &lineInfo,
 	bool lineDeleted)
 {
-	int errIndex;
+	size_t errIndex;
 	bool hadError;
 
 	if (lineInfo.errIndex != -1)  // has error?
@@ -544,7 +529,7 @@ bool ProgramModel::errorFindNext(int &lineNumber, int &column, bool &wrapped)
 	const
 {
 	wrapped = false;
-	int errIndex {m_errors.find(lineNumber)};
+	auto errIndex  = m_errors.find(lineNumber);
 	if (errIndex >= m_errors.count()
 		|| lineNumber > m_errors.at(errIndex).lineNumber()
 		|| (lineNumber == m_errors.at(errIndex).lineNumber()
@@ -581,7 +566,7 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 	const
 {
 	wrapped = false;
-	int errIndex {m_errors.find(lineNumber)};
+	auto errIndex = m_errors.find(lineNumber);
 	if (errIndex >= m_errors.count()
 		|| lineNumber < m_errors.at(errIndex).lineNumber()
 		|| (lineNumber == m_errors.at(errIndex).lineNumber()
@@ -591,7 +576,7 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 		// before current error, go to previous error
 		errIndex--;
 	}
-	if (errIndex < 0)  // past first error?
+	if (errIndex > m_errors.count())  // past first error?
 	{
 		errIndex = m_errors.count() - 1;
 		// check if already at beginning of single error in the program
@@ -612,8 +597,9 @@ bool ProgramModel::errorFindPrev(int &lineNumber, int &column, bool &wrapped)
 // function to return error status for a line (default if no error)
 Status ProgramModel::errorStatus(int lineNumber) const
 {
-	int errIndex {m_errors.findIndex(lineNumber)};
-	return errIndex == -1 ? Status{} : m_errors.at(errIndex).status();
+	auto errIndex = m_errors.findIndex(lineNumber);
+	return errIndex == m_errors.count()
+		? Status{} : m_errors.at(errIndex).status();
 }
 
 
@@ -668,7 +654,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 			= m_table.operandTextFunction(token->code());
 		if (operandText)
 		{
-			token->setString(operandText(this, line[++i].operand()));
+			token->setString(operandText(this, line[++i].operand()).c_str());
 		}
 		rpnList.append(token);
 	}

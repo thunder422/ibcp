@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: main.cpp - main function source file
-//	Copyright (C) 2010-2012  Thunder422
+//	File: utility.cpp - utility class source file
+//	Copyright (C) 2014  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -20,27 +20,18 @@
 //
 //	Change History:
 //
-//	2010-03-13	initial version
+//	2014-10-18	initial version (parts removed from commandline.cpp)
 
-#include <QtGui/QApplication>
+#include <QFileInfo>
 
-#include "ibcp_config.h"  // for cmake
-#include "table.h"
-#include "mainwindow.h"
+#include "utility.h"
 
 
-int main(int argc, char *argv[])
+// function to retrieve a base file name from a file path string
+std::string Utility::baseFileName(const std::string &filePath)
 {
-	QApplication app(argc, argv);
-
-	MainWindow mainWindow;
-	if (!mainWindow.isGuiActive())
-	{
-		return mainWindow.returnCode();
-	}
-	mainWindow.show();
-	return app.exec();
+	return QFileInfo(filePath.c_str()).baseName().toStdString();
 }
 
 
-// end: main.cpp
+// end: utility.cpp

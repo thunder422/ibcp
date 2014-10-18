@@ -25,8 +25,7 @@
 #ifndef ERRORLIST_H
 #define ERRORLIST_H
 
-#include <QList>
-#include <QString>
+#include <vector>
 
 #include "ibcp.h"
 
@@ -42,6 +41,7 @@ public:
 		Code
 	};
 	ErrorItem() : m_type {Type::None} {}
+	ErrorItem(int lineNumber) : m_lineNumber {lineNumber} {}
 	ErrorItem(Type type, int lineNumber, int column, int length,
 		Status status) :  m_type {type}, m_lineNumber {lineNumber},
 		m_column {column}, m_length {length}, m_status {status} {}
@@ -93,13 +93,38 @@ private:
 
 
 // class for holding a list of all the errors of a program
-class ErrorList : public QList<ErrorItem>
+class ErrorList
 {
 public:
-	ErrorList() : m_changed(false) {}
+	ErrorList() : m_changed {} {}
 
-	int find(int lineNumber) const;
-	int findIndex(int lineNumber) const;
+	size_t count() const
+	{
+		return m_list.size();
+	}
+
+	ErrorItem &operator[](size_t index)
+	{
+		return m_list[index];
+	}
+
+	const ErrorItem &operator[](size_t index) const
+	{
+		return const_cast<const ErrorItem &>(m_list[index]);
+	}
+
+	const ErrorItem &at(size_t index) const
+	{
+		return const_cast<const ErrorItem &>(m_list[index]);
+	}
+
+	void clear()
+	{
+		m_list.clear();
+	}
+
+	size_t find(int lineNumber) const;
+	size_t findIndex(int lineNumber) const;
 	void insert(int index, const ErrorItem &value);
 	void removeAt(int index);
 	void replace(int index, const ErrorItem &value);
@@ -115,6 +140,9 @@ public:
 	}
 
 private:
+	std::vector<ErrorItem>::const_iterator findIterator(int lineNumber) const;
+
+	std::vector<ErrorItem> m_list;		// error items
 	bool m_changed;						// error list changed
 };
 

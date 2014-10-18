@@ -35,44 +35,42 @@
 
 void Dictionary::clear(void)
 {
-	m_freeStack.clear();
-	m_keyList.clear();
-	m_keyHash.clear();
-	m_useCount.clear();
+	m_freeStack = {};
+	m_iterator.clear();
+	m_keyMap.clear();
 }
 
 
-quint16 Dictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs,
+uint16_t Dictionary::add(const TokenPtr &token,
 	Dictionary::EntryType *returnNewEntry)
 {
 	EntryType newEntry;
 
 	// if requested, store upper case of key in hash to make search case
-	// insensitive (first actual string will be stored in key list)
-	QString hashKey {cs == Qt::CaseInsensitive
-		? token->string().toUpper() : token->string()};
-	int index {m_keyHash.value(hashKey, -1)};
-	if (index == -1)  // string not present?
+	// insensitive (actual string will be stored in key list)
+	std::string key {token->string().toStdString()};
+	auto iterator = m_keyMap.find(key);
+	int index;
+	if (iterator == m_keyMap.end())  // string not present?
 	{
 		if (m_freeStack.empty())  // no free indexes available?
 		{
-			index = m_keyList.count();
-			m_keyList.append(token->string());
-			m_useCount.append(1);
+			index = m_iterator.size();
 			newEntry = EntryType::New;
+			m_iterator.emplace_back(m_keyMap.emplace(key, index).first);
 		}
 		else  // use a previously freed index
 		{
-			index = m_freeStack.pop();
-			m_keyList[index] = token->string();
-			m_useCount[index] = 1;
+			index = m_freeStack.top();
+			m_freeStack.pop();
 			newEntry = EntryType::Reused;
+			m_iterator[index] = m_keyMap.emplace(key, index).first;
 		}
-		m_keyHash[hashKey] = index;  // save key/index in map
 	}
 	else  // string already present, update use count
 	{
-		m_useCount[index]++;
+		index = iterator->second.m_index;
+		iterator->second.m_useCount++;
 		newEntry = EntryType::Exists;
 	}
 	if (returnNewEntry)
@@ -83,58 +81,17 @@ quint16 Dictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs,
 }
 
 
-int Dictionary::remove(quint16 index, Qt::CaseSensitivity cs)
+int Dictionary::remove(uint16_t index)
 {
-	if (--m_useCount[index] == 0)  // update use count, if zero then remove it
+	auto iterator = m_iterator[index];
+	if (iterator != m_keyMap.end() && --iterator->second.m_useCount == 0)
 	{
-		QString hashKey {m_keyList.at(index)};
-		if (cs == Qt::CaseInsensitive)
-		{
-			hashKey = hashKey.toUpper();
-		}
-		m_keyHash.remove(hashKey);  // remove key/index from hash map
-		m_keyList[index].clear();
-		m_freeStack.push(index);
+		m_freeStack.emplace(iterator->second.m_index);
+		m_keyMap.erase(iterator);
+		m_iterator[index] = m_keyMap.end();
 		return true;
 	}
 	return false;
-}
-
-
-QString Dictionary::debugText(const QString header)
-{
-	QString string {QString("\n%1:\n").arg(header)};
-	for (int i {}; i < m_keyList.count(); i++)
-	{
-		if (m_useCount.at(i) != 0)
-		{
-			string.append(QString("%1: %2 |%3|\n").arg(i).arg(m_useCount.at(i))
-				.arg(m_keyList.at(i)));
-		}
-	}
-	string.append("Free:");
-	if (m_freeStack.isEmpty())
-	{
-		string.append(" none");
-	}
-	else
-	{
-		for (int i {}; i < m_freeStack.count(); i++)
-		{
-			int index {m_freeStack.at(i)};
-			string.append(QString(" %1").arg(index));
-			if (m_useCount.at(index) != 0)
-			{
-				string.append(QString("'%1'").arg(m_useCount.at(index)));
-			}
-			if (!m_keyList.at(index).isEmpty())
-			{
-				string.append(QString("|%1|").arg(m_keyList.at(index)));
-			}
-		}
-	}
-	string.append("\n");
-	return string;
 }
 
 
@@ -154,10 +111,10 @@ void InfoDictionary::clear(void)
 
 
 // function to possibly add a new dictionary entry and return its index
-quint16 InfoDictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs)
+uint16_t InfoDictionary::add(const TokenPtr &token)
 {
 	EntryType returnNewEntry;
-	int index {Dictionary::add(token, cs, &returnNewEntry)};
+	int index {Dictionary::add(token, &returnNewEntry)};
 	if (returnNewEntry == EntryType::New)
 	{
 		// a new entry was added to the dictionary
@@ -175,9 +132,9 @@ quint16 InfoDictionary::add(const TokenPtr &token, Qt::CaseSensitivity cs)
 
 
 // function to remove an entry from the dictionary
-void InfoDictionary::remove(quint16 index, Qt::CaseSensitivity cs)
+void InfoDictionary::remove(uint16_t index)
 {
-	if (Dictionary::remove(index, cs))
+	if (Dictionary::remove(index))
 	{
 		// clear the additional information if the entry was removed
 		m_info->clearElement(index);
