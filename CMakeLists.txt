@@ -191,6 +191,7 @@ set(ibcp_SOURCES
 	token.cpp
 	translator.cpp
 	test_ibcp.cpp
+	utility.cpp
 )
 
 # list the header files containing QOBJECT

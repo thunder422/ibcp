@@ -46,7 +46,7 @@ public:
 		const std::list<std::string> &args, std::ostream &cout);
 
 	static std::string options(void);
-	bool run(CommandLine *commandLine);
+	bool run(std::string copyrightStatement);
 	bool hasOption(void) const  // has a test option been specified?
 	{
 		return m_option != Option{};

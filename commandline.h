@@ -55,7 +55,6 @@ public:
 	static const std::string copyrightStatement(const char *copyright
 		= "Copyright");
 	static std::string version(void);
-	static std::string baseFileName(const std::string &filePath);
 
 private:
 	std::ostream &cout(std::ostream *stream = &std::cout);

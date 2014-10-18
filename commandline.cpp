@@ -25,11 +25,10 @@
 #include <iostream>
 #include <sstream>
 
-#include <QFileInfo>
-
 #include "ibcp_config.h"  // for cmake
 #include "commandline.h"
 #include "test_ibcp.h"
+#include "utility.h"
 
 
 // function to generate the copyright statement
@@ -55,18 +54,11 @@ std::string CommandLine::version(void)
 }
 
 
-// function to retrieve a base file name from a file path string
-std::string CommandLine::baseFileName(const std::string &filePath)
-{
-	return QFileInfo(filePath.c_str()).baseName().toStdString();
-}
-
-
 CommandLine::CommandLine(std::list<std::string> args) :
 	m_cout {nullptr}
 {
 	// get base file name of program from first argument
-	m_programName = baseFileName(args.front());
+	m_programName = Utility::baseFileName(args.front());
 	args.pop_front();  // remove program name
 
 	m_returnCode = -1;
@@ -99,7 +91,7 @@ CommandLine::CommandLine(std::list<std::string> args) :
 	}
 	else if (tester.hasOption())
 	{
-		if (tester.run(this))
+		if (tester.run(std::move(copyrightStatement())))
 		{
 			m_returnCode = 0;
 		}

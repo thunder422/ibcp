@@ -27,10 +27,10 @@
 #include <iostream>
 
 #include "test_ibcp.h"
-#include "commandline.h"
 #include "table.h"
 #include "parser.h"
 #include "statusmessage.h"
+#include "utility.h"
 
 
 // overloaded output stream operator for abbreviated contents of a token
@@ -287,7 +287,7 @@ Tester::Tester(const std::string &programName,
 		{
 			// find start of file name less path
 			m_testFileName = args.back();
-			std::string baseName {CommandLine::baseFileName(m_testFileName)};
+			std::string baseName {Utility::baseFileName(m_testFileName)};
 
 			for (auto iterator : name)
 			{
@@ -353,7 +353,7 @@ std::string Tester::options(void)
 }
 
 
-bool Tester::run(CommandLine *commandLine)
+bool Tester::run(std::string copyrightStatement)
 {
 	std::ifstream ifs;
 
@@ -371,7 +371,7 @@ bool Tester::run(CommandLine *commandLine)
 
 	if (inputMode)
 	{
-		m_cout << m_programName << commandLine->copyrightStatement() << "\n\n";
+		m_cout << m_programName << copyrightStatement << "\n\n";
 
 		m_cout << "This program comes with ABSOLUTELY NO WARRANTY.\n";
 		m_cout << "This is free software, and you are welcome to\n";
