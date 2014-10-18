@@ -29,8 +29,7 @@
 
 
 Translator::Translator(void) :
-	m_table(Table::instance()),
-	m_parser {new Parser}
+	m_table(Table::instance())
 {
 
 }
@@ -54,7 +53,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	TokenPtr token;
 	Status status;
 
-	m_parser->setInput(input);
+	m_parse.reset(new Parser {input});
 
 	m_holdStack.emplace(m_table.newToken(Null_Code));
 
@@ -119,9 +118,10 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	{
 		m_output.setError(token);
 		m_output.setErrorStatus(status == Status::Parser
-			? m_parser->errorStatus() : status);
+			? m_parse->errorStatus() : status);
 		cleanUp();
 	}
+	m_parse.reset();
 	return std::move(m_output);
 }
 
@@ -552,7 +552,7 @@ Status Translator::getToken(TokenPtr &token, DataType dataType)
 {
 	// if data type is not none, then getting an operand token
 	bool operand {dataType != DataType{}};
-	token = m_parser->token(operand);
+	token = (*m_parse)(operand);
 	if (token->isType(Token::Type::Error))
 	{
 		if ((!operand && token->dataType() == DataType::Double)

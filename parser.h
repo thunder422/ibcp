@@ -35,14 +35,8 @@ class Table;
 class Parser
 {
 public:
-	explicit Parser(void);
-	void setInput(const QString &input)
-	{
-		m_input = input;
-		m_pos = 0;
-		m_operandState = false;
-	}
-	TokenPtr token(bool operandState = false);
+	explicit Parser(const QString &input);
+	TokenPtr operator()(bool operandState = false);
 	Status errorStatus()
 	{
 		return m_errorStatus;

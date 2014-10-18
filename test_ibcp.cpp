@@ -476,15 +476,13 @@ bool Tester::run(std::string copyrightStatement)
 // function to parse an input line and print the resulting tokens
 void Tester::parseInput(const std::string &testInput)
 {
-	Parser parser;
 	bool more;
 
-	QString tmp {testInput.c_str()};
-	parser.setInput(tmp);
+	Parser parse {testInput.c_str()};
 	do
 	{
-		TokenPtr token {parser.token()};
-		more = printToken(token, parser.errorStatus(), true)
+		TokenPtr token {parse()};
+		more = printToken(token, parse.errorStatus(), true)
 			&& !token->isCode(EOL_Code);
 	}
 	while (more);

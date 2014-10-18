@@ -26,8 +26,11 @@
 #include "table.h"
 
 
-Parser::Parser(void) :
+Parser::Parser(const QString &input) :
 	m_table(Table::instance()),
+	m_input {input},
+	m_pos {},
+	m_operandState {},
 	m_errorStatus {}
 {
 
@@ -40,7 +43,7 @@ Parser::Parser(void) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenPtr Parser::token(bool operandState)
+TokenPtr Parser::operator()(bool operandState)
 {
 	m_operandState = operandState;
 	skipWhitespace();

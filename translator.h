@@ -161,7 +161,7 @@ private:
 	using DoneStack = std::stack<DoneItem>;
 
 	Table &m_table;					// reference to the table instance
-	std::unique_ptr<Parser> m_parser;	// pointer to parser instance
+	std::unique_ptr<Parser> m_parse;	// pointer to parser instance
 	RpnList m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack
 	DoneStack m_doneStack;			// items processed stack
