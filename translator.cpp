@@ -146,10 +146,10 @@ Status Translator::getCommands(TokenPtr &token)
 
 	forever
 	{
-		if ((status = getToken(token)) != Status::Good)
-		{
-			return Status::ExpCmd;
-		}
+		// get any token and ignore status
+		// if not a command token then let translate will handle token
+		// (if parser error then let translate will report error)
+		getToken(token, DataType::Any);
 
 		if (token->isCode(EOL_Code) && m_output.empty())
 		{
@@ -551,18 +551,21 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 Status Translator::getToken(TokenPtr &token, DataType dataType)
 {
 	// if data type is not none, then getting an operand token
-	bool operand {dataType != DataType{}};
-	token = (*m_parse)(operand);
+	Parser::State state {dataType != DataType{}
+		? Parser::State::Operand : Parser::State::Operator};
+	token = (*m_parse)(state);
 	if (token->isType(Token::Type::Error))
 	{
-		if ((!operand && token->dataType() == DataType::Double)
+		if ((state == Parser::State::Operator
+			&& token->dataType() == DataType::Double)
 			|| dataType == DataType::String)
 		{
 			// only do this for non-operand number constant errors
 			token->setLength(1);  // just point to first character
 			token->setDataType(DataType::None);  // indicate not a number error
 		}
-		if (operand && ((token->dataType() != DataType::Double
+		if (state == Parser::State::Operand
+			&& ((token->dataType() != DataType::Double
 			&& dataType != DataType::None) || dataType == DataType::String))
 		{
 			// non-number constant error, return expected expression error

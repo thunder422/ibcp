@@ -30,7 +30,6 @@ Parser::Parser(const QString &input) :
 	m_table(Table::instance()),
 	m_input {input},
 	m_pos {},
-	m_operandState {},
 	m_errorStatus {}
 {
 
@@ -43,9 +42,8 @@ Parser::Parser(const QString &input) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenPtr Parser::operator()(bool operandState)
+TokenPtr Parser::operator()(State state)
 {
-	m_operandState = operandState;
 	skipWhitespace();
 	m_token = std::make_shared<Token>(m_pos);  // create new token to return
 	m_errorStatus = Status{};
@@ -53,10 +51,11 @@ TokenPtr Parser::operator()(bool operandState)
 	{
 		m_table.setToken(m_token, EOL_Code);
 	}
-	else if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
+	else if (!getIdentifier() && (state == State::Operator || !getNumber())
+		&& !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		setError(Status::UnrecognizedChar, DataType::None);
+		setError(Status::UnknownToken, DataType::None);
 	}
 	return std::move(m_token);  // token may contain an error
 }
@@ -364,7 +363,7 @@ bool Parser::getNumber(void)
 			if (!digits && !decimal)  // nothing found?
 			{
 				// look for negative sign
-				if (m_operandState && !sign && m_input[pos] == '-')
+				if (!sign && m_input[pos] == '-')
 				{
 					pos++;  // move past negative sign
 					sign = true;

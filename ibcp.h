@@ -68,7 +68,7 @@ enum class Status
 	ExpOpSemiCommaOrEnd,
 	ExpIntConst,
 	// the following are parser errors
-	UnrecognizedChar,
+	UnknownToken,
 	ExpNonZeroDigit,
 	ExpDigitsOrSngDP,
 	ExpManDigits,

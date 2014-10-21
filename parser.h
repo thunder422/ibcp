@@ -36,7 +36,11 @@ class Parser
 {
 public:
 	explicit Parser(const QString &input);
-	TokenPtr operator()(bool operandState = false);
+	enum class State {
+		Operator,
+		Operand
+	};
+	TokenPtr operator()(State state);
 	Status errorStatus()
 	{
 		return m_errorStatus;
@@ -82,7 +86,6 @@ private:
 	QString m_input;		// input line being parsed
 	int m_pos;				// index to current position in input string
 	TokenPtr m_token;		// pointer to working token (to be returned)
-	bool m_operandState;	// currently operand state flag (2011-03-27)
 	Status m_errorStatus;	// status code of last detected error
 };
 

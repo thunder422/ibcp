@@ -56,12 +56,13 @@ Input: 100e0
 	 0: Constant     Double  100,100 |100e0|
 	 5: Operator  Op None    EOL
 
-Input: 2147483647 -2147483647 2147483648
+Input: 2147483647 -2147483647 2147483648 -2147483648 -2147483649
 	 0: Constant     Integer 2147483647 |2147483647|
-	11: Operator  Op Double  Sub
-	12: Constant     Integer 2147483647 |2147483647|
+	11: Constant     Integer -2147483647 |-2147483647|
 	23: Constant     Double  2.14748e+09 |2147483648|
-	33: Operator  Op None    EOL
+	34: Constant     Integer -2147483648 |-2147483648|
+	46: Constant     Double  -2.14748e+09 |-2147483649|
+	57: Operator  Op None    EOL
 
 Input: 1.23456e308 1.234e309
 	 0: Constant     Double  1.23456e+308 |1.23456e308|

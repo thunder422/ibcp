@@ -98,8 +98,8 @@ const QString StatusMessage::text(Status status)
 	case Status::ExpIntConst:
 		return tr("expected valid integer constant");
 	// the following statuses are parser errors
-	case Status::UnrecognizedChar:
-		return tr("unrecognizable character");
+	case Status::UnknownToken:
+		return tr("unknown token");
 	case Status::ExpNonZeroDigit:
 		return tr("expected non-zero leading digit in numeric constant");
 	case Status::ExpDigitsOrSngDP:
