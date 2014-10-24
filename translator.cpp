@@ -551,22 +551,12 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 Status Translator::getToken(TokenPtr &token, DataType dataType)
 {
 	// if data type is not none, then getting an operand token
-	Parser::State state {dataType != DataType{}
-		? Parser::State::Operand : Parser::State::Operator};
-	token = (*m_parse)(state);
+	token = (*m_parse)(dataType != DataType{} && dataType != DataType::String
+		? Parser::Number::Yes : Parser::Number::No);
 	if (token->isType(Token::Type::Error))
 	{
-		if ((state == Parser::State::Operator
-			&& token->dataType() == DataType::Double)
-			|| dataType == DataType::String)
-		{
-			// only do this for non-operand number constant errors
-			token->setLength(1);  // just point to first character
-			token->setDataType(DataType::None);  // indicate not a number error
-		}
-		if (state == Parser::State::Operand
-			&& ((token->dataType() != DataType::Double
-			&& dataType != DataType::None) || dataType == DataType::String))
+		if (dataType != DataType{} && dataType != DataType::None
+			&& m_parse->errorStatus() == Status::UnknownToken)
 		{
 			// non-number constant error, return expected expression error
 			return expectedErrStatus(dataType);

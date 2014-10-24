@@ -481,7 +481,7 @@ void Tester::parseInput(const std::string &testInput)
 	Parser parse {testInput.c_str()};
 	do
 	{
-		TokenPtr token {parse(Parser::State::Operand)};
+		TokenPtr token {parse(Parser::Number::Yes)};
 		more = printToken(token, parse.errorStatus(), true)
 			&& !token->isCode(EOL_Code);
 	}

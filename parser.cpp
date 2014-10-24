@@ -42,7 +42,7 @@ Parser::Parser(const QString &input) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenPtr Parser::operator()(State state)
+TokenPtr Parser::operator()(Number number)
 {
 	skipWhitespace();
 	m_token = std::make_shared<Token>(m_pos);  // create new token to return
@@ -51,7 +51,7 @@ TokenPtr Parser::operator()(State state)
 	{
 		m_table.setToken(m_token, EOL_Code);
 	}
-	else if (!getIdentifier() && (state == State::Operator || !getNumber())
+	else if (!getIdentifier() && (number == Number::No || !getNumber())
 		&& !getString() && !getOperator())
 	{
 		// not a valid token, create error token

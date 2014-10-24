@@ -36,11 +36,11 @@ class Parser
 {
 public:
 	explicit Parser(const QString &input);
-	enum class State {
-		Operator,
-		Operand
+	enum class Number {
+		No,
+		Yes
 	};
-	TokenPtr operator()(State state);
+	TokenPtr operator()(Number state);
 	Status errorStatus()
 	{
 		return m_errorStatus;
