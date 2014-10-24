@@ -36,7 +36,6 @@ enum class Status
 {
 	Good,
 	Done,
-	Parser,
 	ExpCmd,
 	ExpExpr,
 	ExpExprOrEnd,

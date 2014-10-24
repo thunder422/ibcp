@@ -34,8 +34,6 @@ const QString StatusMessage::text(Status status)
 		return tr("Good_TokenStatus (BUG)");
 	case Status::Done:
 		return tr("Done_TokenStatus (BUG)");
-	case Status::Parser:
-		return tr("Parser_TokenStatus (BUG)");
 	case Status::ExpCmd:
 		return tr("expected command");
 	case Status::ExpExpr:

@@ -45,7 +45,7 @@ Status inputTranslate(Translator &translator, TokenPtr commandToken,
 		status = translator.getExpression(token, DataType::String);
 		if (status != Status::Done)
 		{
-			if (status == Status::Parser && token->isDataType(DataType::None))
+			if (status == Status::UnknownToken)
 			{
 				status = Status::ExpSemiOrComma;
 			}

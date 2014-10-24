@@ -55,7 +55,7 @@ TokenPtr Parser::operator()(Number number)
 		&& !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		setError(Status::UnknownToken, DataType::None);
+		setError(Status::UnknownToken);
 	}
 	return std::move(m_token);  // token may contain an error
 }

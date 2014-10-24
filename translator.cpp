@@ -61,8 +61,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	{
 		status = getExpression(token, DataType::Any);
 
-		if (status == Status::Parser
-			&& token->isDataType(DataType::None))
+		if (status == Status::UnknownToken)
 		{
 			status = Status::ExpOpOrEnd;
 		}
@@ -117,8 +116,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	if (status != Status::Done)
 	{
 		m_output.setError(token);
-		m_output.setErrorStatus(status == Status::Parser
-			? m_parse->errorStatus() : status);
+		m_output.setErrorStatus(status);
 		cleanUp();
 	}
 	m_parse.reset();
@@ -228,8 +226,7 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 				{
 					status = Status::ExpBinOpOrParen;
 				}
-				if (status == Status::Parser
-					&& token->isDataType(DataType::None))
+				if (status == Status::UnknownToken)
 				{
 					status = Status::ExpOpOrParen;
 				}
@@ -381,10 +378,8 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 			// if parser error then caller needs to handle it
 			return status;
 		}
-		if (status == Status::Parser)
-		{
-			token->setLength(1);  // only report error at first char of token
-		}
+		// for reference operands, only report error at first char of token
+		token->setLength(1);
 		return expectedErrStatus(dataType, reference);
 	}
 
@@ -564,7 +559,7 @@ Status Translator::getToken(TokenPtr &token, DataType dataType)
 		else
 		{
 			// caller needs to convert this error to the appropriate error
-			return Status::Parser;
+			return m_parse->errorStatus();
 		}
 	}
 	return Status::Good;
@@ -678,22 +673,17 @@ Status Translator::processInternalFunction(TokenPtr &token)
 				}
 			}
 		}
-		else if (status == Status::Parser)
-		{
-			if (token->isDataType(DataType::Double))
-			{
-				return status;  // return parser error
-			}
-		}
 		else if (m_table.isUnaryOperator(token))
 		{
+			// status will be set to an error for a unary operator
+			// need to pass to below to determine appropriate error
 			unaryOperator = true;
 		}
-		else
+		else if (status != Status::UnknownToken)
 		{
-			return status;
+			return status;  // return all other errors except unknown token
 		}
-		// pass other parser errors and unary operators to error code below
+		// code below determines error for unknown and unary operator tokens
 
 		// check terminating token
 		if (token->isCode(Comma_Code))
@@ -812,8 +802,7 @@ Status Translator::processParenToken(TokenPtr &token)
 	{
 		if ((status = getExpression(token, dataType)) != Status::Done)
 		{
-			if (status == Status::Parser
-				&& token->isDataType(DataType::None))
+			if (status == Status::UnknownToken)
 			{
 				status = Status::ExpOpCommaOrParen;
 			}

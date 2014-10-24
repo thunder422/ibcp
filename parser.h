@@ -55,12 +55,11 @@ private:
 	bool getOperator(void);
 
 	// set token error function
-	void setError(Status status, DataType dataType = DataType::Double)
+	void setError(Status status)
 	{
 		m_errorStatus = status;
 		m_token->setType(Token::Type::Error);
 		m_token->setLength(1);
-		m_token->setDataType(dataType);
 	}
 	void setErrorColumn(Status status, int column)
 	{
@@ -68,14 +67,12 @@ private:
 		m_token->setType(Token::Type::Error);
 		// assumes length=1, specifies alternate column
 		m_token->setLength(-column);
-		m_token->setDataType(DataType::Double);
 	}
 	void setErrorLength(Status status, int len)
 	{
 		m_errorStatus = status;
 		m_token->setType(Token::Type::Error);
 		m_token->setLength(len);
-		m_token->setDataType(DataType::Double);
 	}
 
 	// support functions

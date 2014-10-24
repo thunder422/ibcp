@@ -135,7 +135,7 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 	// get expression for value to assign
 	if ((status = translator.getExpression(token, dataType)) != Status::Done)
 	{
-		if (status == Status::Parser && token->isDataType(DataType::None))
+		if (status == Status::UnknownToken)
 		{
 			status = Status::ExpOpOrEnd;
 		}
