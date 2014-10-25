@@ -476,16 +476,22 @@ bool Tester::run(std::string copyrightStatement)
 // function to parse an input line and print the resulting tokens
 void Tester::parseInput(const std::string &testInput)
 {
-	bool more;
-
 	Parser parse {testInput.c_str()};
-	do
+	for (;;)
+	try
 	{
 		TokenPtr token {parse(Parser::Number::Yes)};
-		more = printToken(token, parse.errorStatus(), true)
-			&& !token->isCode(EOL_Code);
+		printToken(token);
+		if (token->isCode(EOL_Code))
+		{
+			return;
+		}
 	}
-	while (more);
+	catch (Error &error)
+	{
+		printError(error);
+		return;
+	}
 }
 
 
@@ -499,8 +505,9 @@ RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
 		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
 	if (rpnList.hasError())
 	{
-		printError(rpnList.errorColumn(), rpnList.errorLength(),
-			rpnList.errorStatus());
+		Error error {rpnList.errorStatus(), rpnList.errorColumn(),
+			rpnList.errorLength()};
+		printError(error);
 		rpnList.clear();  // return an empty list
 	}
 	else  // no error, translate line and if selected recreate it
@@ -630,8 +637,9 @@ void Tester::encodeInput(std::string testInput)
 		printInput(testInput);
 		if (errorItem)
 		{
-			printError(errorItem->column(), errorItem->length(),
-				errorItem->status());
+			Error error {errorItem->status(), errorItem->column(),
+				errorItem->length()};
+			printError(error);
 		}
 		else  // get text of encoded line and output it
 		{
@@ -687,24 +695,17 @@ static const char *tokenTypeName(Token::Type type)
 		return "NoParen";
 	case Token::Type::Paren:
 		return "Paren";
-	case Token::Type::Error:
-		return "Error";
 	}
 	return "";  // silence compiler warning (doesn't reach here at run-time)
 }
 
 
 // function to print the contents of a token
-bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
+void Tester::printToken(const TokenPtr &token)
 {
 	// include the auto-generated enumeration name text arrays
 	#include "test_names.h"
 
-	if (token->isType(Token::Type::Error))
-	{
-		printError(token->column(), token->length(), errorStatus);
-		return false;
-	}
 	std::string info {"  "};
 	if (token->hasParen())
 	{
@@ -715,12 +716,8 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 	{
 		info = "Op";
 	}
-	if (tab)
-	{
-		m_cout << '\t';
-	}
-	m_cout << std::setw(2) << std::right << token->column() << std::left << ": "
-		<< std::setw(10) << tokenTypeName(token->type()) << info;
+	m_cout << '\t' << std::setw(2) << std::right << token->column() << std::left
+		<< ": " << std::setw(10) << tokenTypeName(token->type()) << info;
 	switch (token->type())
 	{
 	case Token::Type::DefFuncN:
@@ -773,20 +770,20 @@ bool Tester::printToken(const TokenPtr &token, Status errorStatus, bool tab)
 		break;
 	}
 	m_cout << '\n';
-	return true;
 }
 
 
 // function to print a token with an error
-void Tester::printError(int column, int length, Status status)
+void Tester::printError(Error &error)
 {
-	if (length < 0)  // alternate column?
+	if (error.length < 0)  // alternate column?
 	{
-		column = -length;
-		length = 1;
+		error.column = -error.length;
+		error.length = 1;
 	}
-	m_cout << std::string(7 + column, ' ') << std::string(length, '^')
-		<< "-- " << StatusMessage::text(status).toStdString() << '\n';
+	m_cout << std::string(7 + error.column, ' ')
+		<< std::string(error.length, '^') << "-- "
+		<< StatusMessage::text(error.status).toStdString() << '\n';
 }
 
 

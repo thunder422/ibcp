@@ -36,15 +36,12 @@ class Parser
 {
 public:
 	explicit Parser(const QString &input);
-	enum class Number {
+	enum class Number
+	{
 		No,
 		Yes
 	};
 	TokenPtr operator()(Number state);
-	Status errorStatus()
-	{
-		return m_errorStatus;
-	}
 
 private:
 	// main functions
@@ -54,27 +51,6 @@ private:
 	bool getString(void);
 	bool getOperator(void);
 
-	// set token error function
-	void setError(Status status)
-	{
-		m_errorStatus = status;
-		m_token->setType(Token::Type::Error);
-		m_token->setLength(1);
-	}
-	void setErrorColumn(Status status, int column)
-	{
-		m_errorStatus = status;
-		m_token->setType(Token::Type::Error);
-		// assumes length=1, specifies alternate column
-		m_token->setLength(-column);
-	}
-	void setErrorLength(Status status, int len)
-	{
-		m_errorStatus = status;
-		m_token->setType(Token::Type::Error);
-		m_token->setLength(len);
-	}
-
 	// support functions
 	void skipWhitespace();
 	int scanWord(int pos, DataType &datatype, bool &paren);
@@ -83,7 +59,6 @@ private:
 	QString m_input;		// input line being parsed
 	int m_pos;				// index to current position in input string
 	TokenPtr m_token;		// pointer to working token (to be returned)
-	Status m_errorStatus;	// status code of last detected error
 };
 
 

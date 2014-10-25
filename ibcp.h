@@ -96,6 +96,15 @@ enum class Status
 };
 
 
+// structure for holding information about an error exception
+struct Error
+{
+	Status status;						// status of error
+	int column;							// column of error
+	int length;							// length of error
+};
+
+
 // code operator in-line functions for additional, increment and decrement
 inline Code operator +(Code code, int number)
 {

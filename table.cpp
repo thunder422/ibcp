@@ -252,7 +252,7 @@ static TableEntry tableEntries[] =
 	//   BEGIN PLAIN WORDS
 	//***********************
 	{	// BegPlainWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -486,7 +486,7 @@ static TableEntry tableEntries[] =
 	//   END PLAIN WORDS
 	//*********************
 	{	// EndPlainWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -496,7 +496,7 @@ static TableEntry tableEntries[] =
 	//   BEGIN PARENTHESES WORDS
 	//*****************************
 	{	// BegParenWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -709,7 +709,7 @@ static TableEntry tableEntries[] =
 	//   END PARENTHESES WORDS
 	//***************************
 	{	// EndParenWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -719,7 +719,7 @@ static TableEntry tableEntries[] =
 	//   BEGIN DATA TYPE WORDS
 	//***************************
 	{	// BegDataTypeWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -731,7 +731,7 @@ static TableEntry tableEntries[] =
 	//   END DATA TYPE WORDS
 	//*************************
 	{	// EndDataTypeWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -741,7 +741,7 @@ static TableEntry tableEntries[] =
 	//   BEGIN SYMBOLS
 	//*******************
 	{	// BegSymbol_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -875,7 +875,7 @@ static TableEntry tableEntries[] =
 	//   END SYMBOLS
 	//*****************
 	{	// EndSymbol_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL

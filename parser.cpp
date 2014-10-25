@@ -29,8 +29,7 @@
 Parser::Parser(const QString &input) :
 	m_table(Table::instance()),
 	m_input {input},
-	m_pos {},
-	m_errorStatus {}
+	m_pos {}
 {
 
 }
@@ -46,7 +45,6 @@ TokenPtr Parser::operator()(Number number)
 {
 	skipWhitespace();
 	m_token = std::make_shared<Token>(m_pos);  // create new token to return
-	m_errorStatus = Status{};
 	if (m_input[m_pos].isNull())
 	{
 		m_table.setToken(m_token, EOL_Code);
@@ -55,7 +53,7 @@ TokenPtr Parser::operator()(Number number)
 		&& !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		setError(Status::UnknownToken);
+		throw Error {Status::UnknownToken, m_token->column(), 1};
 	}
 	return std::move(m_token);  // token may contain an error
 }
@@ -173,11 +171,6 @@ bool Parser::getIdentifier(void)
 		|| (code = m_table.search(m_input.midRef(word1, len),
 		m_input.midRef(m_pos, len2))) == Invalid_Code)
 	{
-		if (m_token->type() == Token::Type::Error)
-		{
-			// first word by itself is not valid
-			m_token->setString("Invalid Two Word Command");
-		}
 		// otherwise single word is valid command,
 		// token already setup, position already set past word
 		return true;
@@ -303,8 +296,8 @@ bool Parser::getNumber(void)
 						// and second character is not a decimal point,
 						// and second character is a digit
 						// then this is in invalid number
-						setError(Status::ExpNonZeroDigit);
-						return true;
+						throw Error {Status::ExpNonZeroDigit, m_token->column(),
+							m_token->length()};
 					}
 				}
 			}
@@ -315,8 +308,8 @@ bool Parser::getNumber(void)
 			{
 				if (!digits)  // no digits found?
 				{
-					setErrorLength(Status::ExpDigitsOrSngDP, 2);
-					return true;
+					throw Error {Status::ExpDigitsOrSngDP, m_token->column(),
+						2};
 				}
 				break;  // exit loop to process string
 			}
@@ -335,8 +328,8 @@ bool Parser::getNumber(void)
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				setError(Status::ExpManDigits);
-				return true;
+				throw Error {Status::ExpManDigits, m_token->column(),
+					m_token->length()};
 			}
 			pos++;  // move past 'e' or 'E'
 			if (m_input[pos] == '+' || m_input[pos] == '-')
@@ -352,8 +345,8 @@ bool Parser::getNumber(void)
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				setErrorColumn(Status::ExpExpDigits, pos);
-				return true;
+				// assumes length=1, length specifies alternate column
+				throw Error {Status::ExpExpDigits, m_token->column(), -pos};
 			}
 			decimal = true;  // process as double
 			break;  // exit loop to process string
@@ -375,8 +368,8 @@ bool Parser::getNumber(void)
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				setError(Status::ExpDigits);
-				return true;
+				throw Error {Status::ExpDigits, m_token->column(),
+					m_token->length()};
 			}
 			else
 			{
@@ -418,8 +411,7 @@ bool Parser::getNumber(void)
 	if (!ok)
 	{
 		// overflow or underflow, constant is not valid
-		setErrorLength(Status::FPOutOfRange, len);
-		return true;
+		throw Error {Status::FPOutOfRange, m_token->column(), len};
 	}
 
 	// if double in range of integer, then set as integer

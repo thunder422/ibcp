@@ -45,7 +45,7 @@ public:
 	// for s_hasParen and s_precedence maps
 	enum class Type
 	{
-		Command,
+		Command = 1,
 		Operator,
 		IntFuncN,
 		IntFuncP,
@@ -53,18 +53,12 @@ public:
 		DefFuncN,
 		DefFuncP,
 		NoParen,
-		Paren,
-		Error
+		Paren
 	};
 
-	explicit Token(int column = -1)
-	{
-		m_column = column;
-		m_length = 1;
-		m_reference = false;
-		m_code = Invalid_Code;
-		m_subCode = None_SubCode;
-	}
+	explicit Token(int column = -1, int length = 1) : m_column{column},
+		m_length{length}, m_type{}, m_code{Invalid_Code}, m_reference{},
+		m_subCode{None_SubCode} {}
 	Token(const Token &token)  // copy constructor
 	{
 		*this = token;

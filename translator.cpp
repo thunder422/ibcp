@@ -540,29 +540,32 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 
 // function to get a token from the parser
 //
-//   - data type argument determines if token to get is an operand
-//   - returns Parser_TokenStatus if the parser returned an error
+//   - data type argument determines if number tokens are allowed
+//   - returns parser error if the parser returned an error exception
 
 Status Translator::getToken(TokenPtr &token, DataType dataType)
+try
 {
-	// if data type is not none, then getting an operand token
+	// if data type is not blank and not string, then allow a number token
 	token = (*m_parse)(dataType != DataType{} && dataType != DataType::String
 		? Parser::Number::Yes : Parser::Number::No);
-	if (token->isType(Token::Type::Error))
-	{
-		if (dataType != DataType{} && dataType != DataType::None
-			&& m_parse->errorStatus() == Status::UnknownToken)
-		{
-			// non-number constant error, return expected expression error
-			return expectedErrStatus(dataType);
-		}
-		else
-		{
-			// caller needs to convert this error to the appropriate error
-			return m_parse->errorStatus();
-		}
-	}
 	return Status::Good;
+}
+catch (Error &error)
+{
+	// TODO for now, create an error token to return
+	token = std::make_shared<Token>(error.column, error.length);
+	if (dataType != DataType{} && dataType != DataType::None
+		&& error.status == Status::UnknownToken)
+	{
+		// non-number constant error, return expected expression error
+		return expectedErrStatus(dataType);
+	}
+	else
+	{
+		// caller may need to convert this error to appropriate error
+		return error.status;
+	}
 }
 
 
