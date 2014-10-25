@@ -715,28 +715,7 @@ static TableEntry tableEntries[] =
 		NULL, NULL, NULL, NULL, NULL
 
 	},
-	//***************************
-	//   BEGIN DATA TYPE WORDS
-	//***************************
-	{	// BegDataTypeWord_Code
-		Token::Type{}, Multiple::OneWord,
-		NULL, "NULL", NULL,
-		Null_Flag, 0, DataType{}, NULL,
-		NULL, NULL, NULL, NULL, NULL
 
-	},
-	// Currently None
-
-	//*************************
-	//   END DATA TYPE WORDS
-	//*************************
-	{	// EndDataTypeWord_Code
-		Token::Type{}, Multiple::OneWord,
-		NULL, "NULL", NULL,
-		Null_Flag, 0, DataType{}, NULL,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
 	//*******************
 	//   BEGIN SYMBOLS
 	//*******************
@@ -1632,8 +1611,6 @@ Table::Table(TableEntry *entry, int entryCount) :
 	m_range[PlainWord_SearchType].end = EndPlainWord_Code;
 	m_range[ParenWord_SearchType].beg = BegParenWord_Code;
 	m_range[ParenWord_SearchType].end = EndParenWord_Code;
-	m_range[DataTypeWord_SearchType].beg = BegDataTypeWord_Code;
-	m_range[DataTypeWord_SearchType].end = EndDataTypeWord_Code;
 	m_range[Symbol_SearchType].beg = BegSymbol_Code;
 	m_range[Symbol_SearchType].end = EndSymbol_Code;
 

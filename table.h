@@ -53,7 +53,6 @@ enum SearchType  // table search types
 {
 	PlainWord_SearchType,
 	ParenWord_SearchType,
-	DataTypeWord_SearchType,
 	Symbol_SearchType,
 	sizeof_SearchType
 };

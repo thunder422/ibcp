@@ -118,10 +118,6 @@ bool Parser::getIdentifier(void)
 	{
 		search = ParenWord_SearchType;
 	}
-	else if (dataType != DataType::None)
-	{
-		search = DataTypeWord_SearchType;
-	}
 	else
 	{
 		search = PlainWord_SearchType;
