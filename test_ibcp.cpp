@@ -776,11 +776,6 @@ void Tester::printToken(const TokenPtr &token)
 // function to print a token with an error
 void Tester::printError(Error &error)
 {
-	if (error.length < 0)  // alternate column?
-	{
-		error.column = -error.length;
-		error.length = 1;
-	}
 	m_cout << std::string(7 + error.column, ' ')
 		<< std::string(error.length, '^') << "-- "
 		<< StatusMessage::text(error.status).toStdString() << '\n';

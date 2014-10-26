@@ -53,7 +53,7 @@ TokenPtr Parser::operator()(Number number)
 		&& !getString() && !getOperator())
 	{
 		// not a valid token, create error token
-		throw Error {Status::UnknownToken, m_token->column(), 1};
+		throw Error {Status::UnknownToken, m_pos, 1};
 	}
 	return std::move(m_token);  // token may contain an error
 }
@@ -292,8 +292,7 @@ bool Parser::getNumber(void)
 						// and second character is not a decimal point,
 						// and second character is a digit
 						// then this is in invalid number
-						throw Error {Status::ExpNonZeroDigit, m_token->column(),
-							m_token->length()};
+						throw Error {Status::ExpNonZeroDigit, m_pos, 1};
 					}
 				}
 			}
@@ -304,8 +303,7 @@ bool Parser::getNumber(void)
 			{
 				if (!digits)  // no digits found?
 				{
-					throw Error {Status::ExpDigitsOrSngDP, m_token->column(),
-						2};
+					throw Error {Status::ExpDigitsOrSngDP, m_pos, 2};
 				}
 				break;  // exit loop to process string
 			}
@@ -324,8 +322,7 @@ bool Parser::getNumber(void)
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				throw Error {Status::ExpManDigits, m_token->column(),
-					m_token->length()};
+				throw Error {Status::ExpManDigits, m_pos, 1};
 			}
 			pos++;  // move past 'e' or 'E'
 			if (m_input[pos] == '+' || m_input[pos] == '-')
@@ -341,8 +338,7 @@ bool Parser::getNumber(void)
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				// assumes length=1, length specifies alternate column
-				throw Error {Status::ExpExpDigits, m_token->column(), -pos};
+				throw Error {Status::ExpExpDigits, pos, 1};
 			}
 			decimal = true;  // process as double
 			break;  // exit loop to process string
@@ -364,8 +360,7 @@ bool Parser::getNumber(void)
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				throw Error {Status::ExpDigits, m_token->column(),
-					m_token->length()};
+				throw Error {Status::ExpDigits, m_pos, 1};
 			}
 			else
 			{
@@ -382,7 +377,6 @@ bool Parser::getNumber(void)
 	// save string of number so it later can be reproduced
 	m_token->setString(numStr);
 	m_token->setLength(len);
-	m_pos = pos;  // move to next character after constant
 
 	m_token->setType(Token::Type::Constant);
 
@@ -398,6 +392,7 @@ bool Parser::getNumber(void)
 			m_token->setDataType(DataType::Integer);
 			// convert to double in case double is needed
 			m_token->setValue((double)m_token->valueInt());
+			m_pos = pos;  // move to next character after constant
 			return true;
 		}
 		// else overflow or underflow, won't fit into an integer
@@ -407,8 +402,9 @@ bool Parser::getNumber(void)
 	if (!ok)
 	{
 		// overflow or underflow, constant is not valid
-		throw Error {Status::FPOutOfRange, m_token->column(), len};
+		throw Error {Status::FPOutOfRange, m_pos, len};
 	}
+	m_pos = pos;  // move to next character after constant
 
 	// if double in range of integer, then set as integer
 	if (m_token->value() > (double)INT_MIN - 0.5
