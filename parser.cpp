@@ -44,12 +44,16 @@ Parser::Parser(const QString &input) :
 TokenPtr Parser::operator()(Number number)
 {
 	skipWhitespace();
-	m_token = std::make_shared<Token>(m_pos);  // create new token to return
 	if (m_input[m_pos].isNull())
 	{
-		m_table.setToken(m_token, EOL_Code);
+		return m_table.newToken(m_pos, 1, EOL_Code);
 	}
-	else if (!getIdentifier() && (number == Number::No || !getNumber())
+	if (TokenPtr token = getIdentifier())
+	{
+		return token;
+	}
+	m_token = std::make_shared<Token>(m_pos);  // create new token to return
+	if ((number == Number::No || !getNumber())
 		&& !getString() && !getOperator())
 	{
 		// not a valid token, create error token
@@ -65,118 +69,83 @@ TokenPtr Parser::operator()(Number number)
 // parenthesis.  The internal function, defined function or identifier
 // will have a data type
 //
-//   - returns false if no identifier (position not changed)
-//   - returns true if there is and token is filled
-//   - returns true for errors setting special error token
+//   - returns default token pointer if no identifier (position not changed)
+//   - returns token pointer to new token if there is
 
-bool Parser::getIdentifier(void)
+TokenPtr Parser::getIdentifier()
 {
 	DataType dataType;		// data type of word
 	bool paren;				// word has opening parenthesis flag
-	SearchType search;		// table search type
 
 	// check to see if this is the start of a remark
 	if (m_input.midRef(m_pos).startsWith(m_table.name(Rem_Code),
 		Qt::CaseInsensitive))
 	{
-		m_table.setToken(m_token, Rem_Code);
-		m_token->setLength(m_table.name(Rem_Code).length());
+		int pos {m_pos};
+		int len {m_table.name(Rem_Code).length()};
 		// move position past command and grab rest of line
-		m_pos += m_token->length();
-		m_token->setString(m_input.mid(m_pos));
-		m_pos += m_token->stringLength();
-		return true;
+		m_pos += len;
+		QString string {m_input.mid(m_pos)};
+		m_pos += string.length();
+		return m_table.newToken(pos, len, Rem_Code, string);
 	}
 
 	int pos {scanWord(m_pos, dataType, paren)};
 	if (pos == -1)
 	{
-		return false;  // not an identifier
+		return TokenPtr{};  // not an identifier
 	}
 
 	int len {pos - m_pos};
+	Token::Type type {};
+	Code code;
 	// defined function?
 	if (m_input.midRef(m_pos).startsWith("FN", Qt::CaseInsensitive))
 	{
-		if (paren)
-		{
-			m_token->setType(Token::Type::DefFuncP);
-			m_token->setString(m_input.mid(m_pos, len - 1));
-			m_token->setLength(len - 1);
-		}
-		else  // no parentheses
-		{
-			m_token->setType(Token::Type::DefFuncN);
-			m_token->setString(m_input.mid(m_pos, len));
-			m_token->setLength(len);
-		}
-		m_token->setDataType(dataType);
-		m_pos = pos;  // move position past defined function identifier
-		return true;
-	}
-	if (paren)
-	{
-		search = ParenWord_SearchType;
+		type = paren ? Token::Type::DefFuncP : Token::Type::DefFuncN;
 	}
 	else
 	{
-		search = PlainWord_SearchType;
+		SearchType search= paren ? ParenWord_SearchType : PlainWord_SearchType;
+		code = m_table.search(search, m_input.midRef(m_pos, len));
+		if (code == Invalid_Code)
+		{
+			// word not found in table, therefore
+			// must be variable, array, generic function, or subroutine
+			// but that can't be determined here, so just generic token
+			type = paren ? Token::Type::Paren : Token::Type::NoParen;
+		}
 	}
-	Code code {m_table.search(search, m_input.midRef(m_pos, len))};
-	if (code == Invalid_Code)
+	std::swap(m_pos, pos);  // swap begin and end positions
+	if (type != Token::Type{})
 	{
-		// word not found in table, therefore
-		// must be variable, array, generic function, or subroutine
-		// but that can't be determined here, so just return data type,
-		// whether opening parenthesis is present, and string of identifier
 		if (paren)
 		{
-			m_token->setType(Token::Type::Paren);
-			m_token->setString(m_input.mid(m_pos, len - 1));
-			m_token->setLength(len - 1);
+			--len;  // don't store parentheses in token string
 		}
-		else
-		{
-			m_token->setType(Token::Type::NoParen);
-			m_token->setString(m_input.mid(m_pos, len));
-			m_token->setLength(len);
-		}
-		m_token->setDataType(dataType);
-		m_pos = pos;  // move position past word
-		return true;
+		return std::make_shared<Token>(pos, len, type, dataType, m_input);
 	}
+
 	// found word in table (command, internal function, or operator)
-	int word1 {m_pos};  // save position of first word
-	m_pos = pos;  // move position past first word
-
-	// setup token in case this is only one word
-	m_table.setToken(m_token, code);
-	m_token->setLength(len);
-
-	if (m_table.multiple(code) == Multiple::OneWord)
+	if (m_table.multiple(code) != Multiple::OneWord)
 	{
-		// identifier can only be a single word
-		return true;
+		// command could be a two word command
+		skipWhitespace();
+		int pos2 {scanWord(m_pos, dataType, paren)};
+		if (dataType == DataType::None && !paren)  // possible second word?
+		{
+			Code code2;
+			if ((code2 = m_table.search(m_input.midRef(pos, len),
+				m_input.midRef(m_pos, pos2 - m_pos))) != Invalid_Code)
+			{
+				// double word command found
+				code = code2;
+				len = pos2 - pos;
+				m_pos = pos2;  // move position past second word
+			}
+		}
 	}
-
-	// command could be a two word command
-	skipWhitespace();
-	pos = scanWord(m_pos, dataType, paren);
-	int len2 {pos - m_pos};
-	if (dataType != DataType::None || paren
-		|| (code = m_table.search(m_input.midRef(word1, len),
-		m_input.midRef(m_pos, len2))) == Invalid_Code)
-	{
-		// otherwise single word is valid command,
-		// token already setup, position already set past word
-		return true;
-	}
-	// get information from two word command
-	m_table.setToken(m_token, code);
-	m_token->setLength(pos - m_token->column());
-
-	m_pos = pos;  // move position past second word
-	return true;
+	return m_table.newToken(pos, len, code);
 }
 
 

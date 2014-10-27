@@ -59,6 +59,18 @@ public:
 	explicit Token(int column = -1, int length = 1) : m_column{column},
 		m_length{length}, m_type{}, m_code{Invalid_Code}, m_reference{},
 		m_subCode{None_SubCode} {}
+
+	Token(int column, int length, Type type, DataType dataType, Code code,
+		QString string = {}) : m_column{column}, m_length{length}, m_type{type},
+		m_dataType{dataType}, m_string{string}, m_code{code}, m_reference{},
+		m_subCode{None_SubCode} {}
+
+	Token(int column, int length, Type type, DataType dataType,
+		const QString &inputString) : m_column{column}, m_length{length},
+		m_type{type}, m_dataType{dataType}, m_string{inputString.mid(column,
+		length)}, m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode}
+		{}
+
 	Token(const Token &token)  // copy constructor
 	{
 		*this = token;
@@ -248,7 +260,6 @@ private:
 	static std::unordered_map<Type, int, EnumClassHash> s_precendence;
 
 	// instance members
-	int m_id;				// private ID (index) for detecting token leaks
 	int m_column;			// start column of token
 	int m_length;			// length of token
 	Type m_type;			// type of the token
