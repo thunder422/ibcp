@@ -60,16 +60,30 @@ public:
 		m_length{length}, m_type{}, m_code{Invalid_Code}, m_reference{},
 		m_subCode{None_SubCode} {}
 
+	// constructor for codes
 	Token(int column, int length, Type type, DataType dataType, Code code,
 		QString string = {}) : m_column{column}, m_length{length}, m_type{type},
 		m_dataType{dataType}, m_string{string}, m_code{code}, m_reference{},
 		m_subCode{None_SubCode} {}
 
+	// constructor for identifiers
 	Token(int column, int length, Type type, DataType dataType,
 		const QString &inputString) : m_column{column}, m_length{length},
 		m_type{type}, m_dataType{dataType}, m_string{inputString.mid(column,
 		length)}, m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode}
 		{}
+
+	// constructor for integer constants
+	Token(int column, int length, QString string, int value) : m_column{column},
+		m_length{length}, m_type{Token::Type::Constant},
+		m_dataType{DataType::Integer}, m_string{string}, m_code{Invalid_Code},
+		m_reference{}, m_subCode{None_SubCode}, m_valueInt{value}
+	{
+		m_value = value;  // convert to double in case needed
+	}
+
+	// constructor for double constants
+	Token(int column, int length, QString string, double value, bool decimal);
 
 	Token(const Token &token)  // copy constructor
 	{

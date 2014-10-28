@@ -52,9 +52,15 @@ TokenPtr Parser::operator()(Number number)
 	{
 		return token;
 	}
+	if (number == Number::Yes)
+	{
+		if (TokenPtr token = getNumber())
+		{
+			return token;
+		}
+	}
 	m_token = std::make_shared<Token>(m_pos);  // create new token to return
-	if ((number == Number::No || !getNumber())
-		&& !getString() && !getOperator())
+	if (!getString() && !getOperator())
 	{
 		// not a valid token, create error token
 		throw Error {Status::UnknownToken, m_pos, 1};
@@ -226,13 +232,13 @@ void Parser::skipWhitespace(void)
 // double.
 //
 //   - numbers starting with zero must be followed by a decimal point
-//   - returns false if no number (position not changed)
-//   - returns true if there is and token is filled
-//   - returns true for errors and special error token is set
+//   - returns default token pointer if no number (position not changed)
+//   - returns token if there is a valid number
+//   - throws an expection for errors
 //   - string of the number is converted to a value
 //   - string of the number is saved so it can be later reproduced
 
-bool Parser::getNumber(void)
+TokenPtr Parser::getNumber()
 {
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
@@ -287,7 +293,7 @@ bool Parser::getNumber(void)
 				{
 					// if there is a '-E' then not a number
 					// (need to interprete '-' as unary operator)
-					return false;
+					return TokenPtr{};
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
@@ -324,7 +330,7 @@ bool Parser::getNumber(void)
 				}
 				else
 				{
-					return false;  // not a numeric constant
+					return TokenPtr{};  // not a numeric constant
 				}
 			}
 			else if (!digits)  // only a decimal point found?
@@ -343,56 +349,32 @@ bool Parser::getNumber(void)
 	int len {pos - m_pos};
 	QString numStr {m_input.mid(m_pos, len)};
 
-	// save string of number so it later can be reproduced
-	m_token->setString(numStr);
-	m_token->setLength(len);
-
-	m_token->setType(Token::Type::Constant);
-
 	// FIXME hack for memory issue reported against QString::toInt()/toDouble()
 	QByteArray numBytes;
 	numBytes.append(numStr);
 	if (!decimal)  // no decimal or exponent?
 	{
 		// try to convert to integer first
-		m_token->setValue(numBytes.toInt(&ok));
+		int value {numBytes.toInt(&ok)};
 		if (ok)
 		{
-			m_token->setDataType(DataType::Integer);
-			// convert to double in case double is needed
-			m_token->setValue((double)m_token->valueInt());
-			m_pos = pos;  // move to next character after constant
-			return true;
+			std::swap(m_pos, pos);  // swap begin and end positions
+			// save string of number so it later can be reproduced
+			return std::make_shared<Token>(pos, len, numStr, value);
 		}
 		// else overflow or underflow, won't fit into an integer
 		// fall thru and try as double
 	}
-	m_token->setValue(numBytes.toDouble(&ok));
+
+	double value {numBytes.toDouble(&ok)};
 	if (!ok)
 	{
 		// overflow or underflow, constant is not valid
 		throw Error {Status::FPOutOfRange, m_pos, len};
 	}
-	m_pos = pos;  // move to next character after constant
-
-	// if double in range of integer, then set as integer
-	if (m_token->value() > (double)INT_MIN - 0.5
-		&& m_token->value() < (double)INT_MAX + 0.5)
-	{
-		m_token->setDataType(DataType::Integer);
-		// convert to integer in case integer is needed
-		m_token->setValue((int)m_token->value());
-		if (decimal)  // decimal point or exponent?
-		{
-			// indicate number is a double value
-			m_token->addSubCode(Double_SubCode);
-		}
-	}
-	else  // number can't be converted to integer
-	{
-		m_token->setDataType(DataType::Double);
-	}
-	return true;
+	std::swap(m_pos, pos);  // swap begin and end positions
+	// save string of number so it later can be reproduced
+	return std::make_shared<Token>(pos, len, numStr, value, decimal);
 }
 
 

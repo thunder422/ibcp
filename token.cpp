@@ -22,6 +22,8 @@
 //
 //	2012-11-03	initial version (parts removed from ibcp.cpp)
 
+#include <limits>
+
 #include "token.h"
 
 
@@ -44,6 +46,28 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 	{Type::NoParen, 2},
 	{Type::Paren, 2}
 };
+
+
+// constructor to set double constants
+Token::Token(int column, int length, QString string, double value,
+	bool decimal) : m_column{column}, m_length{length},
+	m_type{Token::Type::Constant}, m_string{string}, m_code{Invalid_Code},
+	m_reference{}, m_value{value}
+{
+	if (value > std::numeric_limits<int>::min() - 0.5
+		&& value < std::numeric_limits<int>::max() + 0.5)
+	{
+		m_dataType = DataType::Integer;
+		// 'double' if decimal pointer present
+		m_subCode = decimal ? Double_SubCode : None_SubCode;
+		m_valueInt = value;  // convert to integer in case needed
+	}
+	else  // number can't be converted to integer
+	{
+		m_dataType = DataType::Double;
+		m_subCode = None_SubCode;  // ignore sub-code argument
+	}
+}
 
 
 // function to set the default data type of the token

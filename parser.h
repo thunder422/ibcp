@@ -45,9 +45,8 @@ public:
 
 private:
 	// main functions
-	bool getCommand(void);
 	TokenPtr getIdentifier();
-	bool getNumber(void);
+	TokenPtr getNumber();
 	bool getString(void);
 	bool getOperator(void);
 
