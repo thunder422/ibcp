@@ -59,8 +59,12 @@ TokenPtr Parser::operator()(Number number)
 			return token;
 		}
 	}
+	if (TokenPtr token = getString())
+	{
+		return token;
+	}
 	m_token = std::make_shared<Token>(m_pos);  // create new token to return
-	if (!getString() && !getOperator())
+	if (!getOperator())
 	{
 		// not a valid token, create error token
 		throw Error {Status::UnknownToken, m_pos, 1};
@@ -382,20 +386,19 @@ TokenPtr Parser::getNumber()
 // a double quote at current position.
 //
 //   - strings constants start and end with a double quote
-//   - returns false if no string (position not changed)
-//   - returns true if there is and token is filled
+//   - returns default token pointer if no string (position not changed)
+//   - returns token if there is a valid string
 //   - copy string into token without surrounding quotes
-//   - returns true for errors and special error token is set
 
-bool Parser::getString(void)
+TokenPtr Parser::getString()
 {
 	if (m_input[m_pos] != '"')
 	{
-		return false;  // not a sting constant
+		return TokenPtr{};  // not a sting constant
 	}
 
 	int pos {m_pos + 1};
-	int len {};
+	QString string;
 	while (!m_input[pos].isNull())
 	{
 		if (m_input[pos] == '"')
@@ -408,14 +411,10 @@ bool Parser::getString(void)
 			}
 			// otherwise quote counts as one character
 		}
-		m_token->setString(len++, m_input[pos++]);  // copy char into string
+		string.push_back(m_input[pos++]);  // copy char into string
 	}
-	m_token->setType(Token::Type::Constant);
-	m_token->setDataType(DataType::String);
-	m_token->setLength(pos - m_pos);
-	// advance position past end of string
-	m_pos = pos;
-	return true;
+	std::swap(m_pos, pos);  // swap begin and end positions
+	return std::make_shared<Token>(pos, m_pos - pos, std::move(string));
 }
 
 

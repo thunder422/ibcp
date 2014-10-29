@@ -47,7 +47,7 @@ private:
 	// main functions
 	TokenPtr getIdentifier();
 	TokenPtr getNumber();
-	bool getString(void);
+	TokenPtr getString();
 	bool getOperator(void);
 
 	// support functions

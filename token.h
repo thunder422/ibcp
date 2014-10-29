@@ -85,6 +85,12 @@ public:
 	// constructor for double constants
 	Token(int column, int length, QString string, double value, bool decimal);
 
+	// constructor for string constants
+	Token(int column, int length, QString string) : m_column{column},
+		m_length{length}, m_type{Token::Type::Constant},
+		m_dataType{DataType::String}, m_string{string}, m_code{Invalid_Code},
+		m_reference{}, m_subCode{None_SubCode} {}
+
 	Token(const Token &token)  // copy constructor
 	{
 		*this = token;
@@ -153,10 +159,6 @@ public:
 	void setString(const QString &string)
 	{
 		m_string = string;
-	}
-	void setString(int pos, QChar character)
-	{
-		m_string[pos] = character;
 	}
 	int stringLength(void) const
 	{
