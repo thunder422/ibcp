@@ -48,7 +48,7 @@ private:
 	TokenPtr getIdentifier();
 	TokenPtr getNumber();
 	TokenPtr getString();
-	bool getOperator(void);
+	TokenPtr getOperator();
 
 	// support functions
 	void skipWhitespace();
@@ -57,7 +57,6 @@ private:
 	Table &m_table;			// pointer to the table object
 	QString m_input;		// input line being parsed
 	int m_pos;				// index to current position in input string
-	TokenPtr m_token;		// pointer to working token (to be returned)
 };
 
 

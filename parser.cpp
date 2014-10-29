@@ -63,13 +63,12 @@ TokenPtr Parser::operator()(Number number)
 	{
 		return token;
 	}
-	m_token = std::make_shared<Token>(m_pos);  // create new token to return
-	if (!getOperator())
+	if (TokenPtr token = getOperator())
 	{
-		// not a valid token, create error token
-		throw Error {Status::UnknownToken, m_pos, 1};
+		return token;
 	}
-	return std::move(m_token);  // token may contain an error
+	// not a valid token, throw unknown token error
+	throw Error {Status::UnknownToken, m_pos, 1};
 }
 
 
@@ -418,67 +417,46 @@ TokenPtr Parser::getString()
 }
 
 
-// function to get an operator (of symbol characters) at the current position,
-// which may be one or two characters.  For the purpose of the Parser, these
-// operators in the table are generally not associated with a data type
-// (though the data type from the Table entry is returned, it will usually br
-// None).
+// function to get an operator (of symbol characters) at the current
+// position, which may be one or two characters
 //
-//   - returns false if no operator (position not changed)
-//   - returns true if there is and token is filled
-//   - returns true for errors setting special error token
+//   - returns default token pointer if no operator (position not changed)
+//   - returns token pointer to new token if there is a valid operator
 
-bool Parser::getOperator(void)
+TokenPtr Parser::getOperator()
 {
 	// search table for current character to see if it is a valid operator
 	Code code {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1))};
-	if (code != Invalid_Code)
+	if (code == Invalid_Code)
 	{
-		// current character is a valid single character operator
-
-		// setup token in case this is only one character
-		m_token->setType(m_table.type(code));
-		m_token->setDataType(m_table.dataType(code));
-		m_token->setCode(code);
-		m_token->setLength(1);
-
-		if (m_table.multiple(code) == Multiple::OneChar)
-		{
-			// operator can only be a single character
-			m_pos++;  // move past operator
-			if (code == RemOp_Code)
-			{
-				// remark requires special handling
-				// remark string is to end of line
-				m_token->setString(m_input.mid(m_pos));
-				// move position to end of line
-				m_pos += m_token->stringLength();
-			}
-			return true;
-		}
+		// character(s) at current position not a valid operator
+		// (no first of two-character operator is an invalid operator)
+		return TokenPtr{};
 	}
-	// operator could be a two character operator
-	// search table again for two characters at current position
-	Code code2 {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 2))};
-	if (code2 == Invalid_Code)
+	if (code == RemOp_Code)
 	{
-		if (code != Invalid_Code)  // was first character a valid operator?
-		{
-			m_pos++;  // move past first character
-			// token already setup
-			return true;
-		}
-		return false;  // character(s) as current position not a valid operator
+		// remark requires special handling (remark string is to end-of-line)
+		int pos {m_pos};
+		m_pos = m_input.length();  // set to end-of-line
+		return m_table.newToken(pos, 1, RemOp_Code, m_input.mid(pos + 1));
 	}
 
-	// valid two character operator
-	m_pos += 2;  // move past two characters
-	// get information from two character operator
-	m_token->setType(m_table.type(code2));
-	m_token->setDataType(m_table.dataType(code2));
-	m_token->setCode(code2);
-	m_token->setLength(2);
-	return true;
+	// current character is at least a valid one-character operator
+	int len {1};
+	if (m_table.multiple(code) != Multiple::OneChar)
+	{
+		// operator could be a two-character operator
+		Code code2;
+		if ((code2 = m_table.search(Symbol_SearchType, m_input.midRef(m_pos,
+			2))) != Invalid_Code)
+		{
+			// two-character operator found
+			code = code2;
+			len = 2;
+		}
+	}
+	m_pos += len;  // move past operator character(s)
+	return m_table.newToken(m_pos - len, len, code);
 }
 
 
