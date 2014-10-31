@@ -41,14 +41,14 @@ public:
 		No,
 		Yes
 	};
-	TokenPtr operator()(Number state);
+	TokenUniquePtr operator()(Number state);
 
 private:
 	// main functions
-	TokenPtr getIdentifier();
-	TokenPtr getNumber();
-	TokenPtr getString();
-	TokenPtr getOperator();
+	TokenUniquePtr getIdentifier();
+	TokenUniquePtr getNumber();
+	TokenUniquePtr getString();
+	TokenUniquePtr getOperator();
 
 	// support functions
 	void skipWhitespace();

@@ -41,29 +41,29 @@ Parser::Parser(const QString &input) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenPtr Parser::operator()(Number number)
+TokenUniquePtr Parser::operator()(Number number)
 {
 	skipWhitespace();
 	if (m_input[m_pos].isNull())
 	{
 		return m_table.newToken(m_pos, 1, EOL_Code);
 	}
-	if (TokenPtr token = getIdentifier())
+	if (TokenUniquePtr token = getIdentifier())
 	{
 		return token;
 	}
 	if (number == Number::Yes)
 	{
-		if (TokenPtr token = getNumber())
+		if (TokenUniquePtr token = getNumber())
 		{
 			return token;
 		}
 	}
-	if (TokenPtr token = getString())
+	if (TokenUniquePtr token = getString())
 	{
 		return token;
 	}
-	if (TokenPtr token = getOperator())
+	if (TokenUniquePtr token = getOperator())
 	{
 		return token;
 	}
@@ -81,7 +81,7 @@ TokenPtr Parser::operator()(Number number)
 //   - returns default token pointer if no identifier (position not changed)
 //   - returns token pointer to new token if there is
 
-TokenPtr Parser::getIdentifier()
+TokenUniquePtr Parser::getIdentifier()
 {
 	DataType dataType;		// data type of word
 	bool paren;				// word has opening parenthesis flag
@@ -90,19 +90,17 @@ TokenPtr Parser::getIdentifier()
 	if (m_input.midRef(m_pos).startsWith(m_table.name(Rem_Code),
 		Qt::CaseInsensitive))
 	{
+		// remark string is to end-of-line
 		int pos {m_pos};
-		int len {m_table.name(Rem_Code).length()};
-		// move position past command and grab rest of line
-		m_pos += len;
-		QString string {m_input.mid(m_pos)};
-		m_pos += string.length();
-		return m_table.newToken(pos, len, Rem_Code, string);
+		int len = m_table.name(Rem_Code).length();
+		m_pos = m_input.length();  // set to end-of-line
+		return m_table.newToken(pos, len, Rem_Code, m_input.mid(pos + len));
 	}
 
 	int pos {scanWord(m_pos, dataType, paren)};
 	if (pos == -1)
 	{
-		return TokenPtr{};  // not an identifier
+		return TokenUniquePtr{};  // not an identifier
 	}
 
 	int len {pos - m_pos};
@@ -132,7 +130,7 @@ TokenPtr Parser::getIdentifier()
 		{
 			--len;  // don't store parentheses in token string
 		}
-		return std::make_shared<Token>(pos, len, type, dataType, m_input);
+		return TokenUniquePtr{new Token {pos, len, type, dataType, m_input}};
 	}
 
 	// found word in table (command, internal function, or operator)
@@ -241,7 +239,7 @@ void Parser::skipWhitespace(void)
 //   - string of the number is converted to a value
 //   - string of the number is saved so it can be later reproduced
 
-TokenPtr Parser::getNumber()
+TokenUniquePtr Parser::getNumber()
 {
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
@@ -296,7 +294,7 @@ TokenPtr Parser::getNumber()
 				{
 					// if there is a '-E' then not a number
 					// (need to interprete '-' as unary operator)
-					return TokenPtr{};
+					return TokenUniquePtr{};
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
@@ -333,7 +331,7 @@ TokenPtr Parser::getNumber()
 				}
 				else
 				{
-					return TokenPtr{};  // not a numeric constant
+					return TokenUniquePtr{};  // not a numeric constant
 				}
 			}
 			else if (!digits)  // only a decimal point found?
@@ -363,7 +361,7 @@ TokenPtr Parser::getNumber()
 		{
 			std::swap(m_pos, pos);  // swap begin and end positions
 			// save string of number so it later can be reproduced
-			return std::make_shared<Token>(pos, len, numStr, value);
+			return TokenUniquePtr{new Token {pos, len, numStr, value}};
 		}
 		// else overflow or underflow, won't fit into an integer
 		// fall thru and try as double
@@ -377,7 +375,7 @@ TokenPtr Parser::getNumber()
 	}
 	std::swap(m_pos, pos);  // swap begin and end positions
 	// save string of number so it later can be reproduced
-	return std::make_shared<Token>(pos, len, numStr, value, decimal);
+	return TokenUniquePtr{new Token {pos, len, numStr, value, decimal}};
 }
 
 
@@ -389,11 +387,11 @@ TokenPtr Parser::getNumber()
 //   - returns token if there is a valid string
 //   - copy string into token without surrounding quotes
 
-TokenPtr Parser::getString()
+TokenUniquePtr Parser::getString()
 {
 	if (m_input[m_pos] != '"')
 	{
-		return TokenPtr{};  // not a sting constant
+		return TokenUniquePtr{};  // not a sting constant
 	}
 
 	int pos {m_pos + 1};
@@ -413,7 +411,7 @@ TokenPtr Parser::getString()
 		string.push_back(m_input[pos++]);  // copy char into string
 	}
 	std::swap(m_pos, pos);  // swap begin and end positions
-	return std::make_shared<Token>(pos, m_pos - pos, std::move(string));
+	return TokenUniquePtr{new Token {pos, m_pos - pos, std::move(string)}};
 }
 
 
@@ -423,7 +421,7 @@ TokenPtr Parser::getString()
 //   - returns default token pointer if no operator (position not changed)
 //   - returns token pointer to new token if there is a valid operator
 
-TokenPtr Parser::getOperator()
+TokenUniquePtr Parser::getOperator()
 {
 	// search table for current character to see if it is a valid operator
 	Code code {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1))};
@@ -431,7 +429,7 @@ TokenPtr Parser::getOperator()
 	{
 		// character(s) at current position not a valid operator
 		// (no first of two-character operator is an invalid operator)
-		return TokenPtr{};
+		return TokenUniquePtr{};
 	}
 	if (code == RemOp_Code)
 	{

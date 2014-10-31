@@ -131,10 +131,11 @@ public:
 	DataType expectedDataType(const TokenPtr &token) const;
 	void setToken(TokenPtr &token, Code code);
 	TokenPtr newToken(Code code);
-	TokenPtr newToken(int column, int length, Code code, QString string = {})
+	TokenUniquePtr newToken(int column, int length, Code code,
+		QString string = {})
 	{
-		return std::make_shared<Token>(column, length, type(code),
-			dataType(code), code, string);
+		return TokenUniquePtr{new Token {column, length, type(code),
+			dataType(code), code, string}};
 	}
 	Code findCode(TokenPtr &token, TokenPtr &operandToken,
 		int operandIndex = 0);

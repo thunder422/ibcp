@@ -35,6 +35,7 @@
 
 
 class Token;
+using TokenUniquePtr = std::unique_ptr<Token>;
 using TokenPtr = std::shared_ptr<Token>;
 
 
