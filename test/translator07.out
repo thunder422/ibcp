@@ -48,10 +48,10 @@ Input: Z+A
         ^-- expected equal or comma for assignment
 
 Input: +Z
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: -Z
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: Z Y = 1
          ^-- expected equal or comma for assignment
@@ -63,7 +63,7 @@ Input: Z
         ^-- expected equal or comma for assignment
 
 Input: ,Z
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: Z,
          ^-- expected double variable
@@ -195,16 +195,16 @@ Input: MID$(A$,B,C)=
                     ^-- expected string expression
 
 Input: INT(
-       ^^^^-- expected command
+       ^^^^-- expected command or item for assignment
 
 Input: INT(A,
-       ^^^^-- expected command
+       ^^^^-- expected command or item for assignment
 
 Input: INT(A)
-       ^^^^-- expected command
+       ^^^^-- expected command or item for assignment
 
 Input: INT(A)=
-       ^^^^-- expected command
+       ^^^^-- expected command or item for assignment
 
 Input: LET INT(A)=
            ^^^^-- expected item for assignment
@@ -216,7 +216,7 @@ Input: A=INT(A)=
                 ^-- expected numeric expression
 
 Input: INT(A)=B
-       ^^^^-- expected command
+       ^^^^-- expected command or item for assignment
 
 Input: LET ,
            ^-- expected item for assignment

@@ -39,11 +39,11 @@ Input: INPUT A;:R=SQR(A):PRINT"Sqrt(";A;")=";R
 Output: INPUT A;: R = SQR(A): PRINT "Sqrt("; A; ")="; R 
 
 Input: :
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: PRINT:
-             ^-- expected command
+             ^-- expected command or item for assignment
 
 Input: PRINT::PRINT
-             ^-- expected command
+             ^-- expected command or item for assignment
 

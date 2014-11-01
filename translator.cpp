@@ -144,10 +144,10 @@ Status Translator::getCommands(TokenPtr &token)
 
 	forever
 	{
-		// get any token and ignore status
+		// get any reference token and ignore status
 		// if not a command token then let translate will handle token
 		// (if parser error then let translate will report error)
-		getToken(token, DataType::Any);
+		getToken(token, DataType::Any, Reference::All);
 
 		if (token->isCode(EOL_Code) && m_output.empty())
 		{
@@ -370,17 +370,11 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 	Status status;
 	bool doneAppend {true};
 
-	// get token if none was passed
-	if (!token && (status = getToken(token, dataType)) != Status::Good)
+	// get token if none was passed (no numbers for a reference)
+	if (!token && (status = getToken(token, dataType, reference))
+		!= Status::Good)
 	{
-		if (reference == Reference::None)
-		{
-			// if parser error then caller needs to handle it
-			return status;
-		}
-		// for reference operands, only report error at first char of token
-		token->setLength(1);
-		return expectedErrStatus(dataType, reference);
+		return status;
 	}
 
 	// set default data type for token if it has none
@@ -543,11 +537,13 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 //   - data type argument determines if number tokens are allowed
 //   - returns parser error if the parser returned an error exception
 
-Status Translator::getToken(TokenPtr &token, DataType dataType)
+Status Translator::getToken(TokenPtr &token, DataType dataType,
+	Reference reference)
 try
 {
 	// if data type is not blank and not string, then allow a number token
 	token = (*m_parse)(dataType != DataType{} && dataType != DataType::String
+		&& reference == Reference::None
 		? Parser::Number::Yes : Parser::Number::No);
 	return Status::Good;
 }
@@ -559,7 +555,7 @@ catch (Error &error)
 		&& error.status == Status::UnknownToken)
 	{
 		// non-number constant error, return expected expression error
-		return expectedErrStatus(dataType);
+		return expectedErrStatus(dataType, reference);
 	}
 	else
 	{

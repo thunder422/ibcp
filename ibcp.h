@@ -36,7 +36,7 @@ enum class Status
 {
 	Good,
 	Done,
-	ExpCmd,
+	ExpCmdOrAssignItem,
 	ExpExpr,
 	ExpExprOrEnd,
 	ExpOpOrEnd,
@@ -71,6 +71,7 @@ enum class Status
 	ExpNonZeroDigit,
 	ExpDigitsOrSngDP,
 	ExpManDigits,
+	ExpExpSignOrDigits,
 	ExpExpDigits,
 	ExpDigits,
 	FPOutOfRange,

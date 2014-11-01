@@ -51,7 +51,7 @@ Input: Z;
         ^-- expected equal or comma for assignment
 
 Input: ;Z
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: Z,;
          ^-- expected double variable

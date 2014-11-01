@@ -9,7 +9,7 @@ Input: .A
        ^-- expected digits in floating point constant
 
 Input: .e
-       ^-- expected digits in mantissa of floating point constant
+       ^^-- expected digits in mantissa of floating point constant
 
 Input: ..01
        ^^-- expected digits or single decimal point in floating point constant
@@ -36,10 +36,10 @@ Input: 100er
            ^-- expected sign or digits for exponent in floating point constant
 
 Input: 100E+r
-            ^-- expected sign or digits for exponent in floating point constant
+            ^-- expected digits for exponent in floating point constant
 
 Input: 100E-r
-            ^-- expected sign or digits for exponent in floating point constant
+            ^-- expected digits for exponent in floating point constant
 
 Input: 100+200
 	 0: Constant     Integer 100 |100|

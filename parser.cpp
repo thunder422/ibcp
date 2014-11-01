@@ -243,7 +243,8 @@ TokenUniquePtr Parser::getNumber()
 {
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
-	bool sign {};				// have negative sign flag (2011-03-27)
+	bool sign {};				// have negative sign flag
+	bool expSign {};			// have exponent sign flag
 
 	int pos {m_pos};
 	forever
@@ -298,11 +299,12 @@ TokenUniquePtr Parser::getNumber()
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				throw Error {Status::ExpManDigits, m_pos, 1};
+				throw Error {Status::ExpManDigits, m_pos, 2};
 			}
 			pos++;  // move past 'e' or 'E'
 			if (m_input[pos] == '+' || m_input[pos] == '-')
 			{
+				expSign = true;
 				pos++;  // move past exponent sign
 			}
 			// now look for exponent digits
@@ -314,7 +316,9 @@ TokenUniquePtr Parser::getNumber()
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				throw Error {Status::ExpExpDigits, pos, 1};
+				throw Error {expSign
+					? Status::ExpExpDigits : Status::ExpExpSignOrDigits, pos,
+					1};
 			}
 			decimal = true;  // process as double
 			break;  // exit loop to process string

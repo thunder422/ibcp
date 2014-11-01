@@ -34,8 +34,8 @@ const QString StatusMessage::text(Status status)
 		return tr("Good_TokenStatus (BUG)");
 	case Status::Done:
 		return tr("Done_TokenStatus (BUG)");
-	case Status::ExpCmd:
-		return tr("expected command");
+	case Status::ExpCmdOrAssignItem:
+		return tr("expected command or item for assignment");
 	case Status::ExpExpr:
 		return tr("expected expression");
 	case Status::ExpExprOrEnd:
@@ -105,9 +105,11 @@ const QString StatusMessage::text(Status status)
 			"constant");
 	case Status::ExpManDigits:
 		return tr("expected digits in mantissa of floating point constant");
-	case Status::ExpExpDigits:
+	case Status::ExpExpSignOrDigits:
 		return tr("expected sign or digits for exponent in floating point "
 			"constant");
+	case Status::ExpExpDigits:
+		return tr("expected digits for exponent in floating point constant");
 	case Status::ExpDigits:
 		return tr("expected digits in floating point constant");
 	case Status::FPOutOfRange:
