@@ -397,28 +397,36 @@ TokenUniquePtr Parser::getNumber()
 
 TokenUniquePtr Parser::getString()
 {
-	if (m_input[m_pos] != '"')
+	// TODO temporary to simulate m_input as input string stream
+	std::string tmp {m_input.mid(m_pos).toStdString()};
+	std::istringstream m_input {tmp};
+
+	if (m_input.peek() != '"')
 	{
 		return TokenUniquePtr{};  // not a sting constant
 	}
 
-	int pos {m_pos + 1};
-	QString string;
-	while (!m_input[pos].isNull())
+	m_input.get();  // eat first '"'
+	int pos {m_pos++};
+	std::string string;
+	while (m_input.peek() != EOF)
 	{
-		if (m_input[pos] == '"')
+		char c = m_input.get();  // get char from stream
+		++m_pos;
+		if (c == '"')
 		{
-			if (m_input[++pos] != '"')  // not two in a row?
+			if (m_input.peek() != '"')  // not two in a row?
 			{
 				// found end of string
-				// pos at character following closing quote
+				// input stream at character following closing quote
 				break;
 			}
 			// otherwise quote counts as one character
+			m_input.get();  // eat second '"'
+			++m_pos;
 		}
-		string.push_back(m_input[pos++]);  // copy char into string
+		string.push_back(c);  // append char to string
 	}
-	std::swap(m_pos, pos);  // swap begin and end positions
 	return TokenUniquePtr{new Token {pos, m_pos - pos, std::move(string)}};
 }
 

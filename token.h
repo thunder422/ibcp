@@ -89,10 +89,10 @@ public:
 		bool decimal);
 
 	// constructor for string constants
-	Token(int column, int length, QString string) : m_column{column},
+	Token(int column, int length, const std::string string) : m_column{column},
 		m_length{length}, m_type{Token::Type::Constant},
-		m_dataType{DataType::String}, m_string{string}, m_code{Invalid_Code},
-		m_reference{}, m_subCode{None_SubCode} {}
+		m_dataType{DataType::String}, m_string{string.c_str()},
+		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode} {}
 
 	Token(const Token &token)  // copy constructor
 	{
