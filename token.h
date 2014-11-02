@@ -75,16 +75,18 @@ public:
 		{}
 
 	// constructor for integer constants
-	Token(int column, int length, QString string, int value) : m_column{column},
-		m_length{length}, m_type{Token::Type::Constant},
-		m_dataType{DataType::Integer}, m_string{string}, m_code{Invalid_Code},
-		m_reference{}, m_subCode{None_SubCode}, m_valueInt{value}
+	Token(int column, int length, const std::string string, int value) :
+		m_column{column}, m_length{length}, m_type{Token::Type::Constant},
+		m_dataType{DataType::Integer}, m_string{string.c_str()},
+		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode},
+		m_valueInt{value}
 	{
 		m_value = value;  // convert to double in case needed
 	}
 
 	// constructor for double constants
-	Token(int column, int length, QString string, double value, bool decimal);
+	Token(int column, int length, const std::string string, double value,
+		bool decimal);
 
 	// constructor for string constants
 	Token(int column, int length, QString string) : m_column{column},

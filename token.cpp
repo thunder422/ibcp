@@ -49,10 +49,10 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 
 
 // constructor to set double constants
-Token::Token(int column, int length, QString string, double value,
+Token::Token(int column, int length, const std::string string, double value,
 	bool decimal) : m_column{column}, m_length{length},
-	m_type{Token::Type::Constant}, m_string{string}, m_code{Invalid_Code},
-	m_reference{}, m_value{value}
+	m_type{Token::Type::Constant}, m_string{string.c_str()},
+	m_code{Invalid_Code}, m_reference{}, m_value{value}
 {
 	if (value > std::numeric_limits<int>::min() - 0.5
 		&& value < std::numeric_limits<int>::max() + 0.5)

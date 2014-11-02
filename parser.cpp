@@ -241,53 +241,55 @@ void Parser::skipWhitespace(void)
 
 TokenUniquePtr Parser::getNumber()
 {
+	// TODO temporary to simulate m_input as input string stream
+	std::string tmp {m_input.mid(m_pos).toStdString()};
+	std::istringstream m_input {tmp};
+
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
 	bool sign {};				// have negative sign flag
 	bool expSign {};			// have exponent sign flag
+	std::string number;			// string to hold number
 
 	int pos {m_pos};
 	forever
 	{
-		if (m_input[pos].isDigit())
+		if (isdigit(m_input.peek()))
 		{
-			pos++;  // move past digit
+			number.push_back(m_input.get());  // get digit
 			if (!digits)  // first digit?
 			{
 				digits = true;
-				if (!decimal && m_input[pos - 1] == '0' && m_input[pos] != '.')
+				if (!decimal && number.back() == '0' && m_input.peek() != '.')
 				{
 					// next character not a digit (or '.')?
-					if (!m_input[pos].isDigit())
-					{
-						break;  // single zero, exit loop to process string
-					}
-					else
+					if (isdigit(m_input.peek()))
 					{
 						// if didn't find a decimal point
 						// and first character is a zero
 						// and second character is not a decimal point,
 						// and second character is a digit
 						// then this is in invalid number
-						throw Error {Status::ExpNonZeroDigit, m_pos, 1};
+						throw Error {Status::ExpNonZeroDigit, pos, 1};
 					}
+					break;  // single zero, exit loop to process string
 				}
 			}
 		}
-		else if (m_input[pos] == '.')
+		else if (m_input.peek() == '.')
 		{
 			if (decimal)  // was a decimal point already found?
 			{
 				if (!digits)  // no digits found?
 				{
-					throw Error {Status::ExpDigitsOrSngDP, m_pos, 2};
+					throw Error {Status::ExpDigitsOrSngDP, pos, 2};
 				}
 				break;  // exit loop to process string
 			}
 			decimal = true;
-			pos++;  // move past '.'
+			number.push_back(m_input.get());  // get '.'
 		}
-		else if (m_input[pos].toUpper() == 'E')
+		else if (toupper(m_input.peek()) == 'E')
 		{
 			if (!digits)
 			{
@@ -299,23 +301,24 @@ TokenUniquePtr Parser::getNumber()
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				throw Error {Status::ExpManDigits, m_pos, 2};
+				throw Error {Status::ExpManDigits, pos, 2};
 			}
-			pos++;  // move past 'e' or 'E'
-			if (m_input[pos] == '+' || m_input[pos] == '-')
+			number.push_back(m_input.get());  // get 'e' or 'E'
+			if (m_input.peek() == '+' || m_input.peek() == '-')
 			{
 				expSign = true;
-				pos++;  // move past exponent sign
+				number.push_back(m_input.get());  // get exponent sign
 			}
 			// now look for exponent digits
 			digits = false;
-			while (m_input[pos].isDigit())
+			while (isdigit(m_input.peek()))
 			{
-				pos++;  // move past exponent digit
+				number.push_back(m_input.get());  // get exponent digit
 				digits = true;
 			}
 			if (!digits)  // no exponent digits found?
 			{
+				pos += number.length();  // move to error
 				throw Error {expSign
 					? Status::ExpExpDigits : Status::ExpExpSignOrDigits, pos,
 					1};
@@ -328,9 +331,9 @@ TokenUniquePtr Parser::getNumber()
 			if (!digits && !decimal)  // nothing found?
 			{
 				// look for negative sign
-				if (!sign && m_input[pos] == '-')
+				if (!sign && m_input.peek() == '-')
 				{
-					pos++;  // move past negative sign
+					number.push_back(m_input.get());  // get negative sign
 					sign = true;
 				}
 				else
@@ -340,7 +343,7 @@ TokenUniquePtr Parser::getNumber()
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				throw Error {Status::ExpDigits, m_pos, 1};
+				throw Error {Status::ExpDigits, pos, 1};
 			}
 			else
 			{
@@ -349,37 +352,38 @@ TokenUniquePtr Parser::getNumber()
 			}
 		}
 	}
-	// pos pointing to first character that is not part of constant
-	bool ok;
-	int len {pos - m_pos};
-	QString numStr {m_input.mid(m_pos, len)};
 
-	// FIXME hack for memory issue reported against QString::toInt()/toDouble()
-	QByteArray numBytes;
-	numBytes.append(numStr);
+	int len = number.length();
 	if (!decimal)  // no decimal or exponent?
+	try
 	{
 		// try to convert to integer first
-		int value {numBytes.toInt(&ok)};
-		if (ok)
-		{
-			std::swap(m_pos, pos);  // swap begin and end positions
-			// save string of number so it later can be reproduced
-			return TokenUniquePtr{new Token {pos, len, numStr, value}};
-		}
-		// else overflow or underflow, won't fit into an integer
-		// fall thru and try as double
+		int value {std::stoi(number)};
+
+		m_pos += number.length();
+		// save string of number so it later can be reproduced
+		return TokenUniquePtr{new Token {pos, len, std::move(number), value}};
+	}
+	catch(std::out_of_range)
+	{
+		// overflow or underflow, won't fit into an integer
+		// fall through and try as double
 	}
 
-	double value {numBytes.toDouble(&ok)};
-	if (!ok)
+	try
+	{
+		double value {std::stod(number)};
+
+		m_pos += number.length();
+		// save string of number so it later can be reproduced
+		return TokenUniquePtr{new Token {pos, len, std::move(number), value,
+			decimal}};
+	}
+	catch (std::out_of_range)
 	{
 		// overflow or underflow, constant is not valid
 		throw Error {Status::FPOutOfRange, m_pos, len};
 	}
-	std::swap(m_pos, pos);  // swap begin and end positions
-	// save string of number so it later can be reproduced
-	return TokenUniquePtr{new Token {pos, len, numStr, value, decimal}};
 }
 
 
