@@ -178,4 +178,11 @@ struct EnumClassHash
 };
 
 
+// lambda function for doing a case insentive character comparison
+auto noCaseCompare = [](char c1, char c2)
+{
+	return toupper(c1) == toupper(c2);
+};
+
+
 #endif  // IBCP_H

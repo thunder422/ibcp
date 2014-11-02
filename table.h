@@ -132,7 +132,7 @@ public:
 	void setToken(TokenPtr &token, Code code);
 	TokenPtr newToken(Code code);
 	TokenUniquePtr newToken(int column, int length, Code code,
-		QString string = {})
+		const std::string string = {})
 	{
 		return TokenUniquePtr{new Token {column, length, type(code),
 			dataType(code), code, string}};
@@ -148,7 +148,7 @@ public:
 	QString name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
-	Code search(SearchType type, const QStringRef &string) const;
+	Code search(SearchType type, const std::string &string) const;
 	Code search(const QStringRef &word1, const QStringRef &word2) const;
 	Code search(Code code, int argumentCount) const;
 	Code search(Code code, DataType *dataType) const;

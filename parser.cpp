@@ -94,7 +94,8 @@ TokenUniquePtr Parser::getIdentifier()
 		int pos {m_pos};
 		int len = m_table.name(Rem_Code).length();
 		m_pos = m_input.length();  // set to end-of-line
-		return m_table.newToken(pos, len, Rem_Code, m_input.mid(pos + len));
+		return m_table.newToken(pos, len, Rem_Code,
+			m_input.mid(pos + len).toStdString());
 	}
 
 	int pos {scanWord(m_pos, dataType, paren)};
@@ -114,7 +115,7 @@ TokenUniquePtr Parser::getIdentifier()
 	else
 	{
 		SearchType search= paren ? ParenWord_SearchType : PlainWord_SearchType;
-		code = m_table.search(search, m_input.midRef(m_pos, len));
+		code = m_table.search(search, m_input.mid(m_pos, len).toStdString());
 		if (code == Invalid_Code)
 		{
 			// word not found in table, therefore
@@ -439,20 +440,28 @@ TokenUniquePtr Parser::getString()
 
 TokenUniquePtr Parser::getOperator()
 {
+	// TODO temporary to simulate m_input as input string stream
+	std::string tmp {m_input.mid(m_pos).toStdString()};
+	std::istringstream m_input {tmp};
+
+	std::string string;
+	string.push_back(m_input.peek());
 	// search table for current character to see if it is a valid operator
-	Code code {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1))};
+	Code code {m_table.search(Symbol_SearchType, string)};
 	if (code == Invalid_Code)
 	{
 		// character(s) at current position not a valid operator
 		// (no first of two-character operator is an invalid operator)
 		return TokenUniquePtr{};
 	}
+	m_input.get();  // eat first character (already in string)
 	if (code == RemOp_Code)
 	{
 		// remark requires special handling (remark string is to end-of-line)
 		int pos {m_pos};
-		m_pos = m_input.length();  // set to end-of-line
-		return m_table.newToken(pos, 1, RemOp_Code, m_input.mid(pos + 1));
+		std::getline(m_input, string);
+		m_pos += 1+ string.length();  // moved to end-of-line
+		return m_table.newToken(pos, 1, RemOp_Code, std::move(string));
 	}
 
 	// current character is at least a valid one-character operator
@@ -460,13 +469,14 @@ TokenUniquePtr Parser::getOperator()
 	if (m_table.multiple(code) != Multiple::OneChar)
 	{
 		// operator could be a two-character operator
+		string.push_back(m_input.peek());
 		Code code2;
-		if ((code2 = m_table.search(Symbol_SearchType, m_input.midRef(m_pos,
-			2))) != Invalid_Code)
+		if ((code2 = m_table.search(Symbol_SearchType, string)) != Invalid_Code)
 		{
 			// two-character operator found
 			code = code2;
 			len = 2;
+			m_input.get();  // eat second character
 		}
 	}
 	m_pos += len;  // move past operator character(s)

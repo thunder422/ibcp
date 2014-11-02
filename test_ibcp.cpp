@@ -291,11 +291,6 @@ Tester::Tester(const std::string &programName,
 
 			for (auto iterator : name)
 			{
-				auto noCaseCompare = [](char c1, char c2)
-				{
-					return toupper(c1) == toupper(c2);
-				};
-
 				// check beginning of file name
 				if (baseName.size() >= iterator.second.size()
 					&& std::equal(iterator.second.begin(),

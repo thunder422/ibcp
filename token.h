@@ -63,9 +63,9 @@ public:
 
 	// constructor for codes
 	Token(int column, int length, Type type, DataType dataType, Code code,
-		QString string = {}) : m_column{column}, m_length{length}, m_type{type},
-		m_dataType{dataType}, m_string{string}, m_code{code}, m_reference{},
-		m_subCode{None_SubCode} {}
+		const std::string string = {}) : m_column{column}, m_length{length},
+		m_type{type}, m_dataType{dataType}, m_string{string.c_str()},
+		m_code{code}, m_reference{}, m_subCode{None_SubCode} {}
 
 	// constructor for identifiers
 	Token(int column, int length, Type type, DataType dataType,

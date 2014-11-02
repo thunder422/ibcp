@@ -2039,13 +2039,16 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 //   - returns the index of the entry that is found
 //   - returns -1 if the string was not found in the table
 
-Code Table::search(SearchType type, const QStringRef &string) const
+Code Table::search(SearchType type, const std::string &string) const
 {
 	Code i {m_range[type].beg};
 	Code end {m_range[type].end};
 	while (++i < end)
 	{
-		if (string.compare(m_entry[i].name, Qt::CaseInsensitive) == 0)
+		std::string name {m_entry[i].name.toStdString()};
+		if (name.size() == string.size()
+			&& std::equal(string.begin(), string.end(), name.begin(),
+			noCaseCompare))
 		{
 			return i;
 		}
