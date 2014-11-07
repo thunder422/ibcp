@@ -54,7 +54,19 @@ private:
 
 	// support functions
 	void skipWhitespace();
-	int scanWord(int pos, DataType &datatype, bool &paren);
+	struct Word
+	{
+		std::string string;		// string of word
+		DataType dataType;		// data type of word
+		bool paren;				// word has an opening parentheses
+	};
+	enum class WordType
+	{
+		First,					// fully typed with optional parentheses word
+		Second					// untyped no parentheses second word of command
+	};
+
+	Word getWord(WordType wordType);
 
 	Table &m_table;			// pointer to the table object
 	QString m_input;		// input line being parsed

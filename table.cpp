@@ -2064,14 +2064,19 @@ Code Table::search(SearchType type, const std::string &string) const
 //   - returns the index of the entry that is found
 //   - returns -1 if the string was not found in the table
 
-Code Table::search(const QStringRef &word1, const QStringRef &word2) const
+Code Table::search(const std::string &word1, const std::string &word2) const
 {
 	for (Code i {m_range[PlainWord_SearchType].beg};
 		i < m_range[PlainWord_SearchType].end; i++)
 	{
-		if (!m_entry[i].name2.isNull()
-			&& word1.compare(m_entry[i].name, Qt::CaseInsensitive) == 0
-			&& word2.compare(m_entry[i].name2, Qt::CaseInsensitive) == 0)
+		std::string name {m_entry[i].name.toStdString()};
+		std::string name2 {m_entry[i].name2.toStdString()};
+		if (!name2.empty() && name.size() == word1.size()
+			&& name2.size() == word2.size()
+			&& std::equal(word1.begin(), word1.end(), name.begin(),
+			noCaseCompare)
+			&& std::equal(word2.begin(), word2.end(), name2.begin(),
+			noCaseCompare))
 		{
 			return i;
 		}

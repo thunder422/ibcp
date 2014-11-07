@@ -149,7 +149,7 @@ public:
 
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const std::string &string) const;
-	Code search(const QStringRef &word1, const QStringRef &word2) const;
+	Code search(const std::string &word1, const std::string &word2) const;
 	Code search(Code code, int argumentCount) const;
 	Code search(Code code, DataType *dataType) const;
 	bool match(Code code, DataType *dataType) const;

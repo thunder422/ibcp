@@ -83,55 +83,64 @@ TokenUniquePtr Parser::operator()(Number number)
 
 TokenUniquePtr Parser::getIdentifier()
 {
-	DataType dataType;		// data type of word
-	bool paren;				// word has opening parenthesis flag
+	// TODO temporary to simulate m_input as input string stream
+	std::string tmp {m_input.mid(m_pos).toStdString()};
+	std::istringstream m_input {tmp};
 
-	// check to see if this is the start of a remark
-	if (m_input.midRef(m_pos).startsWith(m_table.name(Rem_Code),
-		Qt::CaseInsensitive))
-	{
-		// remark string is to end-of-line
-		int pos {m_pos};
-		int len = m_table.name(Rem_Code).length();
-		m_pos = m_input.length();  // set to end-of-line
-		return m_table.newToken(pos, len, Rem_Code,
-			m_input.mid(pos + len).toStdString());
-	}
-
-	int pos {scanWord(m_pos, dataType, paren)};
-	if (pos == -1)
+	int pos {m_pos};
+	Word word = getWord(WordType::First);
+	if (word.string.empty())
 	{
 		return TokenUniquePtr{};  // not an identifier
 	}
+	// TODO simulate what getWord will do to input stream
+	m_input.seekg(m_pos - pos);
 
-	int len {pos - m_pos};
+	// check to see if this is the start of a remark
+	// (need to check separately since a space not required after 'REM')
+	std::string name {m_table.name(Rem_Code).toStdString()};
+	if (word.string.length() >= name.length() && std::equal(name.begin(),
+		name.end(), word.string.begin(), noCaseCompare))
+	{
+		// move to first char after 'REM'
+		m_input.seekg(name.length());
+		// read remark string to end-of-line
+		std::getline(m_input, word.string);
+		m_pos = pos + name.length() + word.string.length();  // to end-of-line
+		return m_table.newToken(pos, name.length(), Rem_Code,
+			std::move(word.string));
+	}
+
 	Token::Type type {};
 	Code code;
-	// defined function?
-	if (m_input.midRef(m_pos).startsWith("FN", Qt::CaseInsensitive))
+	// defined function?  (must also have a letter after "FN")
+	if (word.string.length() >= 3 && toupper(word.string[0]) == 'F'
+		&& toupper(word.string[1]) == 'N' && isalpha(word.string[2]))
 	{
-		type = paren ? Token::Type::DefFuncP : Token::Type::DefFuncN;
+		type = word.paren ? Token::Type::DefFuncP : Token::Type::DefFuncN;
 	}
 	else
 	{
-		SearchType search= paren ? ParenWord_SearchType : PlainWord_SearchType;
-		code = m_table.search(search, m_input.mid(m_pos, len).toStdString());
+		code = m_table.search(word.paren
+			? ParenWord_SearchType : PlainWord_SearchType, word.string);
 		if (code == Invalid_Code)
 		{
 			// word not found in table, therefore
 			// must be variable, array, generic function, or subroutine
 			// but that can't be determined here, so just generic token
-			type = paren ? Token::Type::Paren : Token::Type::NoParen;
+			type = word.paren ? Token::Type::Paren : Token::Type::NoParen;
 		}
 	}
-	std::swap(m_pos, pos);  // swap begin and end positions
+
 	if (type != Token::Type{})
 	{
-		if (paren)
+		if (word.paren)
 		{
-			--len;  // don't store parentheses in token string
+			word.string.pop_back();  // don't store parentheses in token string
 		}
-		return TokenUniquePtr{new Token {pos, len, type, dataType, m_input}};
+		int len = word.string.length();
+		return TokenUniquePtr{new Token {pos, len, type, word.dataType,
+			word.string}};
 	}
 
 	// found word in table (command, internal function, or operator)
@@ -139,76 +148,100 @@ TokenUniquePtr Parser::getIdentifier()
 	{
 		// command could be a two word command
 		skipWhitespace();
-		int pos2 {scanWord(m_pos, dataType, paren)};
-		if (dataType == DataType::None && !paren)  // possible second word?
+		Word word2 = getWord(WordType::Second);
+		// check for possible second word (no data type and no paren words only)
+		if (!word2.string.empty())
 		{
 			Code code2;
-			if ((code2 = m_table.search(m_input.midRef(pos, len),
-				m_input.midRef(m_pos, pos2 - m_pos))) != Invalid_Code)
+			if ((code2 = m_table.search(word.string, word2.string))
+				!= Invalid_Code)
 			{
 				// double word command found
 				code = code2;
-				len = pos2 - pos;
-				m_pos = pos2;  // move position past second word
+			}
+			else  // reset position back to begin of second word
+			{
+				m_pos -= word2.string.length();
 			}
 		}
 	}
+	int len = m_pos - pos;
 	return m_table.newToken(pos, len, code);
 }
 
 
-// function to get a word at the position specified
+// function to get a word at current position in input stream
 //
-//   - returns -1 if there is not an identifier at point
-//   - returns index to character after identifier
+//   - returns the string of the word along with data type and parentheses
+//     flag in a Word structure
 //   - returns data type found or None if none was found
 //   - returns flag if opening parenthesis at end of identifier
+//   - returns empty string if there is not an identifier at position
+//   - input position moved to end of word for valid identifier
+//   - work type argument identifies first or second word
+//   - second word for command only, so no data type or parentheses allowed
+//   - the input position is not moved if second word not valid
 
-int Parser::scanWord(int pos, DataType &dataType, bool &paren)
+Parser::Word Parser::getWord(WordType wordType)
 {
-	if (!m_input[pos].isLetter())
+	// TODO temporary to simulate m_input as input string stream
+	std::string tmp {m_input.mid(m_pos).toStdString()};
+	std::istringstream m_input {tmp};
+
+	Word word;
+
+	if (!isalpha(m_input.peek()))
 	{
-		return -1;  // not an identifier
+		return word;  // not an identifier, return empty word
 	}
+
 	do
 	{
-		pos++;
+		word.string.push_back(m_input.get());  // get character
 	}
-	while (m_input[pos].isLetterOrNumber() || m_input[pos] == '_');
-	// pos now points to non-alnum or '_'
+	while (isalnum(m_input.peek()) || m_input.peek() == '_');
+	// next character is non-alnum or '_'
 
 	// see if there is a data type symbol next
-	switch (m_input[pos].unicode())
+	switch (m_input.peek())
 	{
 	case '%':
-		dataType = DataType::Integer;
-		pos++;
+		word.dataType = DataType::Integer;
+		word.string.push_back(m_input.get());  // get data type character
 		break;
 	case '$':
-		dataType = DataType::String;
-		pos++;
+		word.dataType = DataType::String;
+		word.string.push_back(m_input.get());  // get data type character
 		break;
 	case '#':
-		dataType = DataType::Double;
-		pos++;
+		word.dataType = DataType::Double;
+		word.string.push_back(m_input.get());  // get data type character
 		break;
 	default:
-		dataType = DataType::None;
+		word.dataType = DataType::None;
 	}
 
 	// see if there is an opening parenthesis
-	if (m_input[pos] == '(')
+	if (m_input.peek() == '(')
 	{
-		paren = true;
-		pos++;
+		word.paren = true;
+		word.string.push_back(m_input.get());  // get '(' character
 	}
 	else
 	{
-		paren = false;
+		word.paren = false;
 	}
 
-	// p now points to next character after identifier
-	return pos;
+	if (wordType == WordType::Second && (word.dataType != DataType::None
+		|| word.paren))
+	{
+		word.string.clear();  // not a valid second command word
+	}
+	else
+	{
+		m_pos += word.string.length();
+	}
+	return word;
 }
 
 
