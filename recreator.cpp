@@ -29,7 +29,8 @@
 
 
 Recreator::Recreator(void) :
-	m_table(Table::instance())
+	m_table(Table::instance()),
+	m_separator {}
 {
 
 }

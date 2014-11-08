@@ -83,23 +83,23 @@ public:
 	}
 
 	// separator access functions
-	QChar separator(void) const
+	char separator() const
 	{
 		return m_separator;
 	}
-	bool separatorIsSet(void) const
+	bool separatorIsSet() const
 	{
-		return !m_separator.isNull();
+		return m_separator != '\0';
 	}
-	bool separatorIsSet(QChar separator) const
+	bool separatorIsSet(char separator) const
 	{
 		return m_separator == separator;
 	}
-	void clearSeparator(void)
+	void clearSeparator()
 	{
-		m_separator = QChar::Null;
+		m_separator = '\0';
 	}
-	void setSeparator(QChar separator)
+	void setSeparator(char separator)
 	{
 		m_separator = separator;
 	}
@@ -113,7 +113,7 @@ public:
 private:
 	Table &m_table;					// reference to table instance
 	QStack<StackItem> m_stack;		// holding string stack
-	QChar m_separator;				// current separator character
+	char m_separator;				// current separator character
 	QString m_output;				// output string
 };
 

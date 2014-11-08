@@ -227,7 +227,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	}
 	else  // continuation of assignment list
 	{
-		string = recreator.separator() + ' ';
+		string = QChar(recreator.separator()) + ' ';
 	}
 	string.append(recreator.pop());
 

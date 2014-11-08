@@ -159,7 +159,7 @@ void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 		// then append top string to previous string with separator between
 		string = recreator.pop();
 		// FLAG option: space after comma (default=yes)
-		recreator.topAppend(recreator.separator() + ' ' + string);
+		recreator.topAppend(QChar(recreator.separator()) + ' ' + string);
 	}
 	recreator.setSeparator(',');  // set separator for next reference
 }
