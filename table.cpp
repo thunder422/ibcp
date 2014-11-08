@@ -29,6 +29,7 @@
 #include <QStringList>
 
 #include "table.h"
+#include "utility.h"
 #include "basic/basic.h"
 
 
@@ -2046,9 +2047,7 @@ Code Table::search(SearchType type, const std::string &string) const
 	while (++i < end)
 	{
 		std::string name {m_entry[i].name.toStdString()};
-		if (name.size() == string.size()
-			&& std::equal(string.begin(), string.end(), name.begin(),
-			noCaseCompare))
+		if (noCaseStringEqual(string, name))
 		{
 			return i;
 		}
@@ -2071,12 +2070,8 @@ Code Table::search(const std::string &word1, const std::string &word2) const
 	{
 		std::string name {m_entry[i].name.toStdString()};
 		std::string name2 {m_entry[i].name2.toStdString()};
-		if (!name2.empty() && name.size() == word1.size()
-			&& name2.size() == word2.size()
-			&& std::equal(word1.begin(), word1.end(), name.begin(),
-			noCaseCompare)
-			&& std::equal(word2.begin(), word2.end(), name2.begin(),
-			noCaseCompare))
+		if (!name2.empty() && noCaseStringEqual(word1, name)
+			&& noCaseStringEqual(word2, name2))
 		{
 			return i;
 		}

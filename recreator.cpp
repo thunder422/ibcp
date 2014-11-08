@@ -46,7 +46,7 @@ QString Recreator::recreate(const RpnList &rpnList, bool exprMode)
 			|| !(recreate = m_table.recreateFunction(rpnItem->token()->code())))
 		{
 			// if no recreate function, then it is missing from table
-			push('?' + rpnItem->token()->string() + '?');
+			push('?' + rpnItem->token()->string().c_str() + '?');
 		}
 		else  // call recreate function for code
 		{
@@ -153,7 +153,7 @@ void Recreator::pushWithOperands(QString &name, int count)
 void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// just push the string of the token
-	recreator.push(rpnItem->token()->string());
+	recreator.push(rpnItem->token()->string().c_str());
 }
 
 // function to recreate a unary operator
@@ -231,7 +231,7 @@ void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an array
 void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name {rpnItem->token()->string()};
+	QString name {rpnItem->token()->string().c_str()};
 	name.append('(');  // add close paren since it is not stored with name
 	recreator.pushWithOperands(name, rpnItem->attachedCount());
 }
@@ -240,7 +240,7 @@ void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an array
 void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name {rpnItem->token()->string()};
+	QString name {rpnItem->token()->string().c_str()};
 	name.append('(');  // add close paren since it is not stored with name
 	recreator.pushWithOperands(name, rpnItem->attachedCount());
 }
@@ -249,7 +249,7 @@ void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an array
 void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name {rpnItem->token()->string()};
+	QString name {rpnItem->token()->string().c_str()};
 	int count {rpnItem->attachedCount()};
 	if (count > 0)
 	{
@@ -271,7 +271,7 @@ void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	QString string {recreator.table().name(rpnItem->token())};
-	QString remark {rpnItem->token()->string()};
+	QString remark {rpnItem->token()->string().c_str()};
 	if (remark.at(0).isLower())
 	{
 		string = string.toLower();

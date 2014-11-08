@@ -25,6 +25,7 @@
 #include <limits>
 
 #include "token.h"
+#include "utility.h"
 
 
 // static token variables
@@ -51,8 +52,8 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 // constructor to set double constants
 Token::Token(int column, int length, const std::string string, double value,
 	bool decimal) : m_column{column}, m_length{length},
-	m_type{Token::Type::Constant}, m_string{string.c_str()},
-	m_code{Invalid_Code}, m_reference{}, m_value{value}
+	m_type{Token::Type::Constant}, m_string{string}, m_code{Invalid_Code},
+	m_reference{}, m_value{value}
 {
 	if (value > std::numeric_limits<int>::min() - 0.5
 		&& value < std::numeric_limits<int>::max() + 0.5)
@@ -143,11 +144,11 @@ bool Token::operator==(const Token &other) const
 	}
 	if (m_code == Rem_Code || m_code == RemOp_Code || m_code == ConstStr_Code)
 	{
-		return m_string.compare(other.m_string, Qt::CaseSensitive) == 0;
+		return m_string == other.m_string;
 	}
 	else
 	{
-		return m_string.compare(other.m_string, Qt::CaseInsensitive) == 0;
+		return noCaseStringEqual(m_string, other.m_string);
 	}
 }
 
