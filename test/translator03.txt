@@ -69,7 +69,7 @@ Input: A,B%,1 = 1
          ^^-- expected double variable
 
 Input: 1,A,B% = 1
-       ^-- expected item for assignment
+       ^-- expected command or item for assignment
 
 Input: A%,B,C% = 1
           ^-- expected integer variable

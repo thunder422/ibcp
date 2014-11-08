@@ -29,8 +29,7 @@
 
 
 Translator::Translator(void) :
-	m_table(Table::instance()),
-	m_parser {new Parser}
+	m_table(Table::instance())
 {
 
 }
@@ -54,7 +53,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	TokenPtr token;
 	Status status;
 
-	m_parser->setInput(input);
+	m_parse.reset(new Parser {input.toStdString()});
 
 	m_holdStack.emplace(m_table.newToken(Null_Code));
 
@@ -62,8 +61,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	{
 		status = getExpression(token, DataType::Any);
 
-		if (status == Status::Parser
-			&& token->isDataType(DataType::None))
+		if (status == Status::UnknownToken)
 		{
 			status = Status::ExpOpOrEnd;
 		}
@@ -118,10 +116,10 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	if (status != Status::Done)
 	{
 		m_output.setError(token);
-		m_output.setErrorStatus(status == Status::Parser
-			? m_parser->errorStatus() : status);
+		m_output.setErrorStatus(status);
 		cleanUp();
 	}
+	m_parse.reset();
 	return std::move(m_output);
 }
 
@@ -146,10 +144,10 @@ Status Translator::getCommands(TokenPtr &token)
 
 	forever
 	{
-		if ((status = getToken(token)) != Status::Good)
-		{
-			return Status::ExpCmd;
-		}
+		// get any reference token and ignore status
+		// if not a command token then let translate will handle token
+		// (if parser error then let translate will report error)
+		getToken(token, DataType::Any, Reference::All);
 
 		if (token->isCode(EOL_Code) && m_output.empty())
 		{
@@ -228,8 +226,7 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 				{
 					status = Status::ExpBinOpOrParen;
 				}
-				if (status == Status::Parser
-					&& token->isDataType(DataType::None))
+				if (status == Status::UnknownToken)
 				{
 					status = Status::ExpOpOrParen;
 				}
@@ -373,19 +370,11 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 	Status status;
 	bool doneAppend {true};
 
-	// get token if none was passed
-	if (!token && (status = getToken(token, dataType)) != Status::Good)
+	// get token if none was passed (no numbers for a reference)
+	if (!token && (status = getToken(token, dataType, reference))
+		!= Status::Good)
 	{
-		if (reference == Reference::None)
-		{
-			// if parser error then caller needs to handle it
-			return status;
-		}
-		if (status == Status::Parser)
-		{
-			token->setLength(1);  // only report error at first char of token
-		}
-		return expectedErrStatus(dataType, reference);
+		return status;
 	}
 
 	// set default data type for token if it has none
@@ -545,36 +534,34 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 
 // function to get a token from the parser
 //
-//   - data type argument determines if token to get is an operand
-//   - returns Parser_TokenStatus if the parser returned an error
+//   - data type argument determines if number tokens are allowed
+//   - returns parser error if the parser returned an error exception
 
-Status Translator::getToken(TokenPtr &token, DataType dataType)
+Status Translator::getToken(TokenPtr &token, DataType dataType,
+	Reference reference)
+try
 {
-	// if data type is not none, then getting an operand token
-	bool operand {dataType != DataType{}};
-	token = m_parser->token(operand);
-	if (token->isType(Token::Type::Error))
-	{
-		if ((!operand && token->dataType() == DataType::Double)
-			|| dataType == DataType::String)
-		{
-			// only do this for non-operand number constant errors
-			token->setLength(1);  // just point to first character
-			token->setDataType(DataType::None);  // indicate not a number error
-		}
-		if (operand && ((token->dataType() != DataType::Double
-			&& dataType != DataType::None) || dataType == DataType::String))
-		{
-			// non-number constant error, return expected expression error
-			return expectedErrStatus(dataType);
-		}
-		else
-		{
-			// caller needs to convert this error to the appropriate error
-			return Status::Parser;
-		}
-	}
+	// if data type is not blank and not string, then allow a number token
+	token = (*m_parse)(dataType != DataType{} && dataType != DataType::String
+		&& reference == Reference::None
+		? Parser::Number::Yes : Parser::Number::No);
 	return Status::Good;
+}
+catch (Error &error)
+{
+	// TODO for now, create an error token to return
+	token = std::make_shared<Token>(error.column, error.length);
+	if (dataType != DataType{} && dataType != DataType::None
+		&& error.status == Status::UnknownToken)
+	{
+		// non-number constant error, return expected expression error
+		return expectedErrStatus(dataType, reference);
+	}
+	else
+	{
+		// caller may need to convert this error to appropriate error
+		return error.status;
+	}
 }
 
 
@@ -685,22 +672,17 @@ Status Translator::processInternalFunction(TokenPtr &token)
 				}
 			}
 		}
-		else if (status == Status::Parser)
-		{
-			if (token->isDataType(DataType::Double))
-			{
-				return status;  // return parser error
-			}
-		}
 		else if (m_table.isUnaryOperator(token))
 		{
+			// status will be set to an error for a unary operator
+			// need to pass to below to determine appropriate error
 			unaryOperator = true;
 		}
-		else
+		else if (status != Status::UnknownToken)
 		{
-			return status;
+			return status;  // return all other errors except unknown token
 		}
-		// pass other parser errors and unary operators to error code below
+		// code below determines error for unknown and unary operator tokens
 
 		// check terminating token
 		if (token->isCode(Comma_Code))
@@ -819,8 +801,7 @@ Status Translator::processParenToken(TokenPtr &token)
 	{
 		if ((status = getExpression(token, dataType)) != Status::Done)
 		{
-			if (status == Status::Parser
-				&& token->isDataType(DataType::None))
+			if (status == Status::UnknownToken)
 			{
 				status = Status::ExpOpCommaOrParen;
 			}

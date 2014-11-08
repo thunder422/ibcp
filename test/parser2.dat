@@ -15,3 +15,6 @@ rem this should be a comment
 rem:this should be a comment
 
 rem-this should be a comment
+
+# more 'FN' tests (these should be plain identifiers)
+fn fn( fn1 fn1( fn_ fn_(

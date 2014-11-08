@@ -62,3 +62,12 @@ Input: rem:this should be a comment
 Input: rem-this should be a comment
 	 0: Command   Op Rem |-this should be a comment|
 	28: Operator  Op None    EOL
+
+Input: fn fn( fn1 fn1( fn_ fn_(
+	 0: NoParen      None    |fn|
+	 3: Paren     () None    |fn(|
+	 7: NoParen      None    |fn1|
+	11: Paren     () None    |fn1(|
+	16: NoParen      None    |fn_|
+	20: Paren     () None    |fn_(|
+	24: Operator  Op None    EOL

@@ -252,7 +252,7 @@ static TableEntry tableEntries[] =
 	//   BEGIN PLAIN WORDS
 	//***********************
 	{	// BegPlainWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -486,7 +486,7 @@ static TableEntry tableEntries[] =
 	//   END PLAIN WORDS
 	//*********************
 	{	// EndPlainWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -496,7 +496,7 @@ static TableEntry tableEntries[] =
 	//   BEGIN PARENTHESES WORDS
 	//*****************************
 	{	// BegParenWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -709,39 +709,18 @@ static TableEntry tableEntries[] =
 	//   END PARENTHESES WORDS
 	//***************************
 	{	// EndParenWord_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
-	//***************************
-	//   BEGIN DATA TYPE WORDS
-	//***************************
-	{	// BegDataTypeWord_Code
-		Token::Type::Error, Multiple::OneWord,
-		NULL, "NULL", NULL,
-		Null_Flag, 0, DataType{}, NULL,
-		NULL, NULL, NULL, NULL, NULL
 
-	},
-	// Currently None
-
-	//*************************
-	//   END DATA TYPE WORDS
-	//*************************
-	{	// EndDataTypeWord_Code
-		Token::Type::Error, Multiple::OneWord,
-		NULL, "NULL", NULL,
-		Null_Flag, 0, DataType{}, NULL,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
 	//*******************
 	//   BEGIN SYMBOLS
 	//*******************
 	{	// BegSymbol_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -875,7 +854,7 @@ static TableEntry tableEntries[] =
 	//   END SYMBOLS
 	//*****************
 	{	// EndSymbol_Code
-		Token::Type::Error, Multiple::OneWord,
+		Token::Type{}, Multiple::OneWord,
 		NULL, "NULL", NULL,
 		Null_Flag, 0, DataType{}, NULL,
 		NULL, NULL, NULL, NULL, NULL
@@ -1632,8 +1611,6 @@ Table::Table(TableEntry *entry, int entryCount) :
 	m_range[PlainWord_SearchType].end = EndPlainWord_Code;
 	m_range[ParenWord_SearchType].beg = BegParenWord_Code;
 	m_range[ParenWord_SearchType].end = EndParenWord_Code;
-	m_range[DataTypeWord_SearchType].beg = BegDataTypeWord_Code;
-	m_range[DataTypeWord_SearchType].end = EndDataTypeWord_Code;
 	m_range[Symbol_SearchType].beg = BegSymbol_Code;
 	m_range[Symbol_SearchType].end = EndSymbol_Code;
 
@@ -2062,13 +2039,16 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 //   - returns the index of the entry that is found
 //   - returns -1 if the string was not found in the table
 
-Code Table::search(SearchType type, const QStringRef &string) const
+Code Table::search(SearchType type, const std::string &string) const
 {
 	Code i {m_range[type].beg};
 	Code end {m_range[type].end};
 	while (++i < end)
 	{
-		if (string.compare(m_entry[i].name, Qt::CaseInsensitive) == 0)
+		std::string name {m_entry[i].name.toStdString()};
+		if (name.size() == string.size()
+			&& std::equal(string.begin(), string.end(), name.begin(),
+			noCaseCompare))
 		{
 			return i;
 		}
@@ -2084,14 +2064,19 @@ Code Table::search(SearchType type, const QStringRef &string) const
 //   - returns the index of the entry that is found
 //   - returns -1 if the string was not found in the table
 
-Code Table::search(const QStringRef &word1, const QStringRef &word2) const
+Code Table::search(const std::string &word1, const std::string &word2) const
 {
 	for (Code i {m_range[PlainWord_SearchType].beg};
 		i < m_range[PlainWord_SearchType].end; i++)
 	{
-		if (!m_entry[i].name2.isNull()
-			&& word1.compare(m_entry[i].name, Qt::CaseInsensitive) == 0
-			&& word2.compare(m_entry[i].name2, Qt::CaseInsensitive) == 0)
+		std::string name {m_entry[i].name.toStdString()};
+		std::string name2 {m_entry[i].name2.toStdString()};
+		if (!name2.empty() && name.size() == word1.size()
+			&& name2.size() == word2.size()
+			&& std::equal(word1.begin(), word1.end(), name.begin(),
+			noCaseCompare)
+			&& std::equal(word2.begin(), word2.end(), name2.begin(),
+			noCaseCompare))
 		{
 			return i;
 		}

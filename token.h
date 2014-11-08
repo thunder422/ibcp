@@ -35,6 +35,7 @@
 
 
 class Token;
+using TokenUniquePtr = std::unique_ptr<Token>;
 using TokenPtr = std::shared_ptr<Token>;
 
 
@@ -45,7 +46,7 @@ public:
 	// for s_hasParen and s_precedence maps
 	enum class Type
 	{
-		Command,
+		Command = 1,
 		Operator,
 		IntFuncN,
 		IntFuncP,
@@ -53,18 +54,45 @@ public:
 		DefFuncN,
 		DefFuncP,
 		NoParen,
-		Paren,
-		Error
+		Paren
 	};
 
-	explicit Token(int column = -1)
+	explicit Token(int column = -1, int length = 1) : m_column{column},
+		m_length{length}, m_type{}, m_code{Invalid_Code}, m_reference{},
+		m_subCode{None_SubCode} {}
+
+	// constructor for codes
+	Token(int column, int length, Type type, DataType dataType, Code code,
+		const std::string string = {}) : m_column{column}, m_length{length},
+		m_type{type}, m_dataType{dataType}, m_string{string.c_str()},
+		m_code{code}, m_reference{}, m_subCode{None_SubCode} {}
+
+	// constructor for identifiers
+	Token(int column, int length, Type type, DataType dataType,
+		const std::string &string) : m_column{column}, m_length{length},
+		m_type{type}, m_dataType{dataType}, m_string{string.c_str()},
+		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode} {}
+
+	// constructor for integer constants
+	Token(int column, int length, const std::string string, int value) :
+		m_column{column}, m_length{length}, m_type{Token::Type::Constant},
+		m_dataType{DataType::Integer}, m_string{string.c_str()},
+		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode},
+		m_valueInt{value}
 	{
-		m_column = column;
-		m_length = 1;
-		m_reference = false;
-		m_code = Invalid_Code;
-		m_subCode = None_SubCode;
+		m_value = value;  // convert to double in case needed
 	}
+
+	// constructor for double constants
+	Token(int column, int length, const std::string string, double value,
+		bool decimal);
+
+	// constructor for string constants
+	Token(int column, int length, const std::string string) : m_column{column},
+		m_length{length}, m_type{Token::Type::Constant},
+		m_dataType{DataType::String}, m_string{string.c_str()},
+		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode} {}
+
 	Token(const Token &token)  // copy constructor
 	{
 		*this = token;
@@ -133,10 +161,6 @@ public:
 	void setString(const QString &string)
 	{
 		m_string = string;
-	}
-	void setString(int pos, QChar character)
-	{
-		m_string[pos] = character;
 	}
 	int stringLength(void) const
 	{
@@ -254,7 +278,6 @@ private:
 	static std::unordered_map<Type, int, EnumClassHash> s_precendence;
 
 	// instance members
-	int m_id;				// private ID (index) for detecting token leaks
 	int m_column;			// start column of token
 	int m_length;			// length of token
 	Type m_type;			// type of the token

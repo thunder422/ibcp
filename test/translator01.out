@@ -66,13 +66,13 @@ Input: A,B+C
           ^-- expected equal or comma for assignment
 
 Input: 3=A
-       ^-- expected item for assignment
+       ^-- expected command or item for assignment
 
 Input: A,3,B=4
          ^-- expected double variable
 
 Input: (A=B)
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: A,B,(C)=4
            ^-- expected double variable

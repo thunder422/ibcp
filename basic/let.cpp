@@ -55,25 +55,20 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 		if ((status = translator.getOperand(token, dataType,
 			Translator::Reference::All)) != Status::Good)
 		{
-			if (token->column() > column)
+			if (token->column() > column)  // not at begin command?
 			{
-				return status;
+				return status;  // return error as is
 			}
 			// next token determines error
 			TokenPtr nextToken;
-			if ((status = translator.getToken(nextToken)) != Status::Good)
+			if ((status = translator.getToken(nextToken)) == Status::Good)
 			{
-				status = Status::ExpCmd;
+				if (nextToken->isCode(Comma_Code) || nextToken->isCode(Eq_Code))
+				{
+					return Status::ExpAssignItem;
+				}
 			}
-			if (nextToken->isCode(Comma_Code) || nextToken->isCode(Eq_Code))
-			{
-				status = Status::ExpAssignItem;
-			}
-			else
-			{
-				status = Status::ExpCmd;
-			}
-			return status;
+			return Status::ExpCmdOrAssignItem;
 		}
 
 		// get and check next token for comma or equal
@@ -135,7 +130,7 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 	// get expression for value to assign
 	if ((status = translator.getExpression(token, dataType)) != Status::Done)
 	{
-		if (status == Status::Parser && token->isDataType(DataType::None))
+		if (status == Status::UnknownToken)
 		{
 			status = Status::ExpOpOrEnd;
 		}

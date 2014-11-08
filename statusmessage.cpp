@@ -34,10 +34,8 @@ const QString StatusMessage::text(Status status)
 		return tr("Good_TokenStatus (BUG)");
 	case Status::Done:
 		return tr("Done_TokenStatus (BUG)");
-	case Status::Parser:
-		return tr("Parser_TokenStatus (BUG)");
-	case Status::ExpCmd:
-		return tr("expected command");
+	case Status::ExpCmdOrAssignItem:
+		return tr("expected command or item for assignment");
 	case Status::ExpExpr:
 		return tr("expected expression");
 	case Status::ExpExprOrEnd:
@@ -98,8 +96,8 @@ const QString StatusMessage::text(Status status)
 	case Status::ExpIntConst:
 		return tr("expected valid integer constant");
 	// the following statuses are parser errors
-	case Status::UnrecognizedChar:
-		return tr("unrecognizable character");
+	case Status::UnknownToken:
+		return tr("unknown token");
 	case Status::ExpNonZeroDigit:
 		return tr("expected non-zero leading digit in numeric constant");
 	case Status::ExpDigitsOrSngDP:
@@ -107,9 +105,11 @@ const QString StatusMessage::text(Status status)
 			"constant");
 	case Status::ExpManDigits:
 		return tr("expected digits in mantissa of floating point constant");
-	case Status::ExpExpDigits:
+	case Status::ExpExpSignOrDigits:
 		return tr("expected sign or digits for exponent in floating point "
 			"constant");
+	case Status::ExpExpDigits:
+		return tr("expected digits for exponent in floating point constant");
 	case Status::ExpDigits:
 		return tr("expected digits in floating point constant");
 	case Status::FPOutOfRange:

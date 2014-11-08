@@ -26,9 +26,9 @@
 #include "table.h"
 
 
-Parser::Parser(void) :
+Parser::Parser(const std::string &input) :
 	m_table(Table::instance()),
-	m_errorStatus {}
+	m_input {input}
 {
 
 }
@@ -40,22 +40,36 @@ Parser::Parser(void) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenPtr Parser::token(bool operandState)
+TokenUniquePtr Parser::operator()(Number number)
 {
-	m_operandState = operandState;
-	skipWhitespace();
-	m_token = std::make_shared<Token>(m_pos);  // create new token to return
-	m_errorStatus = Status{};
-	if (m_input[m_pos].isNull())
+	m_input >> std::ws;
+	if (m_input.peek() == EOF)
 	{
-		m_table.setToken(m_token, EOL_Code);
+		int pos = m_input.str().length();
+		return m_table.newToken(pos, 1, EOL_Code);
 	}
-	else if (!getIdentifier() && !getNumber() && !getString() && !getOperator())
+	if (TokenUniquePtr token = getIdentifier())
 	{
-		// not a valid token, create error token
-		setError(Status::UnrecognizedChar, DataType::None);
+		return token;
 	}
-	return std::move(m_token);  // token may contain an error
+	if (number == Number::Yes)
+	{
+		if (TokenUniquePtr token = getNumber())
+		{
+			return token;
+		}
+	}
+	if (TokenUniquePtr token = getString())
+	{
+		return token;
+	}
+	if (TokenUniquePtr token = getOperator())
+	{
+		return token;
+	}
+	// not a valid token, throw unknown token error
+	int pos = m_input.tellg();
+	throw Error {Status::UnknownToken, pos, 1};
 }
 
 
@@ -65,197 +79,166 @@ TokenPtr Parser::token(bool operandState)
 // parenthesis.  The internal function, defined function or identifier
 // will have a data type
 //
-//   - returns false if no identifier (position not changed)
-//   - returns true if there is and token is filled
-//   - returns true for errors setting special error token
+//   - returns default token pointer if no identifier (position not changed)
+//   - returns token pointer to new token if there is
 
-bool Parser::getIdentifier(void)
+TokenUniquePtr Parser::getIdentifier()
 {
-	DataType dataType;		// data type of word
-	bool paren;				// word has opening parenthesis flag
-	SearchType search;		// table search type
+	int pos = m_input.tellg();
+	Word word = getWord(WordType::First);
+	if (word.string.empty())
+	{
+		return TokenUniquePtr{};  // not an identifier
+	}
 
 	// check to see if this is the start of a remark
-	if (m_input.midRef(m_pos).startsWith(m_table.name(Rem_Code),
-		Qt::CaseInsensitive))
+	// (need to check separately since a space not required after 'REM')
+	std::string name {m_table.name(Rem_Code).toStdString()};
+	if (word.string.length() >= name.length() && std::equal(name.begin(),
+		name.end(), word.string.begin(), noCaseCompare))
 	{
-		m_table.setToken(m_token, Rem_Code);
-		m_token->setLength(m_table.name(Rem_Code).length());
-		// move position past command and grab rest of line
-		m_pos += m_token->length();
-		m_token->setString(m_input.mid(m_pos));
-		m_pos += m_token->stringLength();
-		return true;
+		// clear errors in case peeked past end, which sets error
+		m_input.clear();
+		// move to first char after 'REM'
+		m_input.seekg(pos + name.length());
+		// read remark string to end-of-line
+		std::getline(m_input, word.string);
+		return m_table.newToken(pos, name.length(), Rem_Code,
+			std::move(word.string));
 	}
 
-	int pos {scanWord(m_pos, dataType, paren)};
-	if (pos == -1)
+	Token::Type type {};
+	Code code;
+	// defined function?  (must also have a letter after "FN")
+	if (word.string.length() >= 3 && toupper(word.string[0]) == 'F'
+		&& toupper(word.string[1]) == 'N' && isalpha(word.string[2]))
 	{
-		return false;  // not an identifier
-	}
-
-	int len {pos - m_pos};
-	// defined function?
-	if (m_input.midRef(m_pos).startsWith("FN", Qt::CaseInsensitive))
-	{
-		if (paren)
-		{
-			m_token->setType(Token::Type::DefFuncP);
-			m_token->setString(m_input.mid(m_pos, len - 1));
-			m_token->setLength(len - 1);
-		}
-		else  // no parentheses
-		{
-			m_token->setType(Token::Type::DefFuncN);
-			m_token->setString(m_input.mid(m_pos, len));
-			m_token->setLength(len);
-		}
-		m_token->setDataType(dataType);
-		m_pos = pos;  // move position past defined function identifier
-		return true;
-	}
-	if (paren)
-	{
-		search = ParenWord_SearchType;
-	}
-	else if (dataType != DataType::None)
-	{
-		search = DataTypeWord_SearchType;
+		type = word.paren ? Token::Type::DefFuncP : Token::Type::DefFuncN;
 	}
 	else
 	{
-		search = PlainWord_SearchType;
+		code = m_table.search(word.paren
+			? ParenWord_SearchType : PlainWord_SearchType, word.string);
+		if (code == Invalid_Code)
+		{
+			// word not found in table, therefore
+			// must be variable, array, generic function, or subroutine
+			// but that can't be determined here, so just generic token
+			type = word.paren ? Token::Type::Paren : Token::Type::NoParen;
+		}
 	}
-	Code code {m_table.search(search, m_input.midRef(m_pos, len))};
-	if (code == Invalid_Code)
+
+	if (type != Token::Type{})
 	{
-		// word not found in table, therefore
-		// must be variable, array, generic function, or subroutine
-		// but that can't be determined here, so just return data type,
-		// whether opening parenthesis is present, and string of identifier
-		if (paren)
+		if (word.paren)
 		{
-			m_token->setType(Token::Type::Paren);
-			m_token->setString(m_input.mid(m_pos, len - 1));
-			m_token->setLength(len - 1);
+			word.string.pop_back();  // don't store parentheses in token string
 		}
-		else
-		{
-			m_token->setType(Token::Type::NoParen);
-			m_token->setString(m_input.mid(m_pos, len));
-			m_token->setLength(len);
-		}
-		m_token->setDataType(dataType);
-		m_pos = pos;  // move position past word
-		return true;
+		int len = word.string.length();
+		return TokenUniquePtr{new Token {pos, len, type, word.dataType,
+			word.string}};
 	}
+
 	// found word in table (command, internal function, or operator)
-	int word1 {m_pos};  // save position of first word
-	m_pos = pos;  // move position past first word
-
-	// setup token in case this is only one word
-	m_table.setToken(m_token, code);
-	m_token->setLength(len);
-
-	if (m_table.multiple(code) == Multiple::OneWord)
+	int len = word.string.length();
+	if (m_table.multiple(code) != Multiple::OneWord)
 	{
-		// identifier can only be a single word
-		return true;
-	}
-
-	// command could be a two word command
-	skipWhitespace();
-	pos = scanWord(m_pos, dataType, paren);
-	int len2 {pos - m_pos};
-	if (dataType != DataType::None || paren
-		|| (code = m_table.search(m_input.midRef(word1, len),
-		m_input.midRef(m_pos, len2))) == Invalid_Code)
-	{
-		if (m_token->type() == Token::Type::Error)
+		// command could be a two word command
+		m_input >> std::ws;
+		int pos2 = m_input.tellg();  // begin of second word (could by -1)
+		Word word2 = getWord(WordType::Second);
+		// check for possible second word (no data type and no paren words only)
+		if (!word2.string.empty())
 		{
-			// first word by itself is not valid
-			m_token->setString("Invalid Two Word Command");
+			// pos2 was not -1
+			Code code2;
+			if ((code2 = m_table.search(word.string, word2.string))
+				!= Invalid_Code)
+			{
+				// double word command found
+				code = code2;
+				len = pos2 - pos + word2.string.length();
+			}
+			else  // reset position back to begin of second word
+			{
+				// clear errors in case peeked past end, which sets error
+				m_input.clear();
+				m_input.seekg(pos2);
+			}
 		}
-		// otherwise single word is valid command,
-		// token already setup, position already set past word
-		return true;
 	}
-	// get information from two word command
-	m_table.setToken(m_token, code);
-	m_token->setLength(pos - m_token->column());
-
-	m_pos = pos;  // move position past second word
-	return true;
+	return m_table.newToken(pos, len, code);
 }
 
 
-// function to get a word at the position specified
+// function to get a word at current position in input stream
 //
-//   - returns -1 if there is not an identifier at point
-//   - returns index to character after identifier
+//   - returns the string of the word along with data type and parentheses
+//     flag in a Word structure
 //   - returns data type found or None if none was found
 //   - returns flag if opening parenthesis at end of identifier
+//   - returns empty string if there is not an identifier at position
+//   - input position moved to end of word for valid identifier
+//   - work type argument identifies first or second word
+//   - second word for command only, so no data type or parentheses allowed
+//   - the input position is not moved if second word not valid
 
-int Parser::scanWord(int pos, DataType &dataType, bool &paren)
+Parser::Word Parser::getWord(WordType wordType)
 {
-	if (!m_input[pos].isLetter())
+	Word word;
+
+	if (!isalpha(m_input.peek()))
 	{
-		return -1;  // not an identifier
+		return word;  // not an identifier, return empty word
 	}
+
+	int pos = m_input.tellg();
 	do
 	{
-		pos++;
+		word.string.push_back(m_input.get());  // get character
 	}
-	while (m_input[pos].isLetterOrNumber() || m_input[pos] == '_');
-	// pos now points to non-alnum or '_'
+	while (isalnum(m_input.peek()) || m_input.peek() == '_');
+	// next character is non-alnum or '_'
 
 	// see if there is a data type symbol next
-	switch (m_input[pos].unicode())
+	switch (m_input.peek())
 	{
 	case '%':
-		dataType = DataType::Integer;
-		pos++;
+		word.dataType = DataType::Integer;
+		word.string.push_back(m_input.get());  // get data type character
 		break;
 	case '$':
-		dataType = DataType::String;
-		pos++;
+		word.dataType = DataType::String;
+		word.string.push_back(m_input.get());  // get data type character
 		break;
 	case '#':
-		dataType = DataType::Double;
-		pos++;
+		word.dataType = DataType::Double;
+		word.string.push_back(m_input.get());  // get data type character
 		break;
 	default:
-		dataType = DataType::None;
+		word.dataType = DataType::None;
 	}
 
 	// see if there is an opening parenthesis
-	if (m_input[pos] == '(')
+	if (m_input.peek() == '(')
 	{
-		paren = true;
-		pos++;
+		word.paren = true;
+		word.string.push_back(m_input.get());  // get '(' character
 	}
 	else
 	{
-		paren = false;
+		word.paren = false;
 	}
 
-	// p now points to next character after identifier
-	return pos;
-}
-
-
-// function to skip white space at the specified position
-//
-//   - for now the only white space is a space character
-//   - returns pointer to next non-white space character
-//   - if no white space found then argument is returned
-
-void Parser::skipWhitespace(void)
-{
-	while (m_input[m_pos].isSpace())
+	if (wordType == WordType::Second && (word.dataType != DataType::None
+		|| word.paren))
 	{
-		m_pos++;
+		word.string.clear();  // not a valid second command word
+		// clear errors in case peeked past end, which sets error
+		m_input.clear();
+		m_input.seekg(pos);   // move back to begin of second word
 	}
+	return word;
 }
 
 
@@ -266,62 +249,59 @@ void Parser::skipWhitespace(void)
 // double.
 //
 //   - numbers starting with zero must be followed by a decimal point
-//   - returns false if no number (position not changed)
-//   - returns true if there is and token is filled
-//   - returns true for errors and special error token is set
+//   - returns default token pointer if no number (position not changed)
+//   - returns token if there is a valid number
+//   - throws an exception for errors
 //   - string of the number is converted to a value
 //   - string of the number is saved so it can be later reproduced
 
-bool Parser::getNumber(void)
+TokenUniquePtr Parser::getNumber()
 {
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
-	bool sign {};				// have negative sign flag (2011-03-27)
+	bool sign {};				// have negative sign flag
+	bool expSign {};			// have exponent sign flag
+	std::string number;			// string to hold number
 
-	int pos {m_pos};
+	int pos = m_input.tellg();
 	forever
 	{
-		if (m_input[pos].isDigit())
+		if (isdigit(m_input.peek()))
 		{
-			pos++;  // move past digit
+			number.push_back(m_input.get());  // get digit
 			if (!digits)  // first digit?
 			{
 				digits = true;
-				if (!decimal && m_input[pos - 1] == '0' && m_input[pos] != '.')
+				if (!decimal && number.back() == '0' && m_input.peek() != '.')
 				{
 					// next character not a digit (or '.')?
-					if (!m_input[pos].isDigit())
-					{
-						break;  // single zero, exit loop to process string
-					}
-					else
+					if (isdigit(m_input.peek()))
 					{
 						// if didn't find a decimal point
 						// and first character is a zero
 						// and second character is not a decimal point,
 						// and second character is a digit
 						// then this is in invalid number
-						setError(Status::ExpNonZeroDigit);
-						return true;
+						throw Error {Status::ExpNonZeroDigit, pos, 1};
 					}
+					break;  // single zero, exit loop to process string
 				}
 			}
 		}
-		else if (m_input[pos] == '.')
+		else if (m_input.peek() == '.')
 		{
 			if (decimal)  // was a decimal point already found?
 			{
 				if (!digits)  // no digits found?
 				{
-					setErrorLength(Status::ExpDigitsOrSngDP, 2);
-					return true;
+					throw Error {Status::ExpDigitsOrSngDP, pos, 2};
 				}
 				break;  // exit loop to process string
 			}
 			decimal = true;
-			pos++;  // move past '.'
+			number.push_back(m_input.get());  // get '.'
 		}
-		else if (m_input[pos].toUpper() == 'E')
+		else if (toupper(m_input.peek()) == 'E')
 		{
 			if (!digits)
 			{
@@ -329,29 +309,32 @@ bool Parser::getNumber(void)
 				{
 					// if there is a '-E' then not a number
 					// (need to interprete '-' as unary operator)
-					return false;
+					m_input.seekg(pos);  // move back to begin
+					return TokenUniquePtr{};
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				setError(Status::ExpManDigits);
-				return true;
+				throw Error {Status::ExpManDigits, pos, 2};
 			}
-			pos++;  // move past 'e' or 'E'
-			if (m_input[pos] == '+' || m_input[pos] == '-')
+			number.push_back(m_input.get());  // get 'e' or 'E'
+			if (m_input.peek() == '+' || m_input.peek() == '-')
 			{
-				pos++;  // move past exponent sign
+				expSign = true;
+				number.push_back(m_input.get());  // get exponent sign
 			}
 			// now look for exponent digits
 			digits = false;
-			while (m_input[pos].isDigit())
+			while (isdigit(m_input.peek()))
 			{
-				pos++;  // move past exponent digit
+				number.push_back(m_input.get());  // get exponent digit
 				digits = true;
 			}
 			if (!digits)  // no exponent digits found?
 			{
-				setErrorColumn(Status::ExpExpDigits, pos);
-				return true;
+				pos += number.length();  // move to error
+				throw Error {expSign
+					? Status::ExpExpDigits : Status::ExpExpSignOrDigits, pos,
+					1};
 			}
 			decimal = true;  // process as double
 			break;  // exit loop to process string
@@ -361,20 +344,22 @@ bool Parser::getNumber(void)
 			if (!digits && !decimal)  // nothing found?
 			{
 				// look for negative sign
-				if (m_operandState && !sign && m_input[pos] == '-')
+				if (!sign && m_input.peek() == '-')
 				{
-					pos++;  // move past negative sign
+					number.push_back(m_input.get());  // get negative sign
 					sign = true;
 				}
 				else
 				{
-					return false;  // not a numeric constant
+					// clear errors in case peeked past end, which sets error
+					m_input.clear();
+					m_input.seekg(pos);       // move back to begin
+					return TokenUniquePtr{};  // not a numeric constant
 				}
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				setError(Status::ExpDigits);
-				return true;
+				throw Error {Status::ExpDigits, pos, 1};
 			}
 			else
 			{
@@ -383,61 +368,36 @@ bool Parser::getNumber(void)
 			}
 		}
 	}
-	// pos pointing to first character that is not part of constant
-	bool ok;
-	int len {pos - m_pos};
-	QString numStr {m_input.mid(m_pos, len)};
 
-	// save string of number so it later can be reproduced
-	m_token->setString(numStr);
-	m_token->setLength(len);
-	m_pos = pos;  // move to next character after constant
-
-	m_token->setType(Token::Type::Constant);
-
-	// FIXME hack for memory issue reported against QString::toInt()/toDouble()
-	QByteArray numBytes;
-	numBytes.append(numStr);
+	int len = number.length();
 	if (!decimal)  // no decimal or exponent?
+	try
 	{
 		// try to convert to integer first
-		m_token->setValue(numBytes.toInt(&ok));
-		if (ok)
-		{
-			m_token->setDataType(DataType::Integer);
-			// convert to double in case double is needed
-			m_token->setValue((double)m_token->valueInt());
-			return true;
-		}
-		// else overflow or underflow, won't fit into an integer
-		// fall thru and try as double
+		int value {std::stoi(number)};
+
+		// save string of number so it later can be reproduced
+		return TokenUniquePtr{new Token {pos, len, std::move(number), value}};
 	}
-	m_token->setValue(numBytes.toDouble(&ok));
-	if (!ok)
+	catch(std::out_of_range)
 	{
-		// overflow or underflow, constant is not valid
-		setErrorLength(Status::FPOutOfRange, len);
-		return true;
+		// overflow or underflow, won't fit into an integer
+		// fall through and try as double
 	}
 
-	// if double in range of integer, then set as integer
-	if (m_token->value() > (double)INT_MIN - 0.5
-		&& m_token->value() < (double)INT_MAX + 0.5)
+	try
 	{
-		m_token->setDataType(DataType::Integer);
-		// convert to integer in case integer is needed
-		m_token->setValue((int)m_token->value());
-		if (decimal)  // decimal point or exponent?
-		{
-			// indicate number is a double value
-			m_token->addSubCode(Double_SubCode);
-		}
+		double value {std::stod(number)};
+
+		// save string of number so it later can be reproduced
+		return TokenUniquePtr{new Token {pos, len, std::move(number), value,
+			decimal}};
 	}
-	else  // number can't be converted to integer
+	catch (std::out_of_range)
 	{
-		m_token->setDataType(DataType::Double);
+		// overflow or underflow, constant is not valid
+		throw Error {Status::FPOutOfRange, pos, len};
 	}
-	return true;
 }
 
 
@@ -445,104 +405,86 @@ bool Parser::getNumber(void)
 // a double quote at current position.
 //
 //   - strings constants start and end with a double quote
-//   - returns false if no string (position not changed)
-//   - returns true if there is and token is filled
+//   - returns default token pointer if no string (position not changed)
+//   - returns token if there is a valid string
 //   - copy string into token without surrounding quotes
-//   - returns true for errors and special error token is set
 
-bool Parser::getString(void)
+TokenUniquePtr Parser::getString()
 {
-	if (m_input[m_pos] != '"')
+	if (m_input.peek() != '"')
 	{
-		return false;  // not a sting constant
+		return TokenUniquePtr{};  // not a sting constant
 	}
 
-	int pos {m_pos + 1};
-	int len {};
-	while (!m_input[pos].isNull())
+	int pos = m_input.tellg();
+	m_input.get();  // eat first '"'
+	std::string string;
+	int len = 1;
+	while (m_input.peek() != EOF)
 	{
-		if (m_input[pos] == '"')
+		char c = m_input.get();  // get char from stream
+		++len;
+		if (c == '"')
 		{
-			if (m_input[++pos] != '"')  // not two in a row?
+			if (m_input.peek() != '"')  // not two in a row?
 			{
 				// found end of string
-				// pos at character following closing quote
+				// input stream at character following closing quote
 				break;
 			}
 			// otherwise quote counts as one character
+			m_input.get();  // eat second '"'
+			++len;
 		}
-		m_token->setString(len++, m_input[pos++]);  // copy char into string
+		string.push_back(c);  // append char to string
 	}
-	m_token->setType(Token::Type::Constant);
-	m_token->setDataType(DataType::String);
-	m_token->setLength(pos - m_pos);
-	// advance position past end of string
-	m_pos = pos;
-	return true;
+	return TokenUniquePtr{new Token {pos, len, std::move(string)}};
 }
 
 
-// function to get an operator (of symbol characters) at the current position,
-// which may be one or two characters.  For the purpose of the Parser, these
-// operators in the table are generally not associated with a data type
-// (though the data type from the Table entry is returned, it will usually br
-// None).
+// function to get an operator (of symbol characters) at the current
+// position, which may be one or two characters
 //
-//   - returns false if no operator (position not changed)
-//   - returns true if there is and token is filled
-//   - returns true for errors setting special error token
+//   - returns default token pointer if no operator (position not changed)
+//   - returns token pointer to new token if there is a valid operator
 
-bool Parser::getOperator(void)
+TokenUniquePtr Parser::getOperator()
 {
+	std::string string;
+	string.push_back(m_input.peek());
 	// search table for current character to see if it is a valid operator
-	Code code {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 1))};
-	if (code != Invalid_Code)
+	Code code {m_table.search(Symbol_SearchType, string)};
+	if (code == Invalid_Code)
 	{
-		// current character is a valid single character operator
-
-		// setup token in case this is only one character
-		m_token->setType(m_table.type(code));
-		m_token->setDataType(m_table.dataType(code));
-		m_token->setCode(code);
-		m_token->setLength(1);
-
-		if (m_table.multiple(code) == Multiple::OneChar)
-		{
-			// operator can only be a single character
-			m_pos++;  // move past operator
-			if (code == RemOp_Code)
-			{
-				// remark requires special handling
-				// remark string is to end of line
-				m_token->setString(m_input.mid(m_pos));
-				// move position to end of line
-				m_pos += m_token->stringLength();
-			}
-			return true;
-		}
+		// character(s) at current position not a valid operator
+		// (no first of two-character operator is an invalid operator)
+		return TokenUniquePtr{};
 	}
-	// operator could be a two character operator
-	// search table again for two characters at current position
-	Code code2 {m_table.search(Symbol_SearchType, m_input.midRef(m_pos, 2))};
-	if (code2 == Invalid_Code)
+	int pos = m_input.tellg();
+	m_input.get();  // eat first character (already in string)
+	if (code == RemOp_Code)
 	{
-		if (code != Invalid_Code)  // was first character a valid operator?
-		{
-			m_pos++;  // move past first character
-			// token already setup
-			return true;
-		}
-		return false;  // character(s) as current position not a valid operator
+		// remark requires special handling (remark string is to end-of-line)
+		std::getline(m_input, string);  // reads rest of line
+		return m_table.newToken(pos, 1, RemOp_Code, std::move(string));
 	}
 
-	// valid two character operator
-	m_pos += 2;  // move past two characters
-	// get information from two character operator
-	m_token->setType(m_table.type(code2));
-	m_token->setDataType(m_table.dataType(code2));
-	m_token->setCode(code2);
-	m_token->setLength(2);
-	return true;
+	// current character is at least a valid one-character operator
+	int len {1};
+	if (m_table.multiple(code) != Multiple::OneChar)
+	{
+		// operator could be a two-character operator
+		string.push_back(m_input.peek());
+		Code code2;
+		if ((code2 = m_table.search(Symbol_SearchType, string)) != Invalid_Code)
+		{
+			// two-character operator found
+			code = code2;
+			len = 2;
+			m_input.get();  // eat second character
+		}
+	}
+	return m_table.newToken(pos, len, code);
 }
 
 

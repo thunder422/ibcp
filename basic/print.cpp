@@ -43,8 +43,7 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 		if ((status = translator.getExpression(token, DataType::None))
 			!= Status::Done)
 		{
-			if (status == Status::Parser
-				&& token->isDataType(DataType::None))
+			if (status == Status::UnknownToken)
 			{
 				if (translator.doneStackEmpty())
 				{

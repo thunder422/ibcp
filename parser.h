@@ -25,7 +25,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <QString>
+#include <sstream>
 
 #include "token.h"
 
@@ -35,61 +35,38 @@ class Table;
 class Parser
 {
 public:
-	explicit Parser(void);
-	void setInput(const QString &input)
+	explicit Parser(const std::string &input);
+	enum class Number
 	{
-		m_input = input;
-		m_pos = 0;
-		m_operandState = false;
-	}
-	TokenPtr token(bool operandState = false);
-	Status errorStatus()
-	{
-		return m_errorStatus;
-	}
+		No,
+		Yes
+	};
+	TokenUniquePtr operator()(Number state);
 
 private:
 	// main functions
-	bool getCommand(void);
-	bool getIdentifier(void);
-	bool getNumber(void);
-	bool getString(void);
-	bool getOperator(void);
-
-	// set token error function
-	void setError(Status status, DataType dataType = DataType::Double)
-	{
-		m_errorStatus = status;
-		m_token->setType(Token::Type::Error);
-		m_token->setLength(1);
-		m_token->setDataType(dataType);
-	}
-	void setErrorColumn(Status status, int column)
-	{
-		m_errorStatus = status;
-		m_token->setType(Token::Type::Error);
-		// assumes length=1, specifies alternate column
-		m_token->setLength(-column);
-		m_token->setDataType(DataType::Double);
-	}
-	void setErrorLength(Status status, int len)
-	{
-		m_errorStatus = status;
-		m_token->setType(Token::Type::Error);
-		m_token->setLength(len);
-		m_token->setDataType(DataType::Double);
-	}
+	TokenUniquePtr getIdentifier();
+	TokenUniquePtr getNumber();
+	TokenUniquePtr getString();
+	TokenUniquePtr getOperator();
 
 	// support functions
-	void skipWhitespace();
-	int scanWord(int pos, DataType &datatype, bool &paren);
+	struct Word
+	{
+		std::string string;		// string of word
+		DataType dataType;		// data type of word
+		bool paren;				// word has an opening parentheses
+	};
+	enum class WordType
+	{
+		First,					// fully typed with optional parentheses word
+		Second					// untyped no parentheses second word of command
+	};
+
+	Word getWord(WordType wordType);
 
 	Table &m_table;			// pointer to the table object
-	QString m_input;		// input line being parsed
-	int m_pos;				// index to current position in input string
-	TokenPtr m_token;		// pointer to working token (to be returned)
-	bool m_operandState;	// currently operand state flag (2011-03-27)
-	Status m_errorStatus;	// status code of last detected error
+	std::istringstream m_input;	// input line being parsed
 };
 
 

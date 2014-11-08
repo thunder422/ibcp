@@ -46,4 +46,4 @@ Input: if index<<5 && index><4 || n<4 then
 	 8: Operator  Op Integer Lt
 	 9: Operator  Op Integer Lt
 	10: Constant     Integer 5 |5|
-                   ^-- unrecognizable character
+                   ^-- unknown token

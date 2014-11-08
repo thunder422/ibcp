@@ -78,13 +78,13 @@ Input: Z$(A%),Y$(A%)=X$(A%)
 Output: A% Z$(<ref> A% Y$(<ref> A% X$( AssignList$ 
 
 Input: TAB(10)=A
-       ^^^^-- expected command
+       ^^^^-- expected command or item for assignment
 
 Input: +
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: NOT
-       ^^^-- expected command
+       ^^^-- expected command or item for assignment
 
 Input: A PRINT B
          ^^^^^-- expected equal or comma for assignment

@@ -36,8 +36,7 @@ enum class Status
 {
 	Good,
 	Done,
-	Parser,
-	ExpCmd,
+	ExpCmdOrAssignItem,
 	ExpExpr,
 	ExpExprOrEnd,
 	ExpOpOrEnd,
@@ -68,10 +67,11 @@ enum class Status
 	ExpOpSemiCommaOrEnd,
 	ExpIntConst,
 	// the following are parser errors
-	UnrecognizedChar,
+	UnknownToken,
 	ExpNonZeroDigit,
 	ExpDigitsOrSngDP,
 	ExpManDigits,
+	ExpExpSignOrDigits,
 	ExpExpDigits,
 	ExpDigits,
 	FPOutOfRange,
@@ -94,6 +94,15 @@ enum class Status
 	BUG_Debug8,
 	BUG_Debug9,
 	BUG_Debug
+};
+
+
+// structure for holding information about an error exception
+struct Error
+{
+	Status status;						// status of error
+	int column;							// column of error
+	int length;							// length of error
 };
 
 
@@ -166,6 +175,13 @@ struct EnumClassHash
     {
         return static_cast<std::size_t>(t);
     }
+};
+
+
+// lambda function for doing a case insentive character comparison
+auto noCaseCompare = [](char c1, char c2)
+{
+	return toupper(c1) == toupper(c2);
 };
 
 

@@ -9,8 +9,9 @@
 # 3: expected digits or single decimal point in floating point constant
 # 4: expected digits in mantissa in floating point constant
 # 5: expected sign or digits for exponent in floating point constant
-# 6: expected digits in floating point constan
-# 7: floating point constant is out of range
+# 6: expected digits for exponent in floating point constant
+# 7: expected digits in floating point constant
+# 8: floating point constant is out of range
 
 ?
 01
@@ -62,6 +63,7 @@ MID$(A$.e
 
 MID$(A$,?
 MID$(A$,1e
+MID$(A$,1e+
 
 MID$(A$,3?
 MID$(A$,3 .
@@ -80,6 +82,7 @@ A$=MID$(B$.e
 
 A$=MID$(B$,?
 A$=MID$(B$,1e
+A$=MID$(B$,1e-
 
 A$=MID$(B$,3?
 A$=MID$(B$,3 .
@@ -98,9 +101,11 @@ PRINT A.e
 
 PRINT (?
 PRINT (1e
+PRINT (1e-
 
 PRINT A(?
 PRINT A(1e
+PRINT A(1e+
 PRINT F(?
 
 PRINT A(1?
@@ -118,12 +123,14 @@ PRINT A,,..
 
 PRINT INT(?
 PRINT INT(1e
+PRINT INT(1e-
 
 PRINT ASC(A$?
 PRINT ASC(A$1e
 
 PRINT ASC(A$,?
 PRINT ASC(A$,1e
+PRINT ASC(A$,1e+
 
 PRINT TAB(?
 PRINT SPC(..

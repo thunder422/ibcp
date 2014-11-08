@@ -39,11 +39,11 @@ Input: INPUT A;:R=SQR(A):PRINT"Sqrt(";A;")=";R
 Output: InputParse InputBegin A<ref> InputAssign INPUT'Keep:' R<ref> A SQR( Assign':' "Sqrt(" PrintStr A PrintDbl ")=" PrintStr R PrintDbl PRINT 
 
 Input: :
-       ^-- expected command
+       ^-- expected command or item for assignment
 
 Input: PRINT:
-             ^-- expected command
+             ^-- expected command or item for assignment
 
 Input: PRINT::PRINT
-             ^-- expected command
+             ^-- expected command or item for assignment
 

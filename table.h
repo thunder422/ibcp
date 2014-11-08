@@ -53,7 +53,6 @@ enum SearchType  // table search types
 {
 	PlainWord_SearchType,
 	ParenWord_SearchType,
-	DataTypeWord_SearchType,
 	Symbol_SearchType,
 	sizeof_SearchType
 };
@@ -132,6 +131,12 @@ public:
 	DataType expectedDataType(const TokenPtr &token) const;
 	void setToken(TokenPtr &token, Code code);
 	TokenPtr newToken(Code code);
+	TokenUniquePtr newToken(int column, int length, Code code,
+		const std::string string = {})
+	{
+		return TokenUniquePtr{new Token {column, length, type(code),
+			dataType(code), code, string}};
+	}
 	Code findCode(TokenPtr &token, TokenPtr &operandToken,
 		int operandIndex = 0);
 	bool setTokenCode(TokenPtr token, Code code, DataType dataType,
@@ -143,8 +148,8 @@ public:
 	QString name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
-	Code search(SearchType type, const QStringRef &string) const;
-	Code search(const QStringRef &word1, const QStringRef &word2) const;
+	Code search(SearchType type, const std::string &string) const;
+	Code search(const std::string &word1, const std::string &word2) const;
 	Code search(Code code, int argumentCount) const;
 	Code search(Code code, DataType *dataType) const;
 	bool match(Code code, DataType *dataType) const;

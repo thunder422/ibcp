@@ -80,8 +80,8 @@ private:
 	{
 		m_cout << "\nInput: " << inputLine << '\n';
 	}
-	bool printToken(const TokenPtr &token, Status errorStatus, bool tab);
-	void printError(int column, int length, Status status);
+	void printToken(const TokenPtr &token);
+	void printError(Error &error);
 
 	std::string m_programName;		// name of program
 	Option m_option;				// selection option
