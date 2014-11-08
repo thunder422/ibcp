@@ -48,7 +48,7 @@ uint16_t Dictionary::add(const TokenPtr &token,
 
 	// if requested, store upper case of key in hash to make search case
 	// insensitive (actual string will be stored in key list)
-	std::string key {token->string().toStdString()};
+	std::string key {token->string()};
 	auto iterator = m_keyMap.find(key);
 	int index;
 	if (iterator == m_keyMap.end())  // string not present?

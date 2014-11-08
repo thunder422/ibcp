@@ -27,6 +27,8 @@
 
 #include <stack>
 
+#include <QString>
+
 #include "parser.h"
 #include "rpnlist.h"
 

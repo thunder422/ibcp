@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	switch (token->type())
 	{
 	case Token::Type::DefFuncN:
-		os << token->string().toStdString();
+		os << token->string();
 		break;
 
 	case Token::Type::NoParen:
@@ -50,7 +50,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		{
 			os << '?';
 		}
-		os << token->string().toStdString();
+		os << token->string();
 		if (table.hasFlag(token->code(), Reference_Flag))
 		{
 			os << "<ref>";
@@ -59,7 +59,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 
 	case Token::Type::DefFuncP:
 	case Token::Type::Paren:
-		os << token->string().toStdString() << '(';
+		os << token->string() << '(';
 		break;
 
 	case Token::Type::Constant:
@@ -71,7 +71,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		{
 		case DataType::Integer:
 		case DataType::Double:
-			os << token->string().toStdString();
+			os << token->string();
 			if (token->dataType() == DataType::Integer)
 			{
 				os << "%";
@@ -79,7 +79,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 			break;
 
 		case DataType::String:
-			os << '"' << token->string().toStdString() << '"';
+			os << '"' << token->string() << '"';
 			break;
 		default:
 			break;
@@ -158,7 +158,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	}
 	if (second)
 	{
-		os << '|' << token->string().toStdString() << '|';
+		os << '|' << token->string() << '|';
 	}
 	return os;
 }
@@ -716,12 +716,12 @@ void Tester::printToken(const TokenPtr &token)
 	case Token::Type::DefFuncN:
 	case Token::Type::NoParen:
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
-			<< " |" << token->string().toStdString() << '|';
+			<< " |" << token->string() << '|';
 		break;
 	case Token::Type::DefFuncP:
 	case Token::Type::Paren:
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
-			<< " |" << token->string().toStdString() << "(|";
+			<< " |" << token->string() << "(|";
 		break;
 	case Token::Type::Constant:
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
@@ -733,14 +733,14 @@ void Tester::printToken(const TokenPtr &token)
 			{
 				m_cout << "," << token->value();
 			}
-			m_cout << " |" << token->string().toStdString() << '|';
+			m_cout << " |" << token->string() << '|';
 			break;
 		case DataType::Double:
 			m_cout << ' ' << token->value() << " |"
-				<< token->string().toStdString() << '|';
+				<< token->string() << '|';
 			break;
 		case DataType::String:
-			m_cout << " |" << token->string().toStdString() << '|';
+			m_cout << " |" << token->string() << '|';
 			break;
 		default:
 		    break;
@@ -755,7 +755,7 @@ void Tester::printToken(const TokenPtr &token)
 		m_cout << " " << code_name[token->code()];
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
-			m_cout << " |" << token->string().toStdString() << '|';
+			m_cout << " |" << token->string() << '|';
 		}
 		break;
 	default:

@@ -781,7 +781,7 @@ Status Translator::processParenToken(TokenPtr &token)
 	bool isArray;
 	if (token->isType(Token::Type::Paren))
 	{
-		isArray = !token->string().startsWith('F', Qt::CaseInsensitive);
+		isArray = toupper(token->string().front()) != 'F';
 		token->setCode(isArray ? Array_Code : Function_Code);
 	}
 	if (token->isType(Token::Type::Paren) && (token->reference() || isArray))

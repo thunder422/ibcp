@@ -29,8 +29,6 @@
 #include <string>
 #include <unordered_map>
 
-#include <QString>
-
 #include "ibcp.h"
 
 
@@ -64,21 +62,20 @@ public:
 	// constructor for codes
 	Token(int column, int length, Type type, DataType dataType, Code code,
 		const std::string string = {}) : m_column{column}, m_length{length},
-		m_type{type}, m_dataType{dataType}, m_string{string.c_str()},
-		m_code{code}, m_reference{}, m_subCode{None_SubCode} {}
+		m_type{type}, m_dataType{dataType}, m_string{string}, m_code{code},
+		m_reference{}, m_subCode{None_SubCode} {}
 
 	// constructor for identifiers
 	Token(int column, int length, Type type, DataType dataType,
 		const std::string &string) : m_column{column}, m_length{length},
-		m_type{type}, m_dataType{dataType}, m_string{string.c_str()},
+		m_type{type}, m_dataType{dataType}, m_string{string},
 		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode} {}
 
 	// constructor for integer constants
 	Token(int column, int length, const std::string string, int value) :
 		m_column{column}, m_length{length}, m_type{Token::Type::Constant},
-		m_dataType{DataType::Integer}, m_string{string.c_str()},
-		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode},
-		m_valueInt{value}
+		m_dataType{DataType::Integer}, m_string{string}, m_code{Invalid_Code},
+		m_reference{}, m_subCode{None_SubCode}, m_valueInt{value}
 	{
 		m_value = value;  // convert to double in case needed
 	}
@@ -90,8 +87,8 @@ public:
 	// constructor for string constants
 	Token(int column, int length, const std::string string) : m_column{column},
 		m_length{length}, m_type{Token::Type::Constant},
-		m_dataType{DataType::String}, m_string{string.c_str()},
-		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode} {}
+		m_dataType{DataType::String}, m_string{string}, m_code{Invalid_Code},
+		m_reference{}, m_subCode{None_SubCode} {}
 
 	Token(const Token &token)  // copy constructor
 	{
@@ -154,11 +151,11 @@ public:
 	void setDataType(void);  // set default data type if not already set
 
 	// string access function
-	QString string(void) const
+	std::string string(void) const
 	{
 		return m_string;
 	}
-	void setString(const QString &string)
+	void setString(const std::string &string)
 	{
 		m_string = string;
 	}
@@ -282,7 +279,7 @@ private:
 	int m_length;			// length of token
 	Type m_type;			// type of the token
 	DataType m_dataType;	// data type of token
-	QString m_string;		// pointer to string of token
+	std::string m_string;	// pointer to string of token
 	Code m_code;			// internal code of token (index of TableEntry)
 	bool m_reference;		// token is a reference flag
 	int m_subCode;			// sub-code flags of token

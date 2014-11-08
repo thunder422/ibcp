@@ -654,7 +654,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 			= m_table.operandTextFunction(token->code());
 		if (operandText)
 		{
-			token->setString(operandText(this, line[++i].operand()).c_str());
+			token->setString(operandText(this, line[++i].operand()));
 		}
 		rpnList.append(token);
 	}
