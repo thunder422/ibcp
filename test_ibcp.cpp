@@ -292,9 +292,7 @@ Tester::Tester(const std::string &programName,
 			for (auto iterator : name)
 			{
 				// check beginning of file name
-				if (baseName.size() >= iterator.second.size()
-					&& std::equal(iterator.second.begin(),
-					iterator.second.end(), baseName.begin(), noCaseCompare))
+				if (noCaseStringBeginsWith(baseName, iterator.second))
 				{
 					m_option = iterator.first;
 					m_testName = iterator.second;

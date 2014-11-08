@@ -24,6 +24,7 @@
 
 #include "parser.h"
 #include "table.h"
+#include "utility.h"
 
 
 Parser::Parser(const std::string &input) :
@@ -94,8 +95,7 @@ TokenUniquePtr Parser::getIdentifier()
 	// check to see if this is the start of a remark
 	// (need to check separately since a space not required after 'REM')
 	std::string name {m_table.name(Rem_Code).toStdString()};
-	if (word.string.length() >= name.length() && std::equal(name.begin(),
-		name.end(), word.string.begin(), noCaseCompare))
+	if (noCaseStringBeginsWith(word.string, name))
 	{
 		// clear errors in case peeked past end, which sets error
 		m_input.clear();

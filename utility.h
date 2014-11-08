@@ -35,4 +35,28 @@ public:
 	static std::string baseFileName(const std::string &filePath);
 };
 
+
+// lambda function for doing a case insentive character equal comparison
+auto noCaseCharEqual = [](char c1, char c2)
+{
+	return toupper(c1) == toupper(c2);
+};
+
+
+// function for doing case insentive standard string equal comparison
+inline bool noCaseStringEqual(const std::string &s1, const std::string &s2)
+{
+	return s1.size() == s2.size()
+		&& std::equal(s1.begin(), s1.end(), s2.begin(), noCaseCharEqual);
+}
+
+
+// function for doing case insentive standard string begins with comparison
+inline bool noCaseStringBeginsWith(const std::string &s, const std::string &sbw)
+{
+	return s.size() >= sbw.size()
+		&& std::equal(sbw.begin(), sbw.end(), s.begin(), noCaseCharEqual);
+}
+
+
 #endif // UTILITY_H
