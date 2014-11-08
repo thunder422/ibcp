@@ -26,10 +26,9 @@
 #include "table.h"
 
 
-Parser::Parser(const QString &input) :
+Parser::Parser(const std::string &input) :
 	m_table(Table::instance()),
-	m_input {input},
-	m_pos {}
+	m_input {input}
 {
 
 }
@@ -43,10 +42,11 @@ Parser::Parser(const QString &input) :
 
 TokenUniquePtr Parser::operator()(Number number)
 {
-	skipWhitespace();
-	if (m_input[m_pos].isNull())
+	m_input >> std::ws;
+	if (m_input.peek() == EOF)
 	{
-		return m_table.newToken(m_pos, 1, EOL_Code);
+		int pos = m_input.str().length();
+		return m_table.newToken(pos, 1, EOL_Code);
 	}
 	if (TokenUniquePtr token = getIdentifier())
 	{
@@ -68,7 +68,8 @@ TokenUniquePtr Parser::operator()(Number number)
 		return token;
 	}
 	// not a valid token, throw unknown token error
-	throw Error {Status::UnknownToken, m_pos, 1};
+	int pos = m_input.tellg();
+	throw Error {Status::UnknownToken, pos, 1};
 }
 
 
@@ -83,18 +84,12 @@ TokenUniquePtr Parser::operator()(Number number)
 
 TokenUniquePtr Parser::getIdentifier()
 {
-	// TODO temporary to simulate m_input as input string stream
-	std::string tmp {m_input.mid(m_pos).toStdString()};
-	std::istringstream m_input {tmp};
-
-	int pos {m_pos};
+	int pos = m_input.tellg();
 	Word word = getWord(WordType::First);
 	if (word.string.empty())
 	{
 		return TokenUniquePtr{};  // not an identifier
 	}
-	// TODO simulate what getWord will do to input stream
-	m_input.seekg(m_pos - pos);
 
 	// check to see if this is the start of a remark
 	// (need to check separately since a space not required after 'REM')
@@ -102,11 +97,12 @@ TokenUniquePtr Parser::getIdentifier()
 	if (word.string.length() >= name.length() && std::equal(name.begin(),
 		name.end(), word.string.begin(), noCaseCompare))
 	{
+		// clear errors in case peeked past end, which sets error
+		m_input.clear();
 		// move to first char after 'REM'
-		m_input.seekg(name.length());
+		m_input.seekg(pos + name.length());
 		// read remark string to end-of-line
 		std::getline(m_input, word.string);
-		m_pos = pos + name.length() + word.string.length();  // to end-of-line
 		return m_table.newToken(pos, name.length(), Rem_Code,
 			std::move(word.string));
 	}
@@ -144,28 +140,33 @@ TokenUniquePtr Parser::getIdentifier()
 	}
 
 	// found word in table (command, internal function, or operator)
+	int len = word.string.length();
 	if (m_table.multiple(code) != Multiple::OneWord)
 	{
 		// command could be a two word command
-		skipWhitespace();
+		m_input >> std::ws;
+		int pos2 = m_input.tellg();  // begin of second word (could by -1)
 		Word word2 = getWord(WordType::Second);
 		// check for possible second word (no data type and no paren words only)
 		if (!word2.string.empty())
 		{
+			// pos2 was not -1
 			Code code2;
 			if ((code2 = m_table.search(word.string, word2.string))
 				!= Invalid_Code)
 			{
 				// double word command found
 				code = code2;
+				len = pos2 - pos + word2.string.length();
 			}
 			else  // reset position back to begin of second word
 			{
-				m_pos -= word2.string.length();
+				// clear errors in case peeked past end, which sets error
+				m_input.clear();
+				m_input.seekg(pos2);
 			}
 		}
 	}
-	int len = m_pos - pos;
 	return m_table.newToken(pos, len, code);
 }
 
@@ -184,10 +185,6 @@ TokenUniquePtr Parser::getIdentifier()
 
 Parser::Word Parser::getWord(WordType wordType)
 {
-	// TODO temporary to simulate m_input as input string stream
-	std::string tmp {m_input.mid(m_pos).toStdString()};
-	std::istringstream m_input {tmp};
-
 	Word word;
 
 	if (!isalpha(m_input.peek()))
@@ -195,6 +192,7 @@ Parser::Word Parser::getWord(WordType wordType)
 		return word;  // not an identifier, return empty word
 	}
 
+	int pos = m_input.tellg();
 	do
 	{
 		word.string.push_back(m_input.get());  // get character
@@ -236,27 +234,11 @@ Parser::Word Parser::getWord(WordType wordType)
 		|| word.paren))
 	{
 		word.string.clear();  // not a valid second command word
-	}
-	else
-	{
-		m_pos += word.string.length();
+		// clear errors in case peeked past end, which sets error
+		m_input.clear();
+		m_input.seekg(pos);   // move back to begin of second word
 	}
 	return word;
-}
-
-
-// function to skip white space at the specified position
-//
-//   - for now the only white space is a space character
-//   - returns pointer to next non-white space character
-//   - if no white space found then argument is returned
-
-void Parser::skipWhitespace(void)
-{
-	while (m_input[m_pos].isSpace())
-	{
-		m_pos++;
-	}
 }
 
 
@@ -269,23 +251,19 @@ void Parser::skipWhitespace(void)
 //   - numbers starting with zero must be followed by a decimal point
 //   - returns default token pointer if no number (position not changed)
 //   - returns token if there is a valid number
-//   - throws an expection for errors
+//   - throws an exception for errors
 //   - string of the number is converted to a value
 //   - string of the number is saved so it can be later reproduced
 
 TokenUniquePtr Parser::getNumber()
 {
-	// TODO temporary to simulate m_input as input string stream
-	std::string tmp {m_input.mid(m_pos).toStdString()};
-	std::istringstream m_input {tmp};
-
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
 	bool sign {};				// have negative sign flag
 	bool expSign {};			// have exponent sign flag
 	std::string number;			// string to hold number
 
-	int pos {m_pos};
+	int pos = m_input.tellg();
 	forever
 	{
 		if (isdigit(m_input.peek()))
@@ -331,6 +309,7 @@ TokenUniquePtr Parser::getNumber()
 				{
 					// if there is a '-E' then not a number
 					// (need to interprete '-' as unary operator)
+					m_input.seekg(pos);  // move back to begin
 					return TokenUniquePtr{};
 				}
 				// if there were no digits before 'E' then error
@@ -372,6 +351,9 @@ TokenUniquePtr Parser::getNumber()
 				}
 				else
 				{
+					// clear errors in case peeked past end, which sets error
+					m_input.clear();
+					m_input.seekg(pos);       // move back to begin
 					return TokenUniquePtr{};  // not a numeric constant
 				}
 			}
@@ -394,7 +376,6 @@ TokenUniquePtr Parser::getNumber()
 		// try to convert to integer first
 		int value {std::stoi(number)};
 
-		m_pos += number.length();
 		// save string of number so it later can be reproduced
 		return TokenUniquePtr{new Token {pos, len, std::move(number), value}};
 	}
@@ -408,7 +389,6 @@ TokenUniquePtr Parser::getNumber()
 	{
 		double value {std::stod(number)};
 
-		m_pos += number.length();
 		// save string of number so it later can be reproduced
 		return TokenUniquePtr{new Token {pos, len, std::move(number), value,
 			decimal}};
@@ -416,7 +396,7 @@ TokenUniquePtr Parser::getNumber()
 	catch (std::out_of_range)
 	{
 		// overflow or underflow, constant is not valid
-		throw Error {Status::FPOutOfRange, m_pos, len};
+		throw Error {Status::FPOutOfRange, pos, len};
 	}
 }
 
@@ -431,22 +411,19 @@ TokenUniquePtr Parser::getNumber()
 
 TokenUniquePtr Parser::getString()
 {
-	// TODO temporary to simulate m_input as input string stream
-	std::string tmp {m_input.mid(m_pos).toStdString()};
-	std::istringstream m_input {tmp};
-
 	if (m_input.peek() != '"')
 	{
 		return TokenUniquePtr{};  // not a sting constant
 	}
 
+	int pos = m_input.tellg();
 	m_input.get();  // eat first '"'
-	int pos {m_pos++};
 	std::string string;
+	int len = 1;
 	while (m_input.peek() != EOF)
 	{
 		char c = m_input.get();  // get char from stream
-		++m_pos;
+		++len;
 		if (c == '"')
 		{
 			if (m_input.peek() != '"')  // not two in a row?
@@ -457,11 +434,11 @@ TokenUniquePtr Parser::getString()
 			}
 			// otherwise quote counts as one character
 			m_input.get();  // eat second '"'
-			++m_pos;
+			++len;
 		}
 		string.push_back(c);  // append char to string
 	}
-	return TokenUniquePtr{new Token {pos, m_pos - pos, std::move(string)}};
+	return TokenUniquePtr{new Token {pos, len, std::move(string)}};
 }
 
 
@@ -473,10 +450,6 @@ TokenUniquePtr Parser::getString()
 
 TokenUniquePtr Parser::getOperator()
 {
-	// TODO temporary to simulate m_input as input string stream
-	std::string tmp {m_input.mid(m_pos).toStdString()};
-	std::istringstream m_input {tmp};
-
 	std::string string;
 	string.push_back(m_input.peek());
 	// search table for current character to see if it is a valid operator
@@ -487,13 +460,12 @@ TokenUniquePtr Parser::getOperator()
 		// (no first of two-character operator is an invalid operator)
 		return TokenUniquePtr{};
 	}
+	int pos = m_input.tellg();
 	m_input.get();  // eat first character (already in string)
 	if (code == RemOp_Code)
 	{
 		// remark requires special handling (remark string is to end-of-line)
-		int pos {m_pos};
-		std::getline(m_input, string);
-		m_pos += 1+ string.length();  // moved to end-of-line
+		std::getline(m_input, string);  // reads rest of line
 		return m_table.newToken(pos, 1, RemOp_Code, std::move(string));
 	}
 
@@ -512,8 +484,7 @@ TokenUniquePtr Parser::getOperator()
 			m_input.get();  // eat second character
 		}
 	}
-	m_pos += len;  // move past operator character(s)
-	return m_table.newToken(m_pos - len, len, code);
+	return m_table.newToken(pos, len, code);
 }
 
 

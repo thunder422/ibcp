@@ -53,7 +53,7 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 	TokenPtr token;
 	Status status;
 
-	m_parse.reset(new Parser {input});
+	m_parse.reset(new Parser {input.toStdString()});
 
 	m_holdStack.emplace(m_table.newToken(Null_Code));
 

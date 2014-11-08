@@ -471,7 +471,7 @@ bool Tester::run(std::string copyrightStatement)
 // function to parse an input line and print the resulting tokens
 void Tester::parseInput(const std::string &testInput)
 {
-	Parser parse {testInput.c_str()};
+	Parser parse {testInput};
 	for (;;)
 	try
 	{

@@ -27,8 +27,6 @@
 
 #include <sstream>
 
-#include <QString>
-
 #include "token.h"
 
 class Table;
@@ -37,7 +35,7 @@ class Table;
 class Parser
 {
 public:
-	explicit Parser(const QString &input);
+	explicit Parser(const std::string &input);
 	enum class Number
 	{
 		No,
@@ -53,7 +51,6 @@ private:
 	TokenUniquePtr getOperator();
 
 	// support functions
-	void skipWhitespace();
 	struct Word
 	{
 		std::string string;		// string of word
@@ -69,8 +66,7 @@ private:
 	Word getWord(WordType wordType);
 
 	Table &m_table;			// pointer to the table object
-	QString m_input;		// input line being parsed
-	int m_pos;				// index to current position in input string
+	std::istringstream m_input;	// input line being parsed
 };
 
 
