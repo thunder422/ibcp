@@ -47,7 +47,7 @@ QString Recreator::recreate(const RpnList &rpnList, bool exprMode)
 			|| !(recreate = m_table.recreateFunction(rpnItem->token()->code())))
 		{
 			// if no recreate function, then it is missing from table
-			push('?' + rpnItem->token()->string().c_str() + '?');
+			emplace('?' + rpnItem->token()->string().c_str() + '?');
 		}
 		else  // call recreate function for code
 		{
@@ -67,52 +67,27 @@ QString Recreator::recreate(const RpnList &rpnList, bool exprMode)
 	}
 	if (exprMode)
 	{
-		append(pop());
+		append(popString());
 	}
-	while (!m_stack.isEmpty())  // stack empty error check
+	while (!m_stack.empty())  // stack empty error check
 	{
-		append(QString(" <NotEmpty:%1>").arg(pop()));
+		append(QString(" <NotEmpty:%1>").arg(popString()));
 	}
 	return m_output;
 }
 
 
-// function to push a string with optional precedence to holding stack
-void Recreator::push(QString string, int precedence, bool unaryOperator)
-{
-	m_stack.resize(m_stack.size() + 1);
-	m_stack.top().string = string;
-	m_stack.top().precedence = precedence;
-	m_stack.top().unaryOperator = unaryOperator;
-}
-
-
-// function to pop the string on holding stack top, optional return precedence
-QString Recreator::pop(void)
-{
-	return m_stack.isEmpty() ? "<Empty>" : m_stack.pop().string;
-}
-
-
 // function to get an operand from the top of the stack
-// (surround operand with parentheses if requested
-QString Recreator::popWithParens(bool addParens, int *precedence,
-	bool *unaryOperator)
+// (surround operand with parentheses if requested)
+QString Recreator::popWithParens(bool addParens)
 {
 	QString string;
+
 	if (addParens)
 	{
 		string.append('(');
 	}
-	if (precedence)
-	{
-		*precedence = top().precedence;
-	}
-	if (unaryOperator)
-	{
-		*unaryOperator = top().unaryOperator;
-	}
-	string.append(pop());
+	string.append(std::move(popString()));
 	if (addParens)
 	{
 		string.append(')');
@@ -125,21 +100,22 @@ QString Recreator::popWithParens(bool addParens, int *precedence,
 // (used for functions and arrays; also work with no operand functions)
 void Recreator::pushWithOperands(QString &name, int count)
 {
-	QStack<QString> stack;			// local stack of operands
+	std::stack<QString> stack;		// local stack of operands
 
 	QString separator {")"};
 	for (int i {}; i < count; i++)
 	{
-		QString string {pop()};
+		QString string {popString()};
 		string.append(separator);
-		stack.push(string);
+		stack.emplace(string);
 		separator = ", ";
 	}
-	while (!stack.isEmpty())
+	while (!stack.empty())
 	{
-		name.append(stack.pop());
+		name.append(stack.top());
+		stack.pop();
 	}
-	push(name);
+	emplace(name);
 }
 
 
@@ -154,7 +130,7 @@ void Recreator::pushWithOperands(QString &name, int count)
 void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// just push the string of the token
-	recreator.push(rpnItem->token()->string().c_str());
+	recreator.emplace(rpnItem->token()->string().c_str());
 }
 
 // function to recreate a unary operator
@@ -165,8 +141,8 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// get string of operand from stack
 	// (add parens if item on top of the stack is not a unary operator
 	// and operator precendence is higher than the operand)
-	QString operand {recreator.popWithParens(!recreator.top().unaryOperator
-		&& precedence > recreator.top().precedence)};
+	QString operand {recreator.popWithParens(!recreator.topUnaryOperator()
+		&& precedence > recreator.topPrecedence())};
 
 	// get string for operator
 	QString string {recreator.table().name(rpnItem->token())};
@@ -181,7 +157,7 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	string.append(operand);
 
 	// push operator expression back to stack with precedence of operator
-	recreator.push(string, precedence, true);
+	recreator.emplace(string, precedence, true);
 }
 
 
@@ -194,16 +170,16 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// get string of second operand
 	// (add parens if operator precedence is higher than or same as operand
 	// and operand is not a unary operator)
-	string = recreator.popWithParens(precedence >= recreator.top().precedence
-		&& !recreator.top().unaryOperator);
+	string = recreator.popWithParens(precedence >= recreator.topPrecedence()
+		&& !recreator.topUnaryOperator());
 
 	// get string of operator with spaces, append to first operand
 	// (add parens if operator precendence is higher than the operand)
-	string = recreator.popWithParens(precedence > recreator.top().precedence)
+	string = recreator.popWithParens(precedence > recreator.topPrecedence())
 		+ ' ' + recreator.table().name(rpnItem->token()) + ' ' + string;
 
 	// push operator expression back to stack with precedence of operator
-	recreator.push(string, precedence);
+	recreator.emplace(string, precedence);
 }
 
 
@@ -212,11 +188,7 @@ void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 
-	int precedence;
-	bool unaryOperator;
-
-	QString string {recreator.popWithParens(true, &precedence, &unaryOperator)};
-	recreator.push(string, precedence, unaryOperator);
+	recreator.topAddParens();
 }
 
 

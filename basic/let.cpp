@@ -197,19 +197,20 @@ void letRecreate(Recreator &recreator, TokenPtr token)
 // function to recreate assignment and list assignment statements
 void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QStack<QString> stack;
+	std::stack<QString> stack;
 
-	stack.push(recreator.pop());  // push value
+	stack.emplace(recreator.popString());  // push value
 	QString separator = ' ' + recreator.table().name(rpnItem->token()) + ' ';
-	while (!recreator.stackIsEmpty())
+	while (!recreator.empty())
 	{
-		stack.push(recreator.pop() + separator);
+		stack.emplace(recreator.popString() + separator);
 		separator = ", ";
 	}
 	letRecreate(recreator, rpnItem->token());
-	while (!stack.isEmpty())
+	while (!stack.empty())
 	{
-		recreator.append(stack.pop());
+		recreator.append(stack.top());
+		stack.pop();
 	}
 }
 
@@ -229,7 +230,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		string = QChar(recreator.separator()) + ' ';
 	}
-	string.append(recreator.pop());
+	string.append(recreator.popString());
 
 	Code code {rpnItem->token()->code()};
 	if (recreator.table().hasFlag(code, SubStr_Flag))
@@ -252,7 +253,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		// end of statement, append reference and string so far
 		letRecreate(recreator, rpnItem->token());
-		recreator.append(recreator.pop());
+		recreator.append(recreator.popString());
 		recreator.append(string);
 		recreator.clearSeparator();  // for next command
 	}

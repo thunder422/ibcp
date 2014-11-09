@@ -25,7 +25,8 @@
 #ifndef RECREATOR_H
 #define RECREATOR_H
 
-#include <QStack>
+#include <stack>
+
 #include <QString>
 
 #include "ibcp.h"
@@ -38,9 +39,13 @@ class Recreator
 {
 	struct StackItem
 	{
-		QString string;				// string of stack item
-		int precedence;				// precedence of stack item
-		bool unaryOperator;			// stack item is a unary operator
+		StackItem(QString string, int precedence = HighestPrecedence,
+			bool unaryOperator = false) : m_string {string},
+			m_precedence {precedence}, m_unaryOperator {unaryOperator} {}
+
+		QString m_string;				// string of stack item
+		int m_precedence;				// precedence of stack item
+		bool m_unaryOperator;			// stack item is a unary operator
 	};
 
 public:
@@ -49,23 +54,38 @@ public:
 	QString recreate(const RpnList &rpnList, bool exprMode = false);
 
 	// holding stack access functions
-	void push(QString string, int precedence = HighestPrecedence,
-		bool unaryOperator = false);
-	QString pop(void);
-	const StackItem &top(void) const
+	template <typename... Args>
+	void emplace(Args&&... args)
 	{
-		return m_stack.top();
+		m_stack.emplace(std::forward<Args>(args)...);
+	}
+	QString popString(void)
+	{
+		QString string = std::move(m_stack.top().m_string);
+		m_stack.pop();
+		return string;
+	}
+	int topPrecedence(void) const
+	{
+		return m_stack.top().m_precedence;
+	}
+	bool topUnaryOperator(void) const
+	{
+		return m_stack.top().m_unaryOperator;
 	}
 	void topAppend(QString string)
 	{
-		m_stack.top().string.append(string);
+		m_stack.top().m_string.append(string);
 	}
-	QString popWithParens(bool addParens, int *precedence = nullptr,
-		bool *unaryOperator = nullptr);
-	void pushWithOperands(QString &name, int count);
-	bool stackIsEmpty(void) const
+	void topAddParens()
 	{
-		return m_stack.isEmpty();
+		m_stack.top().m_string = '(' + std::move(m_stack.top().m_string) + ')';
+	}
+	QString popWithParens(bool addParens);
+	void pushWithOperands(QString &name, int count);
+	bool empty(void) const
+	{
+		return m_stack.empty();
 	}
 
 	// output string access functions
@@ -112,7 +132,7 @@ public:
 
 private:
 	Table &m_table;					// reference to table instance
-	QStack<StackItem> m_stack;		// holding string stack
+	std::stack<StackItem> m_stack;	// holding string stack
 	char m_separator;				// current separator character
 	QString m_output;				// output string
 };

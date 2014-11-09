@@ -151,13 +151,11 @@ void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	Q_UNUSED(rpnItem)
 
-	QString string;
-
 	if (recreator.separatorIsSet())
 	{
 		// if there is a separator,
 		// then append top string to previous string with separator between
-		string = recreator.pop();
+		QString string {recreator.popString()};
 		// FLAG option: space after comma (default=yes)
 		recreator.topAppend(QChar(recreator.separator()) + ' ' + string);
 	}
@@ -171,7 +169,7 @@ void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	recreator.append(recreator.table().name(rpnItem->token()));
 	// FLAG option: all spaces after commands (default=yes)
 	recreator.append(" ");
-	recreator.append(recreator.pop());
+	recreator.append(recreator.popString());
 	if (rpnItem->token()->hasSubCode(Option_SubCode))
 	{
 		recreator.append(";");

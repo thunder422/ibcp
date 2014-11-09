@@ -134,7 +134,7 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// change all double quote to two double qoutes and surround with quotes
 	QString string {rpnItem->token()->string().c_str()};
 	string.replace('"', "\"\"");
-	recreator.push('"' + string + '"');
+	recreator.emplace('"' + string + '"');
 }
 
 
