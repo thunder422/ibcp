@@ -37,9 +37,8 @@ Recreator::Recreator(void) :
 
 
 // function to recreate original program text from an rpn list
-QString Recreator::recreate(const RpnList &rpnList, bool exprMode)
+std::string Recreator::recreate(const RpnList &rpnList, bool exprMode)
 {
-	m_output = "";
 	for (RpnItemPtr rpnItem : rpnList)
 	{
 		RecreateFunction recreate;
@@ -60,37 +59,37 @@ QString Recreator::recreate(const RpnList &rpnList, bool exprMode)
 		if (rpnItem->token()->hasSubCode(Colon_SubCode))
 		{
 			// FLAG option: spaces before colons (default=no)
-			append(":");
+			m_output += ':';
 			// FLAG option: spaces after colons (default=yes)
-			append(" ");
+			m_output += ' ';
 		}
 	}
 	if (exprMode)
 	{
-		append(popString());
+		m_output += popString();
 	}
 	while (!m_stack.empty())  // stack empty error check
 	{
-		append(QString(" <NotEmpty:%1>").arg(popString()));
+		m_output += " NotEmpty:" + popString();
 	}
-	return m_output;
+	return std::move(m_output);
 }
 
 
 // function to get an operand from the top of the stack
 // (surround operand with parentheses if requested)
-QString Recreator::popWithParens(bool addParens)
+std::string Recreator::popWithParens(bool addParens)
 {
-	QString string;
+	std::string string;
 
 	if (addParens)
 	{
-		string.append('(');
+		string += '(';
 	}
-	string.append(std::move(popString()));
+	string += popString();
 	if (addParens)
 	{
-		string.append(')');
+		string += ')';
 	}
 	return string;
 }
@@ -98,21 +97,20 @@ QString Recreator::popWithParens(bool addParens)
 
 // function to push an item with all of operands popped from the stack
 // (used for functions and arrays; also work with no operand functions)
-void Recreator::pushWithOperands(QString &name, int count)
+void Recreator::pushWithOperands(std::string &&name, int count)
 {
-	std::stack<QString> stack;		// local stack of operands
+	std::stack<std::string> stack;		// local stack of operands
 
-	QString separator {")"};
-	for (int i {}; i < count; i++)
+	std::string separator {")"};
+	while (--count >= 0)
 	{
-		QString string {popString()};
-		string.append(separator);
-		stack.emplace(string);
+		std::string string {popString()};
+		stack.emplace(string + separator);
 		separator = ", ";
 	}
 	while (!stack.empty())
 	{
-		name.append(stack.top());
+		name += stack.top();
 		stack.pop();
 	}
 	emplace(name);
@@ -141,20 +139,20 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// get string of operand from stack
 	// (add parens if item on top of the stack is not a unary operator
 	// and operator precendence is higher than the operand)
-	QString operand {recreator.popWithParens(!recreator.topUnaryOperator()
+	std::string operand {recreator.popWithParens(!recreator.topUnaryOperator()
 		&& precedence > recreator.topPrecedence())};
 
 	// get string for operator
-	QString string {recreator.table().name(rpnItem->token())};
+	std::string string {recreator.table().name(rpnItem->token()).toStdString()};
 	// if operator is a plain word operator or operand is a number,
 	//  then need to add a space
 	if (rpnItem->token()->code() < EndPlainWord_Code
-		|| operand.at(0).isDigit() || operand.at(0) == '.')
+		|| isdigit(operand.front()) || operand.front() == '.')
 	{
-		string.append(' ');
+		string += ' ';
 	}
 	// append operand and push to holding stack
-	string.append(operand);
+	string += operand;
 
 	// push operator expression back to stack with precedence of operator
 	recreator.emplace(string, precedence, true);
@@ -164,7 +162,7 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate a binary operator
 void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString string;
+	std::string string;
 	int precedence {recreator.table().precedence(rpnItem->token()->code())};
 
 	// get string of second operand
@@ -176,7 +174,8 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// get string of operator with spaces, append to first operand
 	// (add parens if operator precendence is higher than the operand)
 	string = recreator.popWithParens(precedence > recreator.topPrecedence())
-		+ ' ' + recreator.table().name(rpnItem->token()) + ' ' + string;
+		+ ' ' + recreator.table().name(rpnItem->token()).toStdString() + ' '
+		+ string;
 
 	// push operator expression back to stack with precedence of operator
 	recreator.emplace(string, precedence);
@@ -195,40 +194,39 @@ void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an internal function
 void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name {recreator.table().name(rpnItem->token())};
-	int count {recreator.table().operandCount(rpnItem->token())};
-	recreator.pushWithOperands(name, count);
+	recreator.pushWithOperands(recreator.table().name(rpnItem->token())
+		.toStdString(), recreator.table().operandCount(rpnItem->token()));
 }
 
 
 // function to recreate an array
 void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name {rpnItem->token()->string().c_str()};
-	name.append('(');  // add close paren since it is not stored with name
-	recreator.pushWithOperands(name, rpnItem->attachedCount());
+	// add close paren since it is not stored with name
+	recreator.pushWithOperands(rpnItem->token()->string() + '(',
+		rpnItem->attachedCount());
 }
 
 
 // function to recreate an array
 void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name {rpnItem->token()->string().c_str()};
-	name.append('(');  // add close paren since it is not stored with name
-	recreator.pushWithOperands(name, rpnItem->attachedCount());
+	// add close paren since it is not stored with name
+	recreator.pushWithOperands(rpnItem->token()->string() + '(',
+		rpnItem->attachedCount());
 }
 
 
 // function to recreate an array
 void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString name {rpnItem->token()->string().c_str()};
+	std::string name {rpnItem->token()->string()};
 	int count {rpnItem->attachedCount()};
 	if (count > 0)
 	{
-		name.append('(');  // add close paren since it is not stored with name
+		name += '(';  // add paren since it is not stored with name
 	}
-	recreator.pushWithOperands(name, count);
+	recreator.pushWithOperands(std::move(name), count);
 }
 
 
@@ -243,19 +241,19 @@ void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to do nothing (for hidden codes)
 void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	QString string {recreator.table().name(rpnItem->token())};
-	QString remark {rpnItem->token()->string().c_str()};
-	if (remark.at(0).isLower())
+	std::string string {recreator.table().name(rpnItem->token()).toStdString()};
+	std::string remark {rpnItem->token()->string()};
+	if (islower(remark.front()))
 	{
-		string = string.toLower();
+		std::transform(string.begin(), string.end(), string.begin(), tolower);
 	}
-	if (rpnItem->token()->isCode(RemOp_Code) && !recreator.outputIsEmpty()
-		&& recreator.outputLastChar() != ' ')
+	if (rpnItem->token()->isCode(RemOp_Code) && recreator.backIsNotSpace())
 	{
 		// FLAG option: space before rem operator (default=yes)
-		recreator.append(" ");
+		recreator.append(' ');
 	}
-	recreator.append(string + remark);
+	recreator.append(std::move(string));
+	recreator.append(std::move(remark));
 }
 
 

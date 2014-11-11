@@ -157,7 +157,7 @@ QString ProgramModel::lineText(int lineIndex)
 	if (lineInfo.errIndex == -1)
 	{
 		RpnList rpnList {decode(lineInfo)};
-		string = m_recreator->recreate(rpnList);
+		string = m_recreator->recreate(rpnList).c_str();
 	}
 	else  // line has error, return original text
 	{

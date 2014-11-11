@@ -132,9 +132,17 @@ void constStrRemove(ProgramModel *programUnit, quint16 operand)
 void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// change all double quote to two double qoutes and surround with quotes
-	QString string {rpnItem->token()->string().c_str()};
-	string.replace('"', "\"\"");
-	recreator.emplace('"' + string + '"');
+	std::string string(1, '"');
+	for (auto c : rpnItem->token()->string())
+	{
+		string += c;
+		if (c == '"')
+		{
+			string += c;
+		}
+	}
+	string += '"';
+	recreator.emplace(string);
 }
 
 

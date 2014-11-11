@@ -26,8 +26,7 @@
 #define RECREATOR_H
 
 #include <stack>
-
-#include <QString>
+#include <string>
 
 #include "ibcp.h"
 
@@ -39,11 +38,11 @@ class Recreator
 {
 	struct StackItem
 	{
-		StackItem(QString string, int precedence = HighestPrecedence,
+		StackItem(std::string string, int precedence = HighestPrecedence,
 			bool unaryOperator = false) : m_string {string},
 			m_precedence {precedence}, m_unaryOperator {unaryOperator} {}
 
-		QString m_string;				// string of stack item
+		std::string m_string;			// string of stack item
 		int m_precedence;				// precedence of stack item
 		bool m_unaryOperator;			// stack item is a unary operator
 	};
@@ -51,7 +50,7 @@ class Recreator
 public:
 	explicit Recreator(void);
 
-	QString recreate(const RpnList &rpnList, bool exprMode = false);
+	std::string recreate(const RpnList &rpnList, bool exprMode = false);
 
 	// holding stack access functions
 	template <typename... Args>
@@ -59,9 +58,9 @@ public:
 	{
 		m_stack.emplace(std::forward<Args>(args)...);
 	}
-	QString popString(void)
+	std::string popString()
 	{
-		QString string = std::move(m_stack.top().m_string);
+		std::string string = std::move(m_stack.top().m_string);
 		m_stack.pop();
 		return string;
 	}
@@ -73,33 +72,37 @@ public:
 	{
 		return m_stack.top().m_unaryOperator;
 	}
-	void topAppend(QString string)
+	void topAppend(std::string &&string)
 	{
-		m_stack.top().m_string.append(string);
+		m_stack.top().m_string += string;
+	}
+	void topAppend(char c)
+	{
+		m_stack.top().m_string += c;
 	}
 	void topAddParens()
 	{
 		m_stack.top().m_string = '(' + std::move(m_stack.top().m_string) + ')';
 	}
-	QString popWithParens(bool addParens);
-	void pushWithOperands(QString &name, int count);
-	bool empty(void) const
+	std::string popWithParens(bool addParens);
+	void pushWithOperands(std::string &&name, int count);
+	bool empty() const
 	{
 		return m_stack.empty();
 	}
 
 	// output string access functions
-	void append(const QString &string)
+	void append(std::string &&string)
 	{
-		m_output.append(string);
+		m_output += string;
 	}
-	bool outputIsEmpty(void)
+	void append(char c)
 	{
-		return m_output.isEmpty();
+		m_output += c;
 	}
-	QChar outputLastChar(void)
+	bool backIsNotSpace()
 	{
-		return m_output.at(m_output.length() - 1);
+		return !m_output.empty() && m_output.back() != ' ';
 	}
 
 	// separator access functions
@@ -134,7 +137,8 @@ private:
 	Table &m_table;					// reference to table instance
 	std::stack<StackItem> m_stack;	// holding string stack
 	char m_separator;				// current separator character
-	QString m_output;				// output string
+	std::string m_output;			// output string
 };
+
 
 #endif // RECREATOR_H

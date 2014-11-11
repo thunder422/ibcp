@@ -509,8 +509,7 @@ RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
 		if (m_recreate)
 		{
 			// recreate text from rpn list
-			QString output = m_recreator->recreate(rpnList, exprMode);
-			m_cout << output.toStdString();
+			m_cout << m_recreator->recreate(rpnList, exprMode);
 		}
 		else
 		{
@@ -530,8 +529,7 @@ void Tester::recreateInput(const std::string &testInput)
 	if (!rpnList.empty())
 	{
 		// recreate text from rpn list
-		QString output {m_recreator->recreate(rpnList)};
-		m_cout << "Output: " << output.toStdString() << " \n";
+		m_cout << "Output: " << m_recreator->recreate(rpnList) << " \n";
 	}
 }
 
