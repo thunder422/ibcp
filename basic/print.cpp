@@ -132,9 +132,9 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 // function to recreate the print item code
 void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
+	(void)rpnItem;
 
-	QString string;
+	std::string string;
 
 	if (recreator.separatorIsSet())
 	{
@@ -146,20 +146,20 @@ void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 		{
 			// if it is not a space (comma) then append a space
 			// FLAG option: space after print semicolons (default=yes)
-			string.append(' ');
+			string += ' ';
 		}
 	}
 	// pop the string on top of the stack and append it to the string
-	string.append(recreator.pop());
+	string.append(recreator.popString());
 
-	if (recreator.stackIsEmpty())
+	if (recreator.empty())
 	{
 		// if nothing else on the stack then push the string
-		recreator.push(string);
+		recreator.emplace(string);
 	}
 	else  // append the string to the string on top of the stack
 	{
-		recreator.topAppend(string);
+		recreator.topAppend(std::move(string));
 	}
 
 	recreator.setSeparator(';');  // set separator for next item
@@ -169,20 +169,20 @@ void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the print comma code
 void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
+	(void)rpnItem;
 
-	QString string;
+	std::string string;
 
 	// get string on top of the stack if there is one
-	if (!recreator.stackIsEmpty())
+	if (!recreator.empty())
 	{
-		string = recreator.pop();
+		string = recreator.popString();
 	}
 
 	// append comma to string and push it back to the stack
 	// FLAG option: space after print commas (default=no)
-	string.append(',');
-	recreator.push(string);
+	string += ',';
+	recreator.emplace(string);
 
 	// set separator to space (used to not add spaces 'between' commas)
 	recreator.setSeparator(' ');
@@ -202,7 +202,7 @@ void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// push string on top of stack with final semicolon then recreate command
-	recreator.push(recreator.pop() + ';');
+	recreator.topAppend(';');
 	printRecreate(recreator, rpnItem);
 }
 
@@ -210,17 +210,17 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the print code
 void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
+	(void)rpnItem;
 
 	// append PRINT keyword
-	recreator.append(recreator.table().name(Print_Code));
+	recreator.append(recreator.table().name(Print_Code).toStdString());
 
 	// if stack is not empty then append space with string on top of stack
-	if (!recreator.stackIsEmpty())
+	if (!recreator.empty())
 	{
 		// FLAG option: all spaces after commands (default=yes)
-		recreator.append(" ");
-		recreator.append(recreator.pop());
+		recreator.append(' ');
+		recreator.append(recreator.popString());
 	}
 
 	recreator.clearSeparator();  // clear separator for next command

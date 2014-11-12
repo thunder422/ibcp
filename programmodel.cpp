@@ -85,7 +85,6 @@ ProgramModel::ProgramModel(QObject *parent) :
 	m_table(Table::instance()),
 
 	m_translator {new Translator},
-	m_recreator {new Recreator},
 
 	m_remDictionary {new Dictionary(CaseSensitive::Yes)},
 	m_constNumDictionary {new ConstNumDictionary},
@@ -156,8 +155,7 @@ QString ProgramModel::lineText(int lineIndex)
 	LineInfo &lineInfo = m_lineInfo[lineIndex];
 	if (lineInfo.errIndex == -1)
 	{
-		RpnList rpnList {decode(lineInfo)};
-		string = m_recreator->recreate(rpnList);
+		string = Recreator{}(decode(lineInfo)).c_str();
 	}
 	else  // line has error, return original text
 	{

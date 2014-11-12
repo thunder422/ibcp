@@ -311,7 +311,6 @@ private:
 
 	Table &m_table;						// reference to the table object
 	std::unique_ptr<Translator> m_translator;	// translator instance
-	std::unique_ptr<Recreator> m_recreator;		// recreator instance
 
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list

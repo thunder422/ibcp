@@ -149,17 +149,17 @@ void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an input assign type code
 void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
-
-	QString string;
+	(void)rpnItem;
 
 	if (recreator.separatorIsSet())
 	{
 		// if there is a separator,
 		// then append top string to previous string with separator between
-		string = recreator.pop();
+		std::string string {recreator.popString()};
+		recreator.topAppend(recreator.separator());
 		// FLAG option: space after comma (default=yes)
-		recreator.topAppend(recreator.separator() + ' ' + string);
+		recreator.topAppend(' ');
+		recreator.topAppend(std::move(string));
 	}
 	recreator.setSeparator(',');  // set separator for next reference
 }
@@ -168,13 +168,13 @@ void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the input command code
 void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	recreator.append(recreator.table().name(rpnItem->token()));
+	recreator.append(recreator.table().name(rpnItem->token()).toStdString());
 	// FLAG option: all spaces after commands (default=yes)
-	recreator.append(" ");
-	recreator.append(recreator.pop());
+	recreator.append(' ');
+	recreator.append(recreator.popString());
 	if (rpnItem->token()->hasSubCode(Option_SubCode))
 	{
-		recreator.append(";");
+		recreator.append(';');
 	}
 	recreator.clearSeparator();
 }
