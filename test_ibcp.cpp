@@ -242,8 +242,7 @@ Tester::Tester(const std::string &programName,
 	m_programName {programName},
 	m_cout(cout),
 	m_translator {new Translator},
-	m_programUnit {new ProgramModel},
-	m_recreator {new Recreator}
+	m_programUnit {new ProgramModel}
 {
 	std::unordered_map<Option, std::string, EnumClassHash> name {
 		{Option::Parser,     "parser"},
@@ -509,7 +508,7 @@ RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
 		if (m_recreate)
 		{
 			// recreate text from rpn list
-			m_cout << m_recreator->recreate(rpnList, exprMode);
+			m_cout << Recreator{}(rpnList, exprMode);
 		}
 		else
 		{
@@ -529,7 +528,7 @@ void Tester::recreateInput(const std::string &testInput)
 	if (!rpnList.empty())
 	{
 		// recreate text from rpn list
-		m_cout << "Output: " << m_recreator->recreate(rpnList) << " \n";
+		m_cout << "Output: " << Recreator{}(std::move(rpnList)) << " \n";
 	}
 }
 

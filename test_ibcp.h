@@ -91,7 +91,6 @@ private:
 	std::ostream &m_cout;			// reference to output stream
 	std::unique_ptr<Translator> m_translator;		// translator instance
 	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
-	std::unique_ptr<Recreator> m_recreator;			// recreator instance
 	std::string m_errorMessage;		// message if error occurred
 };
 

@@ -48,9 +48,9 @@ class Recreator
 	};
 
 public:
-	explicit Recreator(void);
+	explicit Recreator();
 
-	std::string recreate(const RpnList &rpnList, bool exprMode = false);
+	std::string operator()(const RpnList &rpnList, bool exprMode = false);
 
 	// holding stack access functions
 	template <typename... Args>
@@ -64,11 +64,11 @@ public:
 		m_stack.pop();
 		return string;
 	}
-	int topPrecedence(void) const
+	int topPrecedence() const
 	{
 		return m_stack.top().m_precedence;
 	}
-	bool topUnaryOperator(void) const
+	bool topUnaryOperator() const
 	{
 		return m_stack.top().m_unaryOperator;
 	}
@@ -128,7 +128,7 @@ public:
 	}
 
 	// table instance access function
-	const Table &table(void) const
+	const Table &table() const
 	{
 		return m_table;
 	}

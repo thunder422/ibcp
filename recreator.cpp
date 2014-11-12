@@ -28,7 +28,7 @@
 #include "basic/basic.h"
 
 
-Recreator::Recreator(void) :
+Recreator::Recreator() :
 	m_table(Table::instance()),
 	m_separator {}
 {
@@ -37,7 +37,7 @@ Recreator::Recreator(void) :
 
 
 // function to recreate original program text from an rpn list
-std::string Recreator::recreate(const RpnList &rpnList, bool exprMode)
+std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 {
 	for (RpnItemPtr rpnItem : rpnList)
 	{
@@ -185,7 +185,7 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to surround item on top of the holding stack with parentheses
 void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
+	(void)rpnItem;
 
 	recreator.topAddParens();
 }
@@ -233,8 +233,8 @@ void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to do nothing (for hidden codes)
 void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(recreator)
-	Q_UNUSED(rpnItem)
+	(void)recreator;
+	(void)rpnItem;
 }
 
 

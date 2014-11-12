@@ -132,7 +132,7 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 // function to recreate the print item code
 void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
+	(void)rpnItem;
 
 	std::string string;
 
@@ -169,7 +169,7 @@ void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the print comma code
 void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
+	(void)rpnItem;
 
 	std::string string;
 
@@ -210,7 +210,7 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the print code
 void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	Q_UNUSED(rpnItem)
+	(void)rpnItem;
 
 	// append PRINT keyword
 	recreator.append(recreator.table().name(Print_Code).toStdString());
