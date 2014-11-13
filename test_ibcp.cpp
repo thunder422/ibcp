@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_ibcp.cpp - tester class source file
-//	Copyright (C) 2010-2013  Thunder422
+//	Copyright (C) 2010-2014  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -280,7 +280,7 @@ Tester::Tester(const std::string &programName,
 		}
 		if (args.size() == 1)
 		{
-			m_errorMessage = m_programName + ": missing test file name";
+			throw m_programName + ": missing test file name";
 		}
 		else
 		{
@@ -300,22 +300,23 @@ Tester::Tester(const std::string &programName,
 			}
 			if (m_option == Option{})  // no matching names?
 			{
-				m_errorMessage = "usage: " + m_programName + " -t";
+				std::string errorMessage = "usage: " + m_programName + " -t";
 				if (m_recreate)
 				{
-					m_errorMessage += 'o';
+					errorMessage += 'o';
 				}
-				m_errorMessage += " (";
+				errorMessage += " (";
 				if (m_recreate)
 				{
-					m_errorMessage += name[Option::Parser] + '|';
+					errorMessage += name[Option::Parser] + '|';
 				}
-				m_errorMessage += name[Option::Expression] + '|'
+				errorMessage += name[Option::Expression] + '|'
 					+ name[Option::Translator] + ")[xx]";
+				throw errorMessage;
 			}
 			else if (m_option == Option::Parser && m_recreate)
 			{
-				m_errorMessage = m_programName + ": cannot use -to with "
+				throw m_programName + ": cannot use -to with "
 					+ name[Option::Parser] + " files";
 			}
 		}
@@ -339,13 +340,13 @@ bool Tester::isOption(const std::string &arg, const std::string &exp,
 
 
 // function to return list of valid options
-std::string Tester::options(void)
+std::string Tester::options()
 {
 	return "-t <test_file>|-tp|-te|-tt|-tc|-tr|-to <test_file>";
 }
 
 
-bool Tester::run(std::string copyrightStatement)
+void Tester::operator()(std::string copyrightStatement)
 {
 	std::ifstream ifs;
 
@@ -355,9 +356,7 @@ bool Tester::run(std::string copyrightStatement)
 		ifs.open(m_testFileName);
 		if (!ifs.is_open())
 		{
-			m_errorMessage = m_programName + ": error opening '"
-				 + m_testFileName + '\'';
-			return false;
+			throw m_programName + ": error opening '" + m_testFileName + '\'';
 		}
 	}
 
@@ -460,8 +459,6 @@ bool Tester::run(std::string copyrightStatement)
 			}
 		}
 	}
-
-	return true;
 }
 
 
