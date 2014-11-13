@@ -30,18 +30,18 @@
 
 // REM FUNCTIONS
 
-quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token)
+uint16_t remEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->remDictionary()->add(token);
 }
 
 const std::string remOperandText(const ProgramModel *programUnit,
-	quint16 operand)
+	uint16_t operand)
 {
 	return programUnit->remDictionary()->string(operand);
 }
 
-void remRemove(ProgramModel *programUnit, quint16 operand)
+void remRemove(ProgramModel *programUnit, uint16_t operand)
 {
 	programUnit->remDictionary()->remove(operand);
 }
@@ -55,10 +55,10 @@ void ConstNumInfo::clear(void)
 	m_valueInt.clear();
 }
 
-void ConstNumInfo::addElement(void)
+void ConstNumInfo::addElement(const TokenPtr &token)
 {
-	m_value.resize(m_value.size() + 1);
-	m_valueInt.resize(m_valueInt.size() + 1);
+	m_value.emplace_back(token->value());
+	m_valueInt.emplace_back(token->valueInt());
 }
 
 void ConstNumInfo::setElement(int index, const TokenPtr &token)
@@ -67,18 +67,18 @@ void ConstNumInfo::setElement(int index, const TokenPtr &token)
 	m_valueInt[index] = token->valueInt();
 }
 
-quint16 constNumEncode(ProgramModel *programUnit, const TokenPtr &token)
+uint16_t constNumEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->constNumDictionary()->add(token);
 }
 
 const std::string constNumOperandText(const ProgramModel *programUnit,
-	quint16 operand)
+	uint16_t operand)
 {
 	return programUnit->constNumDictionary()->string(operand);
 }
 
-void constNumRemove(ProgramModel *programUnit, quint16 operand)
+void constNumRemove(ProgramModel *programUnit, uint16_t operand)
 {
 	programUnit->constNumDictionary()->remove(operand);
 }
@@ -89,14 +89,14 @@ void ConstStrInfo::clear(void)
 	m_value.clear();
 }
 
-void ConstStrInfo::addElement(void)
+void ConstStrInfo::addElement(const TokenPtr &token)
 {
-	m_value.append(new QString);
+	m_value.emplace_back(new std::string {token->string()});
 }
 
 void ConstStrInfo::setElement(int index, const TokenPtr &token)
 {
-	*m_value[index] = token->string().c_str();
+	*m_value[index] = token->string();
 }
 
 void ConstStrInfo::clearElement(int index)
@@ -106,25 +106,25 @@ void ConstStrInfo::clearElement(int index)
 
 ConstStrInfo::~ConstStrInfo(void)
 {
-	for (int i {}; i < m_value.count(); i++)
+	for (auto string : m_value)
 	{
-		delete m_value.at(i);
+		delete string;
 	}
 }
 
 
-quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
+uint16_t constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->constStrDictionary()->add(token);
 }
 
 const std::string constStrOperandText(const ProgramModel *programUnit,
-	quint16 operand)
+	uint16_t operand)
 {
 	return programUnit->constStrDictionary()->string(operand);
 }
 
-void constStrRemove(ProgramModel *programUnit, quint16 operand)
+void constStrRemove(ProgramModel *programUnit, uint16_t operand)
 {
 	programUnit->constStrDictionary()->remove(operand);
 }
@@ -148,52 +148,52 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 // VARIABLE FUNCTIONS
 
-quint16 varDblEncode(ProgramModel *programUnit, const TokenPtr &token)
+uint16_t varDblEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varDblDictionary()->add(token);
 }
 
-quint16 varIntEncode(ProgramModel *programUnit, const TokenPtr &token)
+uint16_t varIntEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varIntDictionary()->add(token);
 }
 
-quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token)
+uint16_t varStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 {
 	return programUnit->varStrDictionary()->add(token);
 }
 
 
 const std::string varDblOperandText(const ProgramModel *programUnit,
-	quint16 operand)
+	uint16_t operand)
 {
 	return programUnit->varDblDictionary()->string(operand);
 }
 
 const std::string varIntOperandText(const ProgramModel *programUnit,
-	quint16 operand)
+	uint16_t operand)
 {
 	return programUnit->varIntDictionary()->string(operand);
 }
 
 const std::string varStrOperandText(const ProgramModel *programUnit,
-	quint16 operand)
+	uint16_t operand)
 {
 	return programUnit->varStrDictionary()->string(operand);
 }
 
 
-void varDblRemove(ProgramModel *programUnit, quint16 operand)
+void varDblRemove(ProgramModel *programUnit, uint16_t operand)
 {
 	programUnit->varDblDictionary()->remove(operand);
 }
 
-void varIntRemove(ProgramModel *programUnit, quint16 operand)
+void varIntRemove(ProgramModel *programUnit, uint16_t operand)
 {
 	programUnit->varIntDictionary()->remove(operand);
 }
 
-void varStrRemove(ProgramModel *programUnit, quint16 operand)
+void varStrRemove(ProgramModel *programUnit, uint16_t operand)
 {
 	programUnit->varStrDictionary()->remove(operand);
 }

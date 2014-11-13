@@ -129,7 +129,10 @@ class AbstractInfo
 public:
 	virtual ~AbstractInfo(void) {}
 	virtual void clear(void) {}
-	virtual void addElement(void) {}
+	virtual void addElement(const TokenPtr &token)
+	{
+		(void)token;
+	}
 	virtual void setElement(int index, const TokenPtr &token)
 	{
 		(void)index;
