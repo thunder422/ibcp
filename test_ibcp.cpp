@@ -437,7 +437,7 @@ void Tester::operator()(std::string copyrightStatement)
 		for (int i {}; i < m_programUnit->rowCount(); i++)
 		{
 			m_cout << i << ": "
-				<< m_programUnit->debugText(i, true).toStdString() << '\n';
+				<< m_programUnit->debugText(i, true) << '\n';
 		}
 
 		m_cout << "\nRemarks:\n" << m_programUnit->remDictionary();
@@ -631,7 +631,7 @@ void Tester::encodeInput(std::string testInput)
 		else  // get text of encoded line and output it
 		{
 			m_cout << "Output: "
-				<< m_programUnit->debugText(lineIndex).toStdString() << '\n';
+				<< m_programUnit->debugText(lineIndex) << '\n';
 		}
 	}
 }

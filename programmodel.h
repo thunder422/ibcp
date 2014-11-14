@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: programmodel.h - program model class header file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2014  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -71,7 +71,6 @@ public:
 	{
 		m_word = (unsigned)code | (subCode & ProgramMask_SubCode);
 	}
-	QString instructionDebugText(void) const;
 
 	// operand word access functions
 	unsigned short operand(void) const
@@ -82,7 +81,6 @@ public:
 	{
 		m_word = operand;
 	}
-	QString operandDebugText(QString text) const;
 
 private:
 	unsigned short m_word;				// one program word
@@ -225,7 +223,7 @@ public:
 			return &m_errors[m_lineInfo.at(lineIndex).errIndex];
 		}
 	}
-	QString debugText(int lineIndex, bool fullInfo = false) const;
+	std::string debugText(int lineIndex, bool fullInfo = false) const;
 
 	// program model access functions
 	QString lineText(int lineIndex);

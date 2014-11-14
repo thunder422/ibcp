@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: programmodel.h - program model class source file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2014  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -35,41 +35,33 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// function to return the debug text for an instruction word
-QString ProgramWord::instructionDebugText(void) const
+// overloaded output stream operator for contents of an instruction word
+std::ostream &operator<<(std::ostream &os, ProgramWord word)
 {
 	Table &table = Table::instance();
-	QString string;
 
-	Code code {instructionCode()};
-	string += table.debugName(code);
+	Code code {word.instructionCode()};
+	os << table.debugName(code).toStdString();
 
-	if (instructionHasSubCode(ProgramMask_SubCode))
+	if (word.instructionHasSubCode(ProgramMask_SubCode))
 	{
-		string += '\'';
-		if (instructionHasSubCode(Paren_SubCode))
+		os << '\'';
+		if (word.instructionHasSubCode(Paren_SubCode))
 		{
-			string += ')';
+			os << ')';
 		}
-		if (instructionHasSubCode(Option_SubCode))
+		if (word.instructionHasSubCode(Option_SubCode))
 		{
-			QString option {table.optionName(code)};
-			string += option.isEmpty() ? "BUG" : option;
+			std::string option {table.optionName(code).toStdString()};
+			os << (option.empty() ? "BUG" : option);
 		}
-		if (instructionHasSubCode(Colon_SubCode))
+		if (word.instructionHasSubCode(Colon_SubCode))
 		{
-			string += ":";
+			os << ":";
 		}
-		string += '\'';
+		os << '\'';
 	}
-	return string;
-}
-
-
-// function to return the debug text for an instruction word
-QString ProgramWord::operandDebugText(QString text) const
-{
-	return QString("|%2:%3|").arg(operand()).arg(text);
+	return os;
 }
 
 
@@ -99,20 +91,19 @@ ProgramModel::ProgramModel(QObject *parent) :
 
 
 // NOTE temporary function to return the text for a program line
-QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
+std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 {
-	QString string;
+	std::ostringstream oss;
 
 	const LineInfo &lineInfo = m_lineInfo[lineIndex];
 	if (fullInfo)
 	{
-		string.append(QString("[%1").arg(lineInfo.offset));
+		oss << '[' << lineInfo.offset;
 		if (lineInfo.size > 0)
 		{
-			string.append(QString("-%1").arg(lineInfo.offset + lineInfo.size
-				- 1));
+			oss << '-' << lineInfo.offset + lineInfo.size - 1;
 		}
-		string.append("]");
+		oss << ']';
 	}
 
 	const ProgramWord *line {m_code.data() + m_lineInfo.at(lineIndex).offset};
@@ -121,29 +112,28 @@ QString ProgramModel::debugText(int lineIndex, bool fullInfo) const
 	{
 		if (i > 0 || fullInfo)
 		{
-			string += ' ';
+			oss << ' ';
 		}
-		string += QString("%1:%2").arg(i).arg(line[i].instructionDebugText());
+		oss << i << ':' << line[i];
 
 		Code code {line[i].instructionCode()};
 		OperandTextFunction operandText {m_table.operandTextFunction(code)};
 		if (operandText)
 		{
 			const std::string operand {operandText(this, line[++i].operand())};
-			string += QString(" %1:%2").arg(i)
-				.arg(line[i].operandDebugText(operand.c_str()));
+			oss << ' ' << i << ":|" << line[i].operand() << ':' << operand
+				<< '|';
 		}
 	}
 
 	if (fullInfo && lineInfo.errIndex != -1)
 	{
 		const ErrorItem &errorItem {m_errors[lineInfo.errIndex]};
-		string.append(QString(" ERROR %1:%2 %3").arg(errorItem.column())
-			.arg(errorItem.length())
-			.arg(StatusMessage::text(errorItem.status())));
+		oss << " ERROR " << errorItem.column() << ':' << errorItem.length()
+			<< ' ' << StatusMessage::text(errorItem.status()).toStdString();
 	}
 
-	return string;
+	return oss.str();
 }
 
 
@@ -177,7 +167,7 @@ QVariant ProgramModel::data(const QModelIndex &index, int role) const
 		}
 		else if (role == Qt::DisplayRole)
 		{
-			return debugText(index.row(), true);
+			return debugText(index.row(), true).c_str();
 		}
 	}
 	return QVariant();
