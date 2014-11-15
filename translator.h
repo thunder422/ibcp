@@ -54,7 +54,7 @@ public:
 	};
 
 	// Main Function
-	RpnList translate(const QString &input, TestMode testMode = TestMode::No);
+	RpnList translate(const std::string &input, TestMode testMode = {});
 
 	// Get Functions
 	Status getCommands(TokenPtr &token);

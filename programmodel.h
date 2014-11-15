@@ -25,11 +25,7 @@
 #ifndef PROGRAMMODEL_H
 #define PROGRAMMODEL_H
 
-#include <vector>
-
 #include <QAbstractListModel>
-#include <QString>
-#include <QStringList>
 
 #include "ibcp.h"
 #include "dictionary.h"
@@ -99,7 +95,9 @@ public:
 	std::string debugText(int lineIndex, bool fullInfo = false) const;
 
 	// program model access functions
-	QString lineText(int lineIndex);
+	std::string lineText(int lineIndex);
+	void update(int lineNumber, int linesDeleted, int linesInserted,
+		std::vector<std::string> &&lines);
 	void lineEdited(int lineNumber, int column, bool atLineEnd, int charsAdded,
 		int charsRemoved);
 	int errorCount(void) const
@@ -125,17 +123,13 @@ signals:
 	void errorRemoved(int errIndex);
 	void errorListChanged(void);
 
-public slots:
-	void update(int lineNumber, int linesDeleted, int linesInserted,
-		QStringList lines);
-
 private:
 	struct LineInfo
 	{
 		int offset;						// offset of line in program
 		int size;						// size of line in program
 		int errIndex;					// index to error list
-		QString text;					// text of line when line has error
+		std::string text;				// text of line when line has error
 	};
 	class LineInfoList
 	{
@@ -203,7 +197,7 @@ private:
 	};
 
 	bool updateLine(Operation operation, int lineNumber,
-		const QString &line = QString());
+		std::string &&line = {});
 	void updateError(int lineNumber, LineInfo &lineInfo,
 		const ErrorItem &errorItem, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);

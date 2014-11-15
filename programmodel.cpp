@@ -117,8 +117,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << i << ':' << line[i];
 
 		Code code {line[i].instructionCode()};
-		OperandTextFunction operandText {m_table.operandTextFunction(code)};
-		if (operandText)
+		if (auto operandText = m_table.operandTextFunction(code))
 		{
 			const std::string operand {operandText(this, line[++i].operand())};
 			oss << ' ' << i << ":|" << line[i].operand() << ':' << operand
@@ -138,20 +137,12 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 
 
 // function to return text for a given program line
-QString ProgramModel::lineText(int lineIndex)
+std::string ProgramModel::lineText(int lineIndex)
 {
-	QString string;
-
 	LineInfo &lineInfo = m_lineInfo[lineIndex];
-	if (lineInfo.errIndex == -1)
-	{
-		string = Recreator{}(decode(lineInfo)).c_str();
-	}
-	else  // line has error, return original text
-	{
-		string = lineInfo.text;
-	}
-	return string;
+	// return original test if line has error
+	return lineInfo.errIndex == -1
+		? Recreator{}(decode(lineInfo)) : lineInfo.text;
 }
 
 
@@ -206,7 +197,7 @@ void ProgramModel::clear(void)
 // slot function to receive program updates
 //   - if lineNumber == 1 then append line to end of program
 void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
-	QStringList lines)
+	std::vector<std::string> &&lines)
 {
 	int i;
 	int oldSize = m_lineInfo.size();
@@ -214,7 +205,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	for (i = 0; i < size - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
-		if (updateLine(Operation::Change, lineNumber, lines.at(i)))
+		if (updateLine(Operation::Change, lineNumber, std::move(lines[i])))
 		{
 			// need to emit signal that data changed
 			QModelIndex index {this->index(lineNumber)};
@@ -249,7 +240,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		beginInsertRows(QModelIndex(), lineNumber, lastLineNumber);
 		while (i < size)
 		{
-			updateLine(operation, lineNumber++, lines.at(i++));
+			updateLine(operation, lineNumber++, std::move(lines[i++]));
 		}
 		endInsertRows();
 	}
@@ -268,7 +259,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 
 
 bool ProgramModel::updateLine(Operation operation, int lineNumber,
-	const QString &line)
+	std::string &&line)
 {
 	RpnList rpnList;
 	ProgramCode lineCode;
@@ -306,7 +297,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 			}
 			else  // else store line text for error line
 			{
-				lineInfo.text = line;
+				lineInfo.text = std::move(line);
 			}
 
 			updateError(lineNumber, lineInfo, errorItem, false);
@@ -336,7 +327,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		}
 		else  // else store line text for error line
 		{
-			lineInfo.text = line;
+			lineInfo.text = std::move(line);
 		}
 
 		// find offset to insert line
@@ -600,8 +591,7 @@ ProgramCode ProgramModel::encode(const RpnList &input)
 	{
 		TokenPtr token {rpnItem->token()};
 		programLine.emplace_back(token->code(), token->subCodes());
-		EncodeFunction encode {m_table.encodeFunction(token->code())};
-		if (encode)
+		if (auto encode = m_table.encodeFunction(token->code()))
 		{
 			programLine.emplace_back(encode(this, token));
 		}
@@ -617,8 +607,7 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 	for (int i {}; i < lineInfo.size; i++)
 	{
 		Code code {line[i].instructionCode()};
-		RemoveFunction remove {m_table.removeFunction(code)};
-		if (remove)
+		if (auto remove = m_table.removeFunction(code))
 		{
 			remove(this, line[++i].operand());
 		}
@@ -637,9 +626,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 		token->setCode(line[i].instructionCode());
 		token->addSubCode(line[i].instructionSubCode());
 
-		OperandTextFunction operandText
-			= m_table.operandTextFunction(token->code());
-		if (operandText)
+		if (auto operandText = m_table.operandTextFunction(token->code()))
 		{
 			token->setString(operandText(this, line[++i].operand()));
 		}

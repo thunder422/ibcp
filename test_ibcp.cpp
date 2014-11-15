@@ -454,8 +454,7 @@ void Tester::operator()(std::string copyrightStatement)
 			m_cout << "\nOutput:\n";
 			for (int i {}; i < m_programUnit->rowCount(); i++)
 			{
-				m_cout << i << ": " << m_programUnit->lineText(i).toStdString()
-					<< '\n';
+				m_cout << i << ": " << m_programUnit->lineText(i) << '\n';
 			}
 		}
 	}
@@ -489,8 +488,7 @@ void Tester::parseInput(const std::string &testInput)
 RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
 	const char *header)
 {
-	QString tmp {testInput.c_str()};
-	RpnList rpnList {m_translator->translate(tmp, exprMode
+	RpnList rpnList {m_translator->translate(testInput, exprMode
 		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
 	if (rpnList.hasError())
 	{
@@ -608,13 +606,13 @@ void Tester::encodeInput(std::string testInput)
 	// call update with arguments dependent on operation
 	if (operation == Operation::Remove)
 	{
-		m_programUnit->update(lineIndex, 1, 0, QStringList());
+		m_programUnit->update(lineIndex, 1, 0, std::vector<std::string>{});
 	}
 	else  // Change_Operation or Insert_Operation
 	{
 		m_programUnit->update(lineIndex, 0,
 			operation == Operation::Insert ? 1 : 0,
-			QStringList() << testInput.c_str());
+			std::vector<std::string>{testInput});
 	}
 
 	const ErrorItem *errorItem {m_programUnit->lineError(lineIndex)};

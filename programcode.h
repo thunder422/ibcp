@@ -32,18 +32,17 @@
 
 
 // class for holding and accessing a program word
-// WORK moved to new programcode.h
 class ProgramWord
 {
 public:
 	// instruction access functions
 	ProgramWord(Code code, unsigned subCode) :
-		// FIXME remove c-style type case
+		// FIXME remove c-style type cast
 		m_word((unsigned)code | (subCode & ProgramMask_SubCode)) {}
 
 	Code instructionCode() const
 	{
-		// FIXME remove c-style type case
+		// FIXME remove c-style type cast
 		return (Code)(m_word & ProgramMask_Code);
 	}
 	int instructionSubCode() const
