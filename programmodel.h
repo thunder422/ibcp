@@ -25,10 +25,11 @@
 #ifndef PROGRAMMODEL_H
 #define PROGRAMMODEL_H
 
+#include <vector>
+
 #include <QAbstractListModel>
 #include <QString>
 #include <QStringList>
-#include <QVector>
 
 #include "ibcp.h"
 #include "dictionary.h"
@@ -90,24 +91,10 @@ public:
 	}
 
 	// NOTE temporary functions for testing
-	int lineOffset(int lineIndex) const
-	{
-		return m_lineInfo.at(lineIndex).offset;
-	}
-	int lineSize(int lineIndex) const
-	{
-		return m_lineInfo.at(lineIndex).size;
-	}
 	const ErrorItem *lineError(int lineIndex) const
 	{
-		if (m_lineInfo.at(lineIndex).errIndex == -1)
-		{
-			return nullptr;
-		}
-		else
-		{
-			return &m_errors[m_lineInfo.at(lineIndex).errIndex];
-		}
+		return m_lineInfo[lineIndex].errIndex == -1
+			? nullptr : &m_errors[m_lineInfo[lineIndex].errIndex];
 	}
 	std::string debugText(int lineIndex, bool fullInfo = false) const;
 
@@ -150,38 +137,69 @@ private:
 		int errIndex;					// index to error list
 		QString text;					// text of line when line has error
 	};
-	class LineInfoList : public QList<LineInfo>
+	class LineInfoList
 	{
-		// adjust offset of all lines after index by size
-		void adjust(int i, int size)
-		{
-			while (++i < count())
-			{
-				(*this)[i].offset += size;
-			}
-		}
-
 	public:
 		// replace size of line at index (adjust line offsets after index)
 		void replace(int i, int size)
 		{
-			adjust(i, size - at(i).size);
-			(*this)[i].size = size;
+			adjust(i, size - m_vector[i].size);
+			m_vector[i].size = size;
 		}
 
 		// insert new line at index (adjust line offsets after index)
 		void insert(int i, const LineInfo &t)
 		{
-			QList<LineInfo>::insert(i, t);
+			m_vector.insert(m_vector.begin() + i, t);
 			adjust(i, t.size);
 		}
 
 		// remove line at index (adjust line offsets after index)
-		void removeAt(int i)
+		void erase(int i)
 		{
-			adjust(i, -at(i).size);
-			QList<LineInfo>::removeAt(i);
+			adjust(i, -m_vector[i].size);
+			m_vector.erase(m_vector.begin() + i);
 		}
+
+		// vector pass through access functions
+		std::vector<LineInfo>::const_reference operator[](size_t index) const
+		{
+			return m_vector[index];
+		}
+		std::vector<LineInfo>::reference operator[](size_t index)
+		{
+			return m_vector[index];
+		}
+		int size() const
+		{
+			return m_vector.size();
+		}
+		void clear()
+		{
+			m_vector.clear();
+		}
+
+		// vector element access functions
+		int offset(int lineNumber) const
+		{
+			return m_vector[lineNumber].offset;
+		}
+		int size(int lineNumber) const
+		{
+			return m_vector[lineNumber].size;
+		}
+
+	private:
+		// adjust offset of all lines after index by size
+		void adjust(unsigned i, int size)
+		{
+			while (++i < m_vector.size())
+			{
+				m_vector[i].offset += size;
+			}
+		}
+
+		std::vector<LineInfo> m_vector;		// line information vector
 	};
 
 	bool updateLine(Operation operation, int lineNumber,

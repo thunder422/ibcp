@@ -106,9 +106,9 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << ']';
 	}
 
-	auto line = m_code.begin() + m_lineInfo.at(lineIndex).offset;
-	int count {m_lineInfo.at(lineIndex).size};
-	for (int i {}; i < count; i++)
+	auto line = m_code.begin() + m_lineInfo.offset(lineIndex);
+	int size {m_lineInfo.size(lineIndex)};
+	for (int i {}; i < size; i++)
 	{
 		if (i > 0 || fullInfo)
 		{
@@ -180,7 +180,7 @@ int ProgramModel::rowCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent)
 
-	return m_lineInfo.count();
+	return m_lineInfo.size();
 }
 
 
@@ -209,9 +209,9 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 	QStringList lines)
 {
 	int i;
-	int oldCount {m_lineInfo.count()};
-	int count {lines.count()};
-	for (i = 0; i < count - linesInserted; i++)
+	int oldSize = m_lineInfo.size();
+	int size = lines.size();
+	for (i = 0; i < size - linesInserted; i++)
 	{
 		// update changed program lines if they actually changed
 		if (updateLine(Operation::Change, lineNumber, lines.at(i)))
@@ -238,7 +238,7 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		Operation operation;
 		if (lineNumber == -1)  // append to end of program?
 		{
-			lineNumber = oldCount;
+			lineNumber = oldSize;
 			operation = Operation::Append;
 		}
 		else  // insert new lines into the program
@@ -247,17 +247,17 @@ void ProgramModel::update(int lineNumber, int linesDeleted, int linesInserted,
 		}
 		int lastLineNumber {lineNumber + linesInserted - 1};
 		beginInsertRows(QModelIndex(), lineNumber, lastLineNumber);
-		while (i < count)
+		while (i < size)
 		{
 			updateLine(operation, lineNumber++, lines.at(i++));
 		}
 		endInsertRows();
 	}
 
-	if (m_lineInfo.count() != oldCount)
+	if (m_lineInfo.size() != oldSize)
 	{
 		// emit new line count if changed
-		emit lineCountChanged(m_lineInfo.count());
+		emit lineCountChanged(m_lineInfo.size());
 	}
 
 	if (m_errors.hasChanged())
@@ -340,9 +340,9 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		}
 
 		// find offset to insert line
-		if (lineNumber < m_lineInfo.count())
+		if (lineNumber < m_lineInfo.size())
 		{
-			lineInfo.offset = m_lineInfo.at(lineNumber).offset;
+			lineInfo.offset = m_lineInfo.offset(lineNumber);
 		}
 		else  // append to end
 		{
@@ -371,7 +371,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 		m_code.removeLine(lineInfo.offset, lineInfo.size);
 
 		// remove from line info list
-		m_lineInfo.removeAt(lineNumber);
+		m_lineInfo.erase(lineNumber);
 	}
 	return true;
 }
