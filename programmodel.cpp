@@ -106,7 +106,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << ']';
 	}
 
-	const ProgramWord *line {m_code.data() + m_lineInfo.at(lineIndex).offset};
+	auto line = m_code.begin() + m_lineInfo.at(lineIndex).offset;
 	int count {m_lineInfo.at(lineIndex).size};
 	for (int i {}; i < count; i++)
 	{
@@ -594,17 +594,16 @@ Status ProgramModel::errorStatus(int lineNumber) const
 // function to encode a translated RPN list
 ProgramCode ProgramModel::encode(const RpnList &input)
 {
-	ProgramCode programLine(input.codeSize());
+	ProgramCode programLine;
 
 	for (RpnItemPtr rpnItem : input)
 	{
 		TokenPtr token {rpnItem->token()};
-		programLine[token->index()].setInstruction(token->code(),
-			token->subCodes());
+		programLine.emplace_back(token->code(), token->subCodes());
 		EncodeFunction encode {m_table.encodeFunction(token->code())};
 		if (encode)
 		{
-			programLine[token->index() + 1].setOperand(encode(this, token));
+			programLine.emplace_back(encode(this, token));
 		}
 	}
 	return programLine;
@@ -614,7 +613,7 @@ ProgramCode ProgramModel::encode(const RpnList &input)
 // function to dereference contents of line to prepare for its removal
 void ProgramModel::dereference(const LineInfo &lineInfo)
 {
-	ProgramWord *line {m_code.data() + lineInfo.offset};
+	auto line = m_code.begin() + lineInfo.offset;
 	for (int i {}; i < lineInfo.size; i++)
 	{
 		Code code {line[i].instructionCode()};
@@ -631,7 +630,7 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 RpnList ProgramModel::decode(const LineInfo &lineInfo)
 {
 	RpnList rpnList;
-	ProgramWord *line {m_code.data() + lineInfo.offset};
+	auto line = m_code.begin() + lineInfo.offset;
 	for (int i {}; i < lineInfo.size; i++)
 	{
 		TokenPtr token {new Token};

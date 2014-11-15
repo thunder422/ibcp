@@ -33,6 +33,7 @@
 #include "ibcp.h"
 #include "dictionary.h"
 #include "errorlist.h"
+#include "programcode.h"
 #include "recreator.h"
 #include "translator.h"
 #include "basic/basic.h"
@@ -47,121 +48,6 @@ enum class Operation
 	Insert,
 	Change,
 	Remove
-};
-
-
-// class for holding and accessing a program word
-class ProgramWord
-{
-public:
-	// instruction access functions
-	Code instructionCode(void) const
-	{
-		return (Code)(m_word & ProgramMask_Code);
-	}
-	int instructionSubCode(void) const
-	{
-		return m_word & ProgramMask_SubCode;
-	}
-	bool instructionHasSubCode(int subCode) const
-	{
-		return (m_word & subCode) != 0;
-	}
-	void setInstruction(Code code, unsigned subCode)
-	{
-		m_word = (unsigned)code | (subCode & ProgramMask_SubCode);
-	}
-
-	// operand word access functions
-	unsigned short operand(void) const
-	{
-		return m_word;
-	}
-	void setOperand(unsigned short operand)
-	{
-		m_word = operand;
-	}
-
-private:
-	unsigned short m_word;				// one program word
-};
-
-
-// class for holding the program code
-class ProgramCode : public QVector<ProgramWord>
-{
-public:
-	ProgramCode(void): QVector<ProgramWord>() { }
-	ProgramCode(int size): QVector<ProgramWord>(size) { }
-
-	void insertLine(int i, const ProgramCode &line)
-	{
-		if (line.size() > 0)
-		{
-			int oldSize {size()};
-			resize(oldSize + line.size());
-			ProgramWord *lineBegin = data() + i;
-			if (i != oldSize)  // not inserting line at end?
-			{
-				// make hole in code for new line
-				memmove(lineBegin + line.size(), lineBegin, (oldSize - i)
-					* sizeof(ProgramWord));
-			}
-			// copy new line into program
-			memmove(lineBegin, line.data(), line.size() * sizeof(ProgramWord));
-		}
-	}
-
-	void removeLine(int i, int n)
-	{
-		if (n > 0)  // something to remove?
-		{
-			remove(i, n);
-		}
-	}
-
-	void replaceLine(int i, int n, const ProgramCode &line)
-	{
-		if (line.count() == 0)
-		{
-			// no new line, just remove old line
-			removeLine(i, n);
-			return;
-		}
-		ProgramWord *offset;
-		if (line.count() > n)  // new line larger?
-		{
-			// make program larger before moving program after line up
-			resize(count() - n + line.count());
-			offset = data() + i;  // get data, resize may move data
-
-			int moveCount {count() - i - line.count()};
-			if (moveCount > 0)  // not at end?
-			{
-				memmove(offset + line.count(), offset + n,
-					moveCount * sizeof(ProgramWord));
-			}
-		}
-		else  // new line smaller or same size
-		{
-			offset = data() + i;
-			if (line.count() < n)  // new line smaller?
-			{
-				// move program after line down before making program smaller
-				offset = data() + i;
-				int moveCount {count() - i - n};
-				if (moveCount > 0)  // not at end?
-				{
-					memmove(offset + line.count(), offset + n,
-						moveCount * sizeof(ProgramWord));
-				}
-				resize(count() - n + line.count());
-				offset = data() + i;  // get data again, resize may move data
-			}
-		}
-		// copy new line into program
-		memmove(offset, line.data(), line.count() * sizeof(ProgramWord));
-	}
 };
 
 

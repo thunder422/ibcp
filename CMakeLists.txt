@@ -180,6 +180,11 @@ add_custom_command(OUTPUT test_names.h
 	DEPENDS table.cpp
 )
 
+# list the header files without source files
+set(ibcp_HEADERS
+	programcode.h
+)
+
 # list the main program sources
 set(ibcp_SOURCES
 	basic/basic.cpp
@@ -301,6 +306,7 @@ add_executable(ibcp
 	basic/basic.h
 	autoenums.h
 	test_names.h
+	${ibcp_HEADERS}
 	${ibcp_SOURCES}
 	${ibcp_MOCS}
 	${ibcp_UI_HEADERS}
