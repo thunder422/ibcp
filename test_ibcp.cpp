@@ -241,7 +241,6 @@ Tester::Tester(const std::string &programName,
 	const std::list<std::string> &args, std::ostream &cout) :
 	m_programName {programName},
 	m_cout(cout),
-	m_translator {new Translator},
 	m_programUnit {new ProgramModel}
 {
 	std::unordered_map<Option, std::string, EnumClassHash> name {
@@ -488,7 +487,7 @@ void Tester::parseInput(const std::string &testInput)
 RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
 	const char *header)
 {
-	RpnList rpnList {m_translator->translate(testInput, exprMode
+	RpnList rpnList {Translator{testInput}(exprMode
 		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
 	if (rpnList.hasError())
 	{

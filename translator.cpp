@@ -28,8 +28,9 @@
 #include "parser.h"
 
 
-Translator::Translator(void) :
-	m_table(Table::instance())
+Translator::Translator(const std::string &input) :
+	m_table(Table::instance()),
+	m_parse {new Parser {input}}
 {
 
 }
@@ -48,12 +49,10 @@ Translator::Translator(void) :
 //     of translated line
 //   - allows for a special expression mode for testing
 
-RpnList Translator::translate(const std::string &input, TestMode testMode)
+RpnList Translator::operator()(TestMode testMode)
 {
 	TokenPtr token;
 	Status status;
-
-	m_parse.reset(new Parser {input});
 
 	m_holdStack.emplace(m_table.newToken(Null_Code));
 
@@ -115,11 +114,10 @@ RpnList Translator::translate(const std::string &input, TestMode testMode)
 
 	if (status != Status::Done)
 	{
+		m_output.clear();  // clear the RPN output list of all items
 		m_output.setError(token);
 		m_output.setErrorStatus(status);
-		cleanUp();
 	}
-	m_parse.reset();
 	return std::move(m_output);
 }
 
@@ -1132,7 +1130,7 @@ void Translator::checkPendingParen(const TokenPtr &token, Popped popped)
 // function to pop the top item from the done stack and return the token
 // from the first to the last operand appropriate for an error token
 
-TokenPtr Translator::doneStackPopErrorToken(void)
+TokenPtr Translator::doneStackPopErrorToken()
 {
 	TokenPtr token {std::move(m_doneStack.top().first)};
 	if (!token)
@@ -1192,30 +1190,6 @@ Status Translator::expectedErrStatus(DataType dataType, Reference reference)
 		}
 	}
 	return Status::BUG_InvalidDataType;  // won't get here
-}
-
-
-// function to clean up the Translator variables after an error is detected
-//
-//   - must be called after add_token() returns an error
-
-void Translator::cleanUp(void)
-{
-	// clean up from error
-	while (!m_holdStack.empty())
-	{
-		m_holdStack.pop();
-	}
-	while (!m_doneStack.empty())
-	{
-		m_doneStack.pop();
-	}
-
-	// clear the RPN output list of all items
-	m_output.clear();
-
-	// need to delete pending parentheses
-	m_pendingParen.reset();
 }
 
 

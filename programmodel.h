@@ -206,7 +206,6 @@ private:
 	RpnList decode(const LineInfo &lineInfo);
 
 	Table &m_table;						// reference to the table object
-	std::unique_ptr<Translator> m_translator;	// translator instance
 
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list

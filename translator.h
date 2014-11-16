@@ -27,8 +27,6 @@
 
 #include <stack>
 
-#include <QString>
-
 #include "parser.h"
 #include "rpnlist.h"
 
@@ -38,7 +36,7 @@ class Table;
 class Translator
 {
 public:
-	explicit Translator(void);
+	explicit Translator(const std::string &input);
 
 	enum class TestMode {
 		No,				// do normal translation
@@ -54,7 +52,7 @@ public:
 	};
 
 	// Main Function
-	RpnList translate(const std::string &input, TestMode testMode = {});
+	RpnList operator()(TestMode testMode = {});
 
 	// Get Functions
 	Status getCommands(TokenPtr &token);
@@ -75,32 +73,32 @@ public:
 		Reference reference = Reference::None);
 
 	// Table Access Function
-	Table &table(void) const
+	Table &table() const
 	{
 		return m_table;
 	}
 
 	// Done Stack Access Functions
-	void doneStackPop(void)
+	void doneStackPop()
 	{
 		m_doneStack.pop();
 	}
-	TokenPtr doneStackTopToken(void) const
+	TokenPtr doneStackTopToken() const
 	{
 		return m_doneStack.top().rpnItem->token();
 	}
-	bool doneStackEmpty(void)
+	bool doneStackEmpty()
 	{
 		return m_doneStack.empty();
 	}
-	TokenPtr doneStackPopErrorToken(void);
+	TokenPtr doneStackPopErrorToken();
 
 	// Output List Access Functions
-	int outputCount(void) const
+	int outputCount() const
 	{
 		return m_output.count();
 	}
-	TokenPtr outputLastToken(void) const
+	TokenPtr outputLastToken() const
 	{
 		return m_output.lastToken();
 	}
@@ -129,7 +127,6 @@ private:
 	// Private Support Functions
 	enum class Popped {No, Yes};
 	void checkPendingParen(const TokenPtr &token, Popped popped);
-	void cleanUp(void);		// only called when error occurs
 
 	struct HoldItem
 	{

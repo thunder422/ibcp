@@ -81,7 +81,6 @@ private:
 	std::string m_testName;			// name of test
 	std::string m_testFileName;		// name of test file (OptFile only)
 	std::ostream &m_cout;			// reference to output stream
-	std::unique_ptr<Translator> m_translator;		// translator instance
 	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
 };
 

@@ -76,8 +76,6 @@ ProgramModel::ProgramModel(QObject *parent) :
 	QAbstractListModel(parent),
 	m_table(Table::instance()),
 
-	m_translator {new Translator},
-
 	m_remDictionary {new Dictionary(CaseSensitive::Yes)},
 	m_constNumDictionary {new ConstNumDictionary},
 	m_constStrDictionary {new ConstStrDictionary},
@@ -269,7 +267,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	{
 		// compile line
 		// if line has error, line code vector will be empty
-		rpnList = m_translator->translate(line);
+		rpnList = Translator{line}();
 		if (rpnList.hasError())
 		{
 			errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
