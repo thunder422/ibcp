@@ -486,31 +486,28 @@ void Tester::parseInput(const std::string &testInput)
 // and output the resulting RPN list
 RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
 	const char *header)
+try
 {
 	RpnList rpnList {Translator{testInput}(exprMode
 		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
-	if (rpnList.hasError())
+
+	m_cout << (header ? header : "Output") << ": ";
+	if (m_recreate)
 	{
-		Error error {rpnList.errorStatus(), rpnList.errorColumn(),
-			rpnList.errorLength()};
-		printError(error);
-		rpnList.clear();  // return an empty list
+		// recreate text from rpn list
+		m_cout << Recreator{}(rpnList, exprMode);
 	}
-	else  // no error, translate line and if selected recreate it
+	else
 	{
-		m_cout << (header ? header : "Output") << ": ";
-		if (m_recreate)
-		{
-			// recreate text from rpn list
-			m_cout << Recreator{}(rpnList, exprMode);
-		}
-		else
-		{
-			m_cout << rpnList;
-		}
-		m_cout << " \n";
+		m_cout << rpnList;
 	}
+	m_cout << " \n";
 	return rpnList;
+}
+catch (Error &error)
+{
+	printError(error);
+	return RpnList{};  // return an empty list
 }
 
 

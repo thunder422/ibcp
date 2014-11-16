@@ -201,7 +201,7 @@ private:
 	void updateError(int lineNumber, LineInfo &lineInfo,
 		const ErrorItem &errorItem, bool lineInserted);
 	void removeError(int lineNumber, LineInfo &lineInfo, bool lineDeleted);
-	ProgramCode encode(const RpnList &input);
+	ProgramCode encode(RpnList &&input);
 	void dereference(const LineInfo &lineInfo);
 	RpnList decode(const LineInfo &lineInfo);
 

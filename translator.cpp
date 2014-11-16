@@ -114,9 +114,7 @@ RpnList Translator::operator()(TestMode testMode)
 
 	if (status != Status::Done)
 	{
-		m_output.clear();  // clear the RPN output list of all items
-		m_output.setError(token);
-		m_output.setErrorStatus(status);
+		throw Error {status, token->column(), token->length()};
 	}
 	return std::move(m_output);
 }
