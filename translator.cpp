@@ -114,7 +114,7 @@ RpnList Translator::operator()(TestMode testMode)
 
 	if (status != Status::Done)
 	{
-		throw Error {status, token->column(), token->length()};
+		throw TokenError {status, token};
 	}
 	return std::move(m_output);
 }
@@ -543,12 +543,12 @@ try
 		? Parser::Number::Yes : Parser::Number::No);
 	return Status::Good;
 }
-catch (Error &error)
+catch (TokenError &error)
 {
 	// TODO for now, create an error token to return
-	token = std::make_shared<Token>(error.column, error.length);
+	token = std::make_shared<Token>(error.m_column, error.m_length);
 	if (dataType != DataType{} && dataType != DataType::None
-		&& error.status == Status::UnknownToken)
+		&& error.m_status == Status::UnknownToken)
 	{
 		// non-number constant error, return expected expression error
 		return expectedErrStatus(dataType, reference);
@@ -556,7 +556,7 @@ catch (Error &error)
 	else
 	{
 		// caller may need to convert this error to appropriate error
-		return error.status;
+		return error.m_status;
 	}
 }
 

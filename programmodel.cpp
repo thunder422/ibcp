@@ -268,10 +268,10 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	{
 		rpnList = Translator{line}();
 	}
-	catch (Error &error)
+	catch (TokenError &error)
 	{
-		errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber, error.column,
-			error.length, error.status);
+		errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
+			error.m_column, error.m_length, error.m_status);
 	}
 
 	if (operation == Operation::Change)

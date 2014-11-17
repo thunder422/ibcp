@@ -73,7 +73,7 @@ private:
 		m_cout << "\nInput: " << inputLine << '\n';
 	}
 	void printToken(const TokenPtr &token);
-	void printError(Error &error);
+	void printError(TokenError &error);
 
 	std::string m_programName;		// name of program
 	Option m_option;				// selection option

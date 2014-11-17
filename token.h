@@ -289,4 +289,18 @@ private:
 };
 
 
+// structure for holding information about an error exception
+struct TokenError
+{
+	TokenError(Status status, int column, int length) : m_status {status},
+		m_column {column}, m_length {length} {}
+	TokenError(Status status, const TokenPtr &token) :
+		TokenError {status, token->column(), token->length()} {}
+
+	Status m_status;					// status of error
+	int m_column;							// column of error
+	int m_length;							// length of error
+};
+
+
 #endif  // TOKEN_H

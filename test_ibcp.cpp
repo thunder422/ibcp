@@ -474,7 +474,7 @@ void Tester::parseInput(const std::string &testInput)
 			return;
 		}
 	}
-	catch (Error &error)
+	catch (TokenError &error)
 	{
 		printError(error);
 		return;
@@ -504,7 +504,7 @@ try
 	m_cout << " \n";
 	return rpnList;
 }
-catch (Error &error)
+catch (TokenError &error)
 {
 	printError(error);
 	return RpnList{};  // return an empty list
@@ -618,7 +618,7 @@ void Tester::encodeInput(std::string testInput)
 		printInput(testInput);
 		if (errorItem)
 		{
-			Error error {errorItem->status(), errorItem->column(),
+			TokenError error {errorItem->status(), errorItem->column(),
 				errorItem->length()};
 			printError(error);
 		}
@@ -755,11 +755,11 @@ void Tester::printToken(const TokenPtr &token)
 
 
 // function to print a token with an error
-void Tester::printError(Error &error)
+void Tester::printError(TokenError &error)
 {
-	m_cout << std::string(7 + error.column, ' ')
-		<< std::string(error.length, '^') << "-- "
-		<< StatusMessage::text(error.status).toStdString() << '\n';
+	m_cout << std::string(7 + error.m_column, ' ')
+		<< std::string(error.m_length, '^') << "-- "
+		<< StatusMessage::text(error.m_status).toStdString() << '\n';
 }
 
 
