@@ -271,7 +271,7 @@ bool ProgramModel::updateLine(Operation operation, int lineNumber,
 	catch (TokenError &error)
 	{
 		errorItem = ErrorItem(ErrorItem::Type::Input, lineNumber,
-			error.m_column, error.m_length, error.m_status);
+			error.m_column, error.m_length, error());
 	}
 
 	if (operation == Operation::Change)

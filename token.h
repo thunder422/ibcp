@@ -297,7 +297,25 @@ struct TokenError
 	TokenError(Status status, const TokenPtr &token) :
 		TokenError {status, token->column(), token->length()} {}
 
-	Status m_status;					// status of error
+	// convenience function for getting error status
+	Status operator()()
+	{
+		return m_status;
+	}
+
+	// convenience function for checking for a particular error status
+	bool operator()(Status status)
+	{
+		return status == m_status;
+	}
+
+	// convenience function for setting error status
+	void operator=(Status status)
+	{
+		m_status = status;
+	}
+
+	Status m_status;						// status of error
 	int m_column;							// column of error
 	int m_length;							// length of error
 };

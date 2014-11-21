@@ -73,7 +73,7 @@ RpnList Translator::operator()(TestMode testMode)
 			}
 			else
 			{
-				// drop result (delete any paren tokens in first/last operands)
+				// drop result
 				m_doneStack.pop();
 			}
 		}
@@ -92,27 +92,26 @@ RpnList Translator::operator()(TestMode testMode)
 
 			if (!m_holdStack.empty())
 			{
-				status = Status::BUG_HoldStackNotEmpty;
+				throw TokenError {Status::BUG_HoldStackNotEmpty, token};
 			}
 
 			if (!m_doneStack.empty())
 			{
-				status = Status::BUG_DoneStackNotEmpty;
+				throw TokenError {Status::BUG_DoneStackNotEmpty, token};
 			}
 
 			if (testMode == TestMode::No
 				&& !m_output.setCodeSize(m_table, token))
 			{
-				status = Status::BUG_NotYetImplemented;
+				throw TokenError {Status::BUG_NotYetImplemented, token};
 			}
 		}
 		else
 		{
-			status = Status::ExpOpOrEnd;
+			throw TokenError {Status::ExpOpOrEnd, token};
 		}
 	}
-
-	if (status != Status::Done)
+	else
 	{
 		throw TokenError {status, token};
 	}
@@ -548,7 +547,7 @@ catch (TokenError &error)
 	// TODO for now, create an error token to return
 	token = std::make_shared<Token>(error.m_column, error.m_length);
 	if (dataType != DataType{} && dataType != DataType::None
-		&& error.m_status == Status::UnknownToken)
+		&& error(Status::UnknownToken))
 	{
 		// non-number constant error, return expected expression error
 		return expectedErrStatus(dataType, reference);
@@ -556,7 +555,7 @@ catch (TokenError &error)
 	else
 	{
 		// caller may need to convert this error to appropriate error
-		return error.m_status;
+		return error();
 	}
 }
 

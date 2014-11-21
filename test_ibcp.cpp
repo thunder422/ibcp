@@ -462,10 +462,10 @@ void Tester::operator()(std::string copyrightStatement)
 
 // function to parse an input line and print the resulting tokens
 void Tester::parseInput(const std::string &testInput)
+try
 {
 	Parser parse {testInput};
 	for (;;)
-	try
 	{
 		TokenPtr token {parse(Parser::Number::Yes)};
 		printToken(token);
@@ -474,11 +474,10 @@ void Tester::parseInput(const std::string &testInput)
 			return;
 		}
 	}
-	catch (TokenError &error)
-	{
-		printError(error);
-		return;
-	}
+}
+catch (TokenError &error)
+{
+	printError(error);
 }
 
 
@@ -624,8 +623,7 @@ void Tester::encodeInput(std::string testInput)
 		}
 		else  // get text of encoded line and output it
 		{
-			m_cout << "Output: "
-				<< m_programUnit->debugText(lineIndex) << '\n';
+			m_cout << "Output: " << m_programUnit->debugText(lineIndex) << '\n';
 		}
 	}
 }
