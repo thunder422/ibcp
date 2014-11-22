@@ -29,7 +29,7 @@
 
 
 // LET command translate function
-Status letTranslate(Translator &translator, TokenPtr commandToken,
+void letTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
 	Status status;
@@ -55,20 +55,22 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 		if ((status = translator.getOperand(token, dataType,
 			Translator::Reference::All)) != Status::Good)
 		{
-			if (token->column() > column)  // not at begin command?
+			if (token->column() == column)  // at begin command?
 			{
-				return status;  // return error as is
-			}
-			// next token determines error
-			TokenPtr nextToken;
-			if ((status = translator.getToken(nextToken)) == Status::Good)
-			{
-				if (nextToken->isCode(Comma_Code) || nextToken->isCode(Eq_Code))
+				// next token determines error
+				TokenPtr nextToken;
+				if ((status = translator.getToken(nextToken)) == Status::Good)
 				{
-					return Status::ExpAssignItem;
+					status = nextToken->isCode(Comma_Code)
+						|| nextToken->isCode(Eq_Code)
+						? Status::ExpAssignItem : Status::ExpCmdOrAssignItem;
+				}
+				else
+				{
+					status = Status::ExpCmdOrAssignItem;
 				}
 			}
-			return Status::ExpCmdOrAssignItem;
+			throw TokenError {status, token};
 		}
 
 		// get and check next token for comma or equal
@@ -88,7 +90,7 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 			{
 				translator.doneStackPop();
 			}
-			return Status::ExpEqualOrComma;
+			throw TokenError {Status::ExpEqualOrComma, token};
 		}
 
 		// check if this is a sub-string assignment
@@ -113,7 +115,7 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 			status = translator.processDoneStackTop(token);
 			if (status != Status::Good)
 			{
-				return status;
+				throw TokenError {status, token};
 			}
 		}
 
@@ -132,9 +134,15 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 	{
 		if (status == Status::UnknownToken)
 		{
-			status = Status::ExpOpOrEnd;
+			throw TokenError {Status::ExpOpOrEnd, token};
 		}
-		return status;
+		throw TokenError {status, token};
+	}
+
+	// check terminating token for end-of-statement
+	if (!translator.table().hasFlag(token, EndStmt_Flag))
+	{
+		throw TokenError {Status::ExpOpOrEnd, token};
 	}
 
 	TokenPtr letToken {letStack.top()};
@@ -173,14 +181,6 @@ Status letTranslate(Translator &translator, TokenPtr commandToken,
 	// drop expresion result from done stack, append last assignment token
 	translator.doneStackPop();
 	translator.outputAppend(std::move(letToken));
-
-	// check terminating token for end-of-statement
-	if (!translator.table().hasFlag(token, EndStmt_Flag))
-	{
-		return Status::ExpOpOrEnd;
-	}
-
-	return Status::Done;
 }
 
 

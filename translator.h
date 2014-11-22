@@ -55,7 +55,7 @@ public:
 	RpnList operator()(TestMode testMode = {});
 
 	// Get Functions
-	Status getCommands(TokenPtr &token);
+	void getCommands(TokenPtr &token);
 	Status getExpression(TokenPtr &token, DataType dataType, int level = 0);
 	Status getOperand(TokenPtr &token, DataType dataType,
 		Reference reference = Reference::None);
@@ -118,7 +118,7 @@ public:
 
 private:
 	// Private Processing Functions
-	Status processCommand(TokenPtr &commandToken);
+	void processCommand(TokenPtr &commandToken);
 	Status processInternalFunction(TokenPtr &token);
 	Status processParenToken(TokenPtr &token);
 	Status processOperator(TokenPtr &token);

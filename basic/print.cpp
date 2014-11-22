@@ -30,7 +30,7 @@
 
 
 // PRINT command translate function
-Status printTranslate(Translator &translator, TokenPtr commandToken,
+void printTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
 	Status status;
@@ -60,7 +60,7 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 					status = Status::ExpOpSemiCommaOrEnd;
 				}
 			}
-			break;
+			throw TokenError {status, token};
 		}
 
 		if (!translator.doneStackEmpty())
@@ -85,8 +85,7 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 		{
 			if (lastSemiColon)
 			{
-				status = Status::ExpExprPfnOrEnd;
-				break;
+				throw TokenError {Status::ExpExprPfnOrEnd, token};
 			}
 			translator.outputAppend(std::move(token));
 			lastSemiColon.reset();
@@ -95,22 +94,21 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 		{
 			if (!separator)
 			{
-				status = lastSemiColon ? Status::ExpExprPfnOrEnd
-					: Status::ExpExprCommaPfnOrEnd;
-				break;
+				throw TokenError {lastSemiColon ? Status::ExpExprPfnOrEnd
+					: Status::ExpExprCommaPfnOrEnd, token};
 			}
 			lastSemiColon = std::move(token);
 		}
 		else  // some other token, maybe end-of-statement
 		{
+			if (!translator.table().hasFlag(token, EndStmt_Flag))
+			{
+				throw TokenError {printFunction ? Status::ExpSemiCommaOrEnd
+					: Status::ExpOpSemiCommaOrEnd, token};
+			}
 			break;  // exit loop
 		}
 		separator = false;
-	}
-
-	if (status != Status::Done)
-	{
-		return status;
 	}
 
 	if (lastSemiColon)
@@ -119,13 +117,6 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 		commandToken = std::move(lastSemiColon);
 	}
 	translator.outputAppend(std::move(commandToken));
-
-	if (!translator.table().hasFlag(token, EndStmt_Flag))
-	{
-		return printFunction ? Status::ExpSemiCommaOrEnd
-			: Status::ExpOpSemiCommaOrEnd;
-	}
-	return Status::Done;
 }
 
 

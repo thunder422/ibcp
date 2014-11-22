@@ -80,7 +80,8 @@ RpnList Translator::operator()(TestMode testMode)
 	}
 	else
 	{
-		status = getCommands(token);
+		getCommands(token);
+		status = Status::Done;	// TODO temporary
 	}
 
 	if (status == Status::Done)
@@ -133,20 +134,20 @@ RpnList Translator::operator()(TestMode testMode)
 //   - returns terminating token (end-of-line or unknown token)
 //   - caller determines validity of unknown token if returned
 
-Status Translator::getCommands(TokenPtr &token)
+void Translator::getCommands(TokenPtr &token)
 {
-	Status status;
-
 	forever
 	{
 		// get any reference token and ignore status
 		// if not a command token then let translate will handle token
-		// (if parser error then let translate will report error)
-		getToken(token, DataType::Any, Reference::All);
+		if (getToken(token, DataType::Any, Reference::All) != Status::Good)
+		{
+			throw TokenError {Status::ExpCmdOrAssignItem, token};
+		}
 
 		if (token->isCode(EOL_Code) && m_output.empty())
 		{
-			return Status::Done;  // blank line allowed
+			return;  // blank line allowed
 		}
 
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
@@ -154,11 +155,7 @@ Status Translator::getCommands(TokenPtr &token)
 			break;
 		}
 
-		if ((status = processCommand(token)) != Status::Done)
-		{
-			return status;
-		}
-
+		processCommand(token);
 		if (token->isCode(RemOp_Code))
 		{
 			break;
@@ -170,15 +167,15 @@ Status Translator::getCommands(TokenPtr &token)
 		}
 		else  // unknown end statement token, return to caller
 		{
-			return Status::Done;
+			return;
 		}
 	}
 	m_output.append(std::move(token));  // Rem or RemOp token
 	if (getToken(token) != Status::Good)
 	{
-		return Status::BUG_UnexpToken;  // parser problem, should be EOL
+		// parser problem, should be EOL
+		throw TokenError {Status::BUG_UnexpToken, token};
 	}
-	return Status::Done;
 }
 
 
@@ -573,7 +570,7 @@ catch (TokenError &error)
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the command
 
-Status Translator::processCommand(TokenPtr &commandToken)
+void Translator::processCommand(TokenPtr &commandToken)
 {
 	TranslateFunction translate;
 	TokenPtr token;
@@ -590,11 +587,10 @@ Status Translator::processCommand(TokenPtr &commandToken)
 	}
 	if (!translate)
 	{
-		return Status::BUG_NotYetImplemented;
+		throw TokenError {Status::BUG_NotYetImplemented, commandToken};
 	}
-	Status status {(*translate)(*this, std::move(commandToken), token)};
+	(*translate)(*this, std::move(commandToken), token);
 	commandToken = std::move(token);
-	return status;
 }
 
 

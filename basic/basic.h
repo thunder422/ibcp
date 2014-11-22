@@ -117,11 +117,11 @@ public:
 
 
 // translate functions
-Status inputTranslate(Translator &translator, TokenPtr commandToken,
+void inputTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token);
-Status letTranslate(Translator &translator, TokenPtr commandToken,
+void letTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token);
-Status printTranslate(Translator &translator, TokenPtr commandToken,
+void printTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token);
 
 
