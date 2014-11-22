@@ -254,6 +254,7 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			m_pendingParen = std::move(token);
 		}
 		else
+		try
 		{
 			Code unaryCode;
 			if ((unaryCode = m_table.unaryCode(token)) != Null_Code)
@@ -261,10 +262,10 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 				token->setCode(unaryCode);  // change token to unary operator
 			}
 			// get operand
-			else if ((status = getOperand(token, expectedDataType))
-				!= Status::Good)
+			else if (!getOperand(token, expectedDataType))
 			{
-				break;
+				status = Status::Done;  // TODO temporary (terminating token)
+				break;  // terminating token, let caller determine action
 			}
 			else if (doneStackTopToken()->isDataType(DataType::None)
 				&& dataType != DataType::None)
@@ -278,6 +279,11 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			{
 				token.reset();  // get another token
 			}
+		}
+		catch (TokenError &error)  // TODO temporary, from getOperand()
+		{
+			status = error();
+			break;
 		}
 		if (!token)
 		{
@@ -356,22 +362,22 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 //   - the data type argument is used for reporting the correct error when
 //     the token is not a valid operand token
 
-Status Translator::getOperand(TokenPtr &token, DataType dataType,
+bool Translator::getOperand(TokenPtr &token, DataType dataType,
 	Reference reference)
 {
 	Status status;
-	bool doneAppend {true};
 
 	// get token if none was passed (no numbers for a reference)
 	if (!token && (status = getToken(token, dataType, reference))
 		!= Status::Good)
 	{
-		return status;
+		throw TokenError {status, token};
 	}
 
 	// set default data type for token if it has none
 	token->setDataType();
 
+	bool doneAppend {true};
 	switch (token->type())
 	{
 	case Token::Type::Command:
@@ -379,9 +385,9 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 		if (dataType == DataType::None)
 		{
 			// nothing is acceptable, this is terminating token
-			return Status::Done;
+			return false;
 		}
-		return expectedErrStatus(dataType, reference);
+		throw TokenError {expectedErrStatus(dataType, reference), token};
 
 	case Token::Type::Constant:
 		// check if specific numeric data type requested
@@ -399,21 +405,21 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 		}
 		if (reference != Reference::None)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrStatus(dataType, reference), token};
 		}
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncN:
 		if (reference != Reference::None)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrStatus(dataType, reference), token};
 		}
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::DefFuncN:
 		if (reference == Reference::Variable)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrStatus(dataType, reference), token};
 		}
 		if (reference != Reference::None)
 		{
@@ -443,19 +449,18 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 			}
 			else
 			{
-				return expectedErrStatus(dataType, reference);
+				throw TokenError {expectedErrStatus(dataType, reference),
+					token};
 			}
 		}
 		else if (token->isDataType(DataType::None)
 			&& dataType != DataType::None)
 		{
-			return expectedErrStatus(dataType);
+			throw TokenError {expectedErrStatus(dataType), token};
 		}
 		if ((status = processInternalFunction(token)) != Status::Good)
 		{
-			// drop and delete function token since it was not used
-			m_holdStack.pop();
-			return status;
+			throw TokenError {status, token};
 		}
 		// reset reference if it was set above, no longer needed
 		token->setReference(false);
@@ -465,21 +470,18 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 	case Token::Type::DefFuncP:
 		if (reference == Reference::Variable)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrStatus(dataType, reference), token};
 		}
 		else if (reference != Reference::None)
 		{
 			// NOTE these are allowed in the DEF command
 			// just point to the open parentheses of the token
-			token->addLengthToColumn();
-			token->setLength(1);
-			return Status::ExpEqualOrComma;
+			throw TokenError {Status::ExpEqualOrComma, token->column()
+				+ token->length(), 1};
 		}
 		if ((status = processParenToken(token)) != Status::Good)
 		{
-			// drop and delete define function token since it was not used
-			m_holdStack.pop();
-			return status;
+			throw TokenError {status, token};
 		}
 		// TODO temporary until define functions are fully implemented
 		dataType = token->dataType();  // preserve data type
@@ -495,15 +497,13 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 		}
 		if ((status = processParenToken(token)) != Status::Good)
 		{
-			// drop and delete parentheses token since it was not used
-			m_holdStack.pop();
-			return status;
+			throw TokenError {status, token};
 		}
 		doneAppend = false;  // already appended
 		break;
 
 	default:
-		return Status::BUG_NotYetImplemented;
+		throw TokenError {Status::BUG_NotYetImplemented, token};
 	}
 
 	if (doneAppend)
@@ -517,10 +517,10 @@ Status Translator::getOperand(TokenPtr &token, DataType dataType,
 	if (reference != Reference::None
 		&& token->convertCode(dataType) != Null_Code)
 	{
-		token = doneStackPopErrorToken();
-		return expectedErrStatus(dataType, reference);
+		throw TokenError {expectedErrStatus(dataType, reference),
+			doneStackPopErrorToken()};
 	}
-	return Status::Good;
+	return true;
 }
 
 
@@ -618,11 +618,24 @@ Status Translator::processInternalFunction(TokenPtr &token)
 		{
 			// sub-string assignment, look for reference operand
 			expectedDataType = DataType::String;
-			status = getOperand(token, expectedDataType, Reference::VarDefFn);
-			if (status == Status::Good)
+			try
 			{
-				status = getToken(token) == Status::Good
-					? Status::Done : Status::ExpComma;
+				// will not return false (returns error if not reference)
+				getOperand(token, expectedDataType, Reference::VarDefFn);
+				// get next token (should be a comma)
+				if ((status = getToken(token)) != Status::Good)
+				{
+					throw TokenError {Status::UnknownToken, token};
+				}
+				status = Status::Done;
+			}
+			catch (TokenError &error)
+			{
+				if (error(Status::UnknownToken))  // from getToken() only
+				{
+					error = Status::ExpComma;
+				}
+				throw;  // throws getOperand() errors as is
 			}
 		}
 		else

@@ -115,10 +115,6 @@ public:
 	{
 		m_length = length;
 	}
-	void addLengthToColumn(void)
-	{
-		m_column += m_length;
-	}
 
 	// type access functions
 	Type type(void) const

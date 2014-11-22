@@ -52,25 +52,29 @@ void letTranslate(Translator &translator, TokenPtr commandToken,
 	DataType dataType {DataType::Any};
 	do
 	{
-		if ((status = translator.getOperand(token, dataType,
-			Translator::Reference::All)) != Status::Good)
+		try
 		{
-			if (token->column() == column)  // at begin command?
+			// does not return false (returns error for reference)
+			translator.getOperand(token, dataType, Translator::Reference::All);
+		}
+		catch (TokenError &error)
+		{
+			if (error.m_column == column)  // at begin command?
 			{
 				// next token determines error
 				TokenPtr nextToken;
-				if ((status = translator.getToken(nextToken)) == Status::Good)
+				if (translator.getToken(nextToken) == Status::Good)
 				{
-					status = nextToken->isCode(Comma_Code)
+					error = nextToken->isCode(Comma_Code)
 						|| nextToken->isCode(Eq_Code)
 						? Status::ExpAssignItem : Status::ExpCmdOrAssignItem;
 				}
 				else
 				{
-					status = Status::ExpCmdOrAssignItem;
+					error = Status::ExpCmdOrAssignItem;
 				}
 			}
-			throw TokenError {status, token};
+			throw;
 		}
 
 		// get and check next token for comma or equal

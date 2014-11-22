@@ -69,11 +69,9 @@ void inputTranslate(Translator &translator, TokenPtr commandToken,
 	do
 	{
 		// get variable reference
-		if ((status = translator.getOperand(token, DataType::Any,
-			Translator::Reference::Variable)) != Status::Good)
-		{
-			throw TokenError {status, token};
-		}
+		// (does not return false - returns error for reference)
+		translator.getOperand(token, DataType::Any,
+			Translator::Reference::Variable);
 
 		// get and check next token
 		if ((status = translator.getToken(token)) != Status::Good)

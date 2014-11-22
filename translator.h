@@ -57,7 +57,7 @@ public:
 	// Get Functions
 	void getCommands(TokenPtr &token);
 	Status getExpression(TokenPtr &token, DataType dataType, int level = 0);
-	Status getOperand(TokenPtr &token, DataType dataType,
+	bool getOperand(TokenPtr &token, DataType dataType,
 		Reference reference = Reference::None);
 	Status getToken(TokenPtr &token, DataType dataType = DataType{},
 		Reference reference = Reference::None);
