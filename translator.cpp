@@ -458,10 +458,7 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 		{
 			throw TokenError {expectedErrStatus(dataType), token};
 		}
-		if ((status = processInternalFunction(token)) != Status::Good)
-		{
-			throw TokenError {status, token};
-		}
+		processInternalFunction(token);
 		// reset reference if it was set above, no longer needed
 		token->setReference(false);
 		doneAppend = false;  // already appended
@@ -599,21 +596,18 @@ void Translator::processCommand(TokenPtr &commandToken)
 //   - the token argument contains the internal function token
 //   - the token argument contains the token when an error is detected
 
-Status Translator::processInternalFunction(TokenPtr &token)
+void Translator::processInternalFunction(TokenPtr &token)
 {
-	Status status;
-	DataType expectedDataType;
-	bool unaryOperator {};
-
-	Code code {token->code()};
 	// push internal function token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each argument
 	m_holdStack.emplace(token);
 	TokenPtr topToken {std::move(token)};
 
+	Code code {topToken->code()};
 	int lastOperand {m_table.operandCount(code) - 1};
 	for (int i {}; ; i++)
 	{
+		DataType expectedDataType;
 		if (i == 0 && topToken->reference())
 		{
 			// sub-string assignment, look for reference operand
@@ -623,11 +617,11 @@ Status Translator::processInternalFunction(TokenPtr &token)
 				// will not return false (returns error if not reference)
 				getOperand(token, expectedDataType, Reference::VarDefFn);
 				// get next token (should be a comma)
-				if ((status = getToken(token)) != Status::Good)
+				if (getToken(token) != Status::Good
+					|| !token->isCode(Comma_Code))
 				{
 					throw TokenError {Status::UnknownToken, token};
 				}
-				status = Status::Done;
 			}
 			catch (TokenError &error)
 			{
@@ -640,53 +634,55 @@ Status Translator::processInternalFunction(TokenPtr &token)
 		}
 		else
 		{
-			if (i == 0)
+			expectedDataType = i == 0 ? m_table.expectedDataType(topToken)
+				: m_table.operandDataType(code, i);
+			try
 			{
-				expectedDataType = m_table.expectedDataType(topToken);
+				Status status = getExpression(token, expectedDataType);
+				if (status != Status::Done)
+				{
+					throw TokenError {status, token};
+				}
 			}
-			else
+			catch (TokenError &error)
 			{
-				expectedDataType = m_table.operandDataType(code, i);
+				if (m_table.isUnaryOperator(token))
+				{
+					// determine error for unary operator token
+					error = expressionErrorStatus(i == lastOperand, true, code);
+				}
+				else if (error(Status::UnknownToken))
+				{
+					// determine error for unknown tokens
+					error = expressionErrorStatus(i == lastOperand, false,
+						code);
+				}
+				throw;
 			}
-			status = getExpression(token, expectedDataType);
 		}
 
-		if (status == Status::Done)
+		// check if associated code for function is needed
+		if (expectedDataType == DataType::Number)
 		{
-			// check if associated code for function is needed
-			if (expectedDataType == DataType::Number)
+			TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
+			if (doneToken->dataType()
+				!= m_table.operandDataType(topToken->code(), 0))
 			{
-				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-				if (doneToken->dataType()
-					!= m_table.operandDataType(topToken->code(), 0))
-				{
-					// change token's code and data type to associated code
-					m_table.setToken(topToken,
-						m_table.associatedCode(topToken->code()));
-				}
-				else if (doneToken->hasSubCode(Double_SubCode))
-				{
-					// change token (constant) from integer to double
-					doneToken->setDataType(DataType::Double);
-					doneToken->removeSubCode(Double_SubCode);
-				}
-				if (doneToken->isType(Token::Type::Constant))
-				{
-					doneToken->setCode(Const_Code);
-				}
+				// change token's code and data type to associated code
+				m_table.setToken(topToken,
+					m_table.associatedCode(topToken->code()));
+			}
+			else if (doneToken->hasSubCode(Double_SubCode))
+			{
+				// change token (constant) from integer to double
+				doneToken->setDataType(DataType::Double);
+				doneToken->removeSubCode(Double_SubCode);
+			}
+			if (doneToken->isType(Token::Type::Constant))
+			{
+				doneToken->setCode(Const_Code);
 			}
 		}
-		else if (m_table.isUnaryOperator(token))
-		{
-			// status will be set to an error for a unary operator
-			// need to pass to below to determine appropriate error
-			unaryOperator = true;
-		}
-		else if (status != Status::UnknownToken)
-		{
-			return status;  // return all other errors except unknown token
-		}
-		// code below determines error for unknown and unary operator tokens
 
 		// check terminating token
 		if (token->isCode(Comma_Code))
@@ -696,8 +692,7 @@ Status Translator::processInternalFunction(TokenPtr &token)
 				if (!m_table.hasFlag(code, Multiple_Flag))
 				{
 					// function doesn't have multiple entries
-					status = Status::ExpOpOrParen;
-					break;
+					throw TokenError {Status::ExpOpOrParen, token};
 				}
 				// move to next code; update code and last operand index
 				code = topToken->nextCode();
@@ -710,8 +705,7 @@ Status Translator::processInternalFunction(TokenPtr &token)
 		{
 			if (i < lastOperand)
 			{
-				status = Status::ExpOpOrComma;
-				break;
+				throw TokenError {Status::ExpOpOrComma, token};
 			}
 
 			m_doneStack.pop();  // remove from done stack
@@ -733,35 +727,37 @@ Status Translator::processInternalFunction(TokenPtr &token)
 
 			m_holdStack.pop();
 			token = std::move(topToken);  // return original token
-			return Status::Good;
+			break;  // done
 		}
-		// unexpected token, determine appropriate error
 		else
 		{
-			if (i == 0 && topToken->reference())
-			{
-				status = Status::ExpComma;
-			}
-			else if (i < lastOperand)
-			{
-				status = unaryOperator ? Status::ExpBinOpOrComma
-					: Status::ExpOpOrComma;
-			}
-			else if (!m_table.hasFlag(code, Multiple_Flag))
-			{
-				// function doesn't have multiple entries
-				status = unaryOperator ? Status::ExpBinOpOrParen
-					: Status::ExpOpOrParen;
-			}
-			else
-			{
-				status = unaryOperator ? Status::ExpBinOpCommaOrParen
-					: Status::ExpOpCommaOrParen;
-			}
-			break;
+			// determine error for unknown tokens
+			throw TokenError {expressionErrorStatus(i == lastOperand, false,
+				code), token};
 		}
 	}
-	return status;
+}
+
+
+// function to determine error status for an expression error
+
+Status Translator::expressionErrorStatus(bool lastOperand, bool unaryOperator,
+	Code code)
+{
+	if (!lastOperand)
+	{
+		return unaryOperator ? Status::ExpBinOpOrComma : Status::ExpOpOrComma;
+	}
+	else if (!m_table.hasFlag(code, Multiple_Flag))
+	{
+		// function doesn't have multiple entries
+		return unaryOperator ? Status::ExpBinOpOrParen : Status::ExpOpOrParen;
+	}
+	else  // could be another operand or at last operand
+	{
+		return unaryOperator ? Status::ExpBinOpCommaOrParen
+			: Status::ExpOpCommaOrParen;
+	}
 }
 
 

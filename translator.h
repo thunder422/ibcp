@@ -119,7 +119,7 @@ public:
 private:
 	// Private Processing Functions
 	void processCommand(TokenPtr &commandToken);
-	Status processInternalFunction(TokenPtr &token);
+	void processInternalFunction(TokenPtr &token);
 	Status processParenToken(TokenPtr &token);
 	Status processOperator(TokenPtr &token);
 	Status processFirstOperand(TokenPtr &token);
@@ -127,6 +127,8 @@ private:
 	// Private Support Functions
 	enum class Popped {No, Yes};
 	void checkPendingParen(const TokenPtr &token, Popped popped);
+	Status expressionErrorStatus(bool lastOperand, bool unaryOperator,
+		Code code);
 
 	struct HoldItem
 	{
