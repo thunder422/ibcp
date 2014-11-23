@@ -120,7 +120,7 @@ private:
 	// Private Processing Functions
 	void processCommand(TokenPtr &commandToken);
 	void processInternalFunction(TokenPtr &token);
-	Status processParenToken(TokenPtr &token);
+	void processParenToken(TokenPtr &token);
 	Status processOperator(TokenPtr &token);
 	Status processFirstOperand(TokenPtr &token);
 

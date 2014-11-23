@@ -45,9 +45,9 @@ Translator::Translator(const std::string &input) :
 
 // function to parse and translate an input line to an RPN output list
 //
-//   - returns the RPN output list, which may contain an error instead
-//     of translated line
 //   - allows for a special expression mode for testing
+//   - returns the RPN output list upon successful translation
+//   - throws token error upon detection of error
 
 RpnList Translator::operator()(TestMode testMode)
 {
@@ -133,6 +133,7 @@ RpnList Translator::operator()(TestMode testMode)
 //   - if end is rem (command or operator), end-of-line is returned
 //   - returns terminating token (end-of-line or unknown token)
 //   - caller determines validity of unknown token if returned
+//   - throws token error upon detection of error
 
 void Translator::getCommands(TokenPtr &token)
 {
@@ -361,6 +362,9 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 //   - a token may be passed in, otherwise a token is obtained
 //   - the data type argument is used for reporting the correct error when
 //     the token is not a valid operand token
+//   - return true upon success or false if token not an operand
+//   - throws token error upon detection of error
+//   - does not return false if reference requested (throws error)
 
 bool Translator::getOperand(TokenPtr &token, DataType dataType,
 	Reference reference)
@@ -476,10 +480,8 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 			throw TokenError {Status::ExpEqualOrComma, token->column()
 				+ token->length(), 1};
 		}
-		if ((status = processParenToken(token)) != Status::Good)
-		{
-			throw TokenError {status, token};
-		}
+		processParenToken(token);
+
 		// TODO temporary until define functions are fully implemented
 		dataType = token->dataType();  // preserve data type
 		m_table.setToken(token, DefFuncP_Code);
@@ -492,10 +494,7 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 		{
 			token->setReference();
 		}
-		if ((status = processParenToken(token)) != Status::Good)
-		{
-			throw TokenError {status, token};
-		}
+		processParenToken(token);
 		doneAppend = false;  // already appended
 		break;
 
@@ -563,9 +562,8 @@ catch (TokenError &error)
 
 // function to process a command in the input line
 //
-//   - returns Done_TokenStatus upon success
-//   - returns an error status if an error was detected
-//   - returns the token that terminated the command
+//   - returns the token that terminated the command through argument
+//   - throws token error upon detection of error
 
 void Translator::processCommand(TokenPtr &commandToken)
 {
@@ -594,7 +592,7 @@ void Translator::processCommand(TokenPtr &commandToken)
 // function to get and process an internal function's arguments
 //
 //   - the token argument contains the internal function token
-//   - the token argument contains the token when an error is detected
+//   - throws token error upon detection of error
 
 void Translator::processInternalFunction(TokenPtr &token)
 {
@@ -739,37 +737,13 @@ void Translator::processInternalFunction(TokenPtr &token)
 }
 
 
-// function to determine error status for an expression error
-
-Status Translator::expressionErrorStatus(bool lastOperand, bool unaryOperator,
-	Code code)
-{
-	if (!lastOperand)
-	{
-		return unaryOperator ? Status::ExpBinOpOrComma : Status::ExpOpOrComma;
-	}
-	else if (!m_table.hasFlag(code, Multiple_Flag))
-	{
-		// function doesn't have multiple entries
-		return unaryOperator ? Status::ExpBinOpOrParen : Status::ExpOpOrParen;
-	}
-	else  // could be another operand or at last operand
-	{
-		return unaryOperator ? Status::ExpBinOpCommaOrParen
-			: Status::ExpOpCommaOrParen;
-	}
-}
-
-
 // function to get and process a parentheses token's arguments
 //
 //   - the token argument contains the token with parentheses
-//   - the token argument contains the token when an error is detected
+//   - throws token error upon detection of error
 
-Status Translator::processParenToken(TokenPtr &token)
+void Translator::processParenToken(TokenPtr &token)
 {
-	Status status;
-
 	// push parentheses token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each operand
 	m_holdStack.emplace(token);
@@ -799,17 +773,25 @@ Status Translator::processParenToken(TokenPtr &token)
 
 	for (int count {1}; ; count++)
 	{
-		if ((status = getExpression(token, dataType)) != Status::Done)
+		try
 		{
-			if (status == Status::UnknownToken)
+			Status status = getExpression(token, dataType);
+			if (status != Status::Done)
 			{
-				status = Status::ExpOpCommaOrParen;
+				throw TokenError {status, token};
+			}
+		}
+		catch (TokenError &error)
+		{
+			if (error(Status::UnknownToken))
+			{
+				error = Status::ExpOpCommaOrParen;
 			}
 			else if (m_table.isUnaryOperator(token))
 			{
-				status = Status::ExpBinOpCommaOrParen;
+				error = Status::ExpBinOpCommaOrParen;
 			}
-			return status;
+			throw;
 		}
 
 		// set reference for appropriate token types
@@ -865,11 +847,11 @@ Status Translator::processParenToken(TokenPtr &token)
 
 			m_holdStack.pop();
 			token = std::move(topToken);  // return original token
-			return Status::Good;
+			break;  // done
 		}
 		else  // unexpected token
 		{
-			return Status::ExpOpCommaOrParen;
+			throw TokenError {Status::ExpOpCommaOrParen, token};
 		}
 	}
 }
@@ -1192,6 +1174,27 @@ Status Translator::expectedErrStatus(DataType dataType, Reference reference)
 		}
 	}
 	return Status::BUG_InvalidDataType;  // won't get here
+}
+
+
+// function to determine error status for an expression error
+Status Translator::expressionErrorStatus(bool lastOperand, bool unaryOperator,
+	Code code)
+{
+	if (!lastOperand)
+	{
+		return unaryOperator ? Status::ExpBinOpOrComma : Status::ExpOpOrComma;
+	}
+	else if (!m_table.hasFlag(code, Multiple_Flag))
+	{
+		// function doesn't have multiple entries
+		return unaryOperator ? Status::ExpBinOpOrParen : Status::ExpOpOrParen;
+	}
+	else  // could be another operand or at last operand
+	{
+		return unaryOperator ? Status::ExpBinOpCommaOrParen
+			: Status::ExpOpCommaOrParen;
+	}
 }
 
 
