@@ -116,11 +116,7 @@ void letTranslate(Translator &translator, TokenPtr commandToken,
 		{
 			// change token to appropriate assign code
 			translator.table().setToken(token, Assign_Code);
-			status = translator.processDoneStackTop(token);
-			if (status != Status::Good)
-			{
-				throw TokenError {status, token};
-			}
+			translator.processDoneStackTop(token);
 		}
 
 		// get data type for assignment

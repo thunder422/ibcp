@@ -63,9 +63,9 @@ public:
 		Reference reference = Reference::None);
 
 	// Public Processing Functions
-	Status processFinalOperand(TokenPtr &token,
+	void processFinalOperand(TokenPtr &token,
 		TokenPtr token2 = TokenPtr{}, int operandIndex = 0);
-	Status processDoneStackTop(TokenPtr &token, int operandIndex = 0,
+	void processDoneStackTop(TokenPtr &token, int operandIndex = 0,
 		TokenPtr *first = nullptr, TokenPtr *last = nullptr);
 
 	// Public Support Functions
@@ -121,8 +121,7 @@ private:
 	void processCommand(TokenPtr &commandToken);
 	void processInternalFunction(TokenPtr &token);
 	void processParenToken(TokenPtr &token);
-	Status processOperator(TokenPtr &token);
-	Status processFirstOperand(TokenPtr &token);
+	bool processOperator(TokenPtr &token);
 
 	// Private Support Functions
 	enum class Popped {No, Yes};

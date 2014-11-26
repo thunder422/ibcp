@@ -311,41 +311,48 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 		}
 
 		// check for and process operator (unary or binary)
-		status = processOperator(token);
-		if (status == Status::Done)
+		try
 		{
-			if (level == 0)
+			if (!processOperator(token))
 			{
-				// add convert code if needed or report error
-				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-				Code cvtCode {doneToken->convertCode(dataType)};
-				if (cvtCode == Invalid_Code)
+				if (level == 0)
 				{
-					token = doneStackPopErrorToken();
-					status = expectedErrStatus(dataType);
-				}
-				else if (cvtCode != Null_Code)
-				{
-					if (doneToken->isType(Token::Type::Constant))
+					// add convert code if needed or report error
+					TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
+					Code cvtCode {doneToken->convertCode(dataType)};
+					if (cvtCode == Invalid_Code)
 					{
-						// constants don't need conversion
-						if (dataType == DataType::Integer
-							&& doneToken->isDataType(DataType::Double))
+						token = doneStackPopErrorToken();
+						status = expectedErrStatus(dataType);
+						break;
+					}
+					else if (cvtCode != Null_Code)
+					{
+						if (doneToken->isType(Token::Type::Constant))
 						{
-							token = doneStackPopErrorToken();
-							status = Status::ExpIntConst;
+							// constants don't need conversion
+							if (dataType == DataType::Integer
+								&& doneToken->isDataType(DataType::Double))
+							{
+								token = doneStackPopErrorToken();
+								status = Status::ExpIntConst;
+								break;
+							}
+						}
+						else  // append hidden conversion code
+						{
+							m_output.append(m_table.newToken(cvtCode));
 						}
 					}
-					else  // append hidden conversion code
-					{
-						m_output.append(m_table.newToken(cvtCode));
-					}
 				}
+				status = Status::Done;
+				break;
 			}
-			break;
 		}
-		else if (status != Status::Good)
+		catch (TokenError &error)
 		{
+			status = error();
+			token = std::make_shared<Token>(error.m_column, error.m_length);
 			break;
 		}
 
@@ -863,16 +870,16 @@ void Translator::processParenToken(TokenPtr &token)
 // for each operator added to the output list, any pending parentheses is
 // processed first, the final operand of the operator is processed
 //
-//    - if error occurs on last operand, the operator token passed in is
-//      deleted and the token with the error is returned
 //    - sets last_precedence for operator being added to output list
 //    - after higher precedence operators are processed from the hold stack,
-//      an end of expression token is checked for, which causes a done status
-//      to be returned
-//    - otherwise, the first operand of the operator is processed, which also
-//      handles pushing the operator to the hold stack
+//      a check for pending parethesis is made, and if the present token is
+//      not a unary or binary operator, the end of the expression has been
+//      reached and false is returned
+//    - otherwise, the first operand of the operator is processed,
+//      which also handles pushing the operator to the hold stack
+//    - true is returned indicating operator successfully processed
 
-Status Translator::processOperator(TokenPtr &token)
+bool Translator::processOperator(TokenPtr &token)
 {
 	// determine precedence of incoming token
 	// (set highest precedence for unary operators,
@@ -889,15 +896,8 @@ Status Translator::processOperator(TokenPtr &token)
 		checkPendingParen(topToken, Popped::Yes);
 
 		// change token operator code or insert conversion codes as needed
-		Status status {processFinalOperand(topToken,
-			std::move(m_holdStack.top().first),
-			m_table.isUnaryOperator(topToken) ? 0 : 1)};
-
-		if (status != Status::Good)
-		{
-			token = topToken;  // return token with error
-			return status;
-		}
+		processFinalOperand(topToken, std::move(m_holdStack.top().first),
+			m_table.isUnaryOperator(topToken) ? 0 : 1);
 
 		// save precedence of operator being added
 		// (doesn't matter if not currently within parentheses,
@@ -909,41 +909,23 @@ Status Translator::processOperator(TokenPtr &token)
 
 	checkPendingParen(token, Popped::No);
 
-	// if a unary or binary operator then process first operand and return
-	if (m_table.isUnaryOrBinaryOperator(token))
+	if (!m_table.isUnaryOrBinaryOperator(token))
 	{
-		return processFirstOperand(token);
+		return false;  // not unary or binary operator, end of expression
 	}
-
-	return Status::Done;  // otherwise, end of expression
-}
-
-
-// function to process the first operand for an operator
-//
-//  - called from processOperator()
-//  - attaches first operand token from operand on top of done stack
-//  - no first operand token for unary operators
-
-Status Translator::processFirstOperand(TokenPtr &token)
-{
-	TokenPtr first;			// first operand token
+	// otherwise process first operand and return
+	TokenPtr first;			// first operand token (empty for unary operator)
 
 	// check first operand of binary operators
 	if (!m_table.isUnaryOperator(token))
 	{
 		// changed token operator code or insert conversion codes as needed
-		Status status {processDoneStackTop(token, 0, &first)};
-		if (status != Status::Good)
-		{
-			return status;
-		}
+		processDoneStackTop(token, 0, &first);
 	}
 
 	// push it onto the holding stack and attach first operand
 	m_holdStack.emplace(token, first);
-
-	return Status::Good;
+	return true;
 }
 
 
@@ -958,19 +940,15 @@ Status Translator::processFirstOperand(TokenPtr &token)
 //	 - RPN item is pushed to done stack if operator
 //
 //   - for operator, token2 is first operand of operator on hold stack
-//   - for internal code, token2 is nullptr
+//   - for command, token2 is not set
 
-Status Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
+void Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 	int operandIndex)
 {
 	TokenPtr first;			// first operand token
 	TokenPtr last;			// last operand token
 
-	Status status {processDoneStackTop(token, operandIndex, &first, &last)};
-	if (status != Status::Good)
-	{
-		return status;
-	}
+	processDoneStackTop(token, operandIndex, &first, &last);
 
 	if (token->isType(Token::Type::Operator))
 	{
@@ -989,8 +967,6 @@ Status Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 	{
 		m_doneStack.emplace(m_output.back(), first, last);
 	}
-
-	return Status::Good;
 }
 
 
@@ -1001,16 +977,16 @@ Status Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 //   - calls Table::findCode() to check the data type of item:
 //     changes token code to a matching associated code if available
 //     else returns a conversion code if conversion is possible
-//   - if no match found or conversion not possible, an error is returned
+//   - if no match found or conversion not possible, an error is thrown
 //   - if conversion possible, a conversion code token is appended to output
 
-Status Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
+void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 	TokenPtr *first, TokenPtr *last)
 {
 	if (m_doneStack.empty())
 	{
 		// oops, there should have been operands on done stack
-		return Status::BUG_DoneStackEmptyFindCode;
+		throw TokenError {Status::BUG_DoneStackEmptyFindCode, token};
 	}
 	TokenPtr topToken {m_doneStack.top().rpnItem->token()};
 	// get first and last operands for top token
@@ -1048,22 +1024,17 @@ Status Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 			// append token to end of output list (after operand)
 			m_output.append(m_table.newToken(cvtCode));
 		}
-
-		return Status::Good;
 	}
-
-	// no match found, report error
-	// use main code's expected data type for operand
-	// (if data type is No, then double constant can't be converted to integer)
-	Status status {topToken->isDataType(DataType{})
-		? Status::ExpIntConst : expectedErrStatus(topToken->dataType())};
-
-	// change token to token with invalid data type and return error
-	// report entire expression
-	localFirst->setThrough(localLast);
-	token = localFirst;
-
-	return status;
+	else  // no match found, throw error
+	{
+		// use main code's expected data type for operand
+		// (if no data type, then double constant can't be converted to integer)
+		// report entire expression from first token through last
+		throw TokenError {topToken->isDataType(DataType{})
+			? Status::ExpIntConst : expectedErrStatus(topToken->dataType()),
+			localFirst->column(), localLast->column() + localLast->length()
+			- localFirst->column()};
+	}
 }
 
 

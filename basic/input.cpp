@@ -112,11 +112,7 @@ void inputTranslate(Translator &translator, TokenPtr commandToken,
 
 		// change token to appropriate assign code and append to output
 		translator.table().setToken(inputToken, InputAssign_Code);
-		status = translator.processFinalOperand(inputToken);
-		if (status != Status::Good)
-		{
-			throw TokenError {status, token};
-		}
+		translator.processFinalOperand(inputToken);
 
 		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
