@@ -32,22 +32,23 @@
 void inputTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
-	Status status;
-
 	if (commandToken->isCode(Input_Code))
 	{
 		token = translator.table().newToken(InputBegin_Code);
 	}
 	else  // InputPrompt_Code
 	{
-		status = translator.getExpression(token, DataType::String);
-		if (status != Status::Done)
+		try
 		{
-			if (status == Status::UnknownToken)
+			translator.getExpression(token, DataType::String);
+		}
+		catch (TokenError &error)
+		{
+			if (error(Status::UnknownToken))
 			{
-				status = Status::ExpSemiOrComma;
+				error = Status::ExpSemiOrComma;
 			}
-			throw TokenError {status, token};
+			throw;
 		}
 		translator.doneStackPop();
 		if (token->isCode(Comma_Code))

@@ -34,7 +34,6 @@
 // parser and translator status codes
 enum class Status
 {
-	Done,
 	ExpCmdOrAssignItem,
 	ExpExpr,
 	ExpExprOrEnd,

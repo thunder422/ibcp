@@ -33,34 +33,36 @@
 void printTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
-	Status status;
 	TokenPtr lastSemiColon;
 	bool separator {};
 	bool printFunction {};
 
 	forever
 	{
-		if ((status = translator.getExpression(token, DataType::None))
-			!= Status::Done)
+		try
 		{
-			if (status == Status::UnknownToken)
+			translator.getExpression(token, DataType::None);
+		}
+		catch (TokenError &error)
+		{
+			if (error(Status::UnknownToken))
 			{
 				if (translator.doneStackEmpty())
 				{
-					status = Status::ExpExprCommaPfnOrEnd;
+					error = Status::ExpExprCommaPfnOrEnd;
 				}
 				// change parser error if not inside paren
 				else if (translator.doneStackTopToken()
 					->isDataType(DataType::None))
 				{
-					status = Status::ExpSemiCommaOrEnd;
+					error = Status::ExpSemiCommaOrEnd;
 				}
 				else  // not a print function
 				{
-					status = Status::ExpOpSemiCommaOrEnd;
+					error = Status::ExpOpSemiCommaOrEnd;
 				}
 			}
-			throw TokenError {status, token};
+			throw;
 		}
 
 		if (!translator.doneStackEmpty())

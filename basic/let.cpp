@@ -32,7 +32,6 @@
 void letTranslate(Translator &translator, TokenPtr commandToken,
 	TokenPtr &token)
 {
-	Status status;
 	int column;
 	bool hidden;
 	bool done;
@@ -134,13 +133,17 @@ void letTranslate(Translator &translator, TokenPtr commandToken,
 	while (!done);
 
 	// get expression for value to assign
-	if ((status = translator.getExpression(token, dataType)) != Status::Done)
+	try
 	{
-		if (status == Status::UnknownToken)
+		translator.getExpression(token, dataType);
+	}
+	catch (TokenError &error)
+	{
+		if (error(Status::UnknownToken))
 		{
-			throw TokenError {Status::ExpOpOrEnd, token};
+			error = Status::ExpOpOrEnd;
 		}
-		throw TokenError {status, token};
+		throw;
 	}
 
 	// check terminating token for end-of-statement

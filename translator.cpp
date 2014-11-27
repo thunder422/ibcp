@@ -52,69 +52,59 @@ Translator::Translator(const std::string &input) :
 RpnList Translator::operator()(TestMode testMode)
 {
 	TokenPtr token;
-	Status status;
-
 	m_holdStack.emplace(m_table.newToken(Null_Code));
 
 	if (testMode == TestMode::Expression)
 	{
-		status = getExpression(token, DataType::Any);
-
-		if (status == Status::UnknownToken)
+		try
 		{
-			status = Status::ExpOpOrEnd;
+			getExpression(token, DataType::Any);
 		}
-		else if (status == Status::Done)
+		catch (TokenError &error)
 		{
-			// pop final result off of done stack
-			if (m_doneStack.empty())
+			if (error(Status::UnknownToken))
 			{
-				status = Status::BUG_DoneStackEmpty;
+				error = Status::ExpOpOrEnd;
 			}
-			else
-			{
-				// drop result
-				m_doneStack.pop();
-			}
+			throw;
 		}
+		// pop final result off of done stack
+		if (m_doneStack.empty())
+		{
+			throw TokenError {Status::BUG_DoneStackEmpty, token};
+		}
+		// drop result
+		m_doneStack.pop();
 	}
 	else
 	{
 		getCommands(token);
-		status = Status::Done;	// TODO temporary
 	}
 
-	if (status == Status::Done)
+	if (!token->isCode(EOL_Code))
 	{
-		if (token->isCode(EOL_Code))
-		{
-			// pop and delete null token from top of stack
-			m_holdStack.pop();
-
-			if (!m_holdStack.empty())
-			{
-				throw TokenError {Status::BUG_HoldStackNotEmpty, token};
-			}
-
-			if (!m_doneStack.empty())
-			{
-				throw TokenError {Status::BUG_DoneStackNotEmpty, token};
-			}
-
-			if (testMode == TestMode::No
-				&& !m_output.setCodeSize(m_table, token))
-			{
-				throw TokenError {Status::BUG_NotYetImplemented, token};
-			}
-		}
-		else
-		{
-			throw TokenError {Status::ExpOpOrEnd, token};
-		}
+		throw TokenError {Status::ExpOpOrEnd, token};
 	}
 	else
 	{
-		throw TokenError {status, token};
+		// pop and delete null token from top of stack
+		m_holdStack.pop();
+
+		if (!m_holdStack.empty())
+		{
+			throw TokenError {Status::BUG_HoldStackNotEmpty, token};
+		}
+
+		if (!m_doneStack.empty())
+		{
+			throw TokenError {Status::BUG_DoneStackNotEmpty, token};
+		}
+
+		if (testMode == TestMode::No
+			&& !m_output.setCodeSize(m_table, token))
+		{
+			throw TokenError {Status::BUG_NotYetImplemented, token};
+		}
 	}
 	return std::move(m_output);
 }
@@ -197,23 +187,15 @@ void Translator::getCommands(TokenPtr &token)
 //   - returns an error status if an error was detected
 //   - returns the token that terminated the expression
 
-Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
+void Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 {
-	Status status;
 	DataType expectedDataType {dataType};
 
 	forever
 	{
 		if (!token)
-		try
 		{
 			getToken(token, expectedDataType);
-		}
-		catch (TokenError &error)
-		{
-			status = error();
-			token = std::make_shared<Token>(error.m_column, error.m_length);
-			break;
 		}
 
 		if (token->isCode(OpenParen_Code))
@@ -227,25 +209,27 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			{
 				expectedDataType = DataType::Any;
 			}
-			if ((status = getExpression(token, expectedDataType, level + 1))
-				!= Status::Done)
+			try
 			{
-				if (m_table.isUnaryOperator(token))
+				getExpression(token, expectedDataType, level + 1);
+			}
+			catch (TokenError &error)
+			{
+				if (error(Status::ExpBinOpOrEnd))  // (aka unary operator?)
 				{
-					status = Status::ExpBinOpOrParen;
+					error = Status::ExpBinOpOrParen;
 				}
-				if (status == Status::UnknownToken)
+				else if (error(Status::UnknownToken))
 				{
-					status = Status::ExpOpOrParen;
+					error = Status::ExpOpOrParen;
 				}
-				break;  // exit on error
+				throw;  // exit on error
 			}
 
 			// check terminating token
 			if (!token->isCode(CloseParen_Code))
 			{
-				status = Status::ExpOpOrParen;
-				break;
+				throw TokenError {Status::ExpOpOrParen, token};
 			}
 
 			// make sure holding stack contains the open parentheses
@@ -254,7 +238,7 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			if (!topToken->code() == OpenParen_Code)
 			{
 				// oops, no open parentheses (this should not happen)
-				return Status::BUG_UnexpectedCloseParen;
+				throw TokenError {Status::BUG_UnexpectedCloseParen, token};
 			}
 
 			// replace first and last operands of token on done stack
@@ -270,7 +254,6 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			m_pendingParen = std::move(token);
 		}
 		else
-		try
 		{
 			Code unaryCode;
 			if ((unaryCode = m_table.unaryCode(token)) != Null_Code)
@@ -280,108 +263,78 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			// get operand
 			else if (!getOperand(token, expectedDataType))
 			{
-				status = Status::Done;  // TODO temporary (terminating token)
 				break;  // terminating token, let caller determine action
 			}
 			else if (doneStackTopToken()->isDataType(DataType::None)
 				&& dataType != DataType::None)
 			{
 				// print functions are not allowed
-				token = doneStackPopErrorToken();
-				status = expectedErrStatus(dataType);
-				break;
+				throw TokenError {expectedErrStatus(dataType),
+					doneStackPopErrorToken()};
 			}
 			else
 			{
 				token.reset();  // get another token
 			}
 		}
-		catch (TokenError &error)  // TODO temporary, from getOperand()
-		{
-			status = error();
-			break;
-		}
 		if (!token)
 		{
 			// get binary operator or end-of-expression token
-			try
-			{
-				getToken(token);
-			}
-			catch (TokenError &error)
-			{
-				// if parser error then caller needs to handle it
-				status = error();
-				token = std::make_shared<Token>(error.m_column, error.m_length);
-				break;
-			}
+			// if parser error then caller needs to handle it
+			getToken(token);
 			if (doneStackTopToken()->isDataType(DataType::None)
 				&& m_holdStack.top().token->isNull()
 				&& dataType == DataType::None)
 			{
 				// for print functions return now with token as terminator
-				status = Status::Done;
 				break;
 			}
 			// check for unary operator (token should be a binary operator)
 			if (m_table.isUnaryOperator(token))
 			{
-				status = Status::ExpBinOpOrEnd;
-				break;
+				// caller may need to change this error
+				throw TokenError {Status::ExpBinOpOrEnd, token};
 			}
 		}
 
 		// check for and process operator (unary or binary)
-		try
+		if (!processOperator(token))
 		{
-			if (!processOperator(token))
+			if (level == 0)
 			{
-				if (level == 0)
+				// add convert code if needed or report error
+				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
+				Code cvtCode {doneToken->convertCode(dataType)};
+				if (cvtCode == Invalid_Code)
 				{
-					// add convert code if needed or report error
-					TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-					Code cvtCode {doneToken->convertCode(dataType)};
-					if (cvtCode == Invalid_Code)
+					throw TokenError {expectedErrStatus(dataType),
+						doneStackPopErrorToken()};
+				}
+				else if (cvtCode != Null_Code)
+				{
+					if (doneToken->isType(Token::Type::Constant))
 					{
-						token = doneStackPopErrorToken();
-						status = expectedErrStatus(dataType);
-						break;
+						// constants don't need conversion
+						if (dataType == DataType::Integer
+							&& doneToken->isDataType(DataType::Double))
+						{
+							throw TokenError {Status::ExpIntConst,
+								doneStackPopErrorToken()};
+						}
 					}
-					else if (cvtCode != Null_Code)
+					else  // append hidden conversion code
 					{
-						if (doneToken->isType(Token::Type::Constant))
-						{
-							// constants don't need conversion
-							if (dataType == DataType::Integer
-								&& doneToken->isDataType(DataType::Double))
-							{
-								token = doneStackPopErrorToken();
-								status = Status::ExpIntConst;
-								break;
-							}
-						}
-						else  // append hidden conversion code
-						{
-							m_output.append(m_table.newToken(cvtCode));
-						}
+						m_output.append(m_table.newToken(cvtCode));
 					}
 				}
-				status = Status::Done;
-				break;
 			}
-		}
-		catch (TokenError &error)
-		{
-			status = error();
-			token = std::make_shared<Token>(error.m_column, error.m_length);
 			break;
 		}
 
 		// get operator's expected data type, reset token and loop back
 		expectedDataType = m_table.expectedDataType(token);
-		token = nullptr;
+		token.reset();  // get another token
 	}
-	return status;
 }
 
 
@@ -655,15 +608,11 @@ void Translator::processInternalFunction(TokenPtr &token)
 				: m_table.operandDataType(code, i);
 			try
 			{
-				Status status = getExpression(token, expectedDataType);
-				if (status != Status::Done)
-				{
-					throw TokenError {status, token};
-				}
+				getExpression(token, expectedDataType);
 			}
 			catch (TokenError &error)
 			{
-				if (m_table.isUnaryOperator(token))
+				if (error(Status::ExpBinOpOrEnd))  // (aka unary operator?)
 				{
 					// determine error for unary operator token
 					error = expressionErrorStatus(i == lastOperand, true, code);
@@ -794,21 +743,17 @@ void Translator::processParenToken(TokenPtr &token)
 	{
 		try
 		{
-			Status status = getExpression(token, dataType);
-			if (status != Status::Done)
-			{
-				throw TokenError {status, token};
-			}
+			getExpression(token, dataType);
 		}
 		catch (TokenError &error)
 		{
-			if (error(Status::UnknownToken))
-			{
-				error = Status::ExpOpCommaOrParen;
-			}
-			else if (m_table.isUnaryOperator(token))
+			if (error(Status::ExpBinOpOrEnd))  // (aka unary operator?)
 			{
 				error = Status::ExpBinOpCommaOrParen;
+			}
+			else if (error(Status::UnknownToken))
+			{
+				error = Status::ExpOpCommaOrParen;
 			}
 			throw;
 		}
