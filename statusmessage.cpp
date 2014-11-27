@@ -30,8 +30,6 @@ const QString StatusMessage::text(Status status)
 {
 	switch (status)
 	{
-	case Status::Good:
-		return tr("Good_TokenStatus (BUG)");
 	case Status::Done:
 		return tr("Done_TokenStatus (BUG)");
 	case Status::ExpCmdOrAssignItem:

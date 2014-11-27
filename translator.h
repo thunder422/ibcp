@@ -59,7 +59,7 @@ public:
 	Status getExpression(TokenPtr &token, DataType dataType, int level = 0);
 	bool getOperand(TokenPtr &token, DataType dataType,
 		Reference reference = Reference::None);
-	Status getToken(TokenPtr &token, DataType dataType = DataType{},
+	void getToken(TokenPtr &token, DataType dataType = DataType{},
 		Reference reference = Reference::None);
 
 	// Public Processing Functions

@@ -74,10 +74,14 @@ void inputTranslate(Translator &translator, TokenPtr commandToken,
 			Translator::Reference::Variable);
 
 		// get and check next token
-		if ((status = translator.getToken(token)) != Status::Good)
+		try
 		{
-			status = Status::ExpCommaSemiOrEnd;
-			throw TokenError {status, token};
+			translator.getToken(token);
+		}
+		catch (TokenError &error)
+		{
+			error = Status::ExpCommaSemiOrEnd;
+			throw;
 		}
 
 		TokenPtr inputToken;
@@ -93,10 +97,14 @@ void inputTranslate(Translator &translator, TokenPtr commandToken,
 			inputToken = std::move(token);
 
 			// get and check next token
-			if ((status = translator.getToken(token)) != Status::Good)
+			try
 			{
-				status = Status::ExpEndStmt;
-				throw TokenError {status, token};
+				translator.getToken(token);
+			}
+			catch (TokenError &error)
+			{
+				error = Status::ExpEndStmt;
+				throw;
 			}
 		}
 		else  // possible end-of-statement

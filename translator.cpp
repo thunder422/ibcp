@@ -141,9 +141,14 @@ void Translator::getCommands(TokenPtr &token)
 	{
 		// get any reference token and ignore status
 		// if not a command token then let translate will handle token
-		if (getToken(token, DataType::Any, Reference::All) != Status::Good)
+		try
 		{
-			throw TokenError {Status::ExpCmdOrAssignItem, token};
+			getToken(token, DataType::Any, Reference::All);
+		}
+		catch (TokenError &error)
+		{
+			error = Status::ExpCmdOrAssignItem;
+			throw;
 		}
 
 		if (token->isCode(EOL_Code) && m_output.empty())
@@ -172,10 +177,14 @@ void Translator::getCommands(TokenPtr &token)
 		}
 	}
 	m_output.append(std::move(token));  // Rem or RemOp token
-	if (getToken(token) != Status::Good)
+	try
 	{
-		// parser problem, should be EOL
-		throw TokenError {Status::BUG_UnexpToken, token};
+		getToken(token);
+	}
+	catch (TokenError &error)
+	{
+		error = Status::BUG_UnexpToken;  // parser problem, should be EOL
+		throw;
 	}
 }
 
@@ -195,9 +204,15 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 
 	forever
 	{
-		if (!token && (status = getToken(token, expectedDataType))
-			!= Status::Good)
+		if (!token)
+		try
 		{
+			getToken(token, expectedDataType);
+		}
+		catch (TokenError &error)
+		{
+			status = error();
+			token = std::make_shared<Token>(error.m_column, error.m_length);
 			break;
 		}
 
@@ -289,9 +304,15 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 		if (!token)
 		{
 			// get binary operator or end-of-expression token
-			if ((status = getToken(token)) != Status::Good)
+			try
+			{
+				getToken(token);
+			}
+			catch (TokenError &error)
 			{
 				// if parser error then caller needs to handle it
+				status = error();
+				token = std::make_shared<Token>(error.m_column, error.m_length);
 				break;
 			}
 			if (doneStackTopToken()->isDataType(DataType::None)
@@ -376,13 +397,10 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 bool Translator::getOperand(TokenPtr &token, DataType dataType,
 	Reference reference)
 {
-	Status status;
-
 	// get token if none was passed (no numbers for a reference)
-	if (!token && (status = getToken(token, dataType, reference))
-		!= Status::Good)
+	if (!token)
 	{
-		throw TokenError {status, token};
+		getToken(token, dataType, reference);
 	}
 
 	// set default data type for token if it has none
@@ -532,7 +550,7 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 //   - data type argument determines if number tokens are allowed
 //   - returns parser error if the parser returned an error exception
 
-Status Translator::getToken(TokenPtr &token, DataType dataType,
+void Translator::getToken(TokenPtr &token, DataType dataType,
 	Reference reference)
 try
 {
@@ -540,23 +558,17 @@ try
 	token = (*m_parse)(dataType != DataType{} && dataType != DataType::String
 		&& reference == Reference::None
 		? Parser::Number::Yes : Parser::Number::No);
-	return Status::Good;
 }
 catch (TokenError &error)
 {
-	// TODO for now, create an error token to return
-	token = std::make_shared<Token>(error.m_column, error.m_length);
 	if (dataType != DataType{} && dataType != DataType::None
 		&& error(Status::UnknownToken))
 	{
-		// non-number constant error, return expected expression error
-		return expectedErrStatus(dataType, reference);
+		// non-number constant error, change to expected expression error
+		error = expectedErrStatus(dataType, reference);
 	}
-	else
-	{
-		// caller may need to convert this error to appropriate error
-		return error();
-	}
+	// else caller may need to convert this error to appropriate error
+	throw;
 }
 
 
@@ -622,11 +634,7 @@ void Translator::processInternalFunction(TokenPtr &token)
 				// will not return false (returns error if not reference)
 				getOperand(token, expectedDataType, Reference::VarDefFn);
 				// get next token (should be a comma)
-				if (getToken(token) != Status::Good
-					|| !token->isCode(Comma_Code))
-				{
-					throw TokenError {Status::UnknownToken, token};
-				}
+				getToken(token);
 			}
 			catch (TokenError &error)
 			{
@@ -635,6 +643,10 @@ void Translator::processInternalFunction(TokenPtr &token)
 					error = Status::ExpComma;
 				}
 				throw;  // throws getOperand() errors as is
+			}
+			if (!token->isCode(Comma_Code))
+			{
+				throw TokenError {Status::ExpComma, token};
 			}
 		}
 		else
