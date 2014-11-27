@@ -59,8 +59,8 @@ public:
 	void getExpression(TokenPtr &token, DataType dataType, int level = 0);
 	bool getOperand(TokenPtr &token, DataType dataType,
 		Reference reference = Reference::None);
-	void getToken(TokenPtr &token, DataType dataType = DataType{},
-		Reference reference = Reference::None);
+	void getToken(TokenPtr &token, Status errorStatus,
+		DataType dataType = DataType{}, Reference reference = Reference::None);
 
 	// Public Processing Functions
 	void processFinalOperand(TokenPtr &token,

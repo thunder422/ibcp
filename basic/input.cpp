@@ -75,15 +75,7 @@ void inputTranslate(Translator &translator, TokenPtr commandToken,
 			Translator::Reference::Variable);
 
 		// get and check next token
-		try
-		{
-			translator.getToken(token);
-		}
-		catch (TokenError &error)
-		{
-			error = Status::ExpCommaSemiOrEnd;
-			throw;
-		}
+		translator.getToken(token, Status::ExpCommaSemiOrEnd);
 
 		TokenPtr inputToken;
 		if (token->isCode(Comma_Code))
@@ -98,15 +90,7 @@ void inputTranslate(Translator &translator, TokenPtr commandToken,
 			inputToken = std::move(token);
 
 			// get and check next token
-			try
-			{
-				translator.getToken(token);
-			}
-			catch (TokenError &error)
-			{
-				error = Status::ExpEndStmt;
-				throw;
-			}
+			translator.getToken(token, Status::ExpEndStmt);
 		}
 		else  // possible end-of-statement
 		{

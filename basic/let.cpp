@@ -64,7 +64,7 @@ void letTranslate(Translator &translator, TokenPtr commandToken,
 				{
 					// next token determines error
 					TokenPtr nextToken;
-					translator.getToken(nextToken);
+					translator.getToken(nextToken, Status{});
 					error = nextToken->isCode(Comma_Code)
 						|| nextToken->isCode(Eq_Code)
 						? Status::ExpAssignItem : Status::ExpCmdOrAssignItem;
@@ -78,15 +78,7 @@ void letTranslate(Translator &translator, TokenPtr commandToken,
 		}
 
 		// get and check next token for comma or equal
-		try
-		{
-			translator.getToken(token);
-		}
-		catch (TokenError &error)  // invalid token or parser error
-		{
-			error = Status::ExpEqualOrComma;
-			throw;
-		}
+		translator.getToken(token, Status::ExpEqualOrComma);
 		if (token->isCode(Comma_Code))
 		{
 			done = false;

@@ -133,7 +133,7 @@ void Translator::getCommands(TokenPtr &token)
 		// if not a command token then let translate will handle token
 		try
 		{
-			getToken(token, DataType::Any, Reference::All);
+			getToken(token, Status{}, DataType::Any, Reference::All);
 		}
 		catch (TokenError &error)
 		{
@@ -167,15 +167,7 @@ void Translator::getCommands(TokenPtr &token)
 		}
 	}
 	m_output.append(std::move(token));  // Rem or RemOp token
-	try
-	{
-		getToken(token);
-	}
-	catch (TokenError &error)
-	{
-		error = Status::BUG_UnexpToken;  // parser problem, should be EOL
-		throw;
-	}
+	getToken(token, Status{});  // no error should be thrown here
 }
 
 
@@ -195,7 +187,7 @@ void Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 	{
 		if (!token)
 		{
-			getToken(token, expectedDataType);
+			getToken(token, Status{}, expectedDataType);
 		}
 
 		if (token->isCode(OpenParen_Code))
@@ -281,7 +273,7 @@ void Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 		{
 			// get binary operator or end-of-expression token
 			// if parser error then caller needs to handle it
-			getToken(token);
+			getToken(token, Status{});
 			if (doneStackTopToken()->isDataType(DataType::None)
 				&& m_holdStack.top().token->isNull()
 				&& dataType == DataType::None)
@@ -353,7 +345,7 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 	// get token if none was passed (no numbers for a reference)
 	if (!token)
 	{
-		getToken(token, dataType, reference);
+		getToken(token, Status{}, dataType, reference);
 	}
 
 	// set default data type for token if it has none
@@ -501,10 +493,11 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 // function to get a token from the parser
 //
 //   - data type argument determines if number tokens are allowed
-//   - returns parser error if the parser returned an error exception
+//   - throws parser error if the parser threw an error exception
+//   - if caller requests specific error, then that error is thrown
 
-void Translator::getToken(TokenPtr &token, DataType dataType,
-	Reference reference)
+void Translator::getToken(TokenPtr &token, Status errorStatus,
+	DataType dataType, Reference reference)
 try
 {
 	// if data type is not blank and not string, then allow a number token
@@ -519,6 +512,10 @@ catch (TokenError &error)
 	{
 		// non-number constant error, change to expected expression error
 		error = expectedErrStatus(dataType, reference);
+	}
+	else if (errorStatus != Status{})
+	{
+		error = errorStatus;
 	}
 	// else caller may need to convert this error to appropriate error
 	throw;
@@ -582,21 +579,10 @@ void Translator::processInternalFunction(TokenPtr &token)
 		{
 			// sub-string assignment, look for reference operand
 			expectedDataType = DataType::String;
-			try
-			{
-				// will not return false (returns error if not reference)
-				getOperand(token, expectedDataType, Reference::VarDefFn);
-				// get next token (should be a comma)
-				getToken(token);
-			}
-			catch (TokenError &error)
-			{
-				if (error(Status::UnknownToken))  // from getToken() only
-				{
-					error = Status::ExpComma;
-				}
-				throw;  // throws getOperand() errors as is
-			}
+			// will not return false (returns error if not reference)
+			getOperand(token, expectedDataType, Reference::VarDefFn);
+			// get next token (should be a comma)
+			getToken(token, Status::ExpComma);
 			if (!token->isCode(Comma_Code))
 			{
 				throw TokenError {Status::ExpComma, token};
