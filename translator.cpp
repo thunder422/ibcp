@@ -127,7 +127,7 @@ RpnList Translator::operator()(TestMode testMode)
 
 void Translator::getCommands(TokenPtr &token)
 {
-	forever
+	for (;;)
 	{
 		// get any reference token and ignore status
 		// if not a command token then let translate will handle token
@@ -175,15 +175,14 @@ void Translator::getCommands(TokenPtr &token)
 //
 //   - takes an already obtained token (gets a token if none)
 //   - takes a data type argument for the desired data type of the expression
-//   - returns Done_TokenStatus upon success
-//   - returns an error status if an error was detected
 //   - returns the token that terminated the expression
+//   - throws an error if an error was detected
 
 void Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 {
 	DataType expectedDataType {dataType};
 
-	forever
+	for (;;)
 	{
 		if (!token)
 		{
@@ -261,8 +260,7 @@ void Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 				&& dataType != DataType::None)
 			{
 				// print functions are not allowed
-				throw TokenError {expectedErrStatus(dataType),
-					doneStackPopErrorToken()};
+				throw doneStackTopTokenError(expectedErrorStatus(dataType));
 			}
 			else
 			{
@@ -299,8 +297,7 @@ void Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 				Code cvtCode {doneToken->convertCode(dataType)};
 				if (cvtCode == Invalid_Code)
 				{
-					throw TokenError {expectedErrStatus(dataType),
-						doneStackPopErrorToken()};
+					throw doneStackTopTokenError(expectedErrorStatus(dataType));
 				}
 				else if (cvtCode != Null_Code)
 				{
@@ -310,8 +307,7 @@ void Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 						if (dataType == DataType::Integer
 							&& doneToken->isDataType(DataType::Double))
 						{
-							throw TokenError {Status::ExpIntConst,
-								doneStackPopErrorToken()};
+							throw doneStackTopTokenError(Status::ExpIntConst);
 						}
 					}
 					else  // append hidden conversion code
@@ -361,7 +357,7 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 			// nothing is acceptable, this is terminating token
 			return false;
 		}
-		throw TokenError {expectedErrStatus(dataType, reference), token};
+		throw TokenError {expectedErrorStatus(dataType, reference), token};
 
 	case Token::Type::Constant:
 		// check if specific numeric data type requested
@@ -379,21 +375,21 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 		}
 		if (reference != Reference::None)
 		{
-			throw TokenError {expectedErrStatus(dataType, reference), token};
+			throw TokenError {expectedErrorStatus(dataType, reference), token};
 		}
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncN:
 		if (reference != Reference::None)
 		{
-			throw TokenError {expectedErrStatus(dataType, reference), token};
+			throw TokenError {expectedErrorStatus(dataType, reference), token};
 		}
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::DefFuncN:
 		if (reference == Reference::Variable)
 		{
-			throw TokenError {expectedErrStatus(dataType, reference), token};
+			throw TokenError {expectedErrorStatus(dataType, reference), token};
 		}
 		if (reference != Reference::None)
 		{
@@ -423,14 +419,14 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 			}
 			else
 			{
-				throw TokenError {expectedErrStatus(dataType, reference),
+				throw TokenError {expectedErrorStatus(dataType, reference),
 					token};
 			}
 		}
 		else if (token->isDataType(DataType::None)
 			&& dataType != DataType::None)
 		{
-			throw TokenError {expectedErrStatus(dataType), token};
+			throw TokenError {expectedErrorStatus(dataType), token};
 		}
 		processInternalFunction(token);
 		// reset reference if it was set above, no longer needed
@@ -441,7 +437,7 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 	case Token::Type::DefFuncP:
 		if (reference == Reference::Variable)
 		{
-			throw TokenError {expectedErrStatus(dataType, reference), token};
+			throw TokenError {expectedErrorStatus(dataType, reference), token};
 		}
 		else if (reference != Reference::None)
 		{
@@ -483,8 +479,7 @@ bool Translator::getOperand(TokenPtr &token, DataType dataType,
 	if (reference != Reference::None
 		&& token->convertCode(dataType) != Null_Code)
 	{
-		throw TokenError {expectedErrStatus(dataType, reference),
-			doneStackPopErrorToken()};
+		throw doneStackTopTokenError(expectedErrorStatus(dataType, reference));
 	}
 	return true;
 }
@@ -511,7 +506,7 @@ catch (TokenError &error)
 		&& error(Status::UnknownToken))
 	{
 		// non-number constant error, change to expected expression error
-		error = expectedErrStatus(dataType, reference);
+		error = expectedErrorStatus(dataType, reference);
 	}
 	else if (errorStatus != Status{})
 	{
@@ -883,7 +878,7 @@ bool Translator::processOperator(TokenPtr &token)
 //	 - RPN item is pushed to done stack if operator
 //
 //   - for operator, token2 is first operand of operator on hold stack
-//   - for command, token2 is not set
+//   - for internal code, token2 is not set
 
 void Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 	int operandIndex)
@@ -974,7 +969,7 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 		// (if no data type, then double constant can't be converted to integer)
 		// report entire expression from first token through last
 		throw TokenError {topToken->isDataType(DataType{})
-			? Status::ExpIntConst : expectedErrStatus(topToken->dataType()),
+			? Status::ExpIntConst : expectedErrorStatus(topToken->dataType()),
 			localFirst->column(), localLast->column() + localLast->length()
 			- localFirst->column()};
 	}
@@ -997,6 +992,7 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 //   - popped argument indicates if token will be popped from the hold stack
 
 void Translator::checkPendingParen(const TokenPtr &token, Popped popped)
+	noexcept
 {
 	if (m_pendingParen)  // is a closing parentheses token pending?
 	{
@@ -1025,30 +1021,33 @@ void Translator::checkPendingParen(const TokenPtr &token, Popped popped)
 }
 
 
-// function to pop the top item from the done stack and return the token
-// from the first to the last operand appropriate for an error token
+// function to create token error from done stack top
+// (error is from first operand to the last operand)
 
-TokenPtr Translator::doneStackPopErrorToken()
+TokenError Translator::doneStackTopTokenError(Status errorStatus) noexcept
 {
 	TokenPtr token {std::move(m_doneStack.top().first)};
 	if (!token)
 	{
-		// if no first operand token, set to token itself
+		// if no first operand token, start at token itself
 		token = m_doneStack.top().rpnItem->token();
 	}
-	// if last operand token set, set error token through last token
-	if (m_doneStack.top().last)
+	int column = token->column();
+	int length = token->length();
+
+	// if last operand token set, set error length through last token
+	if (TokenPtr token = std::move(m_doneStack.top().last))
 	{
-		token->setThrough(m_doneStack.top().last);
+		length = token->column() - column + token->length();
 	}
-	m_doneStack.pop();
-	return token;  // return error token
+	return TokenError {errorStatus, column, length};
 }
 
 
 // function to return the token error status for an expected data type
 // and reference type
-Status Translator::expectedErrStatus(DataType dataType, Reference reference)
+Status Translator::expectedErrorStatus(DataType dataType, Reference reference)
+	noexcept
 {
 	switch (dataType)
 	{
@@ -1093,7 +1092,7 @@ Status Translator::expectedErrStatus(DataType dataType, Reference reference)
 
 // function to determine error status for an expression error
 Status Translator::expressionErrorStatus(bool lastOperand, bool unaryOperator,
-	Code code)
+	Code code) noexcept
 {
 	if (!lastOperand)
 	{

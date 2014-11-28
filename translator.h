@@ -69,8 +69,8 @@ public:
 		TokenPtr *first = nullptr, TokenPtr *last = nullptr);
 
 	// Public Support Functions
-	static Status expectedErrStatus(DataType dataType,
-		Reference reference = Reference::None);
+	static Status expectedErrorStatus(DataType dataType,
+		Reference reference = Reference::None) noexcept;
 
 	// Table Access Function
 	Table &table() const
@@ -91,7 +91,7 @@ public:
 	{
 		return m_doneStack.empty();
 	}
-	TokenPtr doneStackPopErrorToken();
+	TokenError doneStackTopTokenError(Status errorStatus) noexcept;
 
 	// Output List Access Functions
 	int outputCount() const
@@ -125,9 +125,9 @@ private:
 
 	// Private Support Functions
 	enum class Popped {No, Yes};
-	void checkPendingParen(const TokenPtr &token, Popped popped);
+	void checkPendingParen(const TokenPtr &token, Popped popped) noexcept;
 	Status expressionErrorStatus(bool lastOperand, bool unaryOperator,
-		Code code);
+		Code code) noexcept;
 
 	struct HoldItem
 	{

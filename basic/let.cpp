@@ -53,7 +53,7 @@ void letTranslate(Translator &translator, TokenPtr commandToken,
 	{
 		try
 		{
-			// does not return false (returns error for reference)
+			// does not return false (throws error for reference)
 			translator.getOperand(token, dataType, Translator::Reference::All);
 		}
 		catch (TokenError &error)

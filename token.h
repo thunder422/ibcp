@@ -256,12 +256,6 @@ public:
 		return m_code == Null_Code;
 	}
 
-	// set length to include second token
-	void setThrough(const TokenPtr &token2)
-	{
-		m_length = token2->m_column - m_column + token2->m_length;
-	}
-
 	// other functions
 	Code convertCode(DataType toDataType) const;
 

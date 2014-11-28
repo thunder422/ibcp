@@ -37,7 +37,7 @@ void printTranslate(Translator &translator, TokenPtr commandToken,
 	bool separator {};
 	bool printFunction {};
 
-	forever
+	for (;;)
 	{
 		try
 		{
