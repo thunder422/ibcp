@@ -55,12 +55,11 @@ public:
 	RpnList operator()(TestMode testMode = {});
 
 	// Get Functions
-	void getCommands(TokenPtr &token);
-	void getExpression(TokenPtr &token, DataType dataType, int level = 0);
-	bool getOperand(TokenPtr &token, DataType dataType,
+	void getCommands();
+	void getExpression(DataType dataType, int level = 0);
+	bool getOperand(DataType dataType, Reference reference = Reference::None);
+	void getToken(Status errorStatus, DataType dataType = DataType{},
 		Reference reference = Reference::None);
-	void getToken(TokenPtr &token, Status errorStatus,
-		DataType dataType = DataType{}, Reference reference = Reference::None);
 
 	// Public Processing Functions
 	void processFinalOperand(TokenPtr &token,
@@ -76,6 +75,20 @@ public:
 	Table &table() const
 	{
 		return m_table;
+	}
+
+	// Current Token Access Functions
+	const TokenPtr &token() const
+	{
+		return m_token;
+	}
+	void resetToken()
+	{
+		m_token.reset();
+	}
+	TokenPtr moveToken()
+	{
+		return std::move(m_token);
 	}
 
 	// Done Stack Access Functions
@@ -118,10 +131,9 @@ public:
 
 private:
 	// Private Processing Functions
-	void processCommand(TokenPtr &commandToken);
-	void processInternalFunction(TokenPtr &token);
-	void processParenToken(TokenPtr &token);
-	bool processOperator(TokenPtr &token);
+	void processInternalFunction(Reference reference);
+	void processParenToken();
+	bool processOperator();
 
 	// Private Support Functions
 	enum class Popped {No, Yes};
@@ -166,6 +178,7 @@ private:
 	RpnList m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack
 	DoneStack m_doneStack;			// items processed stack
+	TokenPtr m_token;				// current token being processed
 	TokenPtr m_pendingParen;		// closing parentheses token is pending
 	int m_lastPrecedence;			// precedence of last op added during paren
 };

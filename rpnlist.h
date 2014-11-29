@@ -47,7 +47,7 @@ public:
 		m_attached{attached} {}
 
 	// access functions
-	TokenPtr token(void)
+	TokenPtr &token(void)
 	{
 		return m_token;
 	}

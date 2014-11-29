@@ -117,12 +117,9 @@ public:
 
 
 // translate functions
-void inputTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token);
-void letTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token);
-void printTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token);
+void inputTranslate(Translator &translator);
+void letTranslate(Translator &translator);
+void printTranslate(Translator &translator);
 
 
 // encode functions
