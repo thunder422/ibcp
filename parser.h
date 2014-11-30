@@ -45,10 +45,10 @@ public:
 
 private:
 	// main functions
-	TokenUniquePtr getIdentifier();
+	TokenUniquePtr getIdentifier() noexcept;
 	TokenUniquePtr getNumber();
-	TokenUniquePtr getString();
-	TokenUniquePtr getOperator();
+	TokenUniquePtr getString() noexcept;
+	TokenUniquePtr getOperator() noexcept;
 
 	// support functions
 	struct Word
@@ -63,7 +63,7 @@ private:
 		Second					// untyped no parentheses second word of command
 	};
 
-	Word getWord(WordType wordType);
+	Word getWord(WordType wordType) noexcept;
 
 	Table &m_table;			// pointer to the table object
 	std::istringstream m_input;	// input line being parsed

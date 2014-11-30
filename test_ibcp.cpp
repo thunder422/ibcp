@@ -484,13 +484,13 @@ catch (TokenError &error)
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
 RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
-	const char *header)
+	std::string &&header)
 try
 {
 	RpnList rpnList {Translator{testInput}(exprMode
 		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
 
-	m_cout << (header ? header : "Output") << ": ";
+	m_cout << (!header.empty() ? header : "Output") << ": ";
 	if (m_recreate)
 	{
 		// recreate text from rpn list
@@ -500,7 +500,7 @@ try
 	{
 		m_cout << rpnList;
 	}
-	m_cout << " \n";
+	m_cout << ' ' << std::endl;
 	return rpnList;
 }
 catch (TokenError &error)
@@ -757,7 +757,7 @@ void Tester::printError(TokenError &error)
 {
 	m_cout << std::string(7 + error.m_column, ' ')
 		<< std::string(error.m_length, '^') << "-- "
-		<< StatusMessage::text(error.m_status).toStdString() << '\n';
+		<< StatusMessage::text(error.m_status).toStdString() << std::endl;
 }
 
 

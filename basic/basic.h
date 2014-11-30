@@ -46,17 +46,17 @@ using RpnItemPtr = std::shared_ptr<RpnItem>;
 class ConstNumInfo : public AbstractInfo
 {
 public:
-	void clear(void);
-	void addElement(const TokenPtr &token);
-	void setElement(int index, const TokenPtr &token);
+	void clear(void) override;
+	void addElement(const TokenPtr &token) override;
+	void setElement(int index, const TokenPtr &token) override;
 
-	double *array(void)
+	std::vector<double> &array(void)
 	{
-		return m_value.data();
+		return m_value;
 	}
-	int *arrayInt(void)
+	std::vector<int> &arrayInt(void)
 	{
-		return m_valueInt.data();
+		return m_valueInt;
 	}
 
 private:
@@ -72,11 +72,11 @@ public:
 		m_info.reset(new ConstNumInfo);
 	}
 
-	double *array(void)
+	std::vector<double> &array(void)
 	{
 		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->array();
 	}
-	int *arrayInt(void)
+	std::vector<int> &arrayInt(void)
 	{
 		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->arrayInt();
 	}
@@ -86,15 +86,15 @@ public:
 class ConstStrInfo : public AbstractInfo
 {
 public:
-	~ConstStrInfo(void);
-	void clear(void);
-	void addElement(const TokenPtr &token);
-	void setElement(int index, const TokenPtr &token);
-	void clearElement(int index);
+	~ConstStrInfo(void) override;
+	void clear(void) override;
+	void addElement(const TokenPtr &token) override;
+	void setElement(int index, const TokenPtr &token) override;
+	void clearElement(int index) override;
 
-	std::string **array(void)
+	std::vector<std::string *> &array(void)
 	{
-		return m_value.data();
+		return m_value;
 	}
 
 private:
@@ -109,7 +109,7 @@ public:
 		m_info.reset(new ConstStrInfo);
 	}
 
-	std::string **array(void)
+	std::vector<std::string *> &array(void)
 	{
 		return (dynamic_cast<ConstStrInfo *>(m_info.get()))->array();
 	}

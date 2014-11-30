@@ -65,7 +65,7 @@ private:
 		std::string name);
 	void parseInput(const std::string &testInput);
 	RpnList translateInput(const std::string &testInput, bool exprMode,
-		const char *header = nullptr);
+		std::string &&header = {});
 	void recreateInput(const std::string &testInput);
 	void encodeInput(std::string testInput);
 	void printInput(const std::string &inputLine)

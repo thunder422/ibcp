@@ -155,6 +155,7 @@ public:
 			m_code.erase(endCopy, endCopy + oldSize - line.size());
 		}
 	}
+
 private:
 	std::vector<ProgramWord> m_code;	// vector of program words
 };

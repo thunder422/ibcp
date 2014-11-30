@@ -2011,7 +2011,7 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 			i = 0;
 		}
 		Code *associatedCodes {associatedCodeArray(code)};
-		forever
+		for (;;)
 		{
 			if (i >= end)
 			{
@@ -2079,58 +2079,6 @@ Code Table::search(const std::string &word1, const std::string &word2) const
 	return Invalid_Code;
 }
 
-
-// search function to look for a function matching the same function
-// name as the index specified and matching the same number of
-// arguments specified
-//
-//   - returns the index of the entry that is found
-//   - returns -1 if the function with same noperands was not found
-//   - case sensitive compare used (all entry names must match)
-//   - name of function found at index specified
-//   - search begins at entry after index
-//   - search ends at end of section
-
-Code Table::search(Code index, int argumentCount) const
-{
-	for (Code i {index + 1}; !m_entry[i].name.isNull(); i++)
-	{
-		if (m_entry[index].name == m_entry[i].name
-			&& argumentCount == operandCount(i))
-		{
-			return i;
-		}
-	}
-	return Invalid_Code;
-}
-
-
-// search function to look for a code matching the same operand
-// data types as specified in the argument, the main code is
-// checked first and then each of the associated codes
-//
-//   - returns the index of the code that is found
-//   - returns -1 if there is not matching code
-//   - the code specified must have associated codes
-//   - the number of data types must match that of the code
-
-Code Table::search(Code code, DataType *datatype) const
-{
-	if (match(code, datatype))
-	{
-		return code;  // main code matches
-	}
-
-	for (int n {associatedCodeCount(code)}; --n >= 0;)
-	{
-		Code assoc_code {this->associatedCode(code, n)};
-		if (match(assoc_code, datatype))
-		{
-			return assoc_code;  // associated code matches
-		}
-	}
-	return Invalid_Code;  // no matches
-}
 
 // function to check to see if data types specified match the data
 // types of the code at the index specified

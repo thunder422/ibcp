@@ -83,7 +83,7 @@ TokenUniquePtr Parser::operator()(Number number)
 //   - returns default token pointer if no identifier (position not changed)
 //   - returns token pointer to new token if there is
 
-TokenUniquePtr Parser::getIdentifier()
+TokenUniquePtr Parser::getIdentifier() noexcept
 {
 	int pos = m_input.tellg();
 	Word word = getWord(WordType::First);
@@ -183,7 +183,7 @@ TokenUniquePtr Parser::getIdentifier()
 //   - second word for command only, so no data type or parentheses allowed
 //   - the input position is not moved if second word not valid
 
-Parser::Word Parser::getWord(WordType wordType)
+Parser::Word Parser::getWord(WordType wordType) noexcept
 {
 	Word word;
 
@@ -264,7 +264,7 @@ TokenUniquePtr Parser::getNumber()
 	std::string number;			// string to hold number
 
 	int pos = m_input.tellg();
-	forever
+	for (;;)
 	{
 		if (isdigit(m_input.peek()))
 		{
@@ -409,7 +409,7 @@ TokenUniquePtr Parser::getNumber()
 //   - returns token if there is a valid string
 //   - copy string into token without surrounding quotes
 
-TokenUniquePtr Parser::getString()
+TokenUniquePtr Parser::getString() noexcept
 {
 	if (m_input.peek() != '"')
 	{
@@ -448,7 +448,7 @@ TokenUniquePtr Parser::getString()
 //   - returns default token pointer if no operator (position not changed)
 //   - returns token pointer to new token if there is a valid operator
 
-TokenUniquePtr Parser::getOperator()
+TokenUniquePtr Parser::getOperator() noexcept
 {
 	std::string string;
 	string.push_back(m_input.peek());
