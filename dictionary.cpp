@@ -119,9 +119,9 @@ uint16_t InfoDictionary::add(const TokenPtr &token)
 	{
 		// a new entry was added to the dictionary
 		// so add a new element to the additional information
-		m_info->addElement();
+		m_info->addElement(token);
 	}
-	if (returnNewEntry != EntryType::Exists)
+	else if (returnNewEntry == EntryType::Reused)
 	{
 		// for a new entry or a reused entry,
 		// set the additional information from the token

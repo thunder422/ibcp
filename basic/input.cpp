@@ -29,36 +29,37 @@
 
 
 // INPUT command translate function
-Status inputTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token)
+void inputTranslate(Translator &translator)
 {
-	Status status;
-	bool done;
-	TokenPtr inputToken;
-
+	TokenPtr commandToken = translator.moveToken();  // save command token
+	TokenPtr token;
 	if (commandToken->isCode(Input_Code))
 	{
 		token = translator.table().newToken(InputBegin_Code);
 	}
 	else  // InputPrompt_Code
 	{
-		status = translator.getExpression(token, DataType::String);
-		if (status != Status::Done)
+		try
 		{
-			if (status == Status::UnknownToken)
+			translator.getExpression(DataType::String);
+		}
+		catch (TokenError &error)
+		{
+			if (error(Status::UnknownToken))
 			{
-				status = Status::ExpSemiOrComma;
+				error = Status::ExpSemiOrComma;
 			}
-			return status;
+			throw;
 		}
 		translator.doneStackPop();
+		token = translator.moveToken();  // take next token
 		if (token->isCode(Comma_Code))
 		{
 			token->addSubCode(Option_SubCode);
 		}
 		else if (!token->isCode(SemiColon_Code))
 		{
-			return Status::ExpOpSemiOrComma;
+			throw TokenError {Status::ExpOpSemiOrComma, token};
 		}
 		token->setCode(InputBeginStr_Code);
 	}
@@ -67,74 +68,53 @@ Status inputTranslate(Translator &translator, TokenPtr commandToken,
 	auto insertPoint = translator.outputAppendIterator(std::move(token));
 
 	// loop to read input variables
+	bool done;
 	do
 	{
 		// get variable reference
-		if ((status = translator.getOperand(token, DataType::Any,
-			Translator::Reference::Variable)) != Status::Good)
-		{
-			break;
-		}
+		// (does not return false - returns error for reference)
+		translator.getOperand(DataType::Any, Translator::Reference::Variable);
 
 		// get and check next token
-		if ((status = translator.getToken(token)) != Status::Good)
-		{
-			status = Status::ExpCommaSemiOrEnd;
-			break;
-		}
-		if (token->isCode(Comma_Code))
+		translator.getToken(Status::ExpCommaSemiOrEnd);
+
+		if (translator.token()->isCode(Comma_Code))
 		{
 			done = false;
-			inputToken = std::move(token);
+			token = translator.moveToken();
 		}
-		else if (token->isCode(SemiColon_Code))
+		else if (translator.token()->isCode(SemiColon_Code))
 		{
 			commandToken->addSubCode(Option_SubCode);
 			done = true;
-			inputToken = std::move(token);
-
-			// get and check next token
-			if ((status = translator.getToken(token)) != Status::Good)
-			{
-				status = Status::ExpEndStmt;
-				break;
-			}
+			token = translator.moveToken();
+			translator.getToken(Status::ExpEndStmt);
 		}
-		else  // possible end-of-statement (checked below)
+		else  // possible end-of-statement
 		{
+			// check terminating token for end-of-statement
+			if (!translator.table().hasFlag(translator.token(), EndStmt_Flag))
+			{
+				throw TokenError {Status::ExpCommaSemiOrEnd,
+					translator.token()};
+			}
 			done = true;
-			inputToken = std::make_shared<Token>();
+			token = std::make_shared<Token>();
 		}
 
 		// change token to appropriate assign code and append to output
-		translator.table().setToken(inputToken, InputAssign_Code);
-		status = translator.processFinalOperand(inputToken);
-		if (status != Status::Good)
-		{
-			break;
-		}
+		translator.table().setToken(token, InputAssign_Code);
+		translator.processFinalOperand(token);
 
 		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
 		insertPoint = translator.outputInsert(insertPoint, translator.table()
 			.newToken(translator.table()
-			.secondAssociatedCode(inputToken->code())));
+			.secondAssociatedCode(token->code())));
 	}
 	while (!done);
 
-	if (status != Status::Good)
-	{
-		return status;
-	}
-	translator.outputAppend(commandToken);
-
-	// check terminating token for end-of-statement
-	if (!translator.table().hasFlag(token, EndStmt_Flag))
-	{
-		return Status::ExpCommaSemiOrEnd;
-	}
-
-	return Status::Done;
+	translator.outputAppend(std::move(commandToken));
 }
 
 

@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: test_ibcp.h - tester class header file
-//	Copyright (C) 2012-2013  Thunder422
+//	Copyright (C) 2012-2014  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -45,19 +45,11 @@ public:
 	explicit Tester(const std::string &programName,
 		const std::list<std::string> &args, std::ostream &cout);
 
-	static std::string options(void);
-	bool run(std::string copyrightStatement);
-	bool hasOption(void) const  // has a test option been specified?
+	static std::string options();
+	void operator()(std::string copyrightStatement);
+	bool hasOption() const  // has a test option been specified?
 	{
 		return m_option != Option{};
-	}
-	bool hasError(void) const  // does test arguments contain an error?
-	{
-		return !m_errorMessage.empty();
-	}
-	std::string errorMessage(void) const  // message of error
-	{
-		return m_errorMessage;
 	}
 
 private:
@@ -73,7 +65,7 @@ private:
 		std::string name);
 	void parseInput(const std::string &testInput);
 	RpnList translateInput(const std::string &testInput, bool exprMode,
-		const char *header = nullptr);
+		std::string &&header = {});
 	void recreateInput(const std::string &testInput);
 	void encodeInput(std::string testInput);
 	void printInput(const std::string &inputLine)
@@ -81,7 +73,7 @@ private:
 		m_cout << "\nInput: " << inputLine << '\n';
 	}
 	void printToken(const TokenPtr &token);
-	void printError(Error &error);
+	void printError(TokenError &error);
 
 	std::string m_programName;		// name of program
 	Option m_option;				// selection option
@@ -89,9 +81,7 @@ private:
 	std::string m_testName;			// name of test
 	std::string m_testFileName;		// name of test file (OptFile only)
 	std::ostream &m_cout;			// reference to output stream
-	std::unique_ptr<Translator> m_translator;		// translator instance
 	std::unique_ptr<ProgramModel> m_programUnit; 	// program unit
-	std::string m_errorMessage;		// message if error occurred
 };
 
 

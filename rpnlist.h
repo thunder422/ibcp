@@ -47,7 +47,7 @@ public:
 		m_attached{attached} {}
 
 	// access functions
-	TokenPtr token(void)
+	TokenPtr &token(void)
 	{
 		return m_token;
 	}
@@ -81,27 +81,18 @@ private:
 class RpnList
 {
 public:
-	RpnList(void) : m_errorColumn{-1}, m_errorLength{-1} {}
+	RpnList(void) {}
 	RpnList(RpnList &&other) :
 		m_list{other.m_list},
-		m_codeSize{other.m_codeSize},
-		m_errorColumn{other.m_errorColumn},
-		m_errorLength{other.m_errorLength},
-		m_errorStatus{other.m_errorStatus}
+		m_codeSize{other.m_codeSize}
 	{
 		other.m_list.clear();
 		other.m_codeSize = 0;
-		other.m_errorColumn = -1;
-		other.m_errorLength = -1;
-		other.m_errorStatus = Status{};
 	}
 	RpnList &operator=(RpnList &&other)
 	{
 		std::swap(m_list, other.m_list);
 		std::swap(m_codeSize, other.m_codeSize);
-		std::swap(m_errorColumn, other.m_errorColumn);
-		std::swap(m_errorLength, other.m_errorLength);
-		std::swap(m_errorStatus, other.m_errorStatus);
 		return *this;
 	}
 
@@ -158,39 +149,9 @@ public:
 	}
 	bool setCodeSize(Table &table, TokenPtr &token);
 
-	void setError(const TokenPtr &errorToken)
-	{
-		m_errorColumn = errorToken->column();
-		m_errorLength = errorToken->length();
-	}
-	bool hasError(void) const
-	{
-		return m_errorColumn != -1;
-	}
-	int errorColumn(void) const
-	{
-		return m_errorColumn;
-	}
-	int errorLength(void) const
-	{
-		return m_errorLength;
-	}
-
-	void setErrorStatus(Status errorStatus)
-	{
-		m_errorStatus = errorStatus;
-	}
-	Status errorStatus(void) const
-	{
-		return m_errorStatus;
-	}
-
 private:
 	RpnItemList m_list;				// list of rpn items
 	int m_codeSize;					// size of code required for list
-	int m_errorColumn;				// column of error that occurred
-	int m_errorLength;				// length of error that occurred
-	Status m_errorStatus;			// message of error that occurred
 };
 
 

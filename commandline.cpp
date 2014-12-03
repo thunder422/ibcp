@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: commandline.n - command line class source file
-//	Copyright (C) 2012-2013  Thunder422
+//	Copyright (C) 2012-2014  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -82,24 +82,20 @@ CommandLine::CommandLine(std::list<std::string> args) :
 		return;
 	}
 
-	Tester tester(m_programName, args, cout());
-	if (tester.hasError())
+	try
 	{
-		cout(&std::cerr) << tester.errorMessage() << '\n';
-		m_returnCode = 1;
-		return;
-	}
-	else if (tester.hasOption())
-	{
-		if (tester.run(std::move(copyrightStatement())))
+		Tester test(m_programName, args, cout());
+		if (test.hasOption())
 		{
+			test(std::move(copyrightStatement()));
 			m_returnCode = 0;
+			return;
 		}
-		else
-		{
-			cout(&std::cerr) << tester.errorMessage() << '\n';
-			m_returnCode = 1;
-		}
+	}
+	catch (std::string &errorMessage)
+	{
+		cout(&std::cerr) << errorMessage << '\n';
+		m_returnCode = 1;
 		return;
 	}
 

@@ -26,9 +26,8 @@
 #define BASIC_H
 
 #include <memory>
-
-#include <QString>
-#include <QVector>
+#include <string>
+#include <vector>
 
 #include "ibcp.h"
 #include "token.h"
@@ -47,22 +46,22 @@ using RpnItemPtr = std::shared_ptr<RpnItem>;
 class ConstNumInfo : public AbstractInfo
 {
 public:
-	void clear(void);
-	void addElement(void);
-	void setElement(int index, const TokenPtr &token);
+	void clear(void) override;
+	void addElement(const TokenPtr &token) override;
+	void setElement(int index, const TokenPtr &token) override;
 
-	double *array(void)
+	std::vector<double> &array(void)
 	{
-		return m_value.data();
+		return m_value;
 	}
-	int *arrayInt(void)
+	std::vector<int> &arrayInt(void)
 	{
-		return m_valueInt.data();
+		return m_valueInt;
 	}
 
 private:
-	QVector<double> m_value;				// vector of double values
-	QVector<int> m_valueInt;				// vector of integer values
+	std::vector<double> m_value;			// vector of double values
+	std::vector<int> m_valueInt;			// vector of integer values
 };
 
 class ConstNumDictionary : public InfoDictionary
@@ -73,11 +72,11 @@ public:
 		m_info.reset(new ConstNumInfo);
 	}
 
-	double *array(void)
+	std::vector<double> &array(void)
 	{
 		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->array();
 	}
-	int *arrayInt(void)
+	std::vector<int> &arrayInt(void)
 	{
 		return (dynamic_cast<ConstNumInfo *>(m_info.get()))->arrayInt();
 	}
@@ -87,19 +86,19 @@ public:
 class ConstStrInfo : public AbstractInfo
 {
 public:
-	~ConstStrInfo(void);
-	void clear(void);
-	void addElement(void);
-	void setElement(int index, const TokenPtr &token);
-	void clearElement(int index);
+	~ConstStrInfo(void) override;
+	void clear(void) override;
+	void addElement(const TokenPtr &token) override;
+	void setElement(int index, const TokenPtr &token) override;
+	void clearElement(int index) override;
 
-	QString **array(void)
+	std::vector<std::string *> &array(void)
 	{
-		return m_value.data();
+		return m_value;
 	}
 
 private:
-	QVector<QString *> m_value;				// vector of string instances
+	std::vector<std::string *> m_value;		// vector of string instances
 };
 
 class ConstStrDictionary : public InfoDictionary
@@ -110,7 +109,7 @@ public:
 		m_info.reset(new ConstStrInfo);
 	}
 
-	QString **array(void)
+	std::vector<std::string *> &array(void)
 	{
 		return (dynamic_cast<ConstStrInfo *>(m_info.get()))->array();
 	}
@@ -118,45 +117,42 @@ public:
 
 
 // translate functions
-Status inputTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token);
-Status letTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token);
-Status printTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token);
+void inputTranslate(Translator &translator);
+void letTranslate(Translator &translator);
+void printTranslate(Translator &translator);
 
 
 // encode functions
-quint16 remEncode(ProgramModel *programUnit, const TokenPtr &token);
-quint16 constNumEncode(ProgramModel *programUnit, const TokenPtr &token);
-quint16 constStrEncode(ProgramModel *programUnit, const TokenPtr &token);
-quint16 varDblEncode(ProgramModel *programUnit, const TokenPtr &token);
-quint16 varIntEncode(ProgramModel *programUnit, const TokenPtr &token);
-quint16 varStrEncode(ProgramModel *programUnit, const TokenPtr &token);
+uint16_t remEncode(ProgramModel *programUnit, const TokenPtr &token);
+uint16_t constNumEncode(ProgramModel *programUnit, const TokenPtr &token);
+uint16_t constStrEncode(ProgramModel *programUnit, const TokenPtr &token);
+uint16_t varDblEncode(ProgramModel *programUnit, const TokenPtr &token);
+uint16_t varIntEncode(ProgramModel *programUnit, const TokenPtr &token);
+uint16_t varStrEncode(ProgramModel *programUnit, const TokenPtr &token);
 
 
 // operand text functions
 const std::string remOperandText(const ProgramModel *programUnit,
-	quint16 operand);
+	uint16_t operand);
 const std::string constNumOperandText(const ProgramModel *programUnit,
-	quint16 operand);
+	uint16_t operand);
 const std::string constStrOperandText(const ProgramModel *programUnit,
-	quint16 operand);
+	uint16_t operand);
 const std::string varDblOperandText(const ProgramModel *programUnit,
-	quint16 operand);
+	uint16_t operand);
 const std::string varIntOperandText(const ProgramModel *programUnit,
-	quint16 operand);
+	uint16_t operand);
 const std::string varStrOperandText(const ProgramModel *programUnit,
-	quint16 operand);
+	uint16_t operand);
 
 
 // remove functions
-void remRemove(ProgramModel *programUnit, quint16 operand);
-void constNumRemove(ProgramModel *programUnit, quint16 operand);
-void constStrRemove(ProgramModel *programUnit, quint16 operand);
-void varDblRemove(ProgramModel *programUnit, quint16 operand);
-void varIntRemove(ProgramModel *programUnit, quint16 operand);
-void varStrRemove(ProgramModel *programUnit, quint16 operand);
+void remRemove(ProgramModel *programUnit, uint16_t operand);
+void constNumRemove(ProgramModel *programUnit, uint16_t operand);
+void constStrRemove(ProgramModel *programUnit, uint16_t operand);
+void varDblRemove(ProgramModel *programUnit, uint16_t operand);
+void varIntRemove(ProgramModel *programUnit, uint16_t operand);
+void varStrRemove(ProgramModel *programUnit, uint16_t operand);
 
 
 // recreate functions

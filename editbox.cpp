@@ -323,7 +323,7 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 
 	int linesInserted {};
 	int linesDeleted {};
-	QStringList lines;
+	std::vector<std::string> lines;
 
 	// get information about position at start of change
 	QTextCursor cursor {textCursor()};
@@ -447,12 +447,12 @@ void EditBox::documentChanged(int position, int charsRemoved, int charsAdded)
 				// get list of lines changed and inserted
 				for (int i {}; i < linesModified + linesInserted; i++)
 				{
-					lines << document()->findBlockByNumber(changeLine
-						+ i).text();
+					lines.emplace_back(document()->findBlockByNumber(changeLine
+						+ i).text().toStdString());
 				}
 			}
 			m_programUnit->update(changeLine, linesDeleted, linesInserted,
-				lines);
+				std::move(lines));
 		}
 		m_lineCount = newLineCount;
 	}
@@ -519,7 +519,6 @@ void EditBox::clear()
 // function to received program model line changes
 void EditBox::programChanged(int lineNumber)
 {
-	QString lineText {m_programUnit->lineText(lineNumber)};
 	if (!m_cursorValid)
 	{
 		return;  // FIXME can't replace lines until cursor is valid
@@ -532,7 +531,7 @@ void EditBox::programChanged(int lineNumber)
 	// prevent document changed and cursor moved signals
 	// from being processed before replacing line text
 	m_ignoreChange = true;
-	cursor.insertText(lineText);
+	cursor.insertText(m_programUnit->lineText(lineNumber).c_str());
 	m_ignoreChange = false;
 }
 
@@ -544,8 +543,9 @@ void EditBox::captureModifiedLine(int offset)
 	if (m_modifiedLine >= 0)
 	{
 		m_programUnit->update(m_modifiedLine, 0, m_modifiedLineIsNew ? 1 : 0,
-			QStringList() << document()->findBlockByNumber(m_modifiedLine
-			+ offset).text());
+			std::vector<std::string>
+			{document()->findBlockByNumber(m_modifiedLine
+			+ offset).text().toStdString()});
 
 		if (m_modifiedLineIsNew)  // was this a new line without a number?
 		{

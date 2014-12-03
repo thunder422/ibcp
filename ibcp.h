@@ -34,9 +34,7 @@
 // parser and translator status codes
 enum class Status
 {
-	Good,
-	Done,
-	ExpCmdOrAssignItem,
+	ExpCmdOrAssignItem = 1,
 	ExpExpr,
 	ExpExprOrEnd,
 	ExpOpOrEnd,
@@ -97,15 +95,6 @@ enum class Status
 };
 
 
-// structure for holding information about an error exception
-struct Error
-{
-	Status status;						// status of error
-	int column;							// column of error
-	int length;							// length of error
-};
-
-
 // code operator in-line functions for additional, increment and decrement
 inline Code operator +(Code code, int number)
 {
@@ -152,18 +141,18 @@ enum class DataType
 
 
 // sub-code flags for use in Token and internal program
-enum SubCode
+enum SubCode : uint16_t
 {
-	None_SubCode		= 0x00000000,	// no sub-code present
-	ProgramMask_SubCode	= 0x0000FC00,	// mask for actual program sub-codes
-	Paren_SubCode		= 0x00000400,	// reproduce unnecessary parenthesis
-	Colon_SubCode		= 0x00000800,	// reproduce ":" after token
-	Option_SubCode		= 0x00001000,	// reproduce command specific option
+	None_SubCode		= 0x0000,	// no sub-code present
+	ProgramMask_SubCode	= 0xFC00,	// mask for actual program sub-codes
+	Paren_SubCode		= 0x0400,	// reproduce unnecessary parenthesis
+	Colon_SubCode		= 0x0800,	// reproduce ":" after token
+	Option_SubCode		= 0x1000,	// reproduce command specific option
 	// sub-codes used by translator only
-	Double_SubCode		= 0x00000001,	// integer constant has decimal/exponent
+	Double_SubCode		= 0x0001,	// integer constant has decimal/exponent
 
 	// code program mask
-	ProgramMask_Code	= 0x000003FF	// mask for actual program codes
+	ProgramMask_Code	= 0x03FF	// mask for actual program codes
 };
 
 

@@ -70,7 +70,7 @@ TokenUniquePtr Parser::operator()(Number number)
 	}
 	// not a valid token, throw unknown token error
 	int pos = m_input.tellg();
-	throw Error {Status::UnknownToken, pos, 1};
+	throw TokenError {Status::UnknownToken, pos, 1};
 }
 
 
@@ -83,7 +83,7 @@ TokenUniquePtr Parser::operator()(Number number)
 //   - returns default token pointer if no identifier (position not changed)
 //   - returns token pointer to new token if there is
 
-TokenUniquePtr Parser::getIdentifier()
+TokenUniquePtr Parser::getIdentifier() noexcept
 {
 	int pos = m_input.tellg();
 	Word word = getWord(WordType::First);
@@ -183,7 +183,7 @@ TokenUniquePtr Parser::getIdentifier()
 //   - second word for command only, so no data type or parentheses allowed
 //   - the input position is not moved if second word not valid
 
-Parser::Word Parser::getWord(WordType wordType)
+Parser::Word Parser::getWord(WordType wordType) noexcept
 {
 	Word word;
 
@@ -264,7 +264,7 @@ TokenUniquePtr Parser::getNumber()
 	std::string number;			// string to hold number
 
 	int pos = m_input.tellg();
-	forever
+	for (;;)
 	{
 		if (isdigit(m_input.peek()))
 		{
@@ -282,7 +282,7 @@ TokenUniquePtr Parser::getNumber()
 						// and second character is not a decimal point,
 						// and second character is a digit
 						// then this is in invalid number
-						throw Error {Status::ExpNonZeroDigit, pos, 1};
+						throw TokenError {Status::ExpNonZeroDigit, pos, 1};
 					}
 					break;  // single zero, exit loop to process string
 				}
@@ -294,7 +294,7 @@ TokenUniquePtr Parser::getNumber()
 			{
 				if (!digits)  // no digits found?
 				{
-					throw Error {Status::ExpDigitsOrSngDP, pos, 2};
+					throw TokenError {Status::ExpDigitsOrSngDP, pos, 2};
 				}
 				break;  // exit loop to process string
 			}
@@ -314,7 +314,7 @@ TokenUniquePtr Parser::getNumber()
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
-				throw Error {Status::ExpManDigits, pos, 2};
+				throw TokenError {Status::ExpManDigits, pos, 2};
 			}
 			number.push_back(m_input.get());  // get 'e' or 'E'
 			if (m_input.peek() == '+' || m_input.peek() == '-')
@@ -332,7 +332,7 @@ TokenUniquePtr Parser::getNumber()
 			if (!digits)  // no exponent digits found?
 			{
 				pos += number.length();  // move to error
-				throw Error {expSign
+				throw TokenError {expSign
 					? Status::ExpExpDigits : Status::ExpExpSignOrDigits, pos,
 					1};
 			}
@@ -359,7 +359,7 @@ TokenUniquePtr Parser::getNumber()
 			}
 			else if (!digits)  // only a decimal point found?
 			{
-				throw Error {Status::ExpDigits, pos, 1};
+				throw TokenError {Status::ExpDigits, pos, 1};
 			}
 			else
 			{
@@ -396,7 +396,7 @@ TokenUniquePtr Parser::getNumber()
 	catch (std::out_of_range)
 	{
 		// overflow or underflow, constant is not valid
-		throw Error {Status::FPOutOfRange, pos, len};
+		throw TokenError {Status::FPOutOfRange, pos, len};
 	}
 }
 
@@ -409,7 +409,7 @@ TokenUniquePtr Parser::getNumber()
 //   - returns token if there is a valid string
 //   - copy string into token without surrounding quotes
 
-TokenUniquePtr Parser::getString()
+TokenUniquePtr Parser::getString() noexcept
 {
 	if (m_input.peek() != '"')
 	{
@@ -448,7 +448,7 @@ TokenUniquePtr Parser::getString()
 //   - returns default token pointer if no operator (position not changed)
 //   - returns token pointer to new token if there is a valid operator
 
-TokenUniquePtr Parser::getOperator()
+TokenUniquePtr Parser::getOperator() noexcept
 {
 	std::string string;
 	string.push_back(m_input.peek());

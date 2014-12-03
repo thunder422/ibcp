@@ -115,10 +115,6 @@ public:
 	{
 		m_length = length;
 	}
-	void addLengthToColumn(void)
-	{
-		m_column += m_length;
-	}
 
 	// type access functions
 	Type type(void) const
@@ -260,12 +256,6 @@ public:
 		return m_code == Null_Code;
 	}
 
-	// set length to include second token
-	void setThrough(const TokenPtr &token2)
-	{
-		m_length = token2->m_column - m_column + token2->m_length;
-	}
-
 	// other functions
 	Code convertCode(DataType toDataType) const;
 
@@ -286,6 +276,38 @@ private:
 	double m_value;			// double value for constant token
 	int m_valueInt;			// integer value for constant token (if possible)
 	int m_index;			// index within encoded program code line
+};
+
+
+// structure for holding information about an error exception
+struct TokenError
+{
+	TokenError(Status status, int column, int length) : m_status {status},
+		m_column {column}, m_length {length} {}
+	TokenError(Status status, const TokenPtr &token) :
+		TokenError {status, token->column(), token->length()} {}
+
+	// convenience function for getting error status
+	Status operator()()
+	{
+		return m_status;
+	}
+
+	// convenience function for checking for a particular error status
+	bool operator()(Status status)
+	{
+		return status == m_status;
+	}
+
+	// convenience function for setting error status
+	void operator=(Status status)
+	{
+		m_status = status;
+	}
+
+	Status m_status;						// status of error
+	int m_column;							// column of error
+	int m_length;							// length of error
 };
 
 

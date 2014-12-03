@@ -30,37 +30,38 @@
 
 
 // PRINT command translate function
-Status printTranslate(Translator &translator, TokenPtr commandToken,
-	TokenPtr &token)
+void printTranslate(Translator &translator)
 {
-	Status status;
-	TokenPtr lastSemiColon;
-	bool separator {};
+	TokenPtr commandToken = translator.moveToken();  // save command token
 	bool printFunction {};
-
-	forever
+	bool separator {};
+	TokenPtr lastSemiColon;
+	for (;;)
 	{
-		if ((status = translator.getExpression(token, DataType::None))
-			!= Status::Done)
+		try
 		{
-			if (status == Status::UnknownToken)
+			translator.getExpression(DataType::None);
+		}
+		catch (TokenError &error)
+		{
+			if (error(Status::UnknownToken))
 			{
 				if (translator.doneStackEmpty())
 				{
-					status = Status::ExpExprCommaPfnOrEnd;
+					error = Status::ExpExprCommaPfnOrEnd;
 				}
 				// change parser error if not inside paren
 				else if (translator.doneStackTopToken()
 					->isDataType(DataType::None))
 				{
-					status = Status::ExpSemiCommaOrEnd;
+					error = Status::ExpSemiCommaOrEnd;
 				}
 				else  // not a print function
 				{
-					status = Status::ExpOpSemiCommaOrEnd;
+					error = Status::ExpOpSemiCommaOrEnd;
 				}
 			}
-			break;
+			throw;
 		}
 
 		if (!translator.doneStackEmpty())
@@ -78,54 +79,42 @@ Status printTranslate(Translator &translator, TokenPtr commandToken,
 				printFunction = false;
 			}
 			separator = true;
-			lastSemiColon.reset();
+			lastSemiColon.reset();  // don't need last semicolon token
 		}
 
-		if (token->isCode(Comma_Code))
+		if (translator.token()->isCode(Comma_Code))
 		{
 			if (lastSemiColon)
 			{
-				status = Status::ExpExprPfnOrEnd;
-				break;
+				throw TokenError {Status::ExpExprPfnOrEnd, translator.token()};
 			}
-			translator.outputAppend(std::move(token));
-			lastSemiColon.reset();
+			translator.outputAppend(translator.moveToken());
 		}
-		else if (token->isCode(SemiColon_Code))
+		else if (translator.token()->isCode(SemiColon_Code))
 		{
 			if (!separator)
 			{
-				status = lastSemiColon ? Status::ExpExprPfnOrEnd
-					: Status::ExpExprCommaPfnOrEnd;
-				break;
+				throw TokenError {lastSemiColon ? Status::ExpExprPfnOrEnd
+					: Status::ExpExprCommaPfnOrEnd, translator.token()};
 			}
-			lastSemiColon = std::move(token);
+			lastSemiColon = translator.moveToken();  // save semicolon token
 		}
 		else  // some other token, maybe end-of-statement
 		{
+			if (!translator.table().hasFlag(translator.token(), EndStmt_Flag))
+			{
+				throw TokenError {printFunction ? Status::ExpSemiCommaOrEnd
+					: Status::ExpOpSemiCommaOrEnd, translator.token()};
+			}
 			break;  // exit loop
 		}
 		separator = false;
 	}
 
-	if (status != Status::Done)
-	{
-		return status;
-	}
-
-	if (lastSemiColon)
-	{
-		// append last semicolon token as command token
-		commandToken = std::move(lastSemiColon);
-	}
-	translator.outputAppend(std::move(commandToken));
-
-	if (!translator.table().hasFlag(token, EndStmt_Flag))
-	{
-		return printFunction ? Status::ExpSemiCommaOrEnd
-			: Status::ExpOpSemiCommaOrEnd;
-	}
-	return Status::Done;
+	// append last semicolon token if set or command token
+	// (other will be deleted when function ends)
+	translator.outputAppend(lastSemiColon
+		? std::move(lastSemiColon) : std::move(commandToken));
 }
 
 

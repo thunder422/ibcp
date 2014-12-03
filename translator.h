@@ -27,8 +27,6 @@
 
 #include <stack>
 
-#include <QString>
-
 #include "parser.h"
 #include "rpnlist.h"
 
@@ -38,7 +36,7 @@ class Table;
 class Translator
 {
 public:
-	explicit Translator(void);
+	explicit Translator(const std::string &input);
 
 	enum class TestMode {
 		No,				// do normal translation
@@ -54,53 +52,66 @@ public:
 	};
 
 	// Main Function
-	RpnList translate(const QString &input, TestMode testMode = TestMode::No);
+	RpnList operator()(TestMode testMode = {});
 
 	// Get Functions
-	Status getCommands(TokenPtr &token);
-	Status getExpression(TokenPtr &token, DataType dataType, int level = 0);
-	Status getOperand(TokenPtr &token, DataType dataType,
-		Reference reference = Reference::None);
-	Status getToken(TokenPtr &token, DataType dataType = DataType{},
+	void getCommands();
+	void getExpression(DataType dataType, int level = 0);
+	bool getOperand(DataType dataType, Reference reference = Reference::None);
+	void getToken(Status errorStatus, DataType dataType = DataType{},
 		Reference reference = Reference::None);
 
 	// Public Processing Functions
-	Status processFinalOperand(TokenPtr &token,
+	void processFinalOperand(TokenPtr &token,
 		TokenPtr token2 = TokenPtr{}, int operandIndex = 0);
-	Status processDoneStackTop(TokenPtr &token, int operandIndex = 0,
+	void processDoneStackTop(TokenPtr &token, int operandIndex = 0,
 		TokenPtr *first = nullptr, TokenPtr *last = nullptr);
 
 	// Public Support Functions
-	static Status expectedErrStatus(DataType dataType,
-		Reference reference = Reference::None);
+	static Status expectedErrorStatus(DataType dataType,
+		Reference reference = Reference::None) noexcept;
 
 	// Table Access Function
-	Table &table(void) const
+	Table &table() const
 	{
 		return m_table;
 	}
 
+	// Current Token Access Functions
+	const TokenPtr &token() const
+	{
+		return m_token;
+	}
+	void resetToken()
+	{
+		m_token.reset();
+	}
+	TokenPtr moveToken()
+	{
+		return std::move(m_token);
+	}
+
 	// Done Stack Access Functions
-	void doneStackPop(void)
+	void doneStackPop()
 	{
 		m_doneStack.pop();
 	}
-	TokenPtr doneStackTopToken(void) const
+	TokenPtr doneStackTopToken() const
 	{
 		return m_doneStack.top().rpnItem->token();
 	}
-	bool doneStackEmpty(void)
+	bool doneStackEmpty()
 	{
 		return m_doneStack.empty();
 	}
-	TokenPtr doneStackPopErrorToken(void);
+	TokenError doneStackTopTokenError(Status errorStatus) noexcept;
 
 	// Output List Access Functions
-	int outputCount(void) const
+	int outputCount() const
 	{
 		return m_output.count();
 	}
-	TokenPtr outputLastToken(void) const
+	TokenPtr outputLastToken() const
 	{
 		return m_output.lastToken();
 	}
@@ -120,16 +131,15 @@ public:
 
 private:
 	// Private Processing Functions
-	Status processCommand(TokenPtr &commandToken);
-	Status processInternalFunction(TokenPtr &token);
-	Status processParenToken(TokenPtr &token);
-	Status processOperator(TokenPtr &token);
-	Status processFirstOperand(TokenPtr &token);
+	void processInternalFunction(Reference reference);
+	void processParenToken();
+	bool processOperator();
 
 	// Private Support Functions
 	enum class Popped {No, Yes};
-	void checkPendingParen(const TokenPtr &token, Popped popped);
-	void cleanUp(void);		// only called when error occurs
+	void checkPendingParen(const TokenPtr &token, Popped popped) noexcept;
+	Status expressionErrorStatus(bool lastOperand, bool unaryOperator,
+		Code code) noexcept;
 
 	struct HoldItem
 	{
@@ -168,6 +178,7 @@ private:
 	RpnList m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack
 	DoneStack m_doneStack;			// items processed stack
+	TokenPtr m_token;				// current token being processed
 	TokenPtr m_pendingParen;		// closing parentheses token is pending
 	int m_lastPrecedence;			// precedence of last op added during paren
 };

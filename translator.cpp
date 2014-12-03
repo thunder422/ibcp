@@ -28,8 +28,9 @@
 #include "parser.h"
 
 
-Translator::Translator(void) :
-	m_table(Table::instance())
+Translator::Translator(const std::string &input) :
+	m_table(Table::instance()),
+	m_parse {new Parser {input}}
 {
 
 }
@@ -44,82 +45,66 @@ Translator::Translator(void) :
 
 // function to parse and translate an input line to an RPN output list
 //
-//   - returns the RPN output list, which may contain an error instead
-//     of translated line
 //   - allows for a special expression mode for testing
+//   - returns the RPN output list upon successful translation
+//   - throws token error upon detection of error
 
-RpnList Translator::translate(const QString &input, TestMode testMode)
+RpnList Translator::operator()(TestMode testMode)
 {
-	TokenPtr token;
-	Status status;
-
-	m_parse.reset(new Parser {input.toStdString()});
-
 	m_holdStack.emplace(m_table.newToken(Null_Code));
 
 	if (testMode == TestMode::Expression)
 	{
-		status = getExpression(token, DataType::Any);
-
-		if (status == Status::UnknownToken)
+		try
 		{
-			status = Status::ExpOpOrEnd;
+			getExpression(DataType::Any);
 		}
-		else if (status == Status::Done)
+		catch (TokenError &error)
 		{
-			// pop final result off of done stack
-			if (m_doneStack.empty())
+			if (error(Status::UnknownToken))
 			{
-				status = Status::BUG_DoneStackEmpty;
+				error = Status::ExpOpOrEnd;
 			}
-			else
-			{
-				// drop result (delete any paren tokens in first/last operands)
-				m_doneStack.pop();
-			}
+			throw;
 		}
+		// pop final result off of done stack
+		if (m_doneStack.empty())
+		{
+			throw TokenError {Status::BUG_DoneStackEmpty, m_token};
+		}
+		// drop result
+		m_doneStack.pop();
 	}
 	else
 	{
-		status = getCommands(token);
+		getCommands();
 	}
 
-	if (status == Status::Done)
+	if (!m_token->isCode(EOL_Code))
 	{
-		if (token->isCode(EOL_Code))
+		throw TokenError {Status::ExpOpOrEnd, m_token};
+	}
+	else
+	{
+		// pop and delete null token from top of stack
+		m_holdStack.pop();
+
+		if (!m_holdStack.empty())
 		{
-			// pop and delete null token from top of stack
-			m_holdStack.pop();
-
-			if (!m_holdStack.empty())
-			{
-				status = Status::BUG_HoldStackNotEmpty;
-			}
-
-			if (!m_doneStack.empty())
-			{
-				status = Status::BUG_DoneStackNotEmpty;
-			}
-
-			if (testMode == TestMode::No
-				&& !m_output.setCodeSize(m_table, token))
-			{
-				status = Status::BUG_NotYetImplemented;
-			}
+			throw TokenError {Status::BUG_HoldStackNotEmpty, m_token};
 		}
-		else
+
+		if (!m_doneStack.empty())
 		{
-			status = Status::ExpOpOrEnd;
+			throw TokenError {Status::BUG_DoneStackNotEmpty, m_token};
+		}
+
+		if (testMode == TestMode::No
+			&& !m_output.setCodeSize(m_table, m_token))
+		{
+			throw TokenError {Status::BUG_NotYetImplemented, m_token};
 		}
 	}
-
-	if (status != Status::Done)
-	{
-		m_output.setError(token);
-		m_output.setErrorStatus(status);
-		cleanUp();
-	}
-	m_parse.reset();
 	return std::move(m_output);
 }
 
@@ -135,109 +120,114 @@ RpnList Translator::translate(const QString &input, TestMode testMode)
 //
 //   - stops at rem, end-of-line or unknown token
 //   - if end is rem (command or operator), end-of-line is returned
-//   - returns terminating token (end-of-line or unknown token)
+//   - current token is terminating token (end-of-line or unknown token)
 //   - caller determines validity of unknown token if returned
+//   - throws token error upon detection of error
 
-Status Translator::getCommands(TokenPtr &token)
+void Translator::getCommands()
 {
-	Status status;
-
-	forever
+	for (;;)
 	{
 		// get any reference token and ignore status
 		// if not a command token then let translate will handle token
-		// (if parser error then let translate will report error)
-		getToken(token, DataType::Any, Reference::All);
-
-		if (token->isCode(EOL_Code) && m_output.empty())
+		try
 		{
-			return Status::Done;  // blank line allowed
+			getToken(Status{}, DataType::Any, Reference::All);
+		}
+		catch (TokenError &error)
+		{
+			error = Status::ExpCmdOrAssignItem;
+			throw;
 		}
 
-		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
+		if (m_token->isCode(EOL_Code) && m_output.empty())
 		{
-			break;
+			return;  // blank line allowed
 		}
 
-		if ((status = processCommand(token)) != Status::Done)
-		{
-			return status;
-		}
-
-		if (token->isCode(RemOp_Code))
+		if (m_token->isCode(Rem_Code) || m_token->isCode(RemOp_Code))
 		{
 			break;
 		}
-		else if (token->isCode(Colon_Code))
+
+		// process command (assume assignment statement if not command token)
+		if (TranslateFunction translate =
+			m_table.translateFunction(m_token->isType(Token::Type::Command)
+			? m_token->code() : Let_Code))
+		{
+			(*translate)(*this);
+		}
+		else
+		{
+			throw TokenError {Status::BUG_NotYetImplemented, m_token};
+		}
+
+		if (m_token->isCode(RemOp_Code))
+		{
+			break;
+		}
+		else if (m_token->isCode(Colon_Code))
 		{
 			// set colon sub-code on last token
 			outputLastToken()->addSubCode(Colon_SubCode);
+			m_token.reset();
 		}
 		else  // unknown end statement token, return to caller
 		{
-			return Status::Done;
+			return;
 		}
 	}
-	m_output.append(std::move(token));  // Rem or RemOp token
-	if (getToken(token) != Status::Good)
-	{
-		return Status::BUG_UnexpToken;  // parser problem, should be EOL
-	}
-	return Status::Done;
+	m_output.append(std::move(m_token));  // Rem or RemOp token
+	getToken(Status{});
 }
 
 
 // function to get an expression from the input line
 //
-//   - takes an already obtained token (gets a token if none)
 //   - takes a data type argument for the desired data type of the expression
-//   - returns Done_TokenStatus upon success
-//   - returns an error status if an error was detected
-//   - returns the token that terminated the expression
+//   - current token is token that terminated the expression
+//   - throws an error if an error was detected
 
-Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
+void Translator::getExpression(DataType dataType, int level)
 {
-	Status status;
 	DataType expectedDataType {dataType};
 
-	forever
+	for (;;)
 	{
-		if (!token && (status = getToken(token, expectedDataType))
-			!= Status::Good)
-		{
-			break;
-		}
+		getToken(Status{}, expectedDataType);
 
-		if (token->isCode(OpenParen_Code))
+		if (m_token->isCode(OpenParen_Code))
 		{
 			// push open parentheses onto hold stack to block waiting tokens
 			// during the processing of the expression inside the parentheses
-			m_holdStack.emplace(std::move(token));
+			m_holdStack.emplace(std::move(m_token));
 
 			// get an expression and terminating token
 			if (expectedDataType == DataType::None)
 			{
 				expectedDataType = DataType::Any;
 			}
-			if ((status = getExpression(token, expectedDataType, level + 1))
-				!= Status::Done)
+			try
 			{
-				if (m_table.isUnaryOperator(token))
+				getExpression(expectedDataType, level + 1);
+			}
+			catch (TokenError &error)
+			{
+				if (error(Status::ExpBinOpOrEnd))  // (aka unary operator?)
 				{
-					status = Status::ExpBinOpOrParen;
+					error = Status::ExpBinOpOrParen;
 				}
-				if (status == Status::UnknownToken)
+				else if (error(Status::UnknownToken))
 				{
-					status = Status::ExpOpOrParen;
+					error = Status::ExpOpOrParen;
 				}
-				break;  // exit on error
+				throw;  // exit on error
 			}
 
 			// check terminating token
-			if (!token->isCode(CloseParen_Code))
+			if (!m_token->isCode(CloseParen_Code))
 			{
-				status = Status::ExpOpOrParen;
-				break;
+				throw TokenError {Status::ExpOpOrParen, m_token};
 			}
 
 			// make sure holding stack contains the open parentheses
@@ -246,11 +236,11 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			if (!topToken->code() == OpenParen_Code)
 			{
 				// oops, no open parentheses (this should not happen)
-				return Status::BUG_UnexpectedCloseParen;
+				throw TokenError {Status::BUG_UnexpectedCloseParen, m_token};
 			}
 
 			// replace first and last operands of token on done stack
-			m_doneStack.top().replaceFirstLast(topToken, token);
+			m_doneStack.top().replaceFirstLast(topToken, m_token);
 
 			// set highest precedence if not an operator on done stack top
 			// (no operators in the parentheses)
@@ -259,61 +249,49 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 				? m_table.precedence(topToken) : HighestPrecedence;
 
 			// set pending parentheses token pointer
-			m_pendingParen = std::move(token);
+			m_pendingParen = std::move(m_token);
 		}
 		else
 		{
 			Code unaryCode;
-			if ((unaryCode = m_table.unaryCode(token)) != Null_Code)
+			if ((unaryCode = m_table.unaryCode(m_token)) != Null_Code)
 			{
-				token->setCode(unaryCode);  // change token to unary operator
+				m_token->setCode(unaryCode);  // change token to unary operator
 			}
 			// get operand
-			else if ((status = getOperand(token, expectedDataType))
-				!= Status::Good)
+			else if (!getOperand(expectedDataType))
 			{
-				break;
+				break;  // terminating token, let caller determine action
 			}
 			else if (doneStackTopToken()->isDataType(DataType::None)
 				&& dataType != DataType::None)
 			{
 				// print functions are not allowed
-				token = doneStackPopErrorToken();
-				status = expectedErrStatus(dataType);
-				break;
-			}
-			else
-			{
-				token.reset();  // get another token
+				throw doneStackTopTokenError(expectedErrorStatus(dataType));
 			}
 		}
-		if (!token)
+		if (!m_token)
 		{
 			// get binary operator or end-of-expression token
-			if ((status = getToken(token)) != Status::Good)
-			{
-				// if parser error then caller needs to handle it
-				break;
-			}
+			// if parser error then caller needs to handle it
+			getToken(Status{});
 			if (doneStackTopToken()->isDataType(DataType::None)
 				&& m_holdStack.top().token->isNull()
 				&& dataType == DataType::None)
 			{
 				// for print functions return now with token as terminator
-				status = Status::Done;
 				break;
 			}
 			// check for unary operator (token should be a binary operator)
-			if (m_table.isUnaryOperator(token))
+			if (m_table.isUnaryOperator(m_token))
 			{
-				status = Status::ExpBinOpOrEnd;
-				break;
+				// caller may need to change this error
+				throw TokenError {Status::ExpBinOpOrEnd, m_token};
 			}
 		}
 
 		// check for and process operator (unary or binary)
-		status = processOperator(token);
-		if (status == Status::Done)
+		if (!processOperator())
 		{
 			if (level == 0)
 			{
@@ -322,8 +300,7 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 				Code cvtCode {doneToken->convertCode(dataType)};
 				if (cvtCode == Invalid_Code)
 				{
-					token = doneStackPopErrorToken();
-					status = expectedErrStatus(dataType);
+					throw doneStackTopTokenError(expectedErrorStatus(dataType));
 				}
 				else if (cvtCode != Null_Code)
 				{
@@ -333,8 +310,7 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 						if (dataType == DataType::Integer
 							&& doneToken->isDataType(DataType::Double))
 						{
-							token = doneStackPopErrorToken();
-							status = Status::ExpIntConst;
+							throw doneStackTopTokenError(Status::ExpIntConst);
 						}
 					}
 					else  // append hidden conversion code
@@ -345,223 +321,198 @@ Status Translator::getExpression(TokenPtr &token, DataType dataType, int level)
 			}
 			break;
 		}
-		else if (status != Status::Good)
-		{
-			break;
-		}
 
-		// get operator's expected data type, reset token and loop back
-		expectedDataType = m_table.expectedDataType(token);
-		token = nullptr;
+		// get operator's expected data type (was pushed on hold stack)
+		expectedDataType = m_table.expectedDataType(m_holdStack.top().token);
 	}
-	return status;
 }
 
 
 // function to get an operand
 //
-//   - a token may be passed in, otherwise a token is obtained
 //   - the data type argument is used for reporting the correct error when
 //     the token is not a valid operand token
+//   - return true upon success or false if token not an operand
+//   - upon true, current token is left empty
+//   - upon false, current token is not changed
+//   - throws token error upon detection of error
+//   - does not return false if reference requested (throws error)
 
-Status Translator::getOperand(TokenPtr &token, DataType dataType,
-	Reference reference)
+bool Translator::getOperand(DataType dataType, Reference reference)
 {
-	Status status;
-	bool doneAppend {true};
-
-	// get token if none was passed (no numbers for a reference)
-	if (!token && (status = getToken(token, dataType, reference))
-		!= Status::Good)
-	{
-		return status;
-	}
+	// get token (no numbers for a reference)
+	getToken(Status{}, dataType, reference);
 
 	// set default data type for token if it has none
-	token->setDataType();
+	m_token->setDataType();
 
-	switch (token->type())
+	bool doneAppend {true};
+	switch (m_token->type())
 	{
 	case Token::Type::Command:
 	case Token::Type::Operator:
 		if (dataType == DataType::None)
 		{
 			// nothing is acceptable, this is terminating token
-			return Status::Done;
+			return false;
 		}
-		return expectedErrStatus(dataType, reference);
+		throw TokenError {expectedErrorStatus(dataType, reference),
+			std::move(m_token)};
 
 	case Token::Type::Constant:
 		// check if specific numeric data type requested
 		if ((dataType == DataType::Double || dataType == DataType::Integer)
-			&& token->isDataType(DataType::Integer))
+			&& m_token->isDataType(DataType::Integer))
 		{
 			// for integer constants, force to desired data type
-			token->setDataType(dataType);
-			token->removeSubCode(Double_SubCode);
+			m_token->setDataType(dataType);
+			m_token->removeSubCode(Double_SubCode);
 		}
 		if (dataType == DataType::Double || dataType == DataType::Integer
 			|| dataType == DataType::String)
 		{
-			m_table.setTokenCode(token, Const_Code);
+			m_table.setTokenCode(m_token, Const_Code);
 		}
 		if (reference != Reference::None)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrorStatus(dataType, reference),
+				std::move(m_token)};
 		}
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncN:
 		if (reference != Reference::None)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrorStatus(dataType, reference),
+				std::move(m_token)};
 		}
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::DefFuncN:
 		if (reference == Reference::Variable)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrorStatus(dataType, reference),
+				std::move(m_token)};
 		}
 		if (reference != Reference::None)
 		{
-			token->setReference();
+			m_token->setReference();
 		}
 		// TODO temporary until define functions are fully implemented
-		dataType = token->dataType();  // preserve data type
-		m_table.setToken(token, DefFuncN_Code);
-		token->setDataType(dataType);
+		dataType = m_token->dataType();  // preserve data type
+		m_table.setToken(m_token, DefFuncN_Code);
+		m_token->setDataType(dataType);
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::NoParen:
 		// REMOVE for now assume a variable
 		// TODO first check if identifier is in function dictionary
 		// TODO only a function reference if name of current function
-		m_table.setTokenCode(token, reference == Reference::None
+		m_table.setTokenCode(m_token, reference == Reference::None
 			? Var_Code : VarRef_Code);
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncP:
 		if (reference != Reference::None)
 		{
-			if (reference == Reference::All
-				&& m_table.hasFlag(token, SubStr_Flag))
+			if (reference != Reference::All
+				|| !m_table.hasFlag(m_token, SubStr_Flag))
 			{
-				token->setReference();
-			}
-			else
-			{
-				return expectedErrStatus(dataType, reference);
+				throw TokenError {expectedErrorStatus(dataType, reference),
+					std::move(m_token)};
 			}
 		}
-		else if (token->isDataType(DataType::None)
+		else if (m_token->isDataType(DataType::None)
 			&& dataType != DataType::None)
 		{
-			return expectedErrStatus(dataType);
+			throw TokenError {expectedErrorStatus(dataType),
+				std::move(m_token)};
 		}
-		if ((status = processInternalFunction(token)) != Status::Good)
-		{
-			// drop and delete function token since it was not used
-			m_holdStack.pop();
-			return status;
-		}
-		// reset reference if it was set above, no longer needed
-		token->setReference(false);
+		processInternalFunction(reference);
 		doneAppend = false;  // already appended
 		break;
 
 	case Token::Type::DefFuncP:
 		if (reference == Reference::Variable)
 		{
-			return expectedErrStatus(dataType, reference);
+			throw TokenError {expectedErrorStatus(dataType, reference),
+				std::move(m_token)};
 		}
 		else if (reference != Reference::None)
 		{
 			// NOTE these are allowed in the DEF command
 			// just point to the open parentheses of the token
-			token->addLengthToColumn();
-			token->setLength(1);
-			return Status::ExpEqualOrComma;
+			TokenPtr token = std::move(m_token);
+			throw TokenError {Status::ExpEqualOrComma, token->column()
+				+ token->length(), 1};
 		}
-		if ((status = processParenToken(token)) != Status::Good)
-		{
-			// drop and delete define function token since it was not used
-			m_holdStack.pop();
-			return status;
-		}
-		// TODO temporary until define functions are fully implemented
-		dataType = token->dataType();  // preserve data type
-		m_table.setToken(token, DefFuncP_Code);
-		token->setDataType(dataType);
+		processParenToken();
 		doneAppend = false;  // already appended
 		break;
 
 	case Token::Type::Paren:
 		if (reference != Reference::None)
 		{
-			token->setReference();
+			m_token->setReference();
 		}
-		if ((status = processParenToken(token)) != Status::Good)
-		{
-			// drop and delete parentheses token since it was not used
-			m_holdStack.pop();
-			return status;
-		}
+		processParenToken();
 		doneAppend = false;  // already appended
 		break;
 
 	default:
-		return Status::BUG_NotYetImplemented;
+		throw TokenError {Status::BUG_NotYetImplemented, std::move(m_token)};
 	}
 
 	if (doneAppend)
 	{
 		// add token directly to output list
 		// and push element pointer on done stack
-		m_output.append(token);
+		m_output.append(std::move(m_token));
 		m_doneStack.emplace(m_output.back());
 	}
 	// for reference, check data type
 	if (reference != Reference::None
-		&& token->convertCode(dataType) != Null_Code)
+		&& m_doneStack.top().rpnItem->token()->convertCode(dataType)
+		!= Null_Code)
 	{
-		token = doneStackPopErrorToken();
-		return expectedErrStatus(dataType, reference);
+		throw doneStackTopTokenError(expectedErrorStatus(dataType, reference));
 	}
-	return Status::Good;
+	return true;
 }
 
 
-// function to get a token from the parser
+// function to get current token from the parser if current token not set
 //
-//   - data type argument determines if number tokens are allowed
-//   - returns parser error if the parser returned an error exception
+//   - data type and references arguments determine if numbers are allowed
+//   - throws parser error if the parser threw an error exception
+//   - if caller requests specific error, then that error is thrown
 
-Status Translator::getToken(TokenPtr &token, DataType dataType,
+void Translator::getToken(Status errorStatus, DataType dataType,
 	Reference reference)
 try
 {
-	// if data type is not blank and not string, then allow a number token
-	token = (*m_parse)(dataType != DataType{} && dataType != DataType::String
-		&& reference == Reference::None
-		? Parser::Number::Yes : Parser::Number::No);
-	return Status::Good;
+	if (!m_token)
+	{
+		// if data type is not blank and not string, then allow a number token
+		m_token = (*m_parse)(dataType != DataType{}
+			&& dataType != DataType::String && reference == Reference::None
+			? Parser::Number::Yes : Parser::Number::No);
+	}
 }
-catch (Error &error)
+catch (TokenError &error)
 {
-	// TODO for now, create an error token to return
-	token = std::make_shared<Token>(error.column, error.length);
 	if (dataType != DataType{} && dataType != DataType::None
-		&& error.status == Status::UnknownToken)
+		&& error(Status::UnknownToken))
 	{
-		// non-number constant error, return expected expression error
-		return expectedErrStatus(dataType, reference);
+		// non-number constant error, change to expected expression error
+		error = expectedErrorStatus(dataType, reference);
 	}
-	else
+	else if (errorStatus != Status{})
 	{
-		// caller may need to convert this error to appropriate error
-		return error.status;
+		error = errorStatus;
 	}
+	// else caller may need to convert this error to appropriate error
+	throw;
 }
 
 
@@ -572,244 +523,189 @@ catch (Error &error)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// function to process a command in the input line
-//
-//   - returns Done_TokenStatus upon success
-//   - returns an error status if an error was detected
-//   - returns the token that terminated the command
-
-Status Translator::processCommand(TokenPtr &commandToken)
-{
-	TranslateFunction translate;
-	TokenPtr token;
-
-	if (commandToken->isType(Token::Type::Command))
-	{
-		translate = m_table.translateFunction(commandToken->code());
-	}
-	else  // assume an assignment statement
-	{
-		translate = m_table.translateFunction(Let_Code);
-		token = std::move(commandToken);
-		// pass token onto let translate function
-	}
-	if (!translate)
-	{
-		return Status::BUG_NotYetImplemented;
-	}
-	Status status {(*translate)(*this, std::move(commandToken), token)};
-	commandToken = std::move(token);
-	return status;
-}
-
-
 // function to get and process an internal function's arguments
 //
-//   - the token argument contains the internal function token
-//   - the token argument contains the token when an error is detected
+//   - current token contains the internal function token
+//   - reference argument not none for sub-string assignments
+//   - throws token error upon detection of error
 
-Status Translator::processInternalFunction(TokenPtr &token)
+void Translator::processInternalFunction(Reference reference)
 {
-	Status status;
-	DataType expectedDataType;
-	bool unaryOperator {};
-
-	Code code {token->code()};
 	// push internal function token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each argument
-	m_holdStack.emplace(token);
-	TokenPtr topToken {std::move(token)};
+	TokenPtr topToken {std::move(m_token)};
+	m_holdStack.emplace(topToken);
 
+	Code code {topToken->code()};
 	int lastOperand {m_table.operandCount(code) - 1};
 	for (int i {}; ; i++)
 	{
-		if (i == 0 && topToken->reference())
+		DataType expectedDataType;
+		if (i == 0 && reference != Reference::None)
 		{
 			// sub-string assignment, look for reference operand
 			expectedDataType = DataType::String;
-			status = getOperand(token, expectedDataType, Reference::VarDefFn);
-			if (status == Status::Good)
+			// will not return false (returns error if not reference)
+			getOperand(expectedDataType, Reference::VarDefFn);
+			// get next token (should be a comma)
+			getToken(Status::ExpComma);
+			if (!m_token->isCode(Comma_Code))
 			{
-				status = getToken(token) == Status::Good
-					? Status::Done : Status::ExpComma;
+				throw TokenError {Status::ExpComma, m_token};
 			}
 		}
 		else
 		{
-			if (i == 0)
+			expectedDataType = i == 0 ? m_table.expectedDataType(topToken)
+				: m_table.operandDataType(code, i);
+			try
 			{
-				expectedDataType = m_table.expectedDataType(topToken);
+				getExpression(expectedDataType);
 			}
-			else
+			catch (TokenError &error)
 			{
-				expectedDataType = m_table.operandDataType(code, i);
+				if (error(Status::ExpBinOpOrEnd))  // (aka unary operator?)
+				{
+					// determine error for unary operator token
+					error = expressionErrorStatus(i == lastOperand, true, code);
+				}
+				else if (error(Status::UnknownToken))
+				{
+					// determine error for unknown tokens
+					error = expressionErrorStatus(i == lastOperand, false,
+						code);
+				}
+				throw;
 			}
-			status = getExpression(token, expectedDataType);
 		}
 
-		if (status == Status::Done)
+		// check if associated code for function is needed
+		if (expectedDataType == DataType::Number)
 		{
-			// check if associated code for function is needed
-			if (expectedDataType == DataType::Number)
+			TokenPtr &token = m_doneStack.top().rpnItem->token();
+			if (token->dataType()
+				!= m_table.operandDataType(topToken->code(), 0))
 			{
-				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-				if (doneToken->dataType()
-					!= m_table.operandDataType(topToken->code(), 0))
-				{
-					// change token's code and data type to associated code
-					m_table.setToken(topToken,
-						m_table.associatedCode(topToken->code()));
-				}
-				else if (doneToken->hasSubCode(Double_SubCode))
-				{
-					// change token (constant) from integer to double
-					doneToken->setDataType(DataType::Double);
-					doneToken->removeSubCode(Double_SubCode);
-				}
-				if (doneToken->isType(Token::Type::Constant))
-				{
-					doneToken->setCode(Const_Code);
-				}
+				// change token's code and data type to associated code
+				m_table.setToken(topToken,
+					m_table.associatedCode(topToken->code()));
+			}
+			else if (token->hasSubCode(Double_SubCode))
+			{
+				// change token (constant) from integer to double
+				token->setDataType(DataType::Double);
+				token->removeSubCode(Double_SubCode);
+			}
+			if (token->isType(Token::Type::Constant))
+			{
+				token->setCode(Const_Code);
 			}
 		}
-		else if (m_table.isUnaryOperator(token))
-		{
-			// status will be set to an error for a unary operator
-			// need to pass to below to determine appropriate error
-			unaryOperator = true;
-		}
-		else if (status != Status::UnknownToken)
-		{
-			return status;  // return all other errors except unknown token
-		}
-		// code below determines error for unknown and unary operator tokens
 
 		// check terminating token
-		if (token->isCode(Comma_Code))
+		if (m_token->isCode(Comma_Code))
 		{
 			if (i == lastOperand)
 			{
 				if (!m_table.hasFlag(code, Multiple_Flag))
 				{
 					// function doesn't have multiple entries
-					status = Status::ExpOpOrParen;
-					break;
+					throw TokenError {Status::ExpOpOrParen, m_token};
 				}
 				// move to next code; update code and last operand index
 				code = topToken->nextCode();
 				lastOperand = m_table.operandCount(code) - 1;
 			}
-			token.reset();  // delete comma token, it's not needed
+			m_token.reset();  // delete comma token, it's not needed
 			m_doneStack.pop();
 		}
-		else if (token->isCode(CloseParen_Code))
+		else if (m_token->isCode(CloseParen_Code))
 		{
 			if (i < lastOperand)
 			{
-				status = Status::ExpOpOrComma;
-				break;
+				throw TokenError {Status::ExpOpOrComma, m_token};
 			}
 
 			m_doneStack.pop();  // remove from done stack
 
 			// add token to output list if not sub-string assignment
 			RpnItemPtr rpnItem;
-			if (topToken->reference())
+			if (reference != Reference::None)
 			{
 				rpnItem = std::make_shared<RpnItem>(topToken);
 			}
 			else
 			{
-				m_output.append(topToken);
+				m_output.append(std::move(topToken));
 				rpnItem = m_output.back();
 			}
 
 			// push internal function to done stack
-			m_doneStack.emplace(rpnItem, std::move(token));
+			m_doneStack.emplace(rpnItem, std::move(m_token));
 
 			m_holdStack.pop();
-			token = std::move(topToken);  // return original token
-			return Status::Good;
+			break;  // done
 		}
-		// unexpected token, determine appropriate error
 		else
 		{
-			if (i == 0 && topToken->reference())
-			{
-				status = Status::ExpComma;
-			}
-			else if (i < lastOperand)
-			{
-				status = unaryOperator ? Status::ExpBinOpOrComma
-					: Status::ExpOpOrComma;
-			}
-			else if (!m_table.hasFlag(code, Multiple_Flag))
-			{
-				// function doesn't have multiple entries
-				status = unaryOperator ? Status::ExpBinOpOrParen
-					: Status::ExpOpOrParen;
-			}
-			else
-			{
-				status = unaryOperator ? Status::ExpBinOpCommaOrParen
-					: Status::ExpOpCommaOrParen;
-			}
-			break;
+			// determine error for unknown tokens
+			throw TokenError {expressionErrorStatus(i == lastOperand, false,
+				code), m_token};
 		}
 	}
-	return status;
 }
 
 
 // function to get and process a parentheses token's arguments
 //
-//   - the token argument contains the token with parentheses
-//   - the token argument contains the token when an error is detected
+//   - current token contains the token with parentheses
+//   - throws token error upon detection of error
 
-Status Translator::processParenToken(TokenPtr &token)
+void Translator::processParenToken()
 {
-	Status status;
-
 	// push parentheses token onto hold stack to block waiting tokens
 	// during the processing of the expressions of each operand
-	m_holdStack.emplace(token);
+	m_holdStack.emplace(m_token);
 	// determine data type (number for subscripts, any for arguments)
-	DataType dataType;
+	// TODO with function dictionaries, get data type for each argument
+	// TODO (move into loop below) and check number of arguments
+	DataType dataType {DataType::Any};
 	// TODO need to check test mode once dictionaries are implemented
 	// REMOVE for now assume functions start with an 'F'
 	// TODO temporary until array and functions are fully implemented
-	bool isArray;
-	if (token->isType(Token::Type::Paren))
+	if (m_token->isType(Token::Type::Paren))
 	{
-		isArray = toupper(token->string().front()) != 'F';
-		token->setCode(isArray ? Array_Code : Function_Code);
+		bool isArray = toupper(m_token->string().front()) != 'F';
+		m_token->setCode(isArray ? Array_Code : Function_Code);
+		if (m_token->reference() || isArray)
+		{
+			dataType = DataType::Integer;  // array subscripts
+		}
 	}
-	if (token->isType(Token::Type::Paren) && (token->reference() || isArray))
+	else  // Token::Type::DefFuncP
 	{
-		dataType = DataType::Integer;  // array subscripts
+		// TODO temporary until define functions are fully implemented
+		m_token->setCode(DefFuncP_Code);
 	}
-	else
-	{
-		// TODO with function dictionaries, get data type for argument
-		// TODO (move into loop below)
-		// TODO and check number of arguments
-		dataType = DataType::Any;  // function arguments
-	}
-	TokenPtr topToken {std::move(token)};
+	TokenPtr topToken {std::move(m_token)};
 
 	for (int count {1}; ; count++)
 	{
-		if ((status = getExpression(token, dataType)) != Status::Done)
+		try
 		{
-			if (status == Status::UnknownToken)
+			getExpression(dataType);
+		}
+		catch (TokenError &error)
+		{
+			if (error(Status::ExpBinOpOrEnd))  // (aka unary operator?)
 			{
-				status = Status::ExpOpCommaOrParen;
+				error = Status::ExpBinOpCommaOrParen;
 			}
-			else if (m_table.isUnaryOperator(token))
+			else if (error(Status::UnknownToken))
 			{
-				status = Status::ExpBinOpCommaOrParen;
+				error = Status::ExpOpCommaOrParen;
 			}
-			return status;
+			throw;
 		}
 
 		// set reference for appropriate token types
@@ -821,23 +717,23 @@ Status Translator::processParenToken(TokenPtr &token)
 			}
 			else  // function argument
 			{
-				TokenPtr operandToken {m_doneStack.top().rpnItem->token()};
+				TokenPtr &token = m_doneStack.top().rpnItem->token();
 				// TODO may also need to check for DefFuncN type here
-				if ((operandToken->isType(Token::Type::NoParen)
-					|| operandToken->isType(Token::Type::Paren))
-					&& !operandToken->hasSubCode(Paren_SubCode))
+				if ((token->isType(Token::Type::NoParen)
+					|| token->isType(Token::Type::Paren))
+					&& !token->hasSubCode(Paren_SubCode))
 				{
-					operandToken->setReference();
+					token->setReference();
 				}
 			}
 		}
 
 		// check terminating token
-		if (token->isCode(Comma_Code))
+		if (m_token->isCode(Comma_Code))
 		{
-			token.reset();  // delete comma token, it's not needed
+			m_token.reset();  // delete comma token, it's not needed
 		}
-		else if (token->isCode(CloseParen_Code))
+		else if (m_token->isCode(CloseParen_Code))
 		{
 			RpnItemVector attached;
 			// save operands for storage in output list
@@ -861,42 +757,44 @@ Status Translator::processParenToken(TokenPtr &token)
 
 			// add token to output list and push element pointer on done stack
 			m_output.append(topToken, attached);
-			m_doneStack.emplace(m_output.back(), token);
+			m_doneStack.emplace(m_output.back(), std::move(m_token));
 
 			m_holdStack.pop();
-			token = std::move(topToken);  // return original token
-			return Status::Good;
+			break;  // done
 		}
 		else  // unexpected token
 		{
-			return Status::ExpOpCommaOrParen;
+			throw TokenError {Status::ExpOpCommaOrParen, m_token};
 		}
 	}
 }
 
 
-// function to process an operator token received, all operators with higher
+// function to process an operator token, all operators with higher
 // precedence on the hold stack are added to output list first
 //
 // for each operator added to the output list, any pending parentheses is
 // processed first, the final operand of the operator is processed
 //
-//    - if error occurs on last operand, the operator token passed in is
-//      deleted and the token with the error is returned
+//    - current token is the operator token
 //    - sets last_precedence for operator being added to output list
 //    - after higher precedence operators are processed from the hold stack,
-//      an end of expression token is checked for, which causes a done status
-//      to be returned
-//    - otherwise, the first operand of the operator is processed, which also
-//      handles pushing the operator to the hold stack
+//      a check for pending parenthesis is made, and if the present token is
+//      not a unary or binary operator, the end of the expression has been
+//      reached and false is returned
+//    - otherwise, the first operand of the operator is processed,
+//      which also handles pushing the operator to the hold stack
+//    - true is returned indicating operator successfully processed
+//    - upon true, current token is left empty
+//    - upon false, current token is not changed
 
-Status Translator::processOperator(TokenPtr &token)
+bool Translator::processOperator()
 {
 	// determine precedence of incoming token
 	// (set highest precedence for unary operators,
 	// which don't force other operators from hold stack)
-	int tokenPrecedence {m_table.isUnaryOperator(token)
-		? HighestPrecedence : m_table.precedence(token)};
+	int tokenPrecedence {m_table.isUnaryOperator(m_token)
+		? HighestPrecedence : m_table.precedence(m_token)};
 
 	// process and drop unary or binary operators on hold stack
 	// while they have higher or same precedence as incoming token
@@ -907,15 +805,8 @@ Status Translator::processOperator(TokenPtr &token)
 		checkPendingParen(topToken, Popped::Yes);
 
 		// change token operator code or insert conversion codes as needed
-		Status status {processFinalOperand(topToken,
-			std::move(m_holdStack.top().first),
-			m_table.isUnaryOperator(topToken) ? 0 : 1)};
-
-		if (status != Status::Good)
-		{
-			token = topToken;  // return token with error
-			return status;
-		}
+		processFinalOperand(topToken, std::move(m_holdStack.top().first),
+			m_table.isUnaryOperator(topToken) ? 0 : 1);
 
 		// save precedence of operator being added
 		// (doesn't matter if not currently within parentheses,
@@ -925,43 +816,25 @@ Status Translator::processOperator(TokenPtr &token)
 		m_holdStack.pop();
 	}
 
-	checkPendingParen(token, Popped::No);
+	checkPendingParen(m_token, Popped::No);
 
-	// if a unary or binary operator then process first operand and return
-	if (m_table.isUnaryOrBinaryOperator(token))
+	if (!m_table.isUnaryOrBinaryOperator(m_token))
 	{
-		return processFirstOperand(token);
+		return false;  // not unary or binary operator, end of expression
 	}
-
-	return Status::Done;  // otherwise, end of expression
-}
-
-
-// function to process the first operand for an operator
-//
-//  - called from processOperator()
-//  - attaches first operand token from operand on top of done stack
-//  - no first operand token for unary operators
-
-Status Translator::processFirstOperand(TokenPtr &token)
-{
-	TokenPtr first;			// first operand token
+	// otherwise process first operand and return
+	TokenPtr first;			// first operand token (empty for unary operator)
 
 	// check first operand of binary operators
-	if (!m_table.isUnaryOperator(token))
+	if (!m_table.isUnaryOperator(m_token))
 	{
 		// changed token operator code or insert conversion codes as needed
-		Status status {processDoneStackTop(token, 0, &first)};
-		if (status != Status::Good)
-		{
-			return status;
-		}
+		processDoneStackTop(m_token, 0, &first);
 	}
 
 	// push it onto the holding stack and attach first operand
-	m_holdStack.emplace(token, first);
-
-	return Status::Good;
+	m_holdStack.emplace(std::move(m_token), std::move(first));
+	return true;
 }
 
 
@@ -976,19 +849,15 @@ Status Translator::processFirstOperand(TokenPtr &token)
 //	 - RPN item is pushed to done stack if operator
 //
 //   - for operator, token2 is first operand of operator on hold stack
-//   - for internal code, token2 is nullptr
+//   - for internal code, token2 is not set
 
-Status Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
+void Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 	int operandIndex)
 {
 	TokenPtr first;			// first operand token
 	TokenPtr last;			// last operand token
 
-	Status status {processDoneStackTop(token, operandIndex, &first, &last)};
-	if (status != Status::Good)
-	{
-		return status;
-	}
+	processDoneStackTop(token, operandIndex, &first, &last);
 
 	if (token->isType(Token::Type::Operator))
 	{
@@ -1007,8 +876,6 @@ Status Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 	{
 		m_doneStack.emplace(m_output.back(), first, last);
 	}
-
-	return Status::Good;
 }
 
 
@@ -1019,16 +886,16 @@ Status Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 //   - calls Table::findCode() to check the data type of item:
 //     changes token code to a matching associated code if available
 //     else returns a conversion code if conversion is possible
-//   - if no match found or conversion not possible, an error is returned
+//   - if no match found or conversion not possible, an error is thrown
 //   - if conversion possible, a conversion code token is appended to output
 
-Status Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
+void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 	TokenPtr *first, TokenPtr *last)
 {
 	if (m_doneStack.empty())
 	{
 		// oops, there should have been operands on done stack
-		return Status::BUG_DoneStackEmptyFindCode;
+		throw TokenError {Status::BUG_DoneStackEmptyFindCode, token};
 	}
 	TokenPtr topToken {m_doneStack.top().rpnItem->token()};
 	// get first and last operands for top token
@@ -1066,22 +933,17 @@ Status Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 			// append token to end of output list (after operand)
 			m_output.append(m_table.newToken(cvtCode));
 		}
-
-		return Status::Good;
 	}
-
-	// no match found, report error
-	// use main code's expected data type for operand
-	// (if data type is No, then double constant can't be converted to integer)
-	Status status {topToken->isDataType(DataType{})
-		? Status::ExpIntConst : expectedErrStatus(topToken->dataType())};
-
-	// change token to token with invalid data type and return error
-	// report entire expression
-	localFirst->setThrough(localLast);
-	token = localFirst;
-
-	return status;
+	else  // no match found, throw error
+	{
+		// use main code's expected data type for operand
+		// (if no data type, then double constant can't be converted to integer)
+		// report entire expression from first token through last
+		throw TokenError {topToken->isDataType(DataType{})
+			? Status::ExpIntConst : expectedErrorStatus(topToken->dataType()),
+			localFirst->column(), localLast->column() + localLast->length()
+			- localFirst->column()};
+	}
 }
 
 
@@ -1101,6 +963,7 @@ Status Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 //   - popped argument indicates if token will be popped from the hold stack
 
 void Translator::checkPendingParen(const TokenPtr &token, Popped popped)
+	noexcept
 {
 	if (m_pendingParen)  // is a closing parentheses token pending?
 	{
@@ -1129,30 +992,33 @@ void Translator::checkPendingParen(const TokenPtr &token, Popped popped)
 }
 
 
-// function to pop the top item from the done stack and return the token
-// from the first to the last operand appropriate for an error token
+// function to create token error from done stack top
+// (error is from first operand to the last operand)
 
-TokenPtr Translator::doneStackPopErrorToken(void)
+TokenError Translator::doneStackTopTokenError(Status errorStatus) noexcept
 {
 	TokenPtr token {std::move(m_doneStack.top().first)};
 	if (!token)
 	{
-		// if no first operand token, set to token itself
+		// if no first operand token, start at token itself
 		token = m_doneStack.top().rpnItem->token();
 	}
-	// if last operand token set, set error token through last token
-	if (m_doneStack.top().last)
+	int column = token->column();
+	int length = token->length();
+
+	// if last operand token set, set error length through last token
+	if (TokenPtr token = std::move(m_doneStack.top().last))
 	{
-		token->setThrough(m_doneStack.top().last);
+		length = token->column() - column + token->length();
 	}
-	m_doneStack.pop();
-	return token;  // return error token
+	return TokenError {errorStatus, column, length};
 }
 
 
 // function to return the token error status for an expected data type
 // and reference type
-Status Translator::expectedErrStatus(DataType dataType, Reference reference)
+Status Translator::expectedErrorStatus(DataType dataType, Reference reference)
+	noexcept
 {
 	switch (dataType)
 	{
@@ -1195,27 +1061,24 @@ Status Translator::expectedErrStatus(DataType dataType, Reference reference)
 }
 
 
-// function to clean up the Translator variables after an error is detected
-//
-//   - must be called after add_token() returns an error
-
-void Translator::cleanUp(void)
+// function to determine error status for an expression error
+Status Translator::expressionErrorStatus(bool lastOperand, bool unaryOperator,
+	Code code) noexcept
 {
-	// clean up from error
-	while (!m_holdStack.empty())
+	if (!lastOperand)
 	{
-		m_holdStack.pop();
+		return unaryOperator ? Status::ExpBinOpOrComma : Status::ExpOpOrComma;
 	}
-	while (!m_doneStack.empty())
+	else if (!m_table.hasFlag(code, Multiple_Flag))
 	{
-		m_doneStack.pop();
+		// function doesn't have multiple entries
+		return unaryOperator ? Status::ExpBinOpOrParen : Status::ExpOpOrParen;
 	}
-
-	// clear the RPN output list of all items
-	m_output.clear();
-
-	// need to delete pending parentheses
-	m_pendingParen.reset();
+	else  // could be another operand or at last operand
+	{
+		return unaryOperator ? Status::ExpBinOpCommaOrParen
+			: Status::ExpOpCommaOrParen;
+	}
 }
 
 

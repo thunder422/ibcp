@@ -46,9 +46,9 @@ public:
 		Status status) :  m_type {type}, m_lineNumber {lineNumber},
 		m_column {column}, m_length {length}, m_status {status} {}
 
-	bool isEmpty(void) const
+	explicit operator bool() const
 	{
-		return m_type == Type::None;
+		return m_type != Type::None;
 	}
 	Type type(void) const
 	{

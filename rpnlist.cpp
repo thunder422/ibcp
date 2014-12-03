@@ -29,10 +29,6 @@
 // function to overload the comparison operator
 bool RpnList::operator==(const RpnList &other) const
 {
-	if (hasError() || other.hasError())
-	{
-		return false;  // miscompare if either list has an error
-	}
 	if (count() != other.count())
 	{
 		return false;  // miscompare if lists are different sizes

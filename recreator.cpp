@@ -46,7 +46,7 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 			|| !(recreate = m_table.recreateFunction(rpnItem->token()->code())))
 		{
 			// if no recreate function, then it is missing from table
-			emplace('?' + rpnItem->token()->string().c_str() + '?');
+			emplace('?' + rpnItem->token()->string() + '?');
 		}
 		else  // call recreate function for code
 		{
@@ -128,7 +128,7 @@ void Recreator::pushWithOperands(std::string &&name, int count)
 void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// just push the string of the token
-	recreator.emplace(rpnItem->token()->string().c_str());
+	recreator.emplace(rpnItem->token()->string());
 }
 
 // function to recreate a unary operator

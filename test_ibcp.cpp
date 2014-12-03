@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: test_ibcp.cpp - tester class source file
-//	Copyright (C) 2010-2013  Thunder422
+//	Copyright (C) 2010-2014  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -241,7 +241,6 @@ Tester::Tester(const std::string &programName,
 	const std::list<std::string> &args, std::ostream &cout) :
 	m_programName {programName},
 	m_cout(cout),
-	m_translator {new Translator},
 	m_programUnit {new ProgramModel}
 {
 	std::unordered_map<Option, std::string, EnumClassHash> name {
@@ -280,7 +279,7 @@ Tester::Tester(const std::string &programName,
 		}
 		if (args.size() == 1)
 		{
-			m_errorMessage = m_programName + ": missing test file name";
+			throw m_programName + ": missing test file name";
 		}
 		else
 		{
@@ -300,22 +299,23 @@ Tester::Tester(const std::string &programName,
 			}
 			if (m_option == Option{})  // no matching names?
 			{
-				m_errorMessage = "usage: " + m_programName + " -t";
+				std::string errorMessage = "usage: " + m_programName + " -t";
 				if (m_recreate)
 				{
-					m_errorMessage += 'o';
+					errorMessage += 'o';
 				}
-				m_errorMessage += " (";
+				errorMessage += " (";
 				if (m_recreate)
 				{
-					m_errorMessage += name[Option::Parser] + '|';
+					errorMessage += name[Option::Parser] + '|';
 				}
-				m_errorMessage += name[Option::Expression] + '|'
+				errorMessage += name[Option::Expression] + '|'
 					+ name[Option::Translator] + ")[xx]";
+				throw errorMessage;
 			}
 			else if (m_option == Option::Parser && m_recreate)
 			{
-				m_errorMessage = m_programName + ": cannot use -to with "
+				throw m_programName + ": cannot use -to with "
 					+ name[Option::Parser] + " files";
 			}
 		}
@@ -339,13 +339,13 @@ bool Tester::isOption(const std::string &arg, const std::string &exp,
 
 
 // function to return list of valid options
-std::string Tester::options(void)
+std::string Tester::options()
 {
 	return "-t <test_file>|-tp|-te|-tt|-tc|-tr|-to <test_file>";
 }
 
 
-bool Tester::run(std::string copyrightStatement)
+void Tester::operator()(std::string copyrightStatement)
 {
 	std::ifstream ifs;
 
@@ -355,9 +355,7 @@ bool Tester::run(std::string copyrightStatement)
 		ifs.open(m_testFileName);
 		if (!ifs.is_open())
 		{
-			m_errorMessage = m_programName + ": error opening '"
-				 + m_testFileName + '\'';
-			return false;
+			throw m_programName + ": error opening '" + m_testFileName + '\'';
 		}
 	}
 
@@ -438,7 +436,7 @@ bool Tester::run(std::string copyrightStatement)
 		for (int i {}; i < m_programUnit->rowCount(); i++)
 		{
 			m_cout << i << ": "
-				<< m_programUnit->debugText(i, true).toStdString() << '\n';
+				<< m_programUnit->debugText(i, true) << '\n';
 		}
 
 		m_cout << "\nRemarks:\n" << m_programUnit->remDictionary();
@@ -455,22 +453,19 @@ bool Tester::run(std::string copyrightStatement)
 			m_cout << "\nOutput:\n";
 			for (int i {}; i < m_programUnit->rowCount(); i++)
 			{
-				m_cout << i << ": " << m_programUnit->lineText(i).toStdString()
-					<< '\n';
+				m_cout << i << ": " << m_programUnit->lineText(i) << '\n';
 			}
 		}
 	}
-
-	return true;
 }
 
 
 // function to parse an input line and print the resulting tokens
 void Tester::parseInput(const std::string &testInput)
+try
 {
 	Parser parse {testInput};
 	for (;;)
-	try
 	{
 		TokenPtr token {parse(Parser::Number::Yes)};
 		printToken(token);
@@ -479,44 +474,39 @@ void Tester::parseInput(const std::string &testInput)
 			return;
 		}
 	}
-	catch (Error &error)
-	{
-		printError(error);
-		return;
-	}
+}
+catch (TokenError &error)
+{
+	printError(error);
 }
 
 
 // function to parse an input line, translate to an RPN list
 // and output the resulting RPN list
 RpnList Tester::translateInput(const std::string &testInput, bool exprMode,
-	const char *header)
+	std::string &&header)
+try
 {
-	QString tmp {testInput.c_str()};
-	RpnList rpnList {m_translator->translate(tmp, exprMode
+	RpnList rpnList {Translator{testInput}(exprMode
 		? Translator::TestMode::Expression : Translator::TestMode::Yes)};
-	if (rpnList.hasError())
+
+	m_cout << (!header.empty() ? header : "Output") << ": ";
+	if (m_recreate)
 	{
-		Error error {rpnList.errorStatus(), rpnList.errorColumn(),
-			rpnList.errorLength()};
-		printError(error);
-		rpnList.clear();  // return an empty list
+		// recreate text from rpn list
+		m_cout << Recreator{}(rpnList, exprMode);
 	}
-	else  // no error, translate line and if selected recreate it
+	else
 	{
-		m_cout << (header ? header : "Output") << ": ";
-		if (m_recreate)
-		{
-			// recreate text from rpn list
-			m_cout << Recreator{}(rpnList, exprMode);
-		}
-		else
-		{
-			m_cout << rpnList;
-		}
-		m_cout << " \n";
+		m_cout << rpnList;
 	}
+	m_cout << ' ' << std::endl;
 	return rpnList;
+}
+catch (TokenError &error)
+{
+	printError(error);
+	return RpnList{};  // return an empty list
 }
 
 
@@ -611,13 +601,13 @@ void Tester::encodeInput(std::string testInput)
 	// call update with arguments dependent on operation
 	if (operation == Operation::Remove)
 	{
-		m_programUnit->update(lineIndex, 1, 0, QStringList());
+		m_programUnit->update(lineIndex, 1, 0, std::vector<std::string>{});
 	}
 	else  // Change_Operation or Insert_Operation
 	{
 		m_programUnit->update(lineIndex, 0,
 			operation == Operation::Insert ? 1 : 0,
-			QStringList() << testInput.c_str());
+			std::vector<std::string>{testInput});
 	}
 
 	const ErrorItem *errorItem {m_programUnit->lineError(lineIndex)};
@@ -627,14 +617,13 @@ void Tester::encodeInput(std::string testInput)
 		printInput(testInput);
 		if (errorItem)
 		{
-			Error error {errorItem->status(), errorItem->column(),
+			TokenError error {errorItem->status(), errorItem->column(),
 				errorItem->length()};
 			printError(error);
 		}
 		else  // get text of encoded line and output it
 		{
-			m_cout << "Output: "
-				<< m_programUnit->debugText(lineIndex).toStdString() << '\n';
+			m_cout << "Output: " << m_programUnit->debugText(lineIndex) << '\n';
 		}
 	}
 }
@@ -764,11 +753,11 @@ void Tester::printToken(const TokenPtr &token)
 
 
 // function to print a token with an error
-void Tester::printError(Error &error)
+void Tester::printError(TokenError &error)
 {
-	m_cout << std::string(7 + error.column, ' ')
-		<< std::string(error.length, '^') << "-- "
-		<< StatusMessage::text(error.status).toStdString() << '\n';
+	m_cout << std::string(7 + error.m_column, ' ')
+		<< std::string(error.m_length, '^') << "-- "
+		<< StatusMessage::text(error.m_status).toStdString() << std::endl;
 }
 
 
