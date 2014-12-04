@@ -38,29 +38,29 @@ Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
 	58: Operator  Op None    EOL
 
 Input: LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
-	 0: Command   Op Let
-	 4: Command   Op Print
-	10: Command   Op End
-	14: Command   Op Then
-	19: Operator  Op Integer Xor
-	23: IntFuncP  () Double  Abs
-	27: IntFuncP  () String  Chr
-	32: IntFuncP  () Double  Val
-	37: Command   Op EndIf
+	 0: Command   Op LET
+	 4: Command   Op PRINT
+	10: Command   Op END
+	14: Command   Op THEN
+	19: Operator  Op Integer XOR
+	23: IntFuncP  () Double  ABS(
+	27: IntFuncP  () String  CHR$(
+	32: IntFuncP  () Double  VAL(
+	37: Command   Op ENDIF
 	44: NoParen      String  |left$|
-	50: IntFuncP  () String  Left
+	50: IntFuncP  () String  LEFT$(
 	56: Operator  Op None    EOL
 
 Input: rem this should be a comment
-	 0: Command   Op Rem | this should be a comment|
+	 0: Command   Op REM | this should be a comment|
 	28: Operator  Op None    EOL
 
 Input: rem:this should be a comment
-	 0: Command   Op Rem |:this should be a comment|
+	 0: Command   Op REM |:this should be a comment|
 	28: Operator  Op None    EOL
 
 Input: rem-this should be a comment
-	 0: Command   Op Rem |-this should be a comment|
+	 0: Command   Op REM |-this should be a comment|
 	28: Operator  Op None    EOL
 
 Input: fn fn( fn1 fn1( fn_ fn_(

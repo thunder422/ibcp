@@ -682,8 +682,7 @@ static const char *tokenTypeName(Token::Type type)
 // function to print the contents of a token
 void Tester::printToken(const TokenPtr &token)
 {
-	// include the auto-generated enumeration name text arrays
-	#include "test_names.h"
+	Table &table = Table::instance();
 
 	std::string info {"  "};
 	if (token->hasParen())
@@ -738,7 +737,7 @@ void Tester::printToken(const TokenPtr &token)
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
 		// fall thru
 	case Token::Type::Command:
-		m_cout << " " << code_name[token->code()];
+		m_cout << " " << table.debugName(token->code()).toStdString();
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
 			m_cout << " |" << token->string() << '|';

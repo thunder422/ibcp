@@ -157,7 +157,7 @@ if (NOT WIN32)
 endif (NOT WIN32)
 
 # add the binary tree to the search path for include files
-# so that ibcp_config.h, autoenums.h, test_names.h can be found
+# so that ibcp_config.h, autoenums.h can be found
 include_directories(
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_BINARY_DIR}
@@ -169,14 +169,6 @@ add_custom_command(OUTPUT autoenums.h
 	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/enums.awk
 		${PROJECT_SOURCE_DIR}/
 	MAIN_DEPENDENCY enums.awk
-	DEPENDS table.cpp
-)
-
-# custom target
-add_custom_command(OUTPUT test_names.h
-	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/test_names.awk
-		${PROJECT_SOURCE_DIR}/
-	MAIN_DEPENDENCY test_names.awk
 	DEPENDS table.cpp
 )
 
@@ -305,7 +297,6 @@ add_executable(ibcp
 	ibcp.h
 	basic/basic.h
 	autoenums.h
-	test_names.h
 	${ibcp_HEADERS}
 	${ibcp_SOURCES}
 	${ibcp_MOCS}

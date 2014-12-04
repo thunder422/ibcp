@@ -11,7 +11,7 @@ Program:
 5: [26-31] 0:VarRefStr 1:|2:D$| 2:VarInt 3:|0:B%| 4:STR%$( 5:Assign$
 6: [32]
 7: [32-37] 0:VarStr 1:|2:D$| 2:PrintStr 3:PRINT 4:' 5:|2: something useful|
-8: [38-62] 0:ConstStr 1:|1:Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|3:N%| 6:InputAssignInt 7:PROMPT':' 8:VarRef 9:|1:E| 10:VarInt 11:|3:N%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|3:N%| 17:PrintInt 18:, 19:Var 20:|1:E| 21:PrintDbl 22:PRINT 23:' 24:|1: replaced with same size line|
+8: [38-62] 0:ConstStr 1:|1:Enter:| 2:InputParseInt 3:InputBeginStr 4:VarRefInt 5:|3:N%| 6:InputAssignInt 7:INPUTPROMPT':' 8:VarRef 9:|1:E| 10:VarInt 11:|3:N%| 12:CvtDbl 13:SQR( 14:Assign'LET:' 15:VarInt 16:|3:N%| 17:PrintInt 18:, 19:Var 20:|1:E| 21:PrintDbl 22:PRINT 23:' 24:|1: replaced with same size line|
 9: [63]
 10: [63-73] 0:VarRefStr 1:|1:A$| 2:VarInt 3:|0:B%| 4:ConstInt 5:|2:48| 6:+% 7:CHR$( 8:Assign$ 9:' 10:|7: replaced with smaller line|
 11: [74-85] 0:Var 1:|0:A| 2:PrintDbl 3:, 4:Var 5:|2:B| 6:PrintDbl 7:, 8:Var 9:|3:C| 10:PrintDbl 11:PRINT

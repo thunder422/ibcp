@@ -1,70 +1,70 @@
 
 Input: A$ = "this is a test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |this is a test|
 	21: Operator  Op None    EOL
 
 Input: A$ = "this is a test
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |this is a test|
 	20: Operator  Op None    EOL
 
 Input: A$ = "this is a ""test"""
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |this is a "test"|
 	25: Operator  Op None    EOL
 
 Input: A$ = """this"" is a test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |"this" is a test|
 	25: Operator  Op None    EOL
 
 Input: A$ = "this is ""a"" test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |this is "a" test|
 	25: Operator  Op None    EOL
 
 Input: A$ = "this is "" a test"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |this is " a test|
 	24: Operator  Op None    EOL
 
 Input: A$ = ""
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  ||
 	 7: Operator  Op None    EOL
 
 Input: A$ = "
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  ||
 	 6: Operator  Op None    EOL
 
 Input: A$ = """"
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |"|
 	 9: Operator  Op None    EOL
 
 Input: A$ = """
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
+	 3: Operator  Op Integer =
 	 5: Constant     String  |"|
 	 8: Operator  Op None    EOL
 
 Input: A$ = LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
-	 5: IntFuncP  () String  Left
+	 3: Operator  Op Integer =
+	 5: IntFuncP  () String  LEFT$(
 	11: Constant     String  |TEST|
-	17: Operator  Op None    Comma
+	17: Operator  Op None    ,
 	19: Constant     Integer 1 |1|
-	20: Operator  Op None    CloseParen
+	20: Operator  Op None    )
 	21: Operator  Op None    EOL

@@ -1710,6 +1710,10 @@ const QString Table::debugName(Code code) const
 	{
 		name = m_entry[code].name;
 	}
+	else if (m_entry[code].multiple == Multiple::TwoWord)
+	{
+		name = m_entry[code].name + name;
+	}
 	return name;
 }
 

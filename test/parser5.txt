@@ -1,49 +1,49 @@
 
 Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
-	 3: Operator  Op Integer Eq
-	 5: IntFuncP  () String  Mid2
+	 3: Operator  Op Integer =
+	 5: IntFuncP  () String  MID2$(
 	10: Constant     String  |b|
-	13: Operator  Op None    Comma
+	13: Operator  Op None    ,
 	14: NoParen      None    |A|
-	15: Operator  Op Double  Add
+	15: Operator  Op Double  +
 	16: NoParen      None    |B|
-	17: Operator  Op Double  Mul
+	17: Operator  Op Double  *
 	18: Constant     Integer 2 |2|
-	19: Operator  Op None    Comma
+	19: Operator  Op None    ,
 	20: NoParen      None    |index|
-	25: Operator  Op None    CloseParen
-	26: Operator  Op Double  Add
-	27: IntFuncP  () String  Left
+	25: Operator  Op None    )
+	26: Operator  Op Double  +
+	27: IntFuncP  () String  LEFT$(
 	33: Constant     String  |TEST|
-	39: Operator  Op None    Comma
+	39: Operator  Op None    ,
 	41: Constant     Integer 1 |1|
-	42: Operator  Op None    CloseParen
+	42: Operator  Op None    )
 	43: Operator  Op None    EOL
 
 Input: if index>5 and subindex<=10 then
-	 0: Command   Op If
+	 0: Command   Op IF
 	 3: NoParen      None    |index|
-	 8: Operator  Op Integer Gt
+	 8: Operator  Op Integer >
 	 9: Constant     Integer 5 |5|
-	11: Operator  Op Integer And
+	11: Operator  Op Integer AND
 	15: NoParen      None    |subindex|
-	23: Operator  Op Integer LtEq
+	23: Operator  Op Integer <=
 	25: Constant     Integer 10 |10|
-	28: Command   Op Then
+	28: Command   Op THEN
 	32: Operator  Op None    EOL
 
 Input: var = 5'initialize variable + 
 	 0: NoParen      None    |var|
-	 4: Operator  Op Integer Eq
+	 4: Operator  Op Integer =
 	 6: Constant     Integer 5 |5|
-	 7: Operator  Op None    RemOp |initialize variable + |
+	 7: Operator  Op None    ' |initialize variable + |
 	30: Operator  Op None    EOL
 
 Input: if index<<5 && index><4 || n<4 then
-	 0: Command   Op If
+	 0: Command   Op IF
 	 3: NoParen      None    |index|
-	 8: Operator  Op Integer Lt
-	 9: Operator  Op Integer Lt
+	 8: Operator  Op Integer <
+	 9: Operator  Op Integer <
 	10: Constant     Integer 5 |5|
                    ^-- unknown token
