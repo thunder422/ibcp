@@ -113,7 +113,6 @@ public:
 	int secondAssociatedIndex(Code code) const;
 	Code secondAssociatedCode(Code code, int index = 0) const;
 	DataType expectedDataType(Code code) const;
-	bool isUnaryOperator(Code code) const;
 	TranslateFunction translateFunction(Code code) const;
 	EncodeFunction encodeFunction(Code code) const;
 	bool hasOperand(Code code) const;

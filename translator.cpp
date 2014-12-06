@@ -251,15 +251,9 @@ void Translator::getExpression(DataType dataType, int level)
 			// set pending parentheses token pointer
 			m_pendingParen = std::move(m_token);
 		}
-		else
+		else if (!m_table.isUnaryOperator(m_token))
 		{
-			Code unaryCode;
-			if ((unaryCode = m_table.unaryCode(m_token)) != Null_Code)
-			{
-				m_token->setCode(unaryCode);  // change token to unary operator
-			}
-			// get operand
-			else if (!getOperand(expectedDataType))
+			if (!getOperand(expectedDataType))
 			{
 				break;  // terminating token, let caller determine action
 			}
@@ -285,8 +279,18 @@ void Translator::getExpression(DataType dataType, int level)
 			// check for unary operator (token should be a binary operator)
 			if (m_table.isUnaryOperator(m_token))
 			{
-				// caller may need to change this error
-				throw TokenError {Status::ExpBinOpOrEnd, m_token};
+				// check if code has a binary operator
+				if (m_table.secondAssociatedIndex(m_token->code()) > 0)
+				{
+					// change token to binary operator
+					m_token->setCode(m_table.secondAssociatedCode(
+						m_token->code()));
+				}
+				else
+				{
+					// caller may need to change this error
+					throw TokenError {Status::ExpBinOpOrEnd, m_token};
+				}
 			}
 		}
 
