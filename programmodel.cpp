@@ -41,7 +41,7 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 	Table &table = Table::instance();
 
 	Code code {word.instructionCode()};
-	os << table.debugName(code).toStdString();
+	os << table.debugName(code);
 
 	if (word.instructionHasSubCode(ProgramMask_SubCode))
 	{
@@ -52,7 +52,7 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 		}
 		if (word.instructionHasSubCode(Option_SubCode))
 		{
-			std::string option {table.optionName(code).toStdString()};
+			std::string option {table.optionName(code)};
 			os << (option.empty() ? "BUG" : option);
 		}
 		if (word.instructionHasSubCode(Colon_SubCode))

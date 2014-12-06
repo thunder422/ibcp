@@ -89,32 +89,32 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	case Token::Type::Operator:
 		if (token->isCode(RemOp_Code))
 		{
-			os << table.name(token->code()).toStdString();
+			os << table.name(token->code());
 			second = true;
 		}
 		else
 		{
-			os << table.debugName(token->code()).toStdString();
+			os << table.debugName(token->code());
 		}
 		break;
 
 	case Token::Type::IntFuncN:
 	case Token::Type::IntFuncP:
-		os << table.debugName(token->code()).toStdString();
+		os << table.debugName(token->code());
 		break;
 
 	case Token::Type::Command:
 		if (token->isCode(Rem_Code))
 		{
-			os << table.name(token->code()).toStdString();
+			os << table.name(token->code());
 			second = true;
 		}
 		else
 		{
-			os << table.name(token->code()).toStdString();
-			if (!table.name2(token->code()).isEmpty())
+			os << table.name(token->code());
+			if (!table.name2(token->code()).empty())
 			{
-				os << '-' << table.name2(token->code()).toStdString();
+				os << '-' << table.name2(token->code());
 			}
 		}
 		break;
@@ -136,7 +136,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		if (token->hasSubCode(Option_SubCode))
 		{
-			std::string option {table.optionName(token->code()).toStdString()};
+			std::string option {table.optionName(token->code())};
 			if (option.empty())
 			{
 				os << "BUG";
@@ -737,7 +737,7 @@ void Tester::printToken(const TokenPtr &token)
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
 		// fall thru
 	case Token::Type::Command:
-		m_cout << " " << table.debugName(token->code()).toStdString();
+		m_cout << " " << table.debugName(token->code());
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
 			m_cout << " |" << token->string() << '|';

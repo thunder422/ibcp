@@ -189,8 +189,7 @@ void letRecreate(Recreator &recreator, TokenPtr token)
 {
 	if (token->hasSubCode(Option_SubCode))
 	{
-		recreator.append(recreator.table().optionName(token->code())
-			.toStdString() + ' ');
+		recreator.append(recreator.table().optionName(token->code()) + ' ');
 	}
 }
 
@@ -202,7 +201,7 @@ void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 	stack.emplace(recreator.popString());  // push value
 	std::string separator = ' ' + recreator.table().name(rpnItem->token())
-		.toStdString() + ' ';
+		+ ' ';
 	while (!recreator.empty())
 	{
 		stack.emplace(recreator.popString() + separator);
@@ -225,7 +224,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// check if this first assign code
 	if (!recreator.separatorIsSet())
 	{
-		string = ' ' + recreator.table().name(Assign_Code).toStdString() + ' ';
+		string = ' ' + recreator.table().name(Assign_Code) + ' ';
 		recreator.setSeparator(',');
 	}
 	else  // continuation of assignment list
@@ -240,8 +239,9 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		// for sub-string assignments, get original sub-string function code
 		Code subStrCode {recreator.table().secondAssociatedCode(code)};
-		recreator.pushWithOperands(recreator.table().name(subStrCode)
-			.toStdString(), recreator.table().operandCount(subStrCode));
+		recreator.pushWithOperands(
+			std::string{recreator.table().name(subStrCode)},
+			recreator.table().operandCount(subStrCode));
 	}
 
 	// deterine if assignment is an assignment keep code

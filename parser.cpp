@@ -94,7 +94,7 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 
 	// check to see if this is the start of a remark
 	// (need to check separately since a space not required after 'REM')
-	std::string name {m_table.name(Rem_Code).toStdString()};
+	std::string name {m_table.name(Rem_Code)};
 	if (noCaseStringBeginsWith(word.string, name))
 	{
 		// clear errors in case peeked past end, which sets error

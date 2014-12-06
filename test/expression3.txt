@@ -1,12 +1,12 @@
 
 Input: MID$(A$+B$,(C+5)*D,4)+" Test"
-Output: A$ B$ +$ C 5 + D * CvtInt 4% MID3$( " Test" +$ 
+Output: A$ B$ +$ C 5 + D * CvtInt 4% MID$(3 " Test" +$ 
 
 Input: int(Arr(A,B*(C+2))+(D))
 Output: A CvtInt B C 2 + * CvtInt Arr( D')' + INT( 
 
 Input: Array(INT(B(X, Y * (-I + J), FNZ(I))), VAL(NUM$))
-Output: X CvtInt Y I Neg J + * CvtInt I FNZ([9:I] CvtInt B( INT( CvtInt NUM$ VAL( CvtInt Array( 
+Output: X CvtInt Y I -U J + * CvtInt I FNZ([9:I] CvtInt B( INT( CvtInt NUM$ VAL( CvtInt Array( 
 
 Input: INT(A+B
               ^-- expected operator or closing parentheses

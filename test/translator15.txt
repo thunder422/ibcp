@@ -24,13 +24,13 @@ Input: 'operator form of REM at beginning of line
 Output: '|operator form of REM at beginning of line| 
 
 Input: A=3'assign A
-Output: A<ref> 3 Assign '|assign A| 
+Output: A<ref> 3 =Assign '|assign A| 
 
 Input: A=3 'assign A
-Output: A<ref> 3 Assign '|assign A| 
+Output: A<ref> 3 =Assign '|assign A| 
 
 Input: A=3 ' assign A
-Output: A<ref> 3 Assign '| assign A| 
+Output: A<ref> 3 =Assign '| assign A| 
 
 Input: PRINT A 'output value
 Output: A PrintDbl PRINT '|output value| 

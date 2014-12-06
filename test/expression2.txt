@@ -78,7 +78,7 @@ Input: ((A + B) * C) ^ D
 Output: A B + C * D ^ 
 
 Input: -A ^ 2 + (-B) ^ 3
-Output: A 2% ^* Neg B Neg 3% ^* + 
+Output: A 2% ^* -U B -U 3% ^* + 
 
 Input: (A + B) * (C + D)
 Output: A B + C D + * 
@@ -105,19 +105,19 @@ Input: A + B)
             ^-- expected operator or end-of-statement
 
 Input: -NOT A%
-Output: A% NOT Neg% 
+Output: A% NOT -U% 
 
 Input: NOT -A%
-Output: A% Neg% NOT 
+Output: A% -U% NOT 
 
 Input: -A + B
-Output: A Neg B + 
+Output: A -U B + 
 
 Input: -(A + B)
-Output: A B + Neg 
+Output: A B + -U 
 
 Input: -A ^ B
-Output: A B ^ Neg 
+Output: A B ^ -U 
 
 Input: A + B + (((C)))
 Output: A B + C')' )')' + 

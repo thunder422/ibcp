@@ -148,7 +148,7 @@ void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the input command code
 void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	recreator.append(recreator.table().name(rpnItem->token()).toStdString());
+	recreator.append(recreator.table().name(rpnItem->token()));
 	// FLAG option: all spaces after commands (default=yes)
 	recreator.append(' ');
 	recreator.append(recreator.popString());

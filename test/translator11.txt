@@ -1,93 +1,93 @@
 
 Input: Z$ = A$ + B$
-Output: Z$<ref> A$ B$ +$ Assign$ 
+Output: Z$<ref> A$ B$ +$ =Assign$ 
 
 Input: Z$ = REPEAT$(A$,4) + B$
-Output: Z$<ref> A$ 4% REPEAT$( B$ +$ Assign$ 
+Output: Z$<ref> A$ 4% REPEAT$( B$ +$ =Assign$ 
 
 Input: Z$ = A$ + REPEAT$(B$+C$,3)
-Output: Z$<ref> A$ B$ C$ +$ 3% REPEAT$( +$ Assign$ 
+Output: Z$<ref> A$ B$ C$ +$ 3% REPEAT$( +$ =Assign$ 
 
 Input: Z$ = STR$(A) + LEFT$(B$+C$,5)
-Output: Z$<ref> A STR$( B$ C$ +$ 5% LEFT$( +$ Assign$ 
+Output: Z$<ref> A STR$( B$ C$ +$ 5% LEFT$( +$ =Assign$ 
 
 Input: Z% = A$ = B$
-Output: Z%<ref> A$ B$ =$ Assign% 
+Output: Z%<ref> A$ B$ =$ =Assign% 
 
 Input: Z% = A$ + B$ = C$
-Output: Z%<ref> A$ B$ +$ C$ =$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ =$ =Assign% 
 
 Input: Z% = A$ = B$ + C$
-Output: Z%<ref> A$ B$ C$ +$ =$ Assign% 
+Output: Z%<ref> A$ B$ C$ +$ =$ =Assign% 
 
 Input: Z% = A$ + B$ = C$ + D$
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ =$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ =$ =Assign% 
 
 Input: Z% = A$ < B$
-Output: Z%<ref> A$ B$ <$ Assign% 
+Output: Z%<ref> A$ B$ <$ =Assign% 
 
 Input: Z% = A$ + B$ < C$
-Output: Z%<ref> A$ B$ +$ C$ <$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <$ =Assign% 
 
 Input: Z% = A$ < B$ + C$
-Output: Z%<ref> A$ B$ C$ +$ <$ Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <$ =Assign% 
 
 Input: Z% = A$ + B$ < C$ + D$
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ <$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <$ =Assign% 
 
 Input: Z% = A$ <= B$
-Output: Z%<ref> A$ B$ <=$ Assign% 
+Output: Z%<ref> A$ B$ <=$ =Assign% 
 
 Input: Z% = A$ + B$ <= C$
-Output: Z%<ref> A$ B$ +$ C$ <=$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <=$ =Assign% 
 
 Input: Z% = A$ <= B$ + C$
-Output: Z%<ref> A$ B$ C$ +$ <=$ Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <=$ =Assign% 
 
 Input: Z% = A$ + B$ <= C$ + D$
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ <=$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <=$ =Assign% 
 
 Input: Z% = A$ > B$
-Output: Z%<ref> A$ B$ >$ Assign% 
+Output: Z%<ref> A$ B$ >$ =Assign% 
 
 Input: Z% = A$ + B$ > C$
-Output: Z%<ref> A$ B$ +$ C$ >$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ >$ =Assign% 
 
 Input: Z% = A$ > B$ + C$
-Output: Z%<ref> A$ B$ C$ +$ >$ Assign% 
+Output: Z%<ref> A$ B$ C$ +$ >$ =Assign% 
 
 Input: Z% = A$ + B$ > C$ + D$
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ >$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ >$ =Assign% 
 
 Input: Z% = A$ <= B$
-Output: Z%<ref> A$ B$ <=$ Assign% 
+Output: Z%<ref> A$ B$ <=$ =Assign% 
 
 Input: Z% = A$ + B$ <= C$
-Output: Z%<ref> A$ B$ +$ C$ <=$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <=$ =Assign% 
 
 Input: Z% = A$ <= B$ + C$
-Output: Z%<ref> A$ B$ C$ +$ <=$ Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <=$ =Assign% 
 
 Input: Z% = A$ + B$ <= C$ + D$
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ <=$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <=$ =Assign% 
 
 Input: Z% = A$ <> B$
-Output: Z%<ref> A$ B$ <>$ Assign% 
+Output: Z%<ref> A$ B$ <>$ =Assign% 
 
 Input: Z% = A$ + B$ <> C$
-Output: Z%<ref> A$ B$ +$ C$ <>$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ <>$ =Assign% 
 
 Input: Z% = A$ <> B$ + C$
-Output: Z%<ref> A$ B$ C$ +$ <>$ Assign% 
+Output: Z%<ref> A$ B$ C$ +$ <>$ =Assign% 
 
 Input: Z% = A$ + B$ <> C$ + D$
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ <>$ Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ <>$ =Assign% 
 
 Input: Z$ = A$ + B$
-Output: Z$<ref> A$ B$ +$ Assign$ 
+Output: Z$<ref> A$ B$ +$ =Assign$ 
 
 Input: Z$,Y$ = A$ + B$
-Output: Z$<ref> Y$<ref> A$ B$ +$ AssignList$ 
+Output: Z$<ref> Y$<ref> A$ B$ +$ =AssignList$ 
 
 Input: LEFT$(Z$,1) = A$ + B$
 Output: Z$<ref> 1% A$ B$ +$ AssignLeft 
@@ -96,40 +96,40 @@ Input: LEFT$(Z$,1),Y$,RIGHT$(X$,1) = A$ + B$
 Output: Z$<ref> 1% Y$<ref> X$<ref> 1% A$ B$ +$ AssignKeepRight AssignKeep$ AssignLeft 
 
 Input: Z% = ASC(A$) + ASC(B$+C$)
-Output: Z%<ref> A$ ASC( B$ C$ +$ ASC( +% Assign% 
+Output: Z%<ref> A$ ASC( B$ C$ +$ ASC( +% =Assign% 
 
 Input: Z% = ASC(A$,4) + ASC(B$+C$,4)
-Output: Z%<ref> A$ 4% ASC2( B$ C$ +$ 4% ASC2( +% Assign% 
+Output: Z%<ref> A$ 4% ASC(2 B$ C$ +$ 4% ASC(2 +% =Assign% 
 
 Input: Z% = INSTR(A$,B$)
-Output: Z%<ref> A$ B$ INSTR2( Assign% 
+Output: Z%<ref> A$ B$ INSTR(2 =Assign% 
 
 Input: Z% = INSTR(A$+B$,C$)
-Output: Z%<ref> A$ B$ +$ C$ INSTR2( Assign% 
+Output: Z%<ref> A$ B$ +$ C$ INSTR(2 =Assign% 
 
 Input: Z% = INSTR(A$,B$+C$)
-Output: Z%<ref> A$ B$ C$ +$ INSTR2( Assign% 
+Output: Z%<ref> A$ B$ C$ +$ INSTR(2 =Assign% 
 
 Input: Z% = INSTR(A$+B$,C$+D$)
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ INSTR2( Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ INSTR(2 =Assign% 
 
 Input: Z% = INSTR(A$,B$,4)
-Output: Z%<ref> A$ B$ 4% INSTR3( Assign% 
+Output: Z%<ref> A$ B$ 4% INSTR(3 =Assign% 
 
 Input: Z% = INSTR(A$+B$,C$,4)
-Output: Z%<ref> A$ B$ +$ C$ 4% INSTR3( Assign% 
+Output: Z%<ref> A$ B$ +$ C$ 4% INSTR(3 =Assign% 
 
 Input: Z% = INSTR(A$,B$+C$,4)
-Output: Z%<ref> A$ B$ C$ +$ 4% INSTR3( Assign% 
+Output: Z%<ref> A$ B$ C$ +$ 4% INSTR(3 =Assign% 
 
 Input: Z% = INSTR(A$+B$,C$+D$,4)
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ 4% INSTR3( Assign% 
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ 4% INSTR(3 =Assign% 
 
 Input: Z% = LEN(A$) + LEN(B$+C$)
-Output: Z%<ref> A$ LEN( B$ C$ +$ LEN( +% Assign% 
+Output: Z%<ref> A$ LEN( B$ C$ +$ LEN( +% =Assign% 
 
 Input: Z = VAL(A$) + VAL(B$+C$)
-Output: Z<ref> A$ VAL( B$ C$ +$ VAL( + Assign 
+Output: Z<ref> A$ VAL( B$ C$ +$ VAL( + =Assign 
 
 Input: PRINT A$;B$+C$
 Output: A$ PrintStr B$ C$ +$ PrintStr PRINT 

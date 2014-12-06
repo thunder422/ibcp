@@ -202,7 +202,7 @@ void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	(void)rpnItem;
 
 	// append PRINT keyword
-	recreator.append(recreator.table().name(Print_Code).toStdString());
+	recreator.append(std::string{recreator.table().name(Print_Code)});
 
 	// if stack is not empty then append space with string on top of stack
 	if (!recreator.empty())

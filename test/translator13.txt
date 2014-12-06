@@ -1,61 +1,61 @@
 
 Input: A=---B
-Output: A<ref> B Neg Neg Neg Assign 
+Output: A<ref> B -U -U -U =Assign 
 
 Input: A=-1.0
-Output: A<ref> -1.0 Assign 
+Output: A<ref> -1.0 =Assign 
 
 Input: A%=--1
-Output: A%<ref> -1% Neg% Assign% 
+Output: A%<ref> -1% -U% =Assign% 
 
 Input: A=B-1.5
-Output: A<ref> B 1.5 - Assign 
+Output: A<ref> B 1.5 - =Assign 
 
 Input: A=B+-1.5
-Output: A<ref> B -1.5 + Assign 
+Output: A<ref> B -1.5 + =Assign 
 
 Input: A=B+--1.5
-Output: A<ref> B -1.5 Neg + Assign 
+Output: A<ref> B -1.5 -U + =Assign 
 
 Input: PRINT-1;--1;---1;- 1;
-Output: -1% PrintInt -1% Neg% PrintInt -1% Neg% Neg% PrintInt 1% Neg% PrintInt ; 
+Output: -1% PrintInt -1% -U% PrintInt -1% -U% -U% PrintInt 1% -U% PrintInt ; 
 
 Input: A=- 1.0 + -.001 + -0.12
-Output: A<ref> 1.0 Neg -.001 + -0.12 + Assign 
+Output: A<ref> 1.0 -U -.001 + -0.12 + =Assign 
 
 Input: A%=-1 + - 2
-Output: A%<ref> -1% 2% Neg% +% Assign% 
+Output: A%<ref> -1% 2% -U% +% =Assign% 
 
 Input: A=-1.2E-23 + -1.2e+23 + -1.2e23
-Output: A<ref> -1.2E-23 -1.2e+23 + -1.2e23 + Assign 
+Output: A<ref> -1.2E-23 -1.2e+23 + -1.2e23 + =Assign 
 
 Input: A=- 1.2E-23 + - 1.2e+23 + - 1.2e23
-Output: A<ref> 1.2E-23 Neg 1.2e+23 Neg + 1.2e23 Neg + Assign 
+Output: A<ref> 1.2E-23 -U 1.2e+23 -U + 1.2e23 -U + =Assign 
 
 Input: A% = NOT -B%
-Output: A%<ref> B% Neg% NOT Assign% 
+Output: A%<ref> B% -U% NOT =Assign% 
 
 Input: A% = NOT -2147483648
-Output: A%<ref> -2147483648% NOT Assign% 
+Output: A%<ref> -2147483648% NOT =Assign% 
 
 Input: A% = - NOT 123
-Output: A%<ref> 123% NOT Neg% Assign% 
+Output: A%<ref> 123% NOT -U% =Assign% 
 
 Input: A% = -2147483649 
             ^^^^^^^^^^^-- expected valid integer constant
 
 Input: A = B^-C + B*-C
-Output: A<ref> B C Neg ^ B C Neg * + Assign 
+Output: A<ref> B C -U ^ B C -U * + =Assign 
 
 Input: A = -B^C + -B^-C
-Output: A<ref> B C ^ Neg B C Neg ^ Neg + Assign 
+Output: A<ref> B C ^ -U B C -U ^ -U + =Assign 
 
 Input: A = -B*C + -B*-C
-Output: A<ref> B Neg C * B Neg C Neg * + Assign 
+Output: A<ref> B -U C * B -U C -U * + =Assign 
 
 Input: A = (-B^NOT C) + -B*NOT C
-Output: A<ref> B C CvtInt NOT ^* Neg')' B Neg C CvtInt NOT *%2 + Assign 
+Output: A<ref> B C CvtInt NOT ^* -U')' B -U C CvtInt NOT *%2 + =Assign 
 
 Input: A = -B^NOT C + -B*NOT C
-Output: A<ref> B C B Neg C CvtInt NOT *%2 + CvtInt NOT ^* Neg Assign 
+Output: A<ref> B C B -U C CvtInt NOT *%2 + CvtInt NOT ^* -U =Assign 
 

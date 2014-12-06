@@ -1,54 +1,54 @@
 
 Input: A=3
-Output: A<ref> 3 Assign 
+Output: A<ref> 3 =Assign 
 
 Input: A,B=3
-Output: A<ref> B<ref> 3 AssignList 
+Output: A<ref> B<ref> 3 =AssignList 
 
 Input: A=B=3
-Output: A<ref> B 3 = CvtDbl Assign 
+Output: A<ref> B 3 = CvtDbl =Assign 
 
 Input: A=(B)=3
-Output: A<ref> B')' 3 = CvtDbl Assign 
+Output: A<ref> B')' 3 = CvtDbl =Assign 
 
 Input: A=(B=3)
-Output: A<ref> B 3 =')' CvtDbl Assign 
+Output: A<ref> B 3 =')' CvtDbl =Assign 
 
 Input: A,B=(C=3)
-Output: A<ref> B<ref> C 3 =')' CvtDbl AssignList 
+Output: A<ref> B<ref> C 3 =')' CvtDbl =AssignList 
 
 Input: A,B=C=4
-Output: A<ref> B<ref> C 4 = CvtDbl AssignList 
+Output: A<ref> B<ref> C 4 = CvtDbl =AssignList 
 
 Input: A(B,C)=D
-Output: B CvtInt C CvtInt A(<ref> D Assign 
+Output: B CvtInt C CvtInt A(<ref> D =Assign 
 
 Input: A(B,C),E=D
-Output: B CvtInt C CvtInt A(<ref> E<ref> D AssignList 
+Output: B CvtInt C CvtInt A(<ref> E<ref> D =AssignList 
 
 Input: E,A(B,C)=D
-Output: E<ref> B CvtInt C CvtInt A(<ref> D AssignList 
+Output: E<ref> B CvtInt C CvtInt A(<ref> D =AssignList 
 
 Input: E,A(B,C),F=D
-Output: E<ref> B CvtInt C CvtInt A(<ref> F<ref> D AssignList 
+Output: E<ref> B CvtInt C CvtInt A(<ref> F<ref> D =AssignList 
 
 Input: A(B,(C))=D
-Output: B CvtInt C')' CvtInt A(<ref> D Assign 
+Output: B CvtInt C')' CvtInt A(<ref> D =Assign 
 
 Input: A(B+C)=D
-Output: B C + CvtInt A(<ref> D Assign 
+Output: B C + CvtInt A(<ref> D =Assign 
 
 Input: A(B=C)=D
-Output: B C = A(<ref> D Assign 
+Output: B C = A(<ref> D =Assign 
 
 Input: A(B+C,D=E)=F
-Output: B C + CvtInt D E = A(<ref> F Assign 
+Output: B C + CvtInt D E = A(<ref> F =Assign 
 
 Input: A(B,C)=D(E)
-Output: B CvtInt C CvtInt A(<ref> E CvtInt D( Assign 
+Output: B CvtInt C CvtInt A(<ref> E CvtInt D( =Assign 
 
 Input: A(B,C),D(E)=INT(F)+Function(G)+Array(H)
-Output: B CvtInt C CvtInt A(<ref> E CvtInt D(<ref> F INT( G<ref> Function([10:G<ref>] + H CvtInt Array( + AssignList 
+Output: B CvtInt C CvtInt A(<ref> E CvtInt D(<ref> F INT( G<ref> Function([10:G<ref>] + H CvtInt Array( + =AssignList 
 
 Input: A=B,C=4
           ^-- expected operator or end-of-statement

@@ -2,7 +2,7 @@
 Input: A$ = mid$("b",A+B*2,index)+LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer =
-	 5: IntFuncP  () String  MID2$(
+	 5: IntFuncP  () String  MID$(2
 	10: Constant     String  |b|
 	13: Operator  Op None    ,
 	14: NoParen      None    |A|

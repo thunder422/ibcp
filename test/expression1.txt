@@ -12,7 +12,7 @@ Input: A * B + C
 Output: A B * C + 
 
 Input: A * -B + -C^D
-Output: A B Neg * C D ^ Neg + 
+Output: A B -U * C D ^ -U + 
 
 Input: Value1 + Value2 - Value3 - Value4
 Output: Value1 Value2 + Value3 - Value4 - 
@@ -39,16 +39,16 @@ Input: a$ = "this" + "test"
 Output: a$ "this" "test" +$ =$ 
 
 Input: -E
-Output: E Neg 
+Output: E -U 
 
 Input: -45 + A
 Output: -45% A +%1 
 
 Input: -A + B
-Output: A Neg B + 
+Output: A -U B + 
 
 Input: -A + --B
-Output: A Neg B Neg Neg + 
+Output: A -U B -U -U + 
 
 Input: A% + B
 Output: A% B +%1 

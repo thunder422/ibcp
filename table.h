@@ -98,10 +98,10 @@ public:
 	Token::Type type(Code code) const;
 	DataType dataType(Code code) const;
 	Multiple multiple(Code code) const;
-	const QString name(Code code) const;
-	const QString name2(Code code) const;
-	const QString optionName(Code code) const;
-	const QString debugName(Code code) const;
+	const std::string name(Code code) const;
+	const std::string name2(Code code) const;
+	const std::string optionName(Code code) const;
+	const std::string debugName(Code code) const;
 	int hasFlag(Code code, int flag) const;
 	int precedence(Code code) const;
 	int operandCount(Code code) const;
@@ -144,7 +144,7 @@ public:
 	{
 		setTokenCode(token, baseCode, token->dataType(), 0);
 	}
-	QString name(const TokenPtr &token) const;
+	std::string name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
 	Code search(SearchType type, const std::string &string) const;
