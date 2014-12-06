@@ -33,17 +33,6 @@
 #include "basic/basic.h"
 
 
-constexpr int MaxOperands {3};
-	// this value contains the maximum number of operands
-	// (arguments) for any operator or internal function (there are currently
-	// no internal function with more than 3 arguments)
-
-constexpr int MaxAssocCodes {3};
-	// this value contains the maximum number of associated codes,
-	// codes in additional to the main code for different possible data types
-	// for the code (no code currently has more the 3 total codes)
-
-
 // expression information for operators and internal functions
 struct ExprInfo
 {
@@ -1487,23 +1476,12 @@ Table::Table(TableEntry *entry, int entryCount) :
 
 	// scan table and record indexes
 	// find maximum number of operands and associated codes
-	int maxOperands {};
-	int maxAssocCodes {};
 	for (i = 0; i < entryCount; i++)
 	{
 		// check if found new maximums
 		ExprInfo *exprInfo {m_entry[i].exprInfo};
 		if (exprInfo)
 		{
-			if (maxOperands < exprInfo->m_operandCount)
-			{
-				maxOperands = exprInfo->m_operandCount;
-			}
-			if (maxAssocCodes < exprInfo->m_associatedCodeCount)
-			{
-				maxAssocCodes = exprInfo->m_associatedCodeCount;
-			}
-
 			// check if assoc2_index is valid
 			if (exprInfo->m_secondAssociatedIndex > 0
 				&& exprInfo->m_secondAssociatedIndex
@@ -1592,18 +1570,6 @@ Table::Table(TableEntry *entry, int entryCount) :
 				}
 			}
 		}
-	}
-
-	// check maximums found against constants
-	if (maxOperands != MaxOperands)
-	{
-		errorList.append(QString("Max_Operands=%1 incorrect, actual is %2")
-			.arg(MaxOperands).arg(maxOperands));
-	}
-	if (maxAssocCodes != MaxAssocCodes)
-	{
-		errorList.append(QString("Max_Assoc_Codes=%1 incorrect, actual is %2")
-			.arg(MaxAssocCodes).arg(maxAssocCodes));
 	}
 
 	// setup indexes for bracketing codes
