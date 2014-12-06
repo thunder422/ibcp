@@ -143,15 +143,11 @@ static Code AddInt_AssocCode[]			= {AddI1_Code};
 static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignList_Code
 };
-static Code AssignKeepLeft_AssocCode[]	= {Left_Code};
-static Code AssignKeepMid2_AssocCode[]	= {Mid2_Code};
-static Code AssignKeepMid3_AssocCode[]	= {Mid3_Code};
-static Code AssignKeepRight_AssocCode[]	= {Right_Code};
 static Code AssignInt_AssocCode[]		= {AssignListInt_Code};
-static Code AssignLeft_AssocCode[]		= {AssignKeepLeft_Code, Left_Code};
-static Code AssignMid2_AssocCode[]		= {AssignKeepMid2_Code, Mid2_Code};
-static Code AssignMid3_AssocCode[]		= {AssignKeepMid3_Code, Mid3_Code};
-static Code AssignRight_AssocCode[]		= {AssignKeepRight_Code, Right_Code};
+static Code AssignLeft_AssocCode[]		= {AssignKeepLeft_Code};
+static Code AssignMid2_AssocCode[]		= {AssignKeepMid2_Code};
+static Code AssignMid3_AssocCode[]		= {AssignKeepMid3_Code};
+static Code AssignRight_AssocCode[]		= {AssignKeepRight_Code};
 static Code AssignStr_AssocCode[]		= {
 	AssignKeepStr_Code, AssignListStr_Code
 };
@@ -883,30 +879,30 @@ static TableEntry tableEntries[] =
 	},
 	{	// AssignLeft_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignLeft", "LET",
+		"LEFT$(", "Assign", "LET",
 		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignLeft, 1)),
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignLeft)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid2_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignMid2", "LET",
+		"MID$(", "Assign2", "LET",
 		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignMid2, 1)),
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignMid2)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid3_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignMid3", "LET",
-		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignMid3, 1)),
+		"MID$(", "Assign3", "LET",
+		Reference_Flag | SubStr_Flag | Multiple_Flag, 4, DataType::String,
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignMid3)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignRight_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignRight", "LET",
+		"RIGHT$(", "Assign", "LET",
 		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr), AssocCode2(AssignRight, 1)),
+		new ExprInfo(Null_Code, Operands(StrStr), AssocCode(AssignRight)),
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignList_Code
@@ -930,39 +926,35 @@ static TableEntry tableEntries[] =
 	{	// AssignKeepStr_Code
 		Token::Type::Operator, Multiple::OneWord,
 		"", "AssignKeep$", "LET",
-		Reference_Flag, 4, DataType::String, &StrStr_ExprInfo,
+		Reference_Flag | Keep_Flag, 4, DataType::String, &StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepLeft_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignKeepLeft", "LET",
-		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr),
-		AssocCode2(AssignKeepLeft, 0)),
+		"LEFT$(", "AssignKeep", "LET",
+		Reference_Flag | SubStr_Flag | Keep_Flag, 4, DataType::String,
+		&StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid2_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignKeepMid2", "LET",
-		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr),
-		AssocCode2(AssignKeepMid2, 0)),
+		"MID$(", "AssignKeep2", "LET",
+		Reference_Flag | SubStr_Flag | Keep_Flag, 4, DataType::String,
+		&StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid3_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignKeepMid3", "LET",
-		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr),
-		AssocCode2(AssignKeepMid3, 0)),
+		"MID$(", "AssignKeep3", "LET",
+		Reference_Flag | SubStr_Flag | Multiple_Flag | Keep_Flag, 4,
+		DataType::String, &StrStrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepRight_Code
 		Token::Type::Operator, Multiple::OneWord,
-		"", "AssignKeepRight", "LET",
-		Reference_Flag | SubStr_Flag, 4, DataType::String,
-		new ExprInfo(Null_Code, Operands(StrStr),
-		AssocCode2(AssignKeepRight, 0)),
+		"RIGHT$(", "AssignKeep", "LET",
+		Reference_Flag | SubStr_Flag | Keep_Flag, 4, DataType::String,
+		&StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// EOL_Code
@@ -1493,8 +1485,9 @@ Table::Table(TableEntry *entry, int entryCount) :
 					.arg(exprInfo->m_associatedCodeCount));
 			}
 
-			// validate multiple entries
-			if ((m_entry[i].flags & Multiple_Flag) != 0)
+			// validate multiple non-assignment entries
+			if (hasFlag((Code)i, Multiple_Flag)
+				&& !hasFlag((Code)i, Reference_Flag))
 			{
 				ExprInfo *exprInfo2 {m_entry[i + 1].exprInfo};
 				if (m_entry[i].name != m_entry[i + 1].name)

@@ -1,33 +1,33 @@
 
 Input: LEFT$(A$,1) = B$
-Output: A$<ref> 1% B$ AssignLeft 
+Output: A$<ref> 1% B$ LEFT$(Assign 
 
 Input: LEFT$(A$,1) = B$ + C$
-Output: A$<ref> 1% B$ C$ +$ AssignLeft 
+Output: A$<ref> 1% B$ C$ +$ LEFT$(Assign 
 
 Input: MID$(A$,2) = B$
-Output: A$<ref> 2% B$ AssignMid2 
+Output: A$<ref> 2% B$ MID$(Assign2 
 
 Input: MID$(A$,2) = B$ + C$
-Output: A$<ref> 2% B$ C$ +$ AssignMid2 
+Output: A$<ref> 2% B$ C$ +$ MID$(Assign2 
 
 Input: MID$(A$,2,3) = B$
-Output: A$<ref> 2% 3% B$ AssignMid3 
+Output: A$<ref> 2% 3% B$ MID$(Assign3 
 
 Input: MID$(A$,2,3) = B$ + C$
-Output: A$<ref> 2% 3% B$ C$ +$ AssignMid3 
+Output: A$<ref> 2% 3% B$ C$ +$ MID$(Assign3 
 
 Input: RIGHT$(A$,2) = B$
-Output: A$<ref> 2% B$ AssignRight 
+Output: A$<ref> 2% B$ RIGHT$(Assign 
 
 Input: RIGHT$(A$,2) = B$ + C$
-Output: A$<ref> 2% B$ C$ +$ AssignRight 
+Output: A$<ref> 2% B$ C$ +$ RIGHT$(Assign 
 
 Input: LEFT$(A$,1) = RIGHT$(B$,1)
-Output: A$<ref> 1% B$ 1% RIGHT$( AssignLeft 
+Output: A$<ref> 1% B$ 1% RIGHT$( LEFT$(Assign 
 
 Input: LEFT$(A$,1) = RIGHT$(B$+C$,1)
-Output: A$<ref> 1% B$ C$ +$ 1% RIGHT$( AssignLeft 
+Output: A$<ref> 1% B$ C$ +$ 1% RIGHT$( LEFT$(Assign 
 
 Input: RIGHT$(A$,2) = B
                       ^-- expected string expression
@@ -51,31 +51,31 @@ Input: RIGHT$(LEFT$(A$+B$,1),2) = C$
               ^^^^^^-- expected string variable
 
 Input: LEFT$(A$,1),RIGHT$(B$,1) = C$
-Output: A$<ref> 1% B$<ref> 1% C$ AssignKeepRight AssignLeft 
+Output: A$<ref> 1% B$<ref> 1% C$ RIGHT$(AssignKeep LEFT$(Assign 
 
 Input: LEFT$(A$,1),MID$(B$,2,1),RIGHT$(C$,1) = D$
-Output: A$<ref> 1% B$<ref> 2% 1% C$<ref> 1% D$ AssignKeepRight AssignKeepMid3 AssignLeft 
+Output: A$<ref> 1% B$<ref> 2% 1% C$<ref> 1% D$ RIGHT$(AssignKeep MID$(AssignKeep3 LEFT$(Assign 
 
 Input: LEFT$(A$,1),B$ = C$
-Output: A$<ref> 1% B$<ref> C$ AssignKeep$ AssignLeft 
+Output: A$<ref> 1% B$<ref> C$ AssignKeep$ LEFT$(Assign 
 
 Input: LEFT$(A$,1),B$,C$ = D$
-Output: A$<ref> 1% B$<ref> C$<ref> D$ AssignKeep$ AssignKeep$ AssignLeft 
+Output: A$<ref> 1% B$<ref> C$<ref> D$ AssignKeep$ AssignKeep$ LEFT$(Assign 
 
 Input: A$,LEFT$(B$,1) = C$
-Output: A$<ref> B$<ref> 1% C$ AssignKeepLeft =Assign$ 
+Output: A$<ref> B$<ref> 1% C$ LEFT$(AssignKeep =Assign$ 
 
 Input: A$,LEFT$(B$,1),C$ = D$
-Output: A$<ref> B$<ref> 1% C$<ref> D$ AssignKeep$ AssignKeepLeft =Assign$ 
+Output: A$<ref> B$<ref> 1% C$<ref> D$ AssignKeep$ LEFT$(AssignKeep =Assign$ 
 
 Input: A$,B$,C$ = D$
 Output: A$<ref> B$<ref> C$<ref> D$ =AssignList$ 
 
 Input: A$,B$,LEFT$(C$,1) = D$
-Output: A$<ref> B$<ref> C$<ref> 1% D$ AssignKeepLeft AssignKeep$ =Assign$ 
+Output: A$<ref> B$<ref> C$<ref> 1% D$ LEFT$(AssignKeep AssignKeep$ =Assign$ 
 
 Input: LEFT$(A$,1),B$,RIGHT$(C$,1) = D$
-Output: A$<ref> 1% B$<ref> C$<ref> 1% D$ AssignKeepRight AssignKeep$ AssignLeft 
+Output: A$<ref> 1% B$<ref> C$<ref> 1% D$ RIGHT$(AssignKeep AssignKeep$ LEFT$(Assign 
 
 Input: A(int(B))=C
 Output: B INT( CvtInt A(<ref> C =Assign 

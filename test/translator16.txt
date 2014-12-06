@@ -15,7 +15,7 @@ Input: A,B,C=5.0:INPUT D
 Output: A<ref> B<ref> C<ref> 5.0 =AssignList':' InputParse InputBegin D<ref> InputAssign INPUT 
 
 Input: A$,LEFT$(B$,1),MID$(C$,2,3)="A":PRINT A$
-Output: A$<ref> B$<ref> 1% C$<ref> 2% 3% "A" AssignKeepMid3 AssignKeepLeft =Assign$':' A$ PrintStr PRINT 
+Output: A$<ref> B$<ref> 1% C$<ref> 2% 3% "A" MID$(AssignKeep3 LEFT$(AssignKeep =Assign$':' A$ PrintStr PRINT 
 
 Input: INPUT PROMPT "Number",A:PRINT A
 Output: "Number" InputParse InputBeginStr'Question' A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 

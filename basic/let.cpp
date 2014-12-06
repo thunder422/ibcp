@@ -238,15 +238,20 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	if (recreator.table().hasFlag(code, SubStr_Flag))
 	{
 		// for sub-string assignments, get original sub-string function code
-		Code subStrCode {recreator.table().secondAssociatedCode(code)};
-		recreator.pushWithOperands(
-			std::string{recreator.table().name(subStrCode)},
+		std::string name {recreator.table().name(code)};
+		// TODO temporary - will use different lookup method with new table
+		Code subStrCode = recreator.table().search(ParenWord_SearchType, name);
+		// check multiple flag to see if sub-string code is correct code
+		if (recreator.table().hasFlag(code, Multiple_Flag))
+		{
+			subStrCode++;  // move to next code
+		}
+		recreator.pushWithOperands(std::move(name),
 			recreator.table().operandCount(subStrCode));
 	}
 
-	// deterine if assignment is an assignment keep code
-	// (only assignment keep codes have second associated index of zero)
-	if (recreator.table().secondAssociatedIndex(code) == 0)
+	// deterine if assignment is an sub-string assignment keep code
+	if (recreator.table().hasFlag(code, Keep_Flag))
 	{
 		// for keep codes, append string so far to reference string on stack
 		recreator.topAppend(std::move(string));
