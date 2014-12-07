@@ -34,18 +34,18 @@
 
 
 // bit definitions for flags field
-enum TableFlag
+enum TableFlag : unsigned
 {
-	Null_Flag			= 0x00000000,  // entry has no flags
 	// table entry flags (each must have unique bit set)
-	Multiple_Flag		= 0x00000001,  // function has multiple forms
-	Reference_Flag		= 0x00000002,  // code requires a reference
-	SubStr_Flag			= 0x00000004,  // code supports sub-string assignments
-	Hidden_Flag			= 0x00000008,  // code is hidden operator/function
-	Print_Flag			= 0x00000010,  // print-only function
-	UseConstAsIs_Flag   = 0x00000020,  // use constant data type as is
-	Keep_Flag			= 0x00000040,  // sub-string keep assignment
-	EndStmt_Flag		= 0x00000080   // end statement
+	Multiple_Flag		= 1u << 0,	// function has multiple forms
+	Reference_Flag		= 1u << 1,	// code requires a reference
+	SubStr_Flag			= 1u << 2,	// code supports sub-string assignments
+	Hidden_Flag			= 1u << 3,	// code is hidden operator/function
+	Print_Flag			= 1u << 4,	// print-only function
+	UseConstAsIs_Flag   = 1u << 5,	// use constant data type as is
+	Keep_Flag			= 1u << 6,	// sub-string keep assignment
+	Two_Flag			= 1u << 7,	// code can have two words or characters
+	EndStmt_Flag		= 1u << 31	// end statement
 };
 
 
@@ -59,18 +59,6 @@ enum SearchType  // table search types
 };
 
 
-// multiple word command or multiple character operator type
-enum class Multiple
-{
-	OneWord,
-	OneChar = OneWord,
-	TwoWord,
-	TwoChar = TwoWord,
-	ThreeWord,
-	ThreeChar = ThreeWord
-};
-
-
 struct TableEntry;
 class Translator;
 class ProgramModel;
@@ -79,11 +67,11 @@ class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 
 typedef void (*TranslateFunction)(Translator &translator);
-typedef quint16 (*EncodeFunction)(ProgramModel *programUnit,
+typedef uint16_t (*EncodeFunction)(ProgramModel *programUnit,
 	const TokenPtr &token);
 typedef const std::string (*OperandTextFunction)
-	(const ProgramModel *programUnit, quint16 operand);
-typedef void (*RemoveFunction)(ProgramModel *programUnit, quint16 operand);
+	(const ProgramModel *programUnit, uint16_t operand);
+typedef void (*RemoveFunction)(ProgramModel *programUnit, uint16_t operand);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 
@@ -98,12 +86,11 @@ public:
 	// CODE RELATED TABLE FUNCTIONS
 	Token::Type type(Code code) const;
 	DataType dataType(Code code) const;
-	Multiple multiple(Code code) const;
 	const std::string name(Code code) const;
 	const std::string name2(Code code) const;
 	const std::string optionName(Code code) const;
 	const std::string debugName(Code code) const;
-	int hasFlag(Code code, int flag) const;
+	bool hasFlag(Code code, unsigned flag) const;
 	int precedence(Code code) const;
 	int operandCount(Code code) const;
 	DataType operandDataType(Code code, int operand) const;
@@ -125,7 +112,7 @@ public:
 	bool isUnaryOperator(const TokenPtr &token) const;
 	bool isUnaryOrBinaryOperator(const TokenPtr &token) const;
 	int precedence(const TokenPtr &token) const;
-	int hasFlag(const TokenPtr &token, int flag) const;
+	bool hasFlag(const TokenPtr &token, unsigned flag) const;
 	int operandCount(const TokenPtr &token) const;
 	DataType expectedDataType(const TokenPtr &token) const;
 	void setToken(TokenPtr &token, Code code);

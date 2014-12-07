@@ -141,7 +141,7 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 
 	// found word in table (command, internal function, or operator)
 	int len = word.string.length();
-	if (m_table.multiple(code) != Multiple::OneWord)
+	if (m_table.hasFlag(code, Two_Flag))
 	{
 		// command could be a two word command
 		m_input >> std::ws;
@@ -471,7 +471,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 
 	// current character is at least a valid one-character operator
 	int len {1};
-	if (m_table.multiple(code) != Multiple::OneChar)
+	if (m_table.hasFlag(code, Two_Flag))
 	{
 		// operator could be a two-character operator
 		string.push_back(m_input.peek());
