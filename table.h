@@ -85,13 +85,13 @@ public:
 
 	// CODE RELATED TABLE FUNCTIONS
 	Token::Type type(Code code) const;
-	DataType dataType(Code code) const;
 	const std::string name(Code code) const;
 	const std::string name2(Code code) const;
 	const std::string optionName(Code code) const;
 	const std::string debugName(Code code) const;
 	bool hasFlag(Code code, unsigned flag) const;
 	int precedence(Code code) const;
+	DataType returnDataType(Code code) const;
 	int operandCount(Code code) const;
 	DataType operandDataType(Code code, int operand) const;
 	int associatedCodeCount(Code code) const;
@@ -121,7 +121,7 @@ public:
 		const std::string string = {})
 	{
 		return TokenUniquePtr{new Token {column, length, type(code),
-			dataType(code), code, string}};
+			returnDataType(code), code, string}};
 	}
 	Code findCode(TokenPtr &token, TokenPtr &operandToken,
 		int operandIndex = 0);
