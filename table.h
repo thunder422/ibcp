@@ -25,8 +25,6 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <QCoreApplication>
-
 #include <memory>
 
 #include "ibcp.h"
@@ -77,8 +75,6 @@ typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 class Table
 {
-	Q_DECLARE_TR_FUNCTIONS(Table)
-
 public:
 	// function to return a reference to the single table instance
 	static Table &instance(void);

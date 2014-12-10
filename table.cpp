@@ -22,11 +22,10 @@
 //
 //	2010-02-18	initial version
 
+#include <iostream>
+#include <string>
 #include <unordered_map>
-
-#include <QChar>
-#include <QString>
-#include <QStringList>
+#include <vector>
 
 #include "table.h"
 #include "utility.h"
@@ -1490,9 +1489,15 @@ static TableEntry tableEntries[] =
 Table &Table::instance(void)
 {
 	if (!s_instance)
+	try
 	{
 		s_instance = new Table(tableEntries, sizeof(tableEntries)
-			/ sizeof(TableEntry));  // aborts application if table errors
+			/ sizeof(TableEntry));
+	}
+	catch (std::string &error)
+	{
+		std::cerr << "Table Bug: " << error << std::endl;
+		abort();
 	}
 	return *s_instance;
 }
@@ -1506,7 +1511,7 @@ Table &Table::instance(void)
 Table::Table(TableEntry *entry, int entryCount) :
 	m_entry(entry)
 {
-	QStringList errorList;
+	std::vector<std::string> errorList;
 	int i;
 	int type;
 
@@ -1523,10 +1528,11 @@ Table::Table(TableEntry *entry, int entryCount) :
 				&& exprInfo->m_secondAssociatedIndex
 				> exprInfo->m_associatedCodeCount)
 			{
-				errorList.append(QString("Entry:%1 Assoc2Index=%2 too large, "
-					"maximum is %3").arg(i)
-					.arg(exprInfo->m_secondAssociatedIndex)
-					.arg(exprInfo->m_associatedCodeCount));
+				errorList.emplace_back("Entry:" + std::to_string(i)
+					+ " Assoc2Index="
+					+ std::to_string(exprInfo->m_secondAssociatedIndex)
+					+ " too large, " +  "maximum is "
+					+ std::to_string(exprInfo->m_associatedCodeCount));
 			}
 
 			// validate multiple non-assignment entries
@@ -1536,23 +1542,22 @@ Table::Table(TableEntry *entry, int entryCount) :
 				ExprInfo *exprInfo2 {m_entry[i + 1].exprInfo};
 				if (m_entry[i].name != m_entry[i + 1].name)
 				{
-					errorList.append(QString("Multiple entry '%1' name "
-						"mis-match '%2'").arg(m_entry[i].name.c_str())
-						.arg(m_entry[i + 1].name.c_str()));
+					errorList.emplace_back("Multiple entry '" + m_entry[i].name
+						+ "' name mis-match '" + m_entry[i + 1].name + '\'');
 				}
 				else if (!exprInfo2)
 				{
-					errorList.append(QString("Multiple entry '%1' next entry "
-						"no expression info").arg(m_entry[i + 1].name.c_str()));
+					errorList.emplace_back("Multiple entry '"
+						+ m_entry[i + 1].name
+						+ "' next entry no expression info");
 				}
 				else if (exprInfo2->m_operandCount
 					!= exprInfo->m_operandCount + 1)
 				{
-					errorList.append(QString("Multiple entry '%1' incorrect "
-						"number of operands (%2, %3)")
-						.arg(m_entry[i].name.c_str())
-						.arg(exprInfo->m_operandCount)
-						.arg(exprInfo2->m_operandCount));
+					errorList.emplace_back("Multiple entry '" + m_entry[i].name
+						+ "' incorrect number of operands ("
+						+ std::to_string(exprInfo->m_operandCount) + ", "
+						+ std::to_string(exprInfo2->m_operandCount) + ")");
 				}
 			}
 
@@ -1632,9 +1637,9 @@ Table::Table(TableEntry *entry, int entryCount) :
 		if (m_range[type].beg > m_range[type].end)
 		{
 			// record bracket range error
-			errorList.append(QString("Search type %1 indexes (%2, %3) not "
-				"correct").arg(type).arg(m_range[type].beg)
-				.arg(m_range[type].end));
+			errorList.emplace_back("Search type " + std::to_string(type)
+				+ " indexes (" + std::to_string(m_range[type].beg) + ", "
+				+ std::to_string(m_range[type].end) + ") not correct");
 		}
 		else
 		{
@@ -1648,25 +1653,25 @@ Table::Table(TableEntry *entry, int entryCount) :
 					&& m_range[type].end < m_range[type2].end)))
 				{
 					// record bracket overlap error
-					errorList.append(QString("Search type %1 indexes (%2, %3) "
-						"overlap with search type %4").arg(type)
-						.arg(m_range[type].beg).arg(m_range[type].end)
-						.arg(type2));
+					errorList.emplace_back("Search type " + std::to_string(type)
+						+ " indexes (" + std::to_string(m_range[type].beg)
+						+ ", " + std::to_string(m_range[type].end)
+						+ ") overlap with search type "
+						+ std::to_string(type2));
 				}
 			}
 		}
 	}
 
 	// if errors then output messages and abort
-	if (!errorList.isEmpty())
+	if (!errorList.empty())
 	{
 		int n {};
-		foreach (QString error, errorList)
+		for (std::string &error : errorList)
 		{
-			qCritical("%s", qPrintable(tr("Error #%1: %2").arg(++n)
-				.arg(error)));
+			std::cerr << "Table Error #" << ++n << ": " << error << std::endl;
 		}
-		qFatal("%s", qPrintable(tr("Program aborting!")));
+		abort();
 	}
 }
 
