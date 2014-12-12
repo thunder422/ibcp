@@ -117,8 +117,7 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 	}
 	else
 	{
-		code = m_table.search(word.paren
-			? ParenWord_SearchType : PlainWord_SearchType, word.string);
+		code = Table::find(word.string);
 		if (code == Invalid_Code)
 		{
 			// word not found in table, therefore
@@ -152,7 +151,7 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 		{
 			// pos2 was not -1
 			Code code2;
-			if ((code2 = m_table.search(word.string, word2.string))
+			if ((code2 = Table::find(word.string, word2.string))
 				!= Invalid_Code)
 			{
 				// double word command found
@@ -453,7 +452,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 	std::string string;
 	string.push_back(m_input.peek());
 	// search table for current character to see if it is a valid operator
-	Code code {m_table.search(Symbol_SearchType, string)};
+	Code code {Table::find(string)};
 	if (code == Invalid_Code)
 	{
 		// character(s) at current position not a valid operator
@@ -476,7 +475,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 		// operator could be a two-character operator
 		string.push_back(m_input.peek());
 		Code code2;
-		if ((code2 = m_table.search(Symbol_SearchType, string)) != Invalid_Code)
+		if ((code2 = Table::find(string)) != Invalid_Code)
 		{
 			// two-character operator found
 			code = code2;

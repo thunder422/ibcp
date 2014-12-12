@@ -25,16 +25,15 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include <algorithm>
 #include <memory>
 #include <stack>
 #include <unordered_map>
 #include <vector>
 
+#include "utility.h"
+
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
-
-enum class CaseSensitive {No, Yes};
 
 
 class Dictionary
@@ -48,7 +47,8 @@ public:
 	};
 
 	Dictionary(CaseSensitive caseSensitive = CaseSensitive::No) :
-		m_keyMap {10, KeyHash {caseSensitive}, KeyEqual {caseSensitive}} {}
+		m_keyMap {10, CaseOptionalHash {caseSensitive},
+		CaseOptionalEqual {caseSensitive}} {}
 
 	void clear(void);
 	uint16_t add(const TokenPtr &token, EntryType *returnNewEntry = nullptr);
@@ -70,51 +70,8 @@ private:
 		uint16_t m_useCount;					// use count of entry
 	};
 
-	// case sensitive optional key hash function operator
-	struct KeyHash
-	{
-		CaseSensitive caseSensitive;
-
-		size_t operator()(const std::string &s) const
-		{
-			if (caseSensitive != CaseSensitive::No)
-			{
-				return std::hash<std::string>{}(s);
-			}
-			std::string s2;
-			std::transform(s.begin(), s.end(), std::back_inserter(s2), toupper);
-			return std::hash<std::string>{}(s2);
-		}
-	};
-
-	// case sensitive optional key equal function operator
-	struct KeyEqual
-	{
-		CaseSensitive caseSensitive;
-
-		bool operator()(const std::string &s1, const std::string &s2) const
-		{
-			if (caseSensitive != CaseSensitive::No)
-			{
-				return s1 == s2;
-			}
-			if (s1.size() != s2.size())
-			{
-				return false;
-			}
-			for (size_t i = 0; i < s1.size(); ++i)
-			{
-				if (toupper(s1[i]) != toupper(s2[i]))
-				{
-					return false;
-				}
-			}
-			return true;
-		}
-	};
-
-	using KeyMap = std::unordered_map<std::string, EntryValue, KeyHash,
-		KeyEqual>;
+	using KeyMap = std::unordered_map<std::string, EntryValue, CaseOptionalHash,
+		CaseOptionalEqual>;
 	using KeyIterator = KeyMap::iterator;
 
 	std::stack<uint16_t> m_freeStack;		// stack of free entries

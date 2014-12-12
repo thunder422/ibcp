@@ -75,6 +75,7 @@ struct TableEntry
 
 
 Table *Table::s_instance;			// pointer to single table instance
+Table::NameMap Table::s_nameToEntry;		// name to code table map
 
 
 // this macro produces two entries for the ExprInfo constructor,
@@ -238,16 +239,6 @@ static TableEntry tableEntries[] =
 	// Null_Code entry at beginning so Null_Code == 0
 	{	// Null_Code
 		Token::Type::Operator,
-		"", "NULL", "",
-		TableFlag{}, 0, NULL, DataType{},
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	//***********************
-	//   BEGIN PLAIN WORDS
-	//***********************
-	{	// BegPlainWord_Code
-		Token::Type{},
 		"", "NULL", "",
 		TableFlag{}, 0, NULL, DataType{},
 		NULL, NULL, NULL, NULL, NULL
@@ -477,26 +468,6 @@ static TableEntry tableEntries[] =
 		TableFlag{}, 16, &Int_IntInt_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
-	//*********************
-	//   END PLAIN WORDS
-	//*********************
-	{	// EndPlainWord_Code
-		Token::Type{},
-		"", "NULL", "",
-		TableFlag{}, 0, NULL, DataType{},
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	//*****************************
-	//   BEGIN PARENTHESES WORDS
-	//*****************************
-	{	// BegParenWord_Code
-		Token::Type{},
-		"", "NULL", "",
-		TableFlag{}, 0, NULL, DataType{},
-		NULL, NULL, NULL, NULL, NULL
-
-	},
 	//--------------------------------------
 	//   INTERNAL FUNCTIONS (Parentheses)
 	//--------------------------------------
@@ -703,25 +674,6 @@ static TableEntry tableEntries[] =
 		TableFlag{}, 2, &Dbl_Str_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
-	//***************************
-	//   END PARENTHESES WORDS
-	//***************************
-	{	// EndParenWord_Code
-		Token::Type{},
-		"", "NULL", "",
-		TableFlag{}, 0, NULL, DataType{},
-		NULL, NULL, NULL, NULL, NULL
-	},
-
-	//*******************
-	//   BEGIN SYMBOLS
-	//*******************
-	{	// BegSymbol_Code
-		Token::Type{},
-		"", "NULL", "",
-		TableFlag{}, 0, NULL, DataType{},
-		NULL, NULL, NULL, NULL, NULL
-	},
 	//----------------------
 	//   Symbol Operators
 	//----------------------
@@ -856,15 +808,6 @@ static TableEntry tableEntries[] =
 		"'", "", "",
 		EndStmt_Flag, 2, NULL, DataType{},
 		NULL, remEncode, remOperandText, remRemove, remRecreate
-	},
-	//*****************
-	//   END SYMBOLS
-	//*****************
-	{	// EndSymbol_Code
-		Token::Type{},
-		"", "NULL", "",
-		TableFlag{}, 0, NULL, DataType{},
-		NULL, NULL, NULL, NULL, NULL
 	},
 	//***************************
 	//   MISCELLANEOUS ENTRIES
@@ -1513,13 +1456,20 @@ Table::Table(TableEntry *entry, int entryCount) :
 {
 	std::vector<std::string> errorList;
 	int i;
-	int type;
 
 	// scan table and record indexes
 	// find maximum number of operands and associated codes
 	for (i = 0; i < entryCount; i++)
 	{
-		// check if found new maximums
+		try
+		{
+			add(m_entry[i]);
+		}
+		catch (std::string &error)
+		{
+			errorList.emplace_back(std::move(error));
+		}
+
 		ExprInfo *exprInfo {m_entry[i].exprInfo};
 		if (exprInfo)
 		{
@@ -1620,49 +1570,6 @@ Table::Table(TableEntry *entry, int entryCount) :
 		}
 	}
 
-	// setup indexes for bracketing codes
-	// (will be set to -1 if missing - missing errors were recorded above)
-	m_range[PlainWord_SearchType].beg = BegPlainWord_Code;
-	m_range[PlainWord_SearchType].end = EndPlainWord_Code;
-	m_range[ParenWord_SearchType].beg = BegParenWord_Code;
-	m_range[ParenWord_SearchType].end = EndParenWord_Code;
-	m_range[Symbol_SearchType].beg = BegSymbol_Code;
-	m_range[Symbol_SearchType].end = EndSymbol_Code;
-
-	// check for missing bracketing codes and if properly positioned in table
-	// (missing codes recorded above, however,
-	// need to make sure all types were set, i.e. no missing assignments above)
-	for (type = 0; type < sizeof_SearchType; type++)
-	{
-		if (m_range[type].beg > m_range[type].end)
-		{
-			// record bracket range error
-			errorList.emplace_back("Search type " + std::to_string(type)
-				+ " indexes (" + std::to_string(m_range[type].beg) + ", "
-				+ std::to_string(m_range[type].end) + ") not correct");
-		}
-		else
-		{
-			// check to make sure no bracketing codes overlap
-			for (int type2 {}; type2 < sizeof_SearchType; type2++)
-			{
-				if (type != type2
-					&& ((m_range[type].beg > m_range[type2].beg
-					&& m_range[type].beg < m_range[type2].end)
-					|| (m_range[type].end > m_range[type2].beg
-					&& m_range[type].end < m_range[type2].end)))
-				{
-					// record bracket overlap error
-					errorList.emplace_back("Search type " + std::to_string(type)
-						+ " indexes (" + std::to_string(m_range[type].beg)
-						+ ", " + std::to_string(m_range[type].end)
-						+ ") overlap with search type "
-						+ std::to_string(type2));
-				}
-			}
-		}
-	}
-
 	// if errors then output messages and abort
 	if (!errorList.empty())
 	{
@@ -1672,6 +1579,36 @@ Table::Table(TableEntry *entry, int entryCount) :
 			std::cerr << "Table Error #" << ++n << ": " << error << std::endl;
 		}
 		abort();
+	}
+}
+
+
+// function to added code entry info to the table
+void Table::add(TableEntry &entry)
+{
+	int index = &entry - m_entry;
+
+	// is code two-words?
+	if (hasFlag((Code)index, Two_Flag) && !entry.name2.empty())
+	{
+		std::string name {entry.name + ' ' + entry.name2};
+		auto iterator = s_nameToEntry.find(name);
+		if (iterator != s_nameToEntry.end())  // already in map?
+		{
+			throw "Multiple two-word command '" + name + '\'';
+		}
+		s_nameToEntry.emplace(std::move(name), &entry);
+		return;
+	}
+
+	// is code one-word?
+	if (!entry.name.empty())
+	{
+		auto iterator = s_nameToEntry.find(entry.name);
+		if (iterator == s_nameToEntry.end())  // not in table?
+		{
+			s_nameToEntry.emplace(entry.name, &entry);
+		}
 	}
 }
 
@@ -2039,67 +1976,19 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 //  TABLE SPECIFIC FUNCTIONS
 //============================
 
-// search function to look for a string of a particular type in
-// the Table, the search is case insensitive
+// find function to look for a string in the table
 //
 //   - returns the index of the entry that is found
-//   - returns -1 if the string was not found in the table
+//   - returns Invalid_Code if the string was not found in the table
 
-Code Table::search(SearchType type, const std::string &string) const
+Code Table::find(const std::string &string)
 {
-	Code i {m_range[type].beg};
-	Code end {m_range[type].end};
-	while (++i < end)
+	auto iterator = s_nameToEntry.find(string);
+	if (iterator != s_nameToEntry.end())
 	{
-		std::string name {m_entry[i].name};
-		if (noCaseStringEqual(string, name))
-		{
-			return i;
-		}
+		return Code(iterator->second - tableEntries);
 	}
 	return Invalid_Code;
-}
-
-
-// search function to look for a two word command in the Table,
-// the search is case insensitive an only entries containing a second
-// word are checked
-//
-//   - returns the index of the entry that is found
-//   - returns -1 if the string was not found in the table
-
-Code Table::search(const std::string &word1, const std::string &word2) const
-{
-	for (Code i {m_range[PlainWord_SearchType].beg};
-		i < m_range[PlainWord_SearchType].end; i++)
-	{
-		std::string name {m_entry[i].name};
-		std::string name2 {m_entry[i].name2};
-		if (!name2.empty() && noCaseStringEqual(word1, name)
-			&& noCaseStringEqual(word2, name2))
-		{
-			return i;
-		}
-	}
-	return Invalid_Code;
-}
-
-
-// function to check to see if data types specified match the data
-// types of the code at the index specified
-//
-//   - returns true if there is match, otherwise returns false
-
-bool Table::match(Code code, DataType *dataType) const
-{
-	for (int n {operandCount(code)}; --n >= 0;)
-	{
-		if (dataType[n] != operandDataType(code, n))
-		{
-			return false;
-		}
-	}
-	return true;
 }
 
 

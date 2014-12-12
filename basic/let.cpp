@@ -239,8 +239,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		// for sub-string assignments, get original sub-string function code
 		std::string name {recreator.table().name(code)};
-		// TODO temporary - will use different lookup method with new table
-		Code subStrCode = recreator.table().search(ParenWord_SearchType, name);
+		Code subStrCode = Table::find(name);
 		// check multiple flag to see if sub-string code is correct code
 		if (recreator.table().hasFlag(code, Multiple_Flag))
 		{

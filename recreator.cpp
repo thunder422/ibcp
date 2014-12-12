@@ -146,7 +146,7 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	std::string string {recreator.table().name(rpnItem->token())};
 	// if operator is a plain word operator or operand is a number,
 	//  then need to add a space
-	if (rpnItem->token()->code() < EndPlainWord_Code
+	if (isalpha(string.back())
 		|| isdigit(operand.front()) || operand.front() == '.')
 	{
 		string += ' ';

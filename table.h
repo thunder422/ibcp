@@ -26,9 +26,11 @@
 #define TABLE_H
 
 #include <memory>
+#include <unordered_map>
 
 #include "ibcp.h"
 #include "token.h"
+#include "utility.h"
 
 
 // bit definitions for flags field
@@ -44,16 +46,6 @@ enum TableFlag : unsigned
 	Keep_Flag			= 1u << 6,	// sub-string keep assignment
 	Two_Flag			= 1u << 7,	// code can have two words or characters
 	EndStmt_Flag		= 1u << 31	// end statement
-};
-
-
-// categories for searching the table entries
-enum SearchType  // table search types
-{
-	PlainWord_SearchType,
-	ParenWord_SearchType,
-	Symbol_SearchType,
-	sizeof_SearchType
 };
 
 
@@ -130,9 +122,11 @@ public:
 	std::string name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
-	Code search(SearchType type, const std::string &string) const;
-	Code search(const std::string &word1, const std::string &word2) const;
-	bool match(Code code, DataType *dataType) const;
+	static Code find(const std::string &string);
+	static Code find(const std::string &word1, const std::string &word2)
+	{
+		return find(word1 + ' ' + word2);
+	}
 
 private:
 	// these functions private to prevent multiple instances
@@ -141,14 +135,17 @@ private:
 	Table(Table const &) {}
 	Table &operator=(Table const &) {return *this;}
 
+	void add(TableEntry &entry);
+
 	static Table *s_instance;		// single instance of table
 
 	TableEntry *m_entry;			// pointer to table entries
-	struct Range
-	{
-		Code beg;					// begin index of range
-		Code end;					// end index of range
-	} m_range[sizeof_SearchType];	// range for each search type
+
+	// case insensite unordered map alias
+	using NameMap = std::unordered_map<std::string, TableEntry *,
+		CaseOptionalHash, CaseOptionalEqual>;
+
+	static NameMap s_nameToEntry;	// name to code table map
 };
 
 
