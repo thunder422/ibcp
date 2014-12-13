@@ -27,9 +27,6 @@
 
 #include <cstddef>
 
-// include auto-generated enumerations
-#include "autoenums.h"
-
 
 // parser and translator status codes
 enum class Status
@@ -94,6 +91,185 @@ enum class Status
 	BUG_Debug
 };
 
+
+// code enumeration
+enum Code
+{
+	Invalid_Code = -1,		// REMOVE possibly use can be removed
+	Null_Code,				// REMOVE will be replaced with Code{}
+	Let_Code,
+	Print_Code,				// REMOVE could be alternate[0] of SemiColon
+	Input_Code,				// REMOVE will be removed
+	InputPrompt_Code,		// REMOVE will be removed
+	Dim_Code,				// REMOVE not currently used
+	Def_Code,				// REMOVE not currently used
+	Rem_Code,
+	If_Code,				// REMOVE not currently used
+	Then_Code,				// REMOVE not currently used
+	Else_Code,				// REMOVE not currently used
+	End_Code,				// REMOVE not currently used
+	EndIf_Code,				// REMOVE not currently used
+	For_Code,				// REMOVE not currently used
+	To_Code,				// REMOVE not currently used
+	Step_Code,				// REMOVE not currently used
+	Next_Code,				// REMOVE not currently used
+	Do_Code,				// REMOVE not currently used
+	DoWhile_Code,			// REMOVE not currently used
+	DoUntil_Code,			// REMOVE not currently used
+	While_Code,				// REMOVE not currently used
+	Until_Code,				// REMOVE not currently used
+	Loop_Code,				// REMOVE not currently used
+	LoopWhile_Code,			// REMOVE not currently used
+	LoopUntil_Code,			// REMOVE not currently used
+	Rnd_Code,				// REMOVE primary function (will not be needed)
+	Mod_Code,				// REMOVE primary operator (will not be needed)
+	And_Code,				// REMOVE primary operator (will not be needed)
+	Or_Code,				// REMOVE primary operator (will not be needed)
+	Not_Code,				// REMOVE primary operator (will not be needed)
+	Eqv_Code,				// REMOVE primary operator (will not be needed)
+	Imp_Code,				// REMOVE primary operator (will not be needed)
+	Xor_Code,				// REMOVE primary operator (will not be needed)
+	Abs_Code,				// REMOVE primary function (will not be needed)
+	Fix_Code,				// REMOVE primary function (will not be needed)
+	Frac_Code,				// REMOVE primary function (will not be needed)
+	Int_Code,				// REMOVE primary function (will not be needed)
+	RndArg_Code,			// REMOVE primary function (will not be needed)
+	Sgn_Code,				// REMOVE primary function (will not be needed)
+	Cint_Code,				// REMOVE primary function (will not be needed)
+	Cdbl_Code,				// REMOVE primary function (will not be needed)
+	Sqr_Code,				// REMOVE primary function (will not be needed)
+	Atn_Code,				// REMOVE primary function (will not be needed)
+	Cos_Code,				// REMOVE primary function (will not be needed)
+	Sin_Code,				// REMOVE primary function (will not be needed)
+	Tan_Code,				// REMOVE primary function (will not be needed)
+	Exp_Code,				// REMOVE primary function (will not be needed)
+	Log_Code,				// REMOVE primary function (will not be needed)
+	Tab_Code,				// REMOVE primary function (will not be needed)
+	Spc_Code,				// REMOVE primary function (will not be needed)
+	Asc_Code,				// REMOVE primary function (will not be needed)
+	Asc2_Code,				// REMOVE alternate[1] of Asc
+	Chr_Code,				// REMOVE primary function (will not be needed)
+	Instr2_Code,			// REMOVE primary function (will not be needed)
+	Instr3_Code,			// REMOVE alternate[2] of Instr2
+	Left_Code,				// REMOVE primary function (will not be needed)
+	Len_Code,				// REMOVE primary function (will not be needed)
+	Mid2_Code,				// REMOVE primary function (will not be needed)
+	Mid3_Code,				// REMOVE alternate[2] of Mid2
+	Repeat_Code,			// REMOVE primary function (will not be needed)
+	Right_Code,				// REMOVE primary function (will not be needed)
+	Space_Code,				// REMOVE primary function (will not be needed)
+	Str_Code,				// REMOVE primary function (will not be needed)
+	Val_Code,				// REMOVE primary function (will not be needed)
+	Add_Code,				// REMOVE primary operator (will not be needed)
+	Neg_Code,				// REMOVE primary operator (will not be needed)
+	Mul_Code,				// REMOVE primary operator (will not be needed)
+	Div_Code,				// REMOVE primary operator (will not be needed)
+	IntDiv_Code,			// REMOVE primary operator (will not be needed)
+	Power_Code,				// REMOVE primary operator (will not be needed)
+	Eq_Code,
+	Gt_Code,				// REMOVE primary operator (will not be needed)
+	GtEq_Code,				// REMOVE primary operator (will not be needed)
+	Lt_Code,				// REMOVE primary operator (will not be needed)
+	LtEq_Code,				// REMOVE primary operator (will not be needed)
+	NotEq_Code,				// REMOVE primary operator (will not be needed)
+	OpenParen_Code,
+	CloseParen_Code,
+	Comma_Code,
+	SemiColon_Code,
+	Colon_Code,
+	RemOp_Code,
+	Assign_Code,			// REMOVE could be alternate to Let
+	AssignInt_Code,			// REMOVE alternate[0] of Assign
+	AssignStr_Code,			// REMOVE alternate[0] of Assign
+	AssignLeft_Code,		// REMOVE alternate[1] of Left
+	AssignMid2_Code,		// REMOVE alternate[1] of Mid2
+	AssignMid3_Code,		// REMOVE alternate[1] of Mid3
+	AssignRight_Code,		// REMOVE alternate[1] of Right
+	AssignList_Code,		// REMOVE alternate[1] of Assign
+	AssignListInt_Code,		// REMOVE alternate[1] of AssignInt
+	AssignListStr_Code,		// REMOVE alternate[1] of AssignStr
+	AssignKeepStr_Code,		// REMOVE alternate[0] of AssignStr
+	AssignKeepLeft_Code,	// REMOVE alternate[0] of AssignLeft
+	AssignKeepMid2_Code,	// REMOVE alternate[0] of AssignMid2
+	AssignKeepMid3_Code,	// REMOVE alternate[0] of AssignMid3
+	AssignKeepRight_Code,	// REMOVE alternate[0] of AssignRight
+	EOL_Code,
+	AddI1_Code,				// REMOVE alternate[0] of Add
+	AddI2_Code,				// REMOVE alternate[1] of Add
+	AddInt_Code,			// REMOVE alternate[1] of AddI1
+	CatStr_Code,			// REMOVE alternate[0] of Add
+	SubI1_Code,				// REMOVE alternate[0] of Sub
+	Sub_Code,				// REMOVE alternate[1] of Neg
+	SubI2_Code,				// REMOVE alternate[1] of Sub
+	SubInt_Code,			// REMOVE alternate[1] of SubI1
+	NegInt_Code,			// REMOVE alternate[0] of Neg
+	MulI1_Code,				// REMOVE alternate[0] of Mul
+	MulI2_Code,				// REMOVE alternate[1] of Mul
+	MulInt_Code,			// REMOVE alternate[1] of MulI1
+	DivI1_Code,				// REMOVE alternate[0] of Div
+	DivI2_Code,				// REMOVE alternate[1] of Div
+	DivInt_Code,			// REMOVE alternate[1] of DivI1
+	ModI1_Code,				// REMOVE alternate[0] of Mod
+	ModI2_Code,				// REMOVE alternate[1] of Mod
+	ModInt_Code,			// REMOVE alternate[1] of ModI1
+	PowerI1_Code,			// REMOVE alternate[0] of Power
+	PowerMul_Code,			// REMOVE alternate[1] of Power
+	PowerInt_Code,			// REMOVE alternate[1] of PowerI1
+	EqI1_Code,				// REMOVE alternate[0] of Eq
+	EqI2_Code,				// REMOVE alternate[1] of Eq
+	EqInt_Code,				// REMOVE alternate[1] of EqI1
+	EqStr_Code,				// REMOVE alternate[0] of Eq
+	GtI1_Code,				// REMOVE alternate[0] of Gt
+	GtI2_Code,				// REMOVE alternate[1] of Gt
+	GtInt_Code,				// REMOVE alternate[1] of GtI1
+	GtStr_Code,				// REMOVE alternate[0] of Gt
+	GtEqI1_Code,			// REMOVE alternate[0] of GtEq
+	GtEqI2_Code,			// REMOVE alternate[1] of GtEq
+	GtEqInt_Code,			// REMOVE alternate[1] of GtEqI1
+	GtEqStr_Code,			// REMOVE alternate[0] of GtEq
+	LtI1_Code,				// REMOVE alternate[0] of Lt
+	LtI2_Code,				// REMOVE alternate[1] of Lt
+	LtInt_Code,				// REMOVE alternate[1] of LtI1
+	LtStr_Code,				// REMOVE alternate[0] of Lt
+	LtEqI1_Code,			// REMOVE alternate[0] of LtEq
+	LtEqI2_Code,			// REMOVE alternate[1] of LtEq
+	LtEqInt_Code,			// REMOVE alternate[1] of LtEqI1
+	LtEqStr_Code,			// REMOVE alternate[0] of LtEq
+	NotEqI1_Code,			// REMOVE alternate[0] of NotEq
+	NotEqI2_Code,			// REMOVE alternate[1] of NotEq
+	NotEqInt_Code,			// REMOVE alternate[1] of NotEqI1
+	NotEqStr_Code,			// REMOVE alternate[0] of NotEq
+	AbsInt_Code,			// REMOVE alternate[0] of Abs
+	RndArgInt_Code,			// REMOVE alternate[0] of RngArg
+	SgnInt_Code,			// REMOVE alternate[0] of Sgn
+	CvtInt_Code,
+	CvtDbl_Code,
+	StrInt_Code,			// REMOVE alternate[0] of Str
+	PrintDbl_Code,			// REMOVE could be alternate[0] of Print
+	PrintInt_Code,			// REMOVE alternate[0] of PrintDbl
+	PrintStr_Code,			// REMOVE alternate[0] of PrintDbl
+	InputBegin_Code,		// REMOVE could be alternate[0] of Input
+	InputBeginStr_Code,		// REMOVE could be alternate[0] of InputPrompt
+	InputAssign_Code,		// REMOVE could be alternate[1] of Input
+	InputAssignInt_Code,	// REMOVE alternate[0] of InputAssign
+	InputAssignStr_Code,	// REMOVE alternate[0] of InputAssign
+	InputParse_Code,		// REMOVE alternate[1] of InputAssign
+	InputParseInt_Code,		// REMOVE alternate[1] of InputAssignInt
+	InputParseStr_Code,		// REMOVE alternate[1] of InputAssignStr
+	Const_Code,
+	ConstInt_Code,			// REMOVE alternate[0] of Const
+	ConstStr_Code,
+	Var_Code,
+	VarInt_Code,			// REMOVE alternate[0] of Var
+	VarStr_Code,			// REMOVE alternate[0] of Var
+	VarRef_Code,
+	VarRefInt_Code,			// REMOVE alternate[0] of VarRef
+	VarRefStr_Code,			// REMOVE alternate[0] of VarRef
+	Array_Code,
+	DefFuncN_Code,
+	DefFuncP_Code,
+	Function_Code
+};
 
 // code operator in-line functions for additional, increment and decrement
 inline Code operator +(Code code, int number)

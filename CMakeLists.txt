@@ -106,15 +106,6 @@ if (GIT_FOUND)
 endif (GIT_FOUND)
 message(STATUS "Build version: ${ibcp_RELEASE_STRING}")
 
-# find awk executable
-find_program (PROGRAM_AWK gawk)
-if (NOT PROGRAM_AWK)
-	find_program (PROGRAM_AWK awk)
-	if (NOT PROGRAM_AWK)
-		message(FATAL_ERROR "required 'awk' program was not found")
-	endif (NOT PROGRAM_AWK)
-endif (NOT PROGRAM_AWK)
-
 # configure a header file to pass some of the CMake settings to the source code
 configure_file(
 	"${PROJECT_SOURCE_DIR}/ibcp_config.h.in"
@@ -157,20 +148,12 @@ if (NOT WIN32)
 endif (NOT WIN32)
 
 # add the binary tree to the search path for include files
-# so that ibcp_config.h, autoenums.h can be found
+# so that ibcp_config.h be found
 include_directories(
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_BINARY_DIR}
 )
 
-
-# custom target
-add_custom_command(OUTPUT autoenums.h
-	COMMAND ${PROGRAM_AWK} -f ${PROJECT_SOURCE_DIR}/enums.awk
-		${PROJECT_SOURCE_DIR}/
-	MAIN_DEPENDENCY enums.awk
-	DEPENDS table.cpp
-)
 
 # list the header files without source files
 set(ibcp_HEADERS
@@ -296,7 +279,6 @@ endif (WIN32)
 add_executable(ibcp
 	ibcp.h
 	basic/basic.h
-	autoenums.h
 	${ibcp_HEADERS}
 	${ibcp_SOURCES}
 	${ibcp_MOCS}
