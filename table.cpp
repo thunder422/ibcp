@@ -137,6 +137,7 @@ static Code Add_AssocCode[]				= {
 	AddInt_Code, CatStr_Code, AddI2_Code
 };
 static Code AddInt_AssocCode[]			= {AddI1_Code};
+static Code Asc_AssocCode[]				= {Asc2_Code};
 static Code Assign_AssocCode[]			= {
 	AssignInt_Code, AssignStr_Code, AssignList_Code
 };
@@ -168,6 +169,7 @@ static Code InputAssign_AssocCode[]		= {
 };
 static Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
 static Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
+static Code Instr_AssocCode[]			= {Instr3_Code};
 static Code Left_AssocCode[]			= {AssignLeft_Code};
 static Code Lt_AssocCode[]				= {
 	LtInt_Code, LtStr_Code, LtI2_Code
@@ -177,7 +179,7 @@ static Code LtEq_AssocCode[]			= {
 	LtEqInt_Code, LtEqStr_Code, LtEqI2_Code
 };
 static Code LtEqInt_AssocCode[]			= {LtEqI1_Code};
-static Code Mid2_AssocCode[]			= {AssignMid2_Code};
+static Code Mid2_AssocCode[]			= {AssignMid2_Code, Mid3_Code};
 static Code Mid3_AssocCode[]			= {AssignMid3_Code};
 static Code Mod_AssocCode[]				= {ModInt_Code, ModI2_Code};
 static Code ModInt_AssocCode[]			= {ModI1_Code};
@@ -583,7 +585,9 @@ static TableEntry tableEntries[] =
 	{	// Asc_Code
 		Token::Type::IntFuncP,
 		"ASC(", "", "",
-		Multiple_Flag, 2, &Int_Str_ExprInfo, DataType{},
+		Multiple_Flag, 2,
+		new ExprInfo(DataType::Integer, Operands(Str), AssocCode(Asc)),
+		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Asc2_Code
@@ -601,7 +605,9 @@ static TableEntry tableEntries[] =
 	{	// Instr2_Code
 		Token::Type::IntFuncP,
 		"INSTR(", "2", "",
-		Multiple_Flag, 2, &Int_StrStr_ExprInfo, DataType{},
+		Multiple_Flag, 2,
+		new ExprInfo(DataType::Integer, Operands(StrStr), AssocCode(Instr)),
+		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr3_Code
@@ -614,7 +620,7 @@ static TableEntry tableEntries[] =
 		Token::Type::IntFuncP,
 		"LEFT$(", "", "",
 		SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode2(Left, -1)),
+		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(Left)),
 		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
@@ -628,7 +634,7 @@ static TableEntry tableEntries[] =
 		Token::Type::IntFuncP,
 		"MID$(", "2", "",
 		Multiple_Flag | SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode2(Mid2, -1)),
+		new ExprInfo(DataType::String, Operands(StrInt), AssocCode2(Mid2, 1)),
 		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
@@ -636,8 +642,8 @@ static TableEntry tableEntries[] =
 		Token::Type::IntFuncP,
 		"MID$(", "3", "",
 		SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrIntInt),
-		AssocCode2(Mid3, -1)), DataType{},
+		new ExprInfo(DataType::String, Operands(StrIntInt), AssocCode(Mid3)),
+		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Repeat_Code
@@ -650,7 +656,7 @@ static TableEntry tableEntries[] =
 		Token::Type::IntFuncP,
 		"RIGHT$(", "", "",
 		SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode2(Right, -1)),
+		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(Right)),
 		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
@@ -816,7 +822,7 @@ static TableEntry tableEntries[] =
 		Token::Type::Operator,
 		"=", "Assign", "LET",
 		Reference_Flag, 4,
-		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Assign, 2)),
+		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode2(Assign, 2)),
 		DataType{},
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
@@ -824,14 +830,14 @@ static TableEntry tableEntries[] =
 		Token::Type::Operator,
 		"=", "Assign%", "LET",
 		Reference_Flag, 4,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(AssignInt)),
+		new ExprInfo(DataType::Integer, Operands(Int), AssocCode(AssignInt)),
 		DataType{},
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignStr_Code
 		Token::Type::Operator,
 		"=", "Assign$", "LET",
-		Reference_Flag, 4, new ExprInfo(DataType::String, Operands(StrStr),
+		Reference_Flag, 4, new ExprInfo(DataType::String, Operands(Str),
 		AssocCode2(AssignStr, 1)), DataType{},
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
@@ -839,7 +845,7 @@ static TableEntry tableEntries[] =
 		Token::Type::Operator,
 		"LEFT$(", "Assign", "LET",
 		Reference_Flag | SubStr_Flag, 4,
-		new ExprInfo(DataType::String, Operands(StrStr), AssocCode(AssignLeft)),
+		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(AssignLeft)),
 		DataType{},
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
@@ -847,7 +853,7 @@ static TableEntry tableEntries[] =
 		Token::Type::Operator,
 		"MID$(", "Assign2", "LET",
 		Reference_Flag | SubStr_Flag, 4,
-		new ExprInfo(DataType::String, Operands(StrStr), AssocCode(AssignMid2)),
+		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(AssignMid2)),
 		DataType{},
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
@@ -855,39 +861,42 @@ static TableEntry tableEntries[] =
 		Token::Type::Operator,
 		"MID$(", "Assign3", "LET",
 		Reference_Flag | SubStr_Flag | Multiple_Flag, 4,
-		new ExprInfo(DataType::String, Operands(StrStr), AssocCode(AssignMid3)),
+		new ExprInfo(DataType::String, Operands(StrIntInt),
+		AssocCode(AssignMid3)),
 		DataType{},
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignRight_Code
 		Token::Type::Operator,
 		"RIGHT$(", "Assign", "LET",
-		Reference_Flag | SubStr_Flag, 4, new ExprInfo(DataType::String,
-		Operands(StrStr), AssocCode(AssignRight)), DataType{},
+		Reference_Flag | SubStr_Flag, 4,
+		new ExprInfo(DataType::String, Operands(StrInt),
+		AssocCode(AssignRight)),
+		DataType{},
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignList_Code
 		Token::Type::Operator,
 		"=", "AssignList", "LET",
-		Reference_Flag, 4, &Dbl_DblDbl_ExprInfo, DataType{},
+		Reference_Flag, 4, &Dbl_Dbl_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListInt_Code
 		Token::Type::Operator,
 		"=", "AssignList%", "LET",
-		Reference_Flag, 4, &Int_IntInt_ExprInfo, DataType{},
+		Reference_Flag, 4, &Int_Int_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListStr_Code
 		Token::Type::Operator,
 		"=", "AssignList$", "LET",
-		Reference_Flag, 4, &Str_StrStr_ExprInfo, DataType{},
+		Reference_Flag, 4, &Str_Str_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignKeepStr_Code
 		Token::Type::Operator,
 		"", "AssignKeep$", "LET",
-		Reference_Flag | Keep_Flag, 4, &Str_StrStr_ExprInfo, DataType{},
+		Reference_Flag | Keep_Flag, 4, &Str_Str_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepLeft_Code
@@ -1938,10 +1947,6 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 	{
 		// if not, see if data type of any associated code matches
 		int i {secondAssociatedIndex(code)};
-		if (i < 0)  // if second index -1, then no associated codes to search
-		{
-			return false;
-		}
 		// determine range of associated codes to search
 		int end {associatedCodeCount(code)};
 		if (operandIndex == 0 && i != 0)  // first operand?

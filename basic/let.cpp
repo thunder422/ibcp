@@ -237,16 +237,9 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	Code code {rpnItem->token()->code()};
 	if (recreator.table().hasFlag(code, SubStr_Flag))
 	{
-		// for sub-string assignments, get original sub-string function code
-		std::string name {recreator.table().name(code)};
-		Code subStrCode = Table::find(name);
-		// check multiple flag to see if sub-string code is correct code
-		if (recreator.table().hasFlag(code, Multiple_Flag))
-		{
-			subStrCode++;  // move to next code
-		}
-		recreator.pushWithOperands(std::move(name),
-			recreator.table().operandCount(subStrCode));
+		// for sub-string assignments, treat as function to recreate
+		recreator.pushWithOperands(std::string{recreator.table().name(code)},
+			recreator.table().operandCount(code));
 	}
 
 	// deterine if assignment is an sub-string assignment keep code

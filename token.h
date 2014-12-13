@@ -169,10 +169,6 @@ public:
 	{
 		m_code = code;
 	}
-	Code nextCode(void)
-	{
-		return ++m_code;
-	}
 	bool isCode(Code code) const
 	{
 		return code == m_code;

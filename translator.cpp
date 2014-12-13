@@ -616,8 +616,9 @@ void Translator::processInternalFunction(Reference reference)
 					// function doesn't have multiple entries
 					throw TokenError {Status::ExpOpOrParen, m_token};
 				}
-				// move to next code; update code and last operand index
-				code = topToken->nextCode();
+				// get second associated code; update code and last operand
+				code = m_table.secondAssociatedCode(topToken->code());
+				topToken->setCode(code);
 				lastOperand = m_table.operandCount(code) - 1;
 			}
 			m_token.reset();  // delete comma token, it's not needed

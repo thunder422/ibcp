@@ -271,22 +271,6 @@ enum Code
 	Function_Code
 };
 
-// code operator in-line functions for additional, increment and decrement
-inline Code operator +(Code code, int number)
-{
-	return (Code)((int)code + number);
-}
-
-inline Code operator ++(Code &code)
-{
-	return code = code + 1;
-}
-
-inline Code operator ++(Code &code, int)
-{
-	return code = code + 1;
-}
-
 
 // miscellenous constant definitions
 constexpr int HighestPrecedence {127};	// highest precedence value
