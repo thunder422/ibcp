@@ -76,6 +76,7 @@ struct TableEntry
 
 Table *Table::s_instance;			// pointer to single table instance
 Table::NameMap Table::s_nameToEntry;		// name to code table map
+std::unordered_map<TableEntry *, Table::EntryVectorArray> Table::s_alternate;
 
 
 // this macro produces two entries for the ExprInfo constructor,
@@ -585,7 +586,7 @@ static TableEntry tableEntries[] =
 	{	// Asc_Code
 		Token::Type::IntFuncP,
 		"ASC(", "", "",
-		Multiple_Flag, 2,
+		TableFlag{}, 2,
 		new ExprInfo(DataType::Integer, Operands(Str), AssocCode(Asc)),
 		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
@@ -605,7 +606,7 @@ static TableEntry tableEntries[] =
 	{	// Instr2_Code
 		Token::Type::IntFuncP,
 		"INSTR(", "2", "",
-		Multiple_Flag, 2,
+		TableFlag{}, 2,
 		new ExprInfo(DataType::Integer, Operands(StrStr), AssocCode(Instr)),
 		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
@@ -633,7 +634,7 @@ static TableEntry tableEntries[] =
 	{	// Mid2_Code
 		Token::Type::IntFuncP,
 		"MID$(", "2", "",
-		Multiple_Flag | SubStr_Flag, 2,
+		SubStr_Flag, 2,
 		new ExprInfo(DataType::String, Operands(StrInt), AssocCode2(Mid2, 1)),
 		DataType{},
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
@@ -1494,32 +1495,6 @@ Table::Table(TableEntry *entry, int entryCount) :
 					+ std::to_string(exprInfo->m_associatedCodeCount));
 			}
 
-			// validate multiple non-assignment entries
-			if (hasFlag((Code)i, Multiple_Flag)
-				&& !hasFlag((Code)i, Reference_Flag))
-			{
-				ExprInfo *exprInfo2 {m_entry[i + 1].exprInfo};
-				if (m_entry[i].name != m_entry[i + 1].name)
-				{
-					errorList.emplace_back("Multiple entry '" + m_entry[i].name
-						+ "' name mis-match '" + m_entry[i + 1].name + '\'');
-				}
-				else if (!exprInfo2)
-				{
-					errorList.emplace_back("Multiple entry '"
-						+ m_entry[i + 1].name
-						+ "' next entry no expression info");
-				}
-				else if (exprInfo2->m_operandCount
-					!= exprInfo->m_operandCount + 1)
-				{
-					errorList.emplace_back("Multiple entry '" + m_entry[i].name
-						+ "' incorrect number of operands ("
-						+ std::to_string(exprInfo->m_operandCount) + ", "
-						+ std::to_string(exprInfo2->m_operandCount) + ")");
-				}
-			}
-
 			enum {
 				Dbl_BitMask = 0x01,
 				Int_BitMask = 0x02,
@@ -1610,13 +1585,87 @@ void Table::add(TableEntry &entry)
 		return;
 	}
 
-	// is code one-word?
 	if (!entry.name.empty())
 	{
 		auto iterator = s_nameToEntry.find(entry.name);
 		if (iterator == s_nameToEntry.end())  // not in table?
 		{
 			s_nameToEntry.emplace(entry.name, &entry);
+			return;  // primary code, nothing more to do
+		}
+		ExprInfo *exprInfo {entry.exprInfo};
+		if (exprInfo && exprInfo->m_operandCount > 0
+			&& !hasFlag((Code)index, Reference_Flag))
+		{
+			TableEntry *primary = iterator->second;
+
+			if (exprInfo->m_operandCount < primary->exprInfo->m_operandCount)
+			{
+				TableEntry *alternate = primary;
+				iterator->second = &entry;
+				s_alternate[&entry][alternate->exprInfo->m_operandCount - 1]
+					.push_back(alternate);
+				return;  // new primary code, nothing more to do
+			}
+
+			if (entry.type == Token::Type::Operator
+				&& exprInfo->m_operandCount > primary->exprInfo->m_operandCount)
+			{
+				// not the correct primary entry
+				// need to get correct primary entry
+				auto &vector = s_alternate[primary][exprInfo->m_operandCount
+					- 1];
+				if (vector.empty())
+				{
+					vector.push_back(&entry);
+					return;  // first alternate, nothing more to do
+				}
+				primary = vector.front();
+			}
+
+			for (int i = 0; i < primary->exprInfo->m_operandCount; ++i)
+			{
+				if (exprInfo->m_operandDataType[i]
+					!= primary->exprInfo->m_operandDataType[i])
+				{
+					do
+					{
+						TableEntry *newPrimary {};
+						for (auto &alternate : s_alternate[primary][i])
+						{
+							if (exprInfo->m_operandDataType[i]
+								== alternate->exprInfo->m_operandDataType[i])
+							{
+								newPrimary = alternate;
+								++i;
+								break;
+							}
+						}
+						if (!newPrimary)
+						{
+							s_alternate[primary][i].push_back(&entry);
+							return;  // alternate added, nothing more to do
+						}
+						primary = newPrimary;  // new primary, next operand
+					}
+					while (i < exprInfo->m_operandCount);
+					break;  // no more operands, all operands match
+				}
+			}
+			if (entry.type == Token::Type::IntFuncP
+				&& exprInfo->m_operandCount > primary->exprInfo->m_operandCount)
+			{
+				// multiple codes; set multiple flag on primary code
+				primary->flags |= Multiple_Flag;
+				s_alternate[primary][exprInfo->m_operandCount - 1]
+					.push_back(&entry);
+			}
+			else
+			{
+				throw "Multiple entries with same operand data types ("
+					+ std::to_string(index) + ','
+					+ std::to_string(primary - m_entry) + ')';
+			}
 		}
 	}
 }

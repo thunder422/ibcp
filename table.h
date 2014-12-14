@@ -141,11 +141,15 @@ private:
 
 	TableEntry *m_entry;			// pointer to table entries
 
-	// case insensite unordered map alias
+	// case insensitive unordered map alias
 	using NameMap = std::unordered_map<std::string, TableEntry *,
 		CaseOptionalHash, CaseOptionalEqual>;
 
 	static NameMap s_nameToEntry;	// name to code table map
+
+	// entry to alternate entries arrays
+	using EntryVectorArray = std::array<std::vector<TableEntry *>, 3>;
+	static std::unordered_map<TableEntry *, EntryVectorArray> s_alternate;
 };
 
 
