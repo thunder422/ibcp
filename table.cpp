@@ -960,18 +960,18 @@ static TableEntry tableEntries[] =
 		TableFlag{}, 40, &Str_StrStr_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
-	{	// SubI1_Code
-		Token::Type::Operator,
-		"-", "%1", "",
-		TableFlag{}, 40, &Dbl_IntDbl_ExprInfo, DataType{},
-		NULL, NULL, NULL, NULL, binaryOperatorRecreate
-	},
 	{	// Sub_Code
 		Token::Type::Operator,
 		"-", "", "",
 		TableFlag{}, 40,
 		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Sub, 1)),
 		DataType{},
+		NULL, NULL, NULL, NULL, binaryOperatorRecreate
+	},
+	{	// SubI1_Code
+		Token::Type::Operator,
+		"-", "%1", "",
+		TableFlag{}, 40, &Dbl_IntDbl_ExprInfo, DataType{},
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI2_Code
@@ -1772,6 +1772,21 @@ Code Table::secondAssociatedCode(Code code, int index) const
 DataType Table::expectedDataType(Code code) const
 {
 	return m_entry[code].m_expectedDataType;
+}
+
+// temporary function to get alternate code
+Code Table::alternateCode(Code code, int index) const
+{
+	TableEntry *primary = &m_entry[code];
+	TableEntry *alternate = s_alternate[primary][index].front();
+	return Code(alternate - m_entry);
+}
+
+// temporary function to get count of alternate codes
+int Table::alternateCodeCount(Code code, int index) const
+{
+	TableEntry *primary = &m_entry[code];
+	return s_alternate[primary][index].size();
 }
 
 // returns the pointer to the translate function (if any) for code

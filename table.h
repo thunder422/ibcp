@@ -25,6 +25,7 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include <array>
 #include <memory>
 #include <unordered_map>
 
@@ -88,6 +89,10 @@ public:
 	int secondAssociatedIndex(Code code) const;
 	Code secondAssociatedCode(Code code, int index = 0) const;
 	DataType expectedDataType(Code code) const;
+
+	Code alternateCode(Code primaryCode, int index = 0) const;
+	int alternateCodeCount(Code code, int index) const;
+
 	TranslateFunction translateFunction(Code code) const;
 	EncodeFunction encodeFunction(Code code) const;
 	bool hasOperand(Code code) const;

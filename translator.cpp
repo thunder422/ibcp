@@ -280,11 +280,10 @@ void Translator::getExpression(DataType dataType, int level)
 			if (m_table.isUnaryOperator(m_token))
 			{
 				// check if code has a binary operator
-				if (m_table.secondAssociatedIndex(m_token->code()) > 0)
+				if (m_table.alternateCodeCount(m_token->code(), 1) > 0)
 				{
 					// change token to binary operator
-					m_token->setCode(m_table.secondAssociatedCode(
-						m_token->code()));
+					m_token->setCode(m_table.alternateCode(m_token->code(), 1));
 				}
 				else
 				{
@@ -592,7 +591,7 @@ void Translator::processInternalFunction(Reference reference)
 			{
 				// change token's code and data type to associated code
 				m_table.setToken(topToken,
-					m_table.associatedCode(topToken->code()));
+					m_table.alternateCode(topToken->code()));
 			}
 			else if (token->hasSubCode(Double_SubCode))
 			{
@@ -617,9 +616,8 @@ void Translator::processInternalFunction(Reference reference)
 					throw TokenError {Status::ExpOpOrParen, m_token};
 				}
 				// get second associated code; update code and last operand
-				code = m_table.secondAssociatedCode(topToken->code());
+				code = m_table.alternateCode(topToken->code(), ++lastOperand);
 				topToken->setCode(code);
-				lastOperand = m_table.operandCount(code) - 1;
 			}
 			m_token.reset();  // delete comma token, it's not needed
 			m_doneStack.pop();

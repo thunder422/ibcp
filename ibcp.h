@@ -198,8 +198,8 @@ enum Code
 	AddI2_Code,				// REMOVE alternate[1] of Add
 	AddInt_Code,			// REMOVE alternate[1] of AddI1
 	CatStr_Code,			// REMOVE alternate[0] of Add
-	SubI1_Code,				// REMOVE alternate[0] of Sub
 	Sub_Code,				// REMOVE alternate[1] of Neg
+	SubI1_Code,				// REMOVE alternate[0] of Sub
 	SubI2_Code,				// REMOVE alternate[1] of Sub
 	SubInt_Code,			// REMOVE alternate[1] of SubI1
 	NegInt_Code,			// REMOVE alternate[0] of Neg
