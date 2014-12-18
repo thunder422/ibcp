@@ -206,6 +206,46 @@ static Code Var_AssocCode[]				= {VarInt_Code, VarStr_Code};
 static Code VarRef_AssocCode[]			= {VarRefInt_Code, VarRefStr_Code};
 
 
+struct AlternateInfo
+{
+	Code primaryCode;					// primary code of alternates
+	int index;							// alternate array index
+	std::initializer_list<Code> codes;	// alternate codes
+};
+
+std::initializer_list<AlternateInfo> alternateInfo =
+{
+	// assignment alternate codes
+	{Assign_Code, 0, {AssignInt_Code, AssignStr_Code}},
+	{Assign_Code, 1, {AssignList_Code}},
+	{AssignInt_Code, 1, {AssignListInt_Code}},
+	{AssignStr_Code, 0, {AssignKeepStr_Code}},
+	{AssignStr_Code, 1, {AssignListStr_Code}},
+
+	// sub-string assignment alternate codes
+	{Left_Code, 1, {AssignLeft_Code}},
+	{AssignLeft_Code, 0, {AssignKeepLeft_Code}},
+	{Mid2_Code, 1, {AssignMid2_Code}},
+	{AssignMid2_Code, 0, {AssignKeepMid2_Code}},
+	{Mid3_Code, 1, {AssignMid3_Code}},
+	{AssignMid3_Code, 0, {AssignKeepMid3_Code}},
+	{Right_Code, 1, {AssignRight_Code}},
+	{AssignRight_Code, 0, {AssignKeepRight_Code}},
+
+	// internal command alternate codes
+	{InputAssign_Code, 0, {InputAssignInt_Code, InputAssignStr_Code}},
+	{InputAssign_Code, 1, {InputParse_Code}},
+	{InputAssignInt_Code, 1, {InputParseInt_Code}},
+	{InputAssignStr_Code, 1, {InputParseStr_Code}},
+	{PrintDbl_Code, 0, {PrintInt_Code, PrintStr_Code}},
+
+	// codes with operands alternate codes
+	{Const_Code, 0, {ConstInt_Code, ConstStr_Code}},
+	{Var_Code, 0, {VarInt_Code, VarStr_Code}},
+	{VarRef_Code, 0, {VarRefInt_Code, VarRefStr_Code}}
+};
+
+
 // standard expression information structures
 static ExprInfo Dbl_None_ExprInfo(DataType::Double);
 static ExprInfo Dbl_Dbl_ExprInfo(DataType::Double, Operands(Dbl));
@@ -1465,11 +1505,9 @@ Table::Table(TableEntry *entry, int entryCount) :
 	m_entry(entry)
 {
 	std::vector<std::string> errorList;
-	int i;
 
-	// scan table and record indexes
-	// find maximum number of operands and associated codes
-	for (i = 0; i < entryCount; i++)
+	// iterate entries and build alternate code map
+	for (int i = 0; i < entryCount; i++)
 	{
 		try
 		{
@@ -1479,26 +1517,18 @@ Table::Table(TableEntry *entry, int entryCount) :
 		{
 			errorList.emplace_back(std::move(error));
 		}
+	}
 
+	// iterate entries and set expected data types
+	for (int i = 0; i < entryCount; i++)
+	{
 		ExprInfo *exprInfo {m_entry[i].exprInfo};
 		if (exprInfo)
 		{
-			// check if assoc2_index is valid
-			if (exprInfo->m_secondAssociatedIndex > 0
-				&& exprInfo->m_secondAssociatedIndex
-				> exprInfo->m_associatedCodeCount)
-			{
-				errorList.emplace_back("Entry:" + std::to_string(i)
-					+ " Assoc2Index="
-					+ std::to_string(exprInfo->m_secondAssociatedIndex)
-					+ " too large, " +  "maximum is "
-					+ std::to_string(exprInfo->m_associatedCodeCount));
-			}
-
 			enum {
-				Dbl_BitMask = 0x01,
-				Int_BitMask = 0x02,
-				Str_BitMask = 0x04,
+				Dbl_BitMask = 1 << 0,
+				Int_BitMask = 1 << 1,
+				Str_BitMask = 2 << 2,
 				Num_BitMask = Dbl_BitMask | Int_BitMask,
 				Any_BitMask = Num_BitMask | Str_BitMask
 			};
@@ -1516,41 +1546,40 @@ Table::Table(TableEntry *entry, int entryCount) :
 					= exprInfo->m_operandDataType[m_entry[i].type
 					== Token::Type::Operator
 					? exprInfo->m_operandCount - 1 : 0];
-				// check each secondary associated code
-				if (exprInfo->m_associatedCodeCount > 0)
+				// check each operand alternate code
+				int bitMask {bitMaskDataType[m_entry[i].m_expectedDataType]};
+				// use second array for binary operators, else first
+				int arrayIndex = m_entry[i].type == Token::Type::Operator
+					&& exprInfo->m_operandCount == 2;
+				for (auto alternate : s_alternate[&m_entry[i]][arrayIndex])
 				{
-					int bitMask
-						{bitMaskDataType[m_entry[i].m_expectedDataType]};
-					// start at 0 for unary ops
-					bool unaryOp {m_entry[i].type == Token::Type::Operator
-						&& exprInfo->m_operandCount == 1};
-					int index {unaryOp ? 0 : exprInfo->m_secondAssociatedIndex};
-					if (index >= 0)
+					if (ExprInfo *exprInfo2 = alternate->exprInfo)
 					{
-						int limit {unaryOp ? exprInfo->m_secondAssociatedIndex
-							: exprInfo->m_associatedCodeCount};
-						for (; index < limit; index++)
-						{
-							Code assocCode {exprInfo->m_associatedCode[index]};
-							ExprInfo *exprInfo2 {m_entry[assocCode].exprInfo};
-							if (exprInfo2)
-							{
-								bitMask |= bitMaskDataType[exprInfo2
-									->m_operandDataType[exprInfo2
-									->m_operandCount - 1]];
-							}
-						}
-						if (bitMask == Num_BitMask)
-						{
-							m_entry[i].m_expectedDataType = DataType::Number;
-						}
-						else if (bitMask == Any_BitMask)
-						{
-							m_entry[i].m_expectedDataType = DataType::Any;
-						}
+						bitMask |= bitMaskDataType[exprInfo2
+							->m_operandDataType[exprInfo2
+							->m_operandCount - 1]];
 					}
 				}
+				if (bitMask == Num_BitMask)
+				{
+					m_entry[i].m_expectedDataType = DataType::Number;
+				}
+				else if (bitMask == Any_BitMask)
+				{
+					m_entry[i].m_expectedDataType = DataType::Any;
+				}
 			}
+		}
+	}
+
+	// manually set up other alternates (temporary)
+	for (auto info : alternateInfo)
+	{
+		auto primary = &m_entry[info.primaryCode];
+		for (Code code : info.codes)
+		{
+			auto alternate = &m_entry[code];
+			s_alternate[primary][info.index].push_back(alternate);
 		}
 	}
 
@@ -1590,6 +1619,14 @@ void Table::add(TableEntry &entry)
 		auto iterator = s_nameToEntry.find(entry.name);
 		if (iterator == s_nameToEntry.end())  // not in table?
 		{
+			if (entry.type == Token::Type::Operator
+				&& entry.exprInfo && entry.exprInfo->m_operandCount == 2
+				&& entry.exprInfo->m_operandDataType[0]
+				!= entry.exprInfo->m_operandDataType[1])
+			{
+				throw "Binary operator '" + entry.name + entry.name2
+					+ "' not homogeneous";
+			}
 			s_nameToEntry.emplace(entry.name, &entry);
 			return;  // primary code, nothing more to do
 		}
@@ -1605,6 +1642,11 @@ void Table::add(TableEntry &entry)
 				iterator->second = &entry;
 				s_alternate[&entry][alternate->exprInfo->m_operandCount - 1]
 					.push_back(alternate);
+				if (entry.type == Token::Type::IntFuncP)
+				{
+					// multiple codes; set multiple flag on primary code
+					entry.flags |= Multiple_Flag;
+				}
 				return;  // new primary code, nothing more to do
 			}
 
@@ -1617,6 +1659,14 @@ void Table::add(TableEntry &entry)
 					- 1];
 				if (vector.empty())
 				{
+					if (entry.type == Token::Type::Operator
+						&& entry.exprInfo && entry.exprInfo->m_operandCount == 2
+						&& entry.exprInfo->m_operandDataType[0]
+						!= entry.exprInfo->m_operandDataType[1])
+					{
+						throw "First binary operator '" + entry.name
+							+ entry.name2 + "' not homogeneous";
+					}
 					vector.push_back(&entry);
 					return;  // first alternate, nothing more to do
 				}
@@ -1628,6 +1678,7 @@ void Table::add(TableEntry &entry)
 				if (exprInfo->m_operandDataType[i]
 					!= primary->exprInfo->m_operandDataType[i])
 				{
+					auto newEntry = &entry;
 					do
 					{
 						TableEntry *newPrimary {};
@@ -1636,6 +1687,13 @@ void Table::add(TableEntry &entry)
 							if (exprInfo->m_operandDataType[i]
 								== alternate->exprInfo->m_operandDataType[i])
 							{
+								if (entry.type == Token::Type::Operator
+									&& entry.exprInfo->m_operandCount == 2
+									&& entry.exprInfo->m_operandDataType[0]
+									== entry.exprInfo->m_operandDataType[1])
+								{
+									std::swap(newEntry, alternate);
+								}
 								newPrimary = alternate;
 								++i;
 								break;
@@ -1643,7 +1701,7 @@ void Table::add(TableEntry &entry)
 						}
 						if (!newPrimary)
 						{
-							s_alternate[primary][i].push_back(&entry);
+							s_alternate[primary][i].push_back(newEntry);
 							return;  // alternate added, nothing more to do
 						}
 						primary = newPrimary;  // new primary, next operand
@@ -2007,37 +2065,22 @@ bool Table::setTokenCode(TokenPtr token, Code code, DataType dataType,
 	int operandIndex)
 {
 	// first check if data type already matches data type of code
-	if (dataType != operandDataType(code, operandIndex))
+	if (dataType == operandDataType(code, operandIndex))
 	{
-		// if not, see if data type of any associated code matches
-		int i {secondAssociatedIndex(code)};
-		// determine range of associated codes to search
-		int end {associatedCodeCount(code)};
-		if (operandIndex == 0 && i != 0)  // first operand?
+		setToken(token, code);
+		return true;
+	}
+	// if not, see if data type of any associated code matches
+	for (auto alternateEntry : s_alternate[&m_entry[code]][operandIndex])
+	{
+		Code alternateCode = Code(alternateEntry - m_entry);
+		if (dataType == operandDataType(alternateCode, operandIndex))
 		{
-			// if first operand and there are second operand associated codes
-			// then set end to start of second operand associated codes
-			// and start to first associated code
-			end = i;
-			i = 0;
-		}
-		Code *associatedCodes {associatedCodeArray(code)};
-		for (;;)
-		{
-			if (i >= end)
-			{
-				return false;  // did not find an associated code for data type
-			}
-			code = associatedCodes[i++];
-			if (dataType == operandDataType(code, operandIndex))
-			{
-				break;
-			}
+			setToken(token, alternateCode);
+			return true;
 		}
 	}
-	// change token's code and data type to associated code
-	setToken(token, code);
-	return true;
+	return false;  // did not find an alternate code for data type
 }
 
 

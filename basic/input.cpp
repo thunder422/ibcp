@@ -109,8 +109,7 @@ void inputTranslate(Translator &translator)
 		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
 		insertPoint = translator.outputInsert(insertPoint, translator.table()
-			.newToken(translator.table()
-			.secondAssociatedCode(token->code())));
+			.newToken(translator.table().alternateCode(token->code(), 1)));
 	}
 	while (!done);
 

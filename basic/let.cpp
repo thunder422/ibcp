@@ -102,7 +102,7 @@ void letTranslate(Translator &translator)
 
 			// change to assign sub-string code (first associated code)
 			translator.table().setToken(token,
-				translator.table().associatedCode(token->code()));
+				translator.table().alternateCode(token->code(), 1));
 
 			translator.resetToken();  // don't need comma/equal token
 			haveSubStr = true;
@@ -156,7 +156,7 @@ void letTranslate(Translator &translator)
 			{
 				// change to keep code (second associated code)
 				translator.table().setToken(token,
-					translator.table().associatedCode(token->code()));
+					translator.table().alternateCode(token->code()));
 
 				// append to output and pop next token from let stack
 				translator.outputAppend(std::move(token));
@@ -168,7 +168,7 @@ void letTranslate(Translator &translator)
 		else  // have a multiple assignment, change to list code
 		{
 			translator.table().setToken(token,
-				translator.table().secondAssociatedCode(token->code()));
+				translator.table().alternateCode(token->code(), 1));
 		}
 	}
 
