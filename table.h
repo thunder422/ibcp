@@ -140,6 +140,8 @@ private:
 	Table(Table const &) {}
 	Table &operator=(Table const &) {return *this;}
 
+	static void addExpectedDataType(TableEntry *entry, DataType dataType);
+
 	void add(TableEntry &entry);
 
 	static Table *s_instance;		// single instance of table
@@ -155,6 +157,9 @@ private:
 	// entry to alternate entries arrays
 	using EntryVectorArray = std::array<std::vector<TableEntry *>, 3>;
 	static std::unordered_map<TableEntry *, EntryVectorArray> s_alternate;
+
+	// entry to expected data type map
+	static std::unordered_map<TableEntry *, DataType> s_expectedDataType;
 };
 
 
