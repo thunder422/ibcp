@@ -37,20 +37,13 @@ struct ExprInfo
 {
 	DataType m_returnDataType;		// return data type or operator/function
 	short m_operandCount;			// number of operands (operators/functions)
-	short m_associatedCodeCount;	// number of associated codes
-	short m_secondAssociatedIndex;	// index of second operand associated codes
 	DataType *m_operandDataType;	// data type of each operand
-	Code *m_associatedCode;			// associated codes
 
 	ExprInfo(DataType returnDataType = DataType::None, short operandCount = 0,
-		DataType *operandDataType = NULL, short associatedCodeCount = 0,
-		short secondAssociatedIndex = 0, Code *associatedCode = NULL) :
+		DataType *operandDataType = NULL) :
 		m_returnDataType(returnDataType),
 		m_operandCount(operandCount),
-		m_associatedCodeCount(associatedCodeCount),
-		m_secondAssociatedIndex(secondAssociatedIndex),
-		m_operandDataType(operandDataType),
-		m_associatedCode(associatedCode)
+		m_operandDataType(operandDataType)
 	{
 	}
 };
@@ -84,14 +77,6 @@ std::unordered_map<TableEntry *, DataType> Table::s_expectedDataType;
 // operand data type array
 #define Operands(type)  (sizeof(type ## _OperandArray) \
 	/ sizeof(type ## _OperandArray[0])), type ## _OperandArray
-
-// macro produces associated code fields for table entries
-#define AssocCode(code)  (sizeof(code ## _AssocCode) \
-	/ sizeof(code ## _AssocCode[0])), 0, code ## _AssocCode
-
-// macro produces associated code fields with secondary index for table entries
-#define AssocCode2(code, index2)  (sizeof(code ## _AssocCode) \
-	/ sizeof(code ## _AssocCode[0])), index2, code ## _AssocCode
 
 
 // operand data type arrays
@@ -130,80 +115,6 @@ static DataType StrStr_OperandArray[] = {
 static DataType StrStrInt_OperandArray[] = {
 	DataType::String, DataType::String, DataType::Integer
 };
-
-
-// associated code data type arrays
-static Code Abs_AssocCode[]				= {AbsInt_Code};
-static Code Add_AssocCode[]				= {
-	AddInt_Code, CatStr_Code, AddI2_Code
-};
-static Code AddInt_AssocCode[]			= {AddI1_Code};
-static Code Asc_AssocCode[]				= {Asc2_Code};
-static Code Assign_AssocCode[]			= {
-	AssignInt_Code, AssignStr_Code, AssignList_Code
-};
-static Code AssignInt_AssocCode[]		= {AssignListInt_Code};
-static Code AssignLeft_AssocCode[]		= {AssignKeepLeft_Code};
-static Code AssignMid2_AssocCode[]		= {AssignKeepMid2_Code};
-static Code AssignMid3_AssocCode[]		= {AssignKeepMid3_Code};
-static Code AssignRight_AssocCode[]		= {AssignKeepRight_Code};
-static Code AssignStr_AssocCode[]		= {
-	AssignKeepStr_Code, AssignListStr_Code
-};
-static Code Const_AssocCode[]			= {ConstInt_Code, ConstStr_Code};
-static Code Div_AssocCode[]				= {DivInt_Code, DivI2_Code};
-static Code DivInt_AssocCode[]			= {DivI1_Code};
-static Code Eq_AssocCode[]				= {
-	EqInt_Code, EqStr_Code, EqI2_Code
-};
-static Code EqInt_AssocCode[]			= {EqI1_Code};
-static Code Gt_AssocCode[]				= {
-	GtInt_Code, GtStr_Code, GtI2_Code
-};
-static Code GtInt_AssocCode[]			= {GtI1_Code};
-static Code GtEq_AssocCode[]			= {
-	GtEqInt_Code, GtEqStr_Code, GtEqI2_Code
-};
-static Code GtEqInt_AssocCode[]			= {GtEqI1_Code};
-static Code InputAssign_AssocCode[]		= {
-	InputAssignInt_Code, InputAssignStr_Code, InputParse_Code
-};
-static Code InputAssignInt_AssocCode[]	= {InputParseInt_Code};
-static Code InputAssignStr_AssocCode[]	= {InputParseStr_Code};
-static Code Instr_AssocCode[]			= {Instr3_Code};
-static Code Left_AssocCode[]			= {AssignLeft_Code};
-static Code Lt_AssocCode[]				= {
-	LtInt_Code, LtStr_Code, LtI2_Code
-};
-static Code LtInt_AssocCode[]			= {LtI1_Code};
-static Code LtEq_AssocCode[]			= {
-	LtEqInt_Code, LtEqStr_Code, LtEqI2_Code
-};
-static Code LtEqInt_AssocCode[]			= {LtEqI1_Code};
-static Code Mid2_AssocCode[]			= {AssignMid2_Code, Mid3_Code};
-static Code Mid3_AssocCode[]			= {AssignMid3_Code};
-static Code Mod_AssocCode[]				= {ModInt_Code, ModI2_Code};
-static Code ModInt_AssocCode[]			= {ModI1_Code};
-static Code Mul_AssocCode[]				= {MulInt_Code, MulI2_Code};
-static Code MulInt_AssocCode[]			= {MulI1_Code};
-static Code Neg_AssocCode[]				= {NegInt_Code, Sub_Code};
-static Code NotEq_AssocCode[]			= {
-	NotEqInt_Code, NotEqStr_Code, NotEqI2_Code
-};
-static Code NotEqInt_AssocCode[] 		= {NotEqI1_Code};
-static Code Power_AssocCode[]			= {PowerInt_Code, PowerMul_Code};
-static Code PowerInt_AssocCode[]		= {PowerI1_Code};
-static Code Print_AssocCode[]			= {
-	PrintInt_Code, PrintStr_Code
-};
-static Code Right_AssocCode[]			= {AssignRight_Code};
-static Code RndArgs_AssocCode[]			= {RndArgInt_Code};
-static Code Sgn_AssocCode[]				= {SgnInt_Code};
-static Code Str_AssocCode[]				= {StrInt_Code};
-static Code Sub_AssocCode[]				= {SubInt_Code, SubI2_Code};
-static Code SubInt_AssocCode[]			= {SubI1_Code};
-static Code Var_AssocCode[]				= {VarInt_Code, VarStr_Code};
-static Code VarRef_AssocCode[]			= {VarRefInt_Code, VarRefStr_Code};
 
 
 struct AlternateInfo
@@ -266,12 +177,15 @@ static ExprInfo Int_StrInt_ExprInfo(DataType::Integer, Operands(StrInt));
 static ExprInfo Int_StrStr_ExprInfo(DataType::Integer, Operands(StrStr));
 static ExprInfo Int_StrStrInt_ExprInfo(DataType::Integer, Operands(StrStrInt));
 
+static ExprInfo Str_Dbl_ExprInfo(DataType::String, Operands(Dbl));
 static ExprInfo Str_Int_ExprInfo(DataType::String, Operands(Int));
 static ExprInfo Str_Str_ExprInfo(DataType::String, Operands(Str));
 static ExprInfo Str_StrInt_ExprInfo(DataType::String, Operands(StrInt));
 static ExprInfo Str_StrStr_ExprInfo(DataType::String, Operands(StrStr));
+static ExprInfo Str_StrIntInt_ExprInfo(DataType::String, Operands(StrIntInt));
 static ExprInfo Str_StrStrInt_ExprInfo(DataType::String, Operands(StrStrInt));
 
+static ExprInfo None_Dbl_ExprInfo(DataType::None, Operands(Dbl));
 static ExprInfo None_Int_ExprInfo(DataType::None, Operands(Int));
 static ExprInfo None_Str_ExprInfo(DataType::None, Operands(Str));
 
@@ -470,8 +384,7 @@ static TableEntry tableEntries[] =
 	{	// Mod_Code
 		Token::Type::Operator,
 		"MOD", "", "",
-		TableFlag{}, 42,
-		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Mod, 1)),
+		TableFlag{}, 42, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// And_Code
@@ -516,8 +429,7 @@ static TableEntry tableEntries[] =
 	{	// Abs_Code
 		Token::Type::IntFuncP,
 		"ABS(", "", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode(Abs)),
+		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Fix_Code
@@ -542,15 +454,13 @@ static TableEntry tableEntries[] =
 	{	// RndArg_Code
 		Token::Type::IntFuncP,
 		"RND(", "", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode(RndArgs)),
+		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sgn_Code
 		Token::Type::IntFuncP,
 		"SGN(", "", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode(Sgn)),
+		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cint_Code
@@ -622,8 +532,7 @@ static TableEntry tableEntries[] =
 	{	// Asc_Code
 		Token::Type::IntFuncP,
 		"ASC(", "", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::Integer, Operands(Str), AssocCode(Asc)),
+		TableFlag{}, 2, &Int_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Asc2_Code
@@ -641,8 +550,7 @@ static TableEntry tableEntries[] =
 	{	// Instr2_Code
 		Token::Type::IntFuncP,
 		"INSTR(", "2", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::Integer, Operands(StrStr), AssocCode(Instr)),
+		TableFlag{}, 2, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr3_Code
@@ -654,8 +562,7 @@ static TableEntry tableEntries[] =
 	{	// Left_Code
 		Token::Type::IntFuncP,
 		"LEFT$(", "", "",
-		SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(Left)),
+		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Len_Code
@@ -667,15 +574,13 @@ static TableEntry tableEntries[] =
 	{	// Mid2_Code
 		Token::Type::IntFuncP,
 		"MID$(", "2", "",
-		SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode2(Mid2, 1)),
+		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid3_Code
 		Token::Type::IntFuncP,
 		"MID$(", "3", "",
-		SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrIntInt), AssocCode(Mid3)),
+		SubStr_Flag, 2, &Str_StrIntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Repeat_Code
@@ -687,8 +592,7 @@ static TableEntry tableEntries[] =
 	{	// Right_Code
 		Token::Type::IntFuncP,
 		"RIGHT$(", "", "",
-		SubStr_Flag, 2,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(Right)),
+		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Space_Code
@@ -700,8 +604,7 @@ static TableEntry tableEntries[] =
 	{	// Str_Code
 		Token::Type::IntFuncP,
 		"STR$(", "", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::String, Operands(Dbl), AssocCode(Str)),
+		TableFlag{}, 2, &Str_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Val_Code
@@ -716,29 +619,25 @@ static TableEntry tableEntries[] =
 	{	// Add_Code
 		Token::Type::Operator,
 		"+", "", "",
-		TableFlag{}, 40,
-		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Add, 2)),
+		TableFlag{}, 40, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Neg_Code
 		Token::Type::Operator,
 		"-", "U", "",
-		UseConstAsIs_Flag, 48,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode2(Neg, 1)),
+		UseConstAsIs_Flag, 48, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// Mul_Code
 		Token::Type::Operator,
 		"*", "", "",
-		TableFlag{}, 46,
-		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Mul, 1)),
+		TableFlag{}, 46, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Div_Code
 		Token::Type::Operator,
 		"/", "", "",
-		TableFlag{}, 46,
-		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Div, 1)),
+		TableFlag{}, 46, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// IntDiv_Code
@@ -750,50 +649,43 @@ static TableEntry tableEntries[] =
 	{	// Power_Code
 		Token::Type::Operator,
 		"^", "", "",
-		UseConstAsIs_Flag, 50,
-		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Power, 1)),
+		UseConstAsIs_Flag, 50, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Eq_Code
 		Token::Type::Operator,
 		"=", "", "",
-		TableFlag{}, 30,
-		new ExprInfo(DataType::Integer, Operands(DblDbl), AssocCode2(Eq, 2)),
+		TableFlag{}, 30, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Gt_Code
 		Token::Type::Operator,
 		">", "", "",
-		Two_Flag, 32,
-		new ExprInfo(DataType::Integer, Operands(DblDbl), AssocCode2(Gt, 2)),
+		Two_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEq_Code
 		Token::Type::Operator,
 		">=", "", "",
-		TableFlag{}, 32,
-		new ExprInfo(DataType::Integer, Operands(DblDbl), AssocCode2(GtEq, 2)),
+		TableFlag{}, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Lt_Code
 		Token::Type::Operator,
 		"<", "", "",
-		Two_Flag, 32,
-		new ExprInfo(DataType::Integer, Operands(DblDbl), AssocCode2(Lt, 2)),
+		Two_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEq_Code
 		Token::Type::Operator,
 		"<=", "", "",
-		TableFlag{}, 32,
-		new ExprInfo(DataType::Integer, Operands(DblDbl), AssocCode2(LtEq, 2)),
+		TableFlag{}, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEq_Code
 		Token::Type::Operator,
 		"<>", "", "",
-		Two_Flag, 30,
-		new ExprInfo(DataType::Integer, Operands(DblDbl), AssocCode2(NotEq, 2)),
+		Two_Flag, 30, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// OpenParen_Code
@@ -840,52 +732,43 @@ static TableEntry tableEntries[] =
 	{	// Assign_Code
 		Token::Type::Operator,
 		"=", "Assign", "LET",
-		Reference_Flag, 4,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode2(Assign, 2)),
+		Reference_Flag, 4, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignInt_Code
 		Token::Type::Operator,
 		"=", "Assign%", "LET",
-		Reference_Flag, 4,
-		new ExprInfo(DataType::Integer, Operands(Int), AssocCode(AssignInt)),
+		Reference_Flag, 4, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignStr_Code
 		Token::Type::Operator,
 		"=", "Assign$", "LET",
-		Reference_Flag, 4, new ExprInfo(DataType::String, Operands(Str),
-		AssocCode2(AssignStr, 1)),
+		Reference_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignLeft_Code
 		Token::Type::Operator,
 		"LEFT$(", "Assign", "LET",
-		Reference_Flag | SubStr_Flag, 4,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(AssignLeft)),
+		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid2_Code
 		Token::Type::Operator,
 		"MID$(", "Assign2", "LET",
-		Reference_Flag | SubStr_Flag, 4,
-		new ExprInfo(DataType::String, Operands(StrInt), AssocCode(AssignMid2)),
+		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid3_Code
 		Token::Type::Operator,
 		"MID$(", "Assign3", "LET",
-		Reference_Flag | SubStr_Flag | Multiple_Flag, 4,
-		new ExprInfo(DataType::String, Operands(StrIntInt),
-		AssocCode(AssignMid3)),
+		Reference_Flag | SubStr_Flag | Multiple_Flag, 4, &Str_StrIntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignRight_Code
 		Token::Type::Operator,
 		"RIGHT$(", "Assign", "LET",
-		Reference_Flag | SubStr_Flag, 4,
-		new ExprInfo(DataType::String, Operands(StrInt),
-		AssocCode(AssignRight)),
+		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignList_Code
@@ -958,8 +841,7 @@ static TableEntry tableEntries[] =
 	{	// AddInt_Code
 		Token::Type::Operator,
 		"+", "%", "",
-		TableFlag{}, 40,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(AddInt)),
+		TableFlag{}, 40, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// CatStr_Code
@@ -971,8 +853,7 @@ static TableEntry tableEntries[] =
 	{	// Sub_Code
 		Token::Type::Operator,
 		"-", "", "",
-		TableFlag{}, 40,
-		new ExprInfo(DataType::Double, Operands(DblDbl), AssocCode2(Sub, 1)),
+		TableFlag{}, 40, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI1_Code
@@ -990,8 +871,7 @@ static TableEntry tableEntries[] =
 	{	// SubInt_Code
 		Token::Type::Operator,
 		"-", "%", "",
-		TableFlag{}, 40,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(SubInt)),
+		TableFlag{}, 40, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NegInt_Code
@@ -1015,8 +895,7 @@ static TableEntry tableEntries[] =
 	{	// MulInt_Code
 		Token::Type::Operator,
 		"*", "%", "",
-		TableFlag{}, 46,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(MulInt)),
+		TableFlag{}, 46, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivI1_Code
@@ -1034,8 +913,7 @@ static TableEntry tableEntries[] =
 	{	// DivInt_Code
 		Token::Type::Operator,
 		"/", "%", "",
-		TableFlag{}, 46,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(DivInt)),
+		TableFlag{}, 46, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModI1_Code
@@ -1053,8 +931,7 @@ static TableEntry tableEntries[] =
 	{	// ModInt_Code
 		Token::Type::Operator,
 		"MOD", "%", "",
-		TableFlag{}, 42,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(ModInt)),
+		TableFlag{}, 42, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerI1_Code
@@ -1072,8 +949,7 @@ static TableEntry tableEntries[] =
 	{	// PowerInt_Code
 		Token::Type::Operator,
 		"^", "%", "",
-		TableFlag{}, 50,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(PowerInt)),
+		TableFlag{}, 50, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqI1_Code
@@ -1091,8 +967,7 @@ static TableEntry tableEntries[] =
 	{	// EqInt_Code
 		Token::Type::Operator,
 		"=", "%", "",
-		TableFlag{}, 30,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(EqInt)),
+		TableFlag{}, 30, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqStr_Code
@@ -1116,8 +991,7 @@ static TableEntry tableEntries[] =
 	{	// GtInt_Code
 		Token::Type::Operator,
 		">", "%", "",
-		TableFlag{}, 32,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(GtInt)),
+		TableFlag{}, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtStr_Code
@@ -1141,8 +1015,7 @@ static TableEntry tableEntries[] =
 	{	// GtEqInt_Code
 		Token::Type::Operator,
 		">=", "%", "",
-		TableFlag{}, 32,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(GtEqInt)),
+		TableFlag{}, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqStr_Code
@@ -1166,8 +1039,7 @@ static TableEntry tableEntries[] =
 	{	// LtInt_Code
 		Token::Type::Operator,
 		"<", "%", "",
-		TableFlag{}, 32,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(LtInt)),
+		TableFlag{}, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtStr_Code
@@ -1191,8 +1063,7 @@ static TableEntry tableEntries[] =
 	{	// LtEqInt_Code
 		Token::Type::Operator,
 		"<=", "%", "",
-		TableFlag{}, 32,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(LtEqInt)),
+		TableFlag{}, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqStr_Code
@@ -1216,8 +1087,7 @@ static TableEntry tableEntries[] =
 	{	// NotEqInt_Code
 		Token::Type::Operator,
 		"<>", "%", "",
-		TableFlag{}, 30,
-		new ExprInfo(DataType::Integer, Operands(IntInt), AssocCode(NotEqInt)),
+		TableFlag{}, 30, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqStr_Code
@@ -1265,8 +1135,7 @@ static TableEntry tableEntries[] =
 	{	// PrintDbl_Code
 		Token::Type::IntFuncN,
 		"", "PrintDbl", "",
-		Print_Flag | UseConstAsIs_Flag, 2,
-		new ExprInfo(DataType::None, Operands(Dbl), AssocCode(Print)),
+		Print_Flag | UseConstAsIs_Flag, 2, &None_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// PrintInt_Code
@@ -1296,22 +1165,19 @@ static TableEntry tableEntries[] =
 	{	// InputAssign_Code
 		Token::Type::IntFuncN,
 		"", "InputAssign", "",
-		Reference_Flag, 2,
-		new ExprInfo(DataType::None, Operands(Dbl), AssocCode2(InputAssign, 2)),
+		Reference_Flag, 2, &None_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignInt_Code
 		Token::Type::IntFuncN,
 		"", "InputAssignInt", "",
-		Reference_Flag, 2,
-		new ExprInfo(DataType::None, Operands(Int), AssocCode(InputAssignInt)),
+		Reference_Flag, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignStr_Code
 		Token::Type::IntFuncN,
 		"", "InputAssignStr", "",
-		Reference_Flag, 2,
-		new ExprInfo(DataType::None, Operands(Str), AssocCode(InputAssignStr)),
+		Reference_Flag, 2, &None_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputParse_Code
@@ -1335,8 +1201,7 @@ static TableEntry tableEntries[] =
 	{	// Const_Code
 		Token::Type::Constant,
 		"", "Const", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode(Const)),
+		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, constNumEncode, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
@@ -1357,8 +1222,7 @@ static TableEntry tableEntries[] =
 	{	// Var_Code
 		Token::Type::NoParen,
 		"", "Var", "",
-		TableFlag{}, 2,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode(Var)),
+		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarInt_Code
@@ -1376,8 +1240,7 @@ static TableEntry tableEntries[] =
 	{	// VarRef_Code
 		Token::Type::NoParen,
 		"", "VarRef", "",
-		Reference_Flag, 2,
-		new ExprInfo(DataType::Double, Operands(Dbl), AssocCode(VarRef)),
+		Reference_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarRefInt_Code
@@ -1725,37 +1588,6 @@ int Table::operandCount(Code code) const
 DataType Table::operandDataType(Code code, int operand) const
 {
 	return m_entry[code].exprInfo->m_operandDataType[operand];
-}
-
-// returns the number of associate codes for code
-int Table::associatedCodeCount(Code code) const
-{
-	return m_entry[code].exprInfo->m_associatedCodeCount;
-}
-
-// returns the associate code for a specific index for code
-Code Table::associatedCode(Code code, int index) const
-{
-	return m_entry[code].exprInfo->m_associatedCode[index];
-}
-
-// returns the associated code array for a code
-Code *Table::associatedCodeArray(Code code) const
-{
-	return m_entry[code].exprInfo->m_associatedCode;
-}
-
-// returns the start index of the secondary associated codes for code
-int Table::secondAssociatedIndex(Code code) const
-{
-	return m_entry[code].exprInfo->m_secondAssociatedIndex;
-}
-
-// returns the secondary associated code for a specific index for code
-Code Table::secondAssociatedCode(Code code, int index) const
-{
-	return m_entry[code].exprInfo->m_associatedCode[secondAssociatedIndex(code)
-		+ index];
 }
 
 // returns the expected data type for table entry

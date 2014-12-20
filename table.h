@@ -83,11 +83,6 @@ public:
 	DataType returnDataType(Code code) const;
 	int operandCount(Code code) const;
 	DataType operandDataType(Code code, int operand) const;
-	int associatedCodeCount(Code code) const;
-	Code associatedCode(Code code, int index = 0) const;
-	Code *associatedCodeArray(Code code) const;
-	int secondAssociatedIndex(Code code) const;
-	Code secondAssociatedCode(Code code, int index = 0) const;
 	DataType expectedDataType(Code code) const;
 
 	Code alternateCode(Code primaryCode, int index = 0) const;
