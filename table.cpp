@@ -35,18 +35,71 @@
 // expression information for operators and internal functions
 struct ExprInfo
 {
-	DataType m_returnDataType;		// return data type or operator/function
+	DataType m_returnDataType;		// return data type of operator/function
 	short m_operandCount;			// number of operands (operators/functions)
-	DataType *m_operandDataType;	// data type of each operand
+	const DataType *m_operandDataType;	// data type of each operand
 
-	ExprInfo(DataType returnDataType = DataType::None, short operandCount = 0,
-		DataType *operandDataType = NULL) :
-		m_returnDataType(returnDataType),
-		m_operandCount(operandCount),
-		m_operandDataType(operandDataType)
+	ExprInfo(DataType returnDataType = DataType::None,
+		const std::initializer_list<const DataType> &operands = {}) :
+		m_returnDataType {returnDataType},
+		m_operandCount(operands.size()),
+		m_operandDataType {operands.begin()}
 	{
 	}
 };
+
+// operands initializers
+constexpr auto Operands_Dbl    = {DataType::Double};
+constexpr auto Operands_DblDbl = {DataType::Double, DataType::Double};
+constexpr auto Operands_DblInt = {DataType::Double, DataType::Integer};
+
+constexpr auto Operands_Int    = {DataType::Integer};
+constexpr auto Operands_IntDbl = {DataType::Integer, DataType::Double};
+constexpr auto Operands_IntInt = {DataType::Integer, DataType::Integer};
+
+constexpr auto Operands_Str    = {DataType::String};
+constexpr auto Operands_StrInt = {DataType::String, DataType::Integer};
+constexpr auto Operands_StrStr = {DataType::String, DataType::String};
+
+constexpr auto Operands_StrIntInt = {
+	DataType::String, DataType::Integer, DataType::Integer
+};
+constexpr auto Operands_StrStrInt = {
+	DataType::String, DataType::String, DataType::Integer
+};
+
+// expression information structure instances
+static ExprInfo Null_ExprInfo;
+static ExprInfo Dbl_None_ExprInfo(DataType::Double);
+static ExprInfo Dbl_Dbl_ExprInfo(DataType::Double, Operands_Dbl);
+static ExprInfo Dbl_DblDbl_ExprInfo(DataType::Double, Operands_DblDbl);
+static ExprInfo Dbl_DblInt_ExprInfo(DataType::Double, Operands_DblInt);
+static ExprInfo Dbl_Int_ExprInfo(DataType::Double, Operands_Int);
+static ExprInfo Dbl_IntDbl_ExprInfo(DataType::Double, Operands_IntDbl);
+static ExprInfo Dbl_Str_ExprInfo(DataType::Double, Operands_Str);
+
+static ExprInfo Int_Dbl_ExprInfo(DataType::Integer, Operands_Dbl);
+static ExprInfo Int_DblDbl_ExprInfo(DataType::Integer, Operands_DblDbl);
+static ExprInfo Int_DblInt_ExprInfo(DataType::Integer, Operands_DblInt);
+static ExprInfo Int_Int_ExprInfo(DataType::Integer, Operands_Int);
+static ExprInfo Int_IntInt_ExprInfo(DataType::Integer, Operands_IntInt);
+static ExprInfo Int_IntDbl_ExprInfo(DataType::Integer, Operands_IntDbl);
+static ExprInfo Int_Str_ExprInfo(DataType::Integer, Operands_Str);
+static ExprInfo Int_StrInt_ExprInfo(DataType::Integer, Operands_StrInt);
+static ExprInfo Int_StrStr_ExprInfo(DataType::Integer, Operands_StrStr);
+static ExprInfo Int_StrStrInt_ExprInfo(DataType::Integer, Operands_StrStrInt);
+
+static ExprInfo Str_Dbl_ExprInfo(DataType::String, Operands_Dbl);
+static ExprInfo Str_Int_ExprInfo(DataType::String, Operands_Int);
+static ExprInfo Str_Str_ExprInfo(DataType::String, Operands_Str);
+static ExprInfo Str_StrInt_ExprInfo(DataType::String, Operands_StrInt);
+static ExprInfo Str_StrStr_ExprInfo(DataType::String, Operands_StrStr);
+static ExprInfo Str_StrIntInt_ExprInfo(DataType::String, Operands_StrIntInt);
+static ExprInfo Str_StrStrInt_ExprInfo(DataType::String, Operands_StrStrInt);
+
+static ExprInfo None_Dbl_ExprInfo(DataType::None, Operands_Dbl);
+static ExprInfo None_Int_ExprInfo(DataType::None, Operands_Int);
+static ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
 
 
 struct TableEntry
@@ -71,50 +124,6 @@ Table::NameMap Table::s_nameToEntry;		// name to code table map
 std::unordered_map<TableEntry *, Table::EntryVectorArray> Table::s_alternate;
 std::unordered_map<TableEntry *, DataType> Table::s_expectedDataType;
 
-
-// this macro produces two entries for the ExprInfo constructor,
-// one for the number of operands, one for the pointer to the
-// operand data type array
-#define Operands(type)  (sizeof(type ## _OperandArray) \
-	/ sizeof(type ## _OperandArray[0])), type ## _OperandArray
-
-
-// operand data type arrays
-static DataType Dbl_OperandArray[] = {
-	DataType::Double
-};
-static DataType DblDbl_OperandArray[] = {
-	DataType::Double, DataType::Double
-};
-static DataType DblInt_OperandArray[] = {
-	DataType::Double, DataType::Integer
-};
-
-static DataType Int_OperandArray[] = {
-	DataType::Integer
-};
-static DataType IntDbl_OperandArray[] = {
-	DataType::Integer, DataType::Double
-};
-static DataType IntInt_OperandArray[] = {
-	DataType::Integer, DataType::Integer
-};
-
-static DataType Str_OperandArray[] = {
-	DataType::String
-};
-static DataType StrInt_OperandArray[] = {
-	DataType::String, DataType::Integer
-};
-static DataType StrIntInt_OperandArray[] = {
-	DataType::String, DataType::Integer, DataType::Integer
-};
-static DataType StrStr_OperandArray[] = {
-	DataType::String, DataType::String
-};
-static DataType StrStrInt_OperandArray[] = {
-	DataType::String, DataType::String, DataType::Integer
-};
 
 
 struct AlternateInfo
@@ -157,38 +166,6 @@ std::initializer_list<AlternateInfo> alternateInfo =
 };
 
 
-// standard expression information structures
-static ExprInfo Dbl_None_ExprInfo(DataType::Double);
-static ExprInfo Dbl_Dbl_ExprInfo(DataType::Double, Operands(Dbl));
-static ExprInfo Dbl_DblDbl_ExprInfo(DataType::Double, Operands(DblDbl));
-static ExprInfo Dbl_DblInt_ExprInfo(DataType::Double, Operands(DblInt));
-static ExprInfo Dbl_Int_ExprInfo(DataType::Double, Operands(Int));
-static ExprInfo Dbl_IntDbl_ExprInfo(DataType::Double, Operands(IntDbl));
-static ExprInfo Dbl_Str_ExprInfo(DataType::Double, Operands(Str));
-
-static ExprInfo Int_Dbl_ExprInfo(DataType::Integer, Operands(Dbl));
-static ExprInfo Int_DblDbl_ExprInfo(DataType::Integer, Operands(DblDbl));
-static ExprInfo Int_DblInt_ExprInfo(DataType::Integer, Operands(DblInt));
-static ExprInfo Int_Int_ExprInfo(DataType::Integer, Operands(Int));
-static ExprInfo Int_IntInt_ExprInfo(DataType::Integer, Operands(IntInt));
-static ExprInfo Int_IntDbl_ExprInfo(DataType::Integer, Operands(IntDbl));
-static ExprInfo Int_Str_ExprInfo(DataType::Integer, Operands(Str));
-static ExprInfo Int_StrInt_ExprInfo(DataType::Integer, Operands(StrInt));
-static ExprInfo Int_StrStr_ExprInfo(DataType::Integer, Operands(StrStr));
-static ExprInfo Int_StrStrInt_ExprInfo(DataType::Integer, Operands(StrStrInt));
-
-static ExprInfo Str_Dbl_ExprInfo(DataType::String, Operands(Dbl));
-static ExprInfo Str_Int_ExprInfo(DataType::String, Operands(Int));
-static ExprInfo Str_Str_ExprInfo(DataType::String, Operands(Str));
-static ExprInfo Str_StrInt_ExprInfo(DataType::String, Operands(StrInt));
-static ExprInfo Str_StrStr_ExprInfo(DataType::String, Operands(StrStr));
-static ExprInfo Str_StrIntInt_ExprInfo(DataType::String, Operands(StrIntInt));
-static ExprInfo Str_StrStrInt_ExprInfo(DataType::String, Operands(StrStrInt));
-
-static ExprInfo None_Dbl_ExprInfo(DataType::None, Operands(Dbl));
-static ExprInfo None_Int_ExprInfo(DataType::None, Operands(Int));
-static ExprInfo None_Str_ExprInfo(DataType::None, Operands(Str));
-
 // code enumeration names in comments after opening brace
 // (code enumeration generated from these by enums.awk)
 static TableEntry tableEntries[] =
@@ -197,7 +174,7 @@ static TableEntry tableEntries[] =
 	{	// Null_Code
 		Token::Type::Operator,
 		"", "NULL", "",
-		TableFlag{}, 0, NULL,
+		TableFlag{}, 0, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -207,165 +184,165 @@ static TableEntry tableEntries[] =
 	{	// Let_Code
 		Token::Type::Command,
 		"LET", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		letTranslate, NULL, NULL, NULL, NULL
 	},
 	{	// Print_Code
 		Token::Type::Command,
 		"PRINT", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		printTranslate, NULL, NULL, NULL, printRecreate
 	},
 	{	// Input_Code
 		Token::Type::Command,
 		"INPUT", "", "Keep",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// InputPrompt_Code
 		Token::Type::Command,
 		"INPUT", "PROMPT", "Keep",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// Dim_Code
 		Token::Type::Command,
 		"DIM", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Def_Code
 		Token::Type::Command,
 		"DEF", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Rem_Code
 		Token::Type::Command,
 		"REM", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	{	// If_Code
 		Token::Type::Command,
 		"IF", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Then_Code
 		Token::Type::Command,
 		"THEN", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Else_Code
 		Token::Type::Command,
 		"ELSE", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// End_Code
 		Token::Type::Command,
 		"END", "", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// EndIf_Code
 		Token::Type::Command,
 		"END", "IF", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// For_Code
 		Token::Type::Command,
 		"FOR", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// To_Code
 		Token::Type::Command,
 		"TO", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Step_Code
 		Token::Type::Command,
 		"STEP", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Next_Code
 		Token::Type::Command,
 		"NEXT", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Do_Code
 		Token::Type::Command,
 		"DO", "", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoWhile_Code
 		Token::Type::Command,
 		"DO", "WHILE", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoUntil_Code
 		Token::Type::Command,
 		"DO", "UNTIL", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// While_Code
 		Token::Type::Command,
 		"WHILE", "", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Until_Code
 		Token::Type::Command,
 		"UNTIL", "", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Loop_Code
 		Token::Type::Command,
 		"LOOP", "", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopWhile_Code
 		Token::Type::Command,
 		"LOOP", "WHILE", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopUntil_Code
 		Token::Type::Command,
 		"LOOP", "UNTIL", "",
-		Two_Flag, 4, NULL,
+		Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -691,39 +668,39 @@ static TableEntry tableEntries[] =
 	{	// OpenParen_Code
 		Token::Type::Operator,
 		"(", "", "",
-		TableFlag{}, 2, NULL,
+		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// CloseParen_Code
 		Token::Type::Operator,
 		")", "", "",
-		TableFlag{}, 4, NULL,
+		TableFlag{}, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, parenRecreate
 	},
 	{	// Comma_Code
 		Token::Type::Operator,
 		",", "", "",
-		TableFlag{}, 6, NULL,
+		TableFlag{}, 6, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, printCommaRecreate
 	},
 	{	// SemiColon_Code
 		Token::Type::Operator,
 		";", "", "",
-		TableFlag{}, 6, NULL,
+		TableFlag{}, 6, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, printSemicolonRecreate
 	},
 	{	// Colon_Code
 		Token::Type::Operator,
 		":", "", "",
-		EndStmt_Flag, 4, NULL,
+		EndStmt_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// RemOp_Code
 		Token::Type::Operator,
 		"'", "", "",
-		EndStmt_Flag, 2, NULL,
+		EndStmt_Flag, 2, &Null_ExprInfo,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	//***************************
@@ -823,7 +800,7 @@ static TableEntry tableEntries[] =
 	{	// EOL_Code
 		Token::Type::Operator,
 		"", "EOL", "",
-		EndStmt_Flag, 4, NULL,
+		EndStmt_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 	},
 	{	// AddI1_Code
@@ -1117,13 +1094,13 @@ static TableEntry tableEntries[] =
 	{	// CvtInt_Code
 		Token::Type::IntFuncN,
 		"", "CvtInt", "",
-		Hidden_Flag, 2, NULL,
+		Hidden_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// CvtDbl_Code
 		Token::Type::IntFuncN,
 		"", "CvtDbl", "",
-		Hidden_Flag, 2, NULL,
+		Hidden_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// StrInt_Code
@@ -1153,7 +1130,7 @@ static TableEntry tableEntries[] =
 	{	// InputBegin_Code
 		Token::Type::IntFuncN,
 		"", "InputBegin", "",
-		TableFlag{}, 2, NULL,
+		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputBeginStr_Code
@@ -1183,19 +1160,19 @@ static TableEntry tableEntries[] =
 	{	// InputParse_Code
 		Token::Type::IntFuncN,
 		"", "InputParse", "",
-		TableFlag{}, 2, NULL,
+		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseInt_Code
 		Token::Type::IntFuncN,
 		"", "InputParseInt", "",
-		TableFlag{}, 2, NULL,
+		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseStr_Code
 		Token::Type::IntFuncN,
 		"", "InputParseStr", "",
-		TableFlag{}, 2, NULL,
+		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// Const_Code
@@ -1379,7 +1356,7 @@ void Table::add(TableEntry &entry)
 		if (iterator == s_nameToEntry.end())  // not in table?
 		{
 			if (entry.type == Token::Type::Operator
-				&& entry.exprInfo && entry.exprInfo->m_operandCount == 2
+				&& entry.exprInfo->m_operandCount == 2
 				&& entry.exprInfo->m_operandDataType[0]
 				!= entry.exprInfo->m_operandDataType[1])
 			{
@@ -1387,7 +1364,7 @@ void Table::add(TableEntry &entry)
 					+ "' not homogeneous";
 			}
 			s_nameToEntry.emplace(entry.name, &entry);
-			if (entry.exprInfo && entry.exprInfo->m_operandCount > 0)
+			if (entry.exprInfo->m_operandCount > 0)
 			{
 				int index = entry.type == Token::Type::Operator
 					? entry.exprInfo->m_operandCount - 1 : 0;
@@ -1397,7 +1374,7 @@ void Table::add(TableEntry &entry)
 			return;  // primary code, nothing more to do
 		}
 		ExprInfo *exprInfo {entry.exprInfo};
-		if (exprInfo && exprInfo->m_operandCount > 0
+		if (exprInfo->m_operandCount > 0
 			&& !hasFlag((Code)index, Reference_Flag))
 		{
 			TableEntry *primary = iterator->second;
@@ -1430,7 +1407,7 @@ void Table::add(TableEntry &entry)
 				if (vector.empty())
 				{
 					if (entry.type == Token::Type::Operator
-						&& entry.exprInfo && entry.exprInfo->m_operandCount == 2
+						&& entry.exprInfo->m_operandCount == 2
 						&& entry.exprInfo->m_operandDataType[0]
 						!= entry.exprInfo->m_operandDataType[1])
 					{
@@ -1574,8 +1551,7 @@ int Table::precedence(Code code) const
 // returns data type for code
 DataType Table::returnDataType(Code code) const
 {
-	ExprInfo *exprInfo {m_entry[code].exprInfo};
-	return !exprInfo ? DataType::None : exprInfo->m_returnDataType;
+	return m_entry[code].exprInfo->m_returnDataType;
 }
 
 // returns the number of operators (arguments) for code
@@ -1654,15 +1630,9 @@ RecreateFunction Table::recreateFunction(Code code) const
 // returns the unary operator code (or Null_Code if none) for token code
 Code Table::unaryCode(const TokenPtr &token) const
 {
-	if (token->isType(Token::Type::Operator))
-	{
-		ExprInfo *ei {m_entry[token->code()].exprInfo};
-		if (ei && ei->m_operandCount == 1)
-		{
-			return token->code();
-		}
-	}
-	return Null_Code;
+	return token->isType(Token::Type::Operator)
+		&& m_entry[token->code()].exprInfo->m_operandCount == 1
+		? token->code() : Null_Code;
 }
 
 // returns whether the token contains a unary operator code
@@ -1703,8 +1673,7 @@ bool Table::hasFlag(const TokenPtr &token, unsigned flag) const
 // returns number of operands expected for code in token token
 int Table::operandCount(const TokenPtr &token) const
 {
-	ExprInfo *exprInfo {m_entry[token->code()].exprInfo};
-	return !exprInfo ? 0 : exprInfo->m_operandCount;
+	return operandCount(token->code());
 }
 
 // returns the expected data type for table entry in token
