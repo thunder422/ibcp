@@ -47,7 +47,7 @@ TokenUniquePtr Parser::operator()(Number number)
 	if (m_input.peek() == EOF)
 	{
 		int pos = m_input.str().length();
-		return m_table.newToken(pos, 1, EOL_Code);
+		return m_table.newToken(EOL_Code, pos, 1);
 	}
 	if (TokenUniquePtr token = getIdentifier())
 	{
@@ -103,7 +103,7 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 		m_input.seekg(pos + name.length());
 		// read remark string to end-of-line
 		std::getline(m_input, word.string);
-		return m_table.newToken(pos, name.length(), Rem_Code,
+		return m_table.newToken(Rem_Code, pos, name.length(),
 			std::move(word.string));
 	}
 
@@ -166,7 +166,7 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 			}
 		}
 	}
-	return m_table.newToken(pos, len, code);
+	return m_table.newToken(code, pos, len);
 }
 
 
@@ -465,7 +465,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 	{
 		// remark requires special handling (remark string is to end-of-line)
 		std::getline(m_input, string);  // reads rest of line
-		return m_table.newToken(pos, 1, RemOp_Code, std::move(string));
+		return m_table.newToken(RemOp_Code, pos, 1, std::move(string));
 	}
 
 	// current character is at least a valid one-character operator
@@ -483,7 +483,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 			m_input.get();  // eat second character
 		}
 	}
-	return m_table.newToken(pos, len, code);
+	return m_table.newToken(code, pos, len);
 }
 
 

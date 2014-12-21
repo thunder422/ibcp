@@ -99,7 +99,7 @@ void inputTranslate(Translator &translator)
 					translator.token()};
 			}
 			done = true;
-			token = std::make_shared<Token>();
+			token = translator.table().newToken(Null_Code);
 		}
 
 		// change token to appropriate assign code and append to output

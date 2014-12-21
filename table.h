@@ -104,8 +104,7 @@ public:
 	int operandCount(const TokenPtr &token) const;
 	DataType expectedDataType(const TokenPtr &token) const;
 	void setToken(TokenPtr &token, Code code);
-	TokenPtr newToken(Code code);
-	TokenUniquePtr newToken(int column, int length, Code code,
+	TokenUniquePtr newToken(Code code, int column = -1, int length = -1,
 		const std::string string = {})
 	{
 		return TokenUniquePtr{new Token {column, length, type(code),

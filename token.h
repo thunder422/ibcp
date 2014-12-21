@@ -55,10 +55,6 @@ public:
 		Paren
 	};
 
-	explicit Token(int column = -1, int length = 1) : m_column{column},
-		m_length{length}, m_type{}, m_code{Invalid_Code}, m_reference{},
-		m_subCode{None_SubCode} {}
-
 	// constructor for codes
 	Token(int column, int length, Type type, DataType dataType, Code code,
 		const std::string string = {}) : m_column{column}, m_length{length},

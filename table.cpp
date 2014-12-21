@@ -1690,15 +1690,6 @@ void Table::setToken(TokenPtr &token, Code code)
 	token->setDataType(returnDataType(code));
 }
 
-// function to create a new token and initialize it for a code
-TokenPtr Table::newToken(Code code)
-{
-	TokenPtr token {new Token};	// allocates and initializes base members
-	setToken(token, code);		// initializes code related members
-	return token;
-}
-
-
 // function to return text for an command, operator or function code in a token
 std::string Table::name(const TokenPtr &token) const
 {
