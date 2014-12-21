@@ -172,7 +172,7 @@ static TableEntry tableEntries[] =
 {
 	// Null_Code entry at beginning so Null_Code == 0
 	{	// Null_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"", "NULL", "",
 		TableFlag{}, 0, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
@@ -707,92 +707,92 @@ static TableEntry tableEntries[] =
 	//   MISCELLANEOUS ENTRIES
 	//***************************
 	{	// Assign_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"=", "Assign", "LET",
 		Reference_Flag, 4, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignInt_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"=", "Assign%", "LET",
 		Reference_Flag, 4, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignStr_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"=", "Assign$", "LET",
 		Reference_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignLeft_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"LEFT$(", "Assign", "LET",
 		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid2_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"MID$(", "Assign2", "LET",
 		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid3_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"MID$(", "Assign3", "LET",
 		Reference_Flag | SubStr_Flag | Multiple_Flag, 4, &Str_StrIntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignRight_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"RIGHT$(", "Assign", "LET",
 		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignList_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"=", "AssignList", "LET",
 		Reference_Flag, 4, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListInt_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"=", "AssignList%", "LET",
 		Reference_Flag, 4, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListStr_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"=", "AssignList$", "LET",
 		Reference_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignKeepStr_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"", "AssignKeep$", "LET",
 		Reference_Flag | Keep_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepLeft_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"LEFT$(", "AssignKeep", "LET",
 		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid2_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"MID$(", "AssignKeep2", "LET",
 		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid3_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"MID$(", "AssignKeep3", "LET",
 		Reference_Flag | SubStr_Flag | Multiple_Flag | Keep_Flag, 4,
 		&Str_StrStrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepRight_Code
-		Token::Type::Operator,
+		Token::Type{},
 		"RIGHT$(", "AssignKeep", "LET",
 		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
@@ -1110,67 +1110,67 @@ static TableEntry tableEntries[] =
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// PrintDbl_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "PrintDbl", "",
 		Print_Flag | UseConstAsIs_Flag, 2, &None_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// PrintInt_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "PrintInt", "",
 		Print_Flag, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// PrintStr_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "PrintStr", "",
 		Print_Flag, 2, &None_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// InputBegin_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputBegin", "",
 		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputBeginStr_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputBeginStr", "Question",
 		TableFlag{}, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, inputPromptBeginRecreate
 	},
 	{	// InputAssign_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputAssign", "",
 		Reference_Flag, 2, &None_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignInt_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputAssignInt", "",
 		Reference_Flag, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputAssignStr_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputAssignStr", "",
 		Reference_Flag, 2, &None_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, inputAssignRecreate
 	},
 	{	// InputParse_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputParse", "",
 		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseInt_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputParseInt", "",
 		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// InputParseStr_Code
-		Token::Type::IntFuncN,
+		Token::Type{},
 		"", "InputParseStr", "",
 		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate

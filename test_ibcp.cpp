@@ -98,11 +98,6 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		break;
 
-	case Token::Type::IntFuncN:
-	case Token::Type::IntFuncP:
-		os << table.debugName(token->code());
-		break;
-
 	case Token::Type::Command:
 		if (token->isCode(Rem_Code))
 		{
@@ -120,7 +115,8 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		break;
 
 	default:
-		// nothing more to output
+		// output debug name by default
+		os << table.debugName(token->code());
 		break;
 	}
 	if (token->reference())
