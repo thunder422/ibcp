@@ -50,7 +50,7 @@ enum TableFlag : unsigned
 };
 
 
-struct TableEntry;
+struct ExprInfo;
 class Translator;
 class ProgramModel;
 class Recreator;
@@ -64,6 +64,23 @@ typedef const std::string (*OperandTextFunction)
 	(const ProgramModel *programUnit, uint16_t operand);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, uint16_t operand);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
+
+// table entry structure with information for a single code
+struct TableEntry
+{
+	Token::Type m_type;				// type of token for entry
+	const std::string m_name;		// name for table entry
+	const std::string m_name2;		// name of second word of command
+	const std::string m_option;		// name of option sub-code
+	unsigned m_flags;				// flags for entry
+	int m_precedence;				// precedence of code
+	ExprInfo *m_exprInfo;			// expression info pointer (NULL for none)
+	TranslateFunction translate;	// pointer to translate function
+	EncodeFunction encode;			// pointer to encode function
+	OperandTextFunction operandText;// pointer to operand text function
+	RemoveFunction remove;			// pointer to remove function
+	RecreateFunction recreate;		// pointer to recreate function
+};
 
 
 class Table

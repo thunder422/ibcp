@@ -102,28 +102,10 @@ static ExprInfo None_Int_ExprInfo(DataType::None, Operands_Int);
 static ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
 
 
-struct TableEntry
-{
-	Token::Type type;				// type of token for entry
-	const std::string name;			// name for table entry
-	const std::string name2;		// name of second word of command
-	const std::string option;		// name of option sub-code
-	unsigned flags;					// flags for entry
-	int precedence;					// precedence of code
-	ExprInfo *exprInfo;				// expression info pointer (NULL for none)
-	TranslateFunction translate;	// pointer to translate function
-	EncodeFunction encode;			// pointer to encode function
-	OperandTextFunction operandText;// pointer to operand text function
-	RemoveFunction remove;			// pointer to remove function
-	RecreateFunction recreate;		// pointer to recreate function
-};
-
-
 Table *Table::s_instance;			// pointer to single table instance
 Table::NameMap Table::s_nameToEntry;		// name to code table map
 std::unordered_map<TableEntry *, Table::EntryVectorArray> Table::s_alternate;
 std::unordered_map<TableEntry *, DataType> Table::s_expectedDataType;
-
 
 
 struct AlternateInfo
@@ -1338,9 +1320,9 @@ void Table::add(TableEntry &entry)
 	int index = &entry - m_entry;
 
 	// is code two-words?
-	if (hasFlag((Code)index, Two_Flag) && !entry.name2.empty())
+	if (hasFlag((Code)index, Two_Flag) && !entry.m_name2.empty())
 	{
-		std::string name {entry.name + ' ' + entry.name2};
+		std::string name {entry.m_name + ' ' + entry.m_name2};
 		auto iterator = s_nameToEntry.find(name);
 		if (iterator != s_nameToEntry.end())  // already in map?
 		{
@@ -1350,55 +1332,56 @@ void Table::add(TableEntry &entry)
 		return;
 	}
 
-	if (!entry.name.empty())
+	if (!entry.m_name.empty())
 	{
-		auto iterator = s_nameToEntry.find(entry.name);
+		auto iterator = s_nameToEntry.find(entry.m_name);
 		if (iterator == s_nameToEntry.end())  // not in table?
 		{
-			if (entry.type == Token::Type::Operator
-				&& entry.exprInfo->m_operandCount == 2
-				&& entry.exprInfo->m_operandDataType[0]
-				!= entry.exprInfo->m_operandDataType[1])
+			if (entry.m_type == Token::Type::Operator
+				&& entry.m_exprInfo->m_operandCount == 2
+				&& entry.m_exprInfo->m_operandDataType[0]
+				!= entry.m_exprInfo->m_operandDataType[1])
 			{
-				throw "Binary operator '" + entry.name + entry.name2
+				throw "Binary operator '" + entry.m_name + entry.m_name2
 					+ "' not homogeneous";
 			}
-			s_nameToEntry.emplace(entry.name, &entry);
-			if (entry.exprInfo->m_operandCount > 0)
+			s_nameToEntry.emplace(entry.m_name, &entry);
+			if (entry.m_exprInfo->m_operandCount > 0)
 			{
-				int index = entry.type == Token::Type::Operator
-					? entry.exprInfo->m_operandCount - 1 : 0;
+				int index = entry.m_type == Token::Type::Operator
+					? entry.m_exprInfo->m_operandCount - 1 : 0;
 				addExpectedDataType(&entry,
-					entry.exprInfo->m_operandDataType[index]);
+					entry.m_exprInfo->m_operandDataType[index]);
 			}
 			return;  // primary code, nothing more to do
 		}
-		ExprInfo *exprInfo {entry.exprInfo};
+		ExprInfo *exprInfo {entry.m_exprInfo};
 		if (exprInfo->m_operandCount > 0
 			&& !hasFlag((Code)index, Reference_Flag))
 		{
 			TableEntry *primary = iterator->second;
 
-			if (exprInfo->m_operandCount < primary->exprInfo->m_operandCount)
+			if (exprInfo->m_operandCount < primary->m_exprInfo->m_operandCount)
 			{
 				TableEntry *alternate = primary;
 				iterator->second = &entry;
-				s_alternate[&entry][alternate->exprInfo->m_operandCount - 1]
+				s_alternate[&entry][alternate->m_exprInfo->m_operandCount - 1]
 					.push_back(alternate);
-				if (entry.type == Token::Type::IntFuncP)
+				if (entry.m_type == Token::Type::IntFuncP)
 				{
 					// multiple codes; set multiple flag on primary code
-					entry.flags |= Multiple_Flag;
+					entry.m_flags |= Multiple_Flag;
 					// erase original expected data type of function
 					s_expectedDataType.erase(alternate);
 				}
 				addExpectedDataType(&entry,
-					entry.exprInfo->m_operandDataType[0]);
+					entry.m_exprInfo->m_operandDataType[0]);
 				return;  // new primary code, nothing more to do
 			}
 
-			if (entry.type == Token::Type::Operator
-				&& exprInfo->m_operandCount > primary->exprInfo->m_operandCount)
+			if (entry.m_type == Token::Type::Operator
+				&& exprInfo->m_operandCount
+				> primary->m_exprInfo->m_operandCount)
 			{
 				// not the correct primary entry
 				// need to get correct primary entry
@@ -1406,26 +1389,26 @@ void Table::add(TableEntry &entry)
 					- 1];
 				if (vector.empty())
 				{
-					if (entry.type == Token::Type::Operator
-						&& entry.exprInfo->m_operandCount == 2
-						&& entry.exprInfo->m_operandDataType[0]
-						!= entry.exprInfo->m_operandDataType[1])
+					if (entry.m_type == Token::Type::Operator
+						&& entry.m_exprInfo->m_operandCount == 2
+						&& entry.m_exprInfo->m_operandDataType[0]
+						!= entry.m_exprInfo->m_operandDataType[1])
 					{
-						throw "First binary operator '" + entry.name
-							+ entry.name2 + "' not homogeneous";
+						throw "First binary operator '" + entry.m_name
+							+ entry.m_name2 + "' not homogeneous";
 					}
 					vector.push_back(&entry);
 					addExpectedDataType(&entry,
-						entry.exprInfo->m_operandDataType[0]);
+						entry.m_exprInfo->m_operandDataType[0]);
 					return;  // first alternate, nothing more to do
 				}
 				primary = vector.front();
 			}
 
-			for (int i = 0; i < primary->exprInfo->m_operandCount; ++i)
+			for (int i = 0; i < primary->m_exprInfo->m_operandCount; ++i)
 			{
 				if (exprInfo->m_operandDataType[i]
-					!= primary->exprInfo->m_operandDataType[i])
+					!= primary->m_exprInfo->m_operandDataType[i])
 				{
 					auto newEntry = &entry;
 					do
@@ -1434,16 +1417,16 @@ void Table::add(TableEntry &entry)
 						for (auto &alternate : s_alternate[primary][i])
 						{
 							if (exprInfo->m_operandDataType[i]
-								== alternate->exprInfo->m_operandDataType[i])
+								== alternate->m_exprInfo->m_operandDataType[i])
 							{
-								if (entry.type == Token::Type::Operator
-									&& entry.exprInfo->m_operandCount == 2
-									&& entry.exprInfo->m_operandDataType[0]
-									== entry.exprInfo->m_operandDataType[1])
+								if (entry.m_type == Token::Type::Operator
+									&& entry.m_exprInfo->m_operandCount == 2
+									&& entry.m_exprInfo->m_operandDataType[0]
+									== entry.m_exprInfo->m_operandDataType[1])
 								{
 									s_expectedDataType.erase(alternate);
 									addExpectedDataType(newEntry, newEntry
-										->exprInfo->m_operandDataType[i]);
+										->m_exprInfo->m_operandDataType[i]);
 									std::swap(newEntry, alternate);
 								}
 								newPrimary = alternate;
@@ -1455,10 +1438,10 @@ void Table::add(TableEntry &entry)
 						{
 							s_alternate[primary][i].push_back(newEntry);
 							addExpectedDataType(i == 0
-								&& newEntry->type == Token::Type::Operator
-								&& newEntry->exprInfo->m_operandCount == 2
+								&& newEntry->m_type == Token::Type::Operator
+								&& newEntry->m_exprInfo->m_operandCount == 2
 								? newEntry : primary,
-								newEntry->exprInfo->m_operandDataType[i]);
+								newEntry->m_exprInfo->m_operandDataType[i]);
 							return;  // alternate added, nothing more to do
 						}
 						primary = newPrimary;  // new primary, next operand
@@ -1467,11 +1450,12 @@ void Table::add(TableEntry &entry)
 					break;  // no more operands, all operands match
 				}
 			}
-			if (entry.type == Token::Type::IntFuncP
-				&& exprInfo->m_operandCount > primary->exprInfo->m_operandCount)
+			if (entry.m_type == Token::Type::IntFuncP
+				&& exprInfo->m_operandCount
+				> primary->m_exprInfo->m_operandCount)
 			{
 				// multiple codes; set multiple flag on primary code
-				primary->flags |= Multiple_Flag;
+				primary->m_flags |= Multiple_Flag;
 				s_alternate[primary][exprInfo->m_operandCount - 1]
 					.push_back(&entry);
 			}
@@ -1508,24 +1492,24 @@ void Table::addExpectedDataType(TableEntry *entry, DataType dataType)
 // returns token type for code
 Token::Type Table::type(Code code) const
 {
-	return m_entry[code].type;
+	return m_entry[code].m_type;
 }
 
 // returns primary name for code
 const std::string Table::name(Code code) const
 {
-	return m_entry[code].name;
+	return m_entry[code].m_name;
 }
 
 // returns second name of a two word command for code
 const std::string Table::name2(Code code) const
 {
-	return m_entry[code].name2;
+	return m_entry[code].m_name2;
 }
 
 const std::string Table::optionName(Code code) const
 {
-	return m_entry[code].option;
+	return m_entry[code].m_option;
 }
 
 // returns the debug name for code, which is the primary name
@@ -1533,37 +1517,37 @@ const std::string Table::optionName(Code code) const
 const std::string Table::debugName(Code code) const
 {
 	return code == Invalid_Code
-		? "<NotSet>" : m_entry[code].name + m_entry[code].name2;
+		? "<NotSet>" : m_entry[code].m_name + m_entry[code].m_name2;
 }
 
 // returns if the flag is set to the code
 bool Table::hasFlag(Code code, unsigned flag) const
 {
-	return m_entry[code].flags & flag ? true : false;
+	return m_entry[code].m_flags & flag ? true : false;
 }
 
 // returns the precedence for code
 int Table::precedence(Code code) const
 {
-	return m_entry[code].precedence;
+	return m_entry[code].m_precedence;
 }
 
 // returns data type for code
 DataType Table::returnDataType(Code code) const
 {
-	return m_entry[code].exprInfo->m_returnDataType;
+	return m_entry[code].m_exprInfo->m_returnDataType;
 }
 
 // returns the number of operators (arguments) for code
 int Table::operandCount(Code code) const
 {
-	return m_entry[code].exprInfo->m_operandCount;
+	return m_entry[code].m_exprInfo->m_operandCount;
 }
 
 // returns the data type for a specific operator for code
 DataType Table::operandDataType(Code code, int operand) const
 {
-	return m_entry[code].exprInfo->m_operandDataType[operand];
+	return m_entry[code].m_exprInfo->m_operandDataType[operand];
 }
 
 // returns the expected data type for table entry
@@ -1631,7 +1615,7 @@ RecreateFunction Table::recreateFunction(Code code) const
 Code Table::unaryCode(const TokenPtr &token) const
 {
 	return token->isType(Token::Type::Operator)
-		&& m_entry[token->code()].exprInfo->m_operandCount == 1
+		&& m_entry[token->code()].m_exprInfo->m_operandCount == 1
 		? token->code() : Null_Code;
 }
 
@@ -1694,10 +1678,10 @@ void Table::setToken(TokenPtr &token, Code code)
 std::string Table::name(const TokenPtr &token) const
 {
 	TableEntry &entry = m_entry[token->code()];
-	std::string string {entry.name};
-	if (hasFlag(token, Two_Flag) && !entry.name2.empty())
+	std::string string {entry.m_name};
+	if (hasFlag(token, Two_Flag) && !entry.m_name2.empty())
 	{
-		string += ' ' + entry.name2;
+		string += ' ' + entry.m_name2;
 	}
 	return string;
 }
