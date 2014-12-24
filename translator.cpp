@@ -397,22 +397,11 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 			throw TokenError {expectedErrorStatus(dataType, reference),
 				std::move(m_token)};
 		}
-		if (reference != Reference::None)
-		{
-			m_token->setReference();
-		}
-		// TODO temporary until define functions are fully implemented
-		dataType = m_token->dataType();  // preserve data type
-		m_table.setToken(m_token, DefFuncN_Code);
-		m_token->setDataType(dataType);
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::NoParen:
-		// REMOVE for now assume a variable
-		// TODO first check if identifier is in function dictionary
-		// TODO only a function reference if name of current function
-		m_table.setTokenCode(m_token, reference == Reference::None
-			? Var_Code : VarRef_Code);
+		// TODO temporary until token initialize for data type in parser
+		m_table.setTokenCode(m_token, m_token->code());
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncP:
@@ -454,10 +443,6 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 		break;
 
 	case Token::Type::Paren:
-		if (reference != Reference::None)
-		{
-			m_token->setReference();
-		}
 		processParenToken();
 		doneAppend = false;  // already appended
 		break;
@@ -499,7 +484,7 @@ try
 		// if data type is not blank and not string, then allow a number token
 		m_token = (*m_parse)(dataType != DataType{}
 			&& dataType != DataType::String && reference == Reference::None
-			? Parser::Number::Yes : Parser::Number::No);
+			? Parser::Number::Yes : Parser::Number::No, reference);
 	}
 }
 catch (TokenError &error)
@@ -673,22 +658,11 @@ void Translator::processParenToken()
 	// TODO with function dictionaries, get data type for each argument
 	// TODO (move into loop below) and check number of arguments
 	DataType dataType {DataType::Any};
-	// TODO need to check test mode once dictionaries are implemented
-	// REMOVE for now assume functions start with an 'F'
 	// TODO temporary until array and functions are fully implemented
-	if (m_token->isType(Token::Type::Paren))
+	// TODO this check needs updated for data typed array codes
+	if (m_token->isCode(Array_Code))
 	{
-		bool isArray = toupper(m_token->string().front()) != 'F';
-		m_token->setCode(isArray ? Array_Code : Function_Code);
-		if (m_token->reference() || isArray)
-		{
-			dataType = DataType::Integer;  // array subscripts
-		}
-	}
-	else  // Token::Type::DefFuncP
-	{
-		// TODO temporary until define functions are fully implemented
-		m_token->setCode(DefFuncP_Code);
+		dataType = DataType::Integer;  // array subscripts
 	}
 	TokenPtr topToken {std::move(m_token)};
 

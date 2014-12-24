@@ -316,6 +316,14 @@ enum SubCode : uint16_t
 };
 
 
+// reference request options for operands enumeration
+enum class Reference {
+	None,							// no reference requested
+	Variable,						// variable only
+	VarDefFn,						// variable and defined function
+	All								// any reference
+};
+
 // provide generic hash for enum class with std::unordered_map
 struct EnumClassHash
 {

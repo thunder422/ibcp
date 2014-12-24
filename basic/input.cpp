@@ -73,7 +73,7 @@ void inputTranslate(Translator &translator)
 	{
 		// get variable reference
 		// (does not return false - returns error for reference)
-		translator.getOperand(DataType::Any, Translator::Reference::Variable);
+		translator.getOperand(DataType::Any, Reference::Variable);
 
 		// get and check next token
 		translator.getToken(Status::ExpCommaSemiOrEnd);

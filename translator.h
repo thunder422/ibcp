@@ -44,13 +44,6 @@ public:
 		Yes				// don't set code size after translation
 	};
 
-	enum class Reference {
-		None,
-		Variable,
-		VarDefFn,
-		All
-	};
-
 	// Main Function
 	RpnList operator()(TestMode testMode = {});
 

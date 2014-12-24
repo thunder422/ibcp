@@ -463,7 +463,7 @@ try
 	Parser parse {testInput};
 	for (;;)
 	{
-		TokenPtr token {parse(Parser::Number::Yes)};
+		TokenPtr token {parse(Parser::Number::Yes, Reference::None)};
 		printToken(token);
 		if (token->isCode(EOL_Code))
 		{

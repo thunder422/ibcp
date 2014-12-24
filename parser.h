@@ -41,11 +41,11 @@ public:
 		No,
 		Yes
 	};
-	TokenUniquePtr operator()(Number state);
+	TokenUniquePtr operator()(Number state, Reference reference);
 
 private:
 	// main functions
-	TokenUniquePtr getIdentifier() noexcept;
+	TokenUniquePtr getIdentifier(Reference reference) noexcept;
 	TokenUniquePtr getNumber();
 	TokenUniquePtr getString() noexcept;
 	TokenUniquePtr getOperator() noexcept;

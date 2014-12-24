@@ -52,7 +52,7 @@ void letTranslate(Translator &translator)
 		try
 		{
 			// does not return false (throws error for reference)
-			translator.getOperand(dataType, Translator::Reference::All);
+			translator.getOperand(dataType, Reference::All);
 		}
 		catch (TokenError &error)
 		{

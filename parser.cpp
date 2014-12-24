@@ -41,7 +41,7 @@ Parser::Parser(const std::string &input) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenUniquePtr Parser::operator()(Number number)
+TokenUniquePtr Parser::operator()(Number number, Reference reference)
 {
 	m_input >> std::ws;
 	if (m_input.peek() == EOF)
@@ -49,7 +49,7 @@ TokenUniquePtr Parser::operator()(Number number)
 		int pos = m_input.str().length();
 		return m_table.newToken(EOL_Code, pos, 1);
 	}
-	if (TokenUniquePtr token = getIdentifier())
+	if (TokenUniquePtr token = getIdentifier(reference))
 	{
 		return token;
 	}
@@ -83,7 +83,7 @@ TokenUniquePtr Parser::operator()(Number number)
 //   - returns default token pointer if no identifier (position not changed)
 //   - returns token pointer to new token if there is
 
-TokenUniquePtr Parser::getIdentifier() noexcept
+TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 {
 	int pos = m_input.tellg();
 	Word word = getWord(WordType::First);
@@ -107,13 +107,12 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 			std::move(word.string));
 	}
 
-	Token::Type type {};
 	Code code;
 	// defined function?  (must also have a letter after "FN")
 	if (word.string.length() >= 3 && toupper(word.string[0]) == 'F'
 		&& toupper(word.string[1]) == 'N' && isalpha(word.string[2]))
 	{
-		type = word.paren ? Token::Type::DefFuncP : Token::Type::DefFuncN;
+		code = word.paren ? DefFuncP_Code : DefFuncN_Code;
 	}
 	else
 	{
@@ -122,20 +121,38 @@ TokenUniquePtr Parser::getIdentifier() noexcept
 		{
 			// word not found in table, therefore
 			// must be variable, array, generic function, or subroutine
-			// but that can't be determined here, so just generic token
-			type = word.paren ? Token::Type::Paren : Token::Type::NoParen;
+			if (!word.paren)
+			{
+				// REMOVE for now assume a variable
+				// TODO first check if identifier is in function dictionary
+				// TODO only a function reference if name of current function
+				code = reference == Reference::None ? Var_Code : VarRef_Code;
+				reference = Reference::None;  // don't need flag in token
+			}
+			else
+			{
+				// TODO first check if identifier is in function dictionary
+				//      when searching for function name in dictionary;
+				//      need to remove '(' and data type charater; use data type
+				//      character to decide which dictionary to search;
+				//      reset word.paren to prevent '(' from being removed below
+				// REMOVE for now assume functions start with an 'F' for testing
+				code = reference == Reference::None
+					&& toupper(word.string.front()) == 'F'
+					? Function_Code : Array_Code;
+			}
 		}
 	}
 
-	if (type != Token::Type{})
+	if (m_table.name(code).empty())
 	{
 		if (word.paren)
 		{
 			word.string.pop_back();  // don't store parentheses in token string
 		}
 		int len = word.string.length();
-		return TokenUniquePtr{new Token {pos, len, type, word.dataType,
-			word.string}};
+		return TokenUniquePtr{new Token {pos, len, m_table.type(code),
+			word.dataType, code, word.string, reference != Reference::None}};
 	}
 
 	// found word in table (command, internal function, or operator)

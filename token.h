@@ -57,15 +57,9 @@ public:
 
 	// constructor for codes
 	Token(int column, int length, Type type, DataType dataType, Code code,
-		const std::string string = {}) : m_column{column}, m_length{length},
-		m_type{type}, m_dataType{dataType}, m_string{string}, m_code{code},
-		m_reference{}, m_subCode{None_SubCode} {}
-
-	// constructor for identifiers
-	Token(int column, int length, Type type, DataType dataType,
-		const std::string &string) : m_column{column}, m_length{length},
-		m_type{type}, m_dataType{dataType}, m_string{string},
-		m_code{Invalid_Code}, m_reference{}, m_subCode{None_SubCode} {}
+		const std::string string = {}, bool reference = {}) : m_column{column},
+		m_length{length}, m_type{type}, m_dataType{dataType}, m_string{string},
+		m_code{code}, m_reference{reference}, m_subCode{None_SubCode} {}
 
 	// constructor for integer constants
 	Token(int column, int length, const std::string string, int value) :
