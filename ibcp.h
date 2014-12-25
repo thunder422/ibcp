@@ -309,7 +309,11 @@ enum SubCode : uint16_t
 	Colon_SubCode		= 0x0800,	// reproduce ":" after token
 	Option_SubCode		= 0x1000,	// reproduce command specific option
 	// sub-codes used by translator only
-	Double_SubCode		= 0x0001,	// integer constant has decimal/exponent
+	Double_SubCode		= 0x8000,	// integer constant has decimal/exponent
+	// note: for constants in translator only (not encoded in program)
+	//       recreate '#' on double identifiers
+
+	Ignore_SubCode		= 0x0001,	// ignore subcode in operand text functions
 
 	// code program mask
 	ProgramMask_Code	= 0x03FF	// mask for actual program codes

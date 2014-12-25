@@ -36,8 +36,9 @@ uint16_t remEncode(ProgramModel *programUnit, const TokenPtr &token)
 }
 
 const std::string remOperandText(const ProgramModel *programUnit,
-	uint16_t operand)
+	uint16_t operand, SubCode subCode)
 {
+	(void)subCode;
 	return programUnit->remDictionary()->string(operand);
 }
 
@@ -73,8 +74,9 @@ uint16_t constNumEncode(ProgramModel *programUnit, const TokenPtr &token)
 }
 
 const std::string constNumOperandText(const ProgramModel *programUnit,
-	uint16_t operand)
+	uint16_t operand, SubCode subCode)
 {
+	(void)subCode;
 	return programUnit->constNumDictionary()->string(operand);
 }
 
@@ -119,8 +121,9 @@ uint16_t constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 }
 
 const std::string constStrOperandText(const ProgramModel *programUnit,
-	uint16_t operand)
+	uint16_t operand, SubCode subCode)
 {
+	(void)subCode;
 	return programUnit->constStrDictionary()->string(operand);
 }
 
@@ -165,21 +168,36 @@ uint16_t varStrEncode(ProgramModel *programUnit, const TokenPtr &token)
 
 
 const std::string varDblOperandText(const ProgramModel *programUnit,
-	uint16_t operand)
+	uint16_t operand, SubCode subCode)
 {
-	return programUnit->varDblDictionary()->string(operand);
+	std::string string = programUnit->varDblDictionary()->string(operand);
+	if (subCode & Double_SubCode)
+	{
+		string.push_back('#');
+	}
+	return string;
 }
 
 const std::string varIntOperandText(const ProgramModel *programUnit,
-	uint16_t operand)
+	uint16_t operand, SubCode subCode)
 {
-	return programUnit->varIntDictionary()->string(operand);
+	std::string string = programUnit->varIntDictionary()->string(operand);
+	if (!(subCode & Ignore_SubCode))
+	{
+		string.push_back('%');
+	}
+	return string;
 }
 
 const std::string varStrOperandText(const ProgramModel *programUnit,
-	uint16_t operand)
+	uint16_t operand, SubCode subCode)
 {
-	return programUnit->varStrDictionary()->string(operand);
+	std::string string = programUnit->varStrDictionary()->string(operand);
+	if (!(subCode & Ignore_SubCode))
+	{
+		string.push_back('$');
+	}
+	return string;
 }
 
 

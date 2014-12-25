@@ -133,17 +133,17 @@ uint16_t varStrEncode(ProgramModel *programUnit, const TokenPtr &token);
 
 // operand text functions
 const std::string remOperandText(const ProgramModel *programUnit,
-	uint16_t operand);
+	uint16_t operand, SubCode subCode);
 const std::string constNumOperandText(const ProgramModel *programUnit,
-	uint16_t operand);
+	uint16_t operand, SubCode subCode);
 const std::string constStrOperandText(const ProgramModel *programUnit,
-	uint16_t operand);
+	uint16_t operand, SubCode subCode);
 const std::string varDblOperandText(const ProgramModel *programUnit,
-	uint16_t operand);
+	uint16_t operand, SubCode subCode);
 const std::string varIntOperandText(const ProgramModel *programUnit,
-	uint16_t operand);
+	uint16_t operand, SubCode subCode);
 const std::string varStrOperandText(const ProgramModel *programUnit,
-	uint16_t operand);
+	uint16_t operand, SubCode subCode);
 
 
 // remove functions

@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	switch (token->type())
 	{
 	case Token::Type::DefFuncN:
-		os << token->string();
+		os << token->stringWithDataType();
 		break;
 
 	case Token::Type::NoParen:
@@ -50,7 +50,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		{
 			os << '?';
 		}
-		os << token->string();
+		os << token->stringWithDataType();
 		if (table.hasFlag(token->code(), Reference_Flag))
 		{
 			os << "<ref>";
@@ -59,7 +59,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 
 	case Token::Type::DefFuncP:
 	case Token::Type::Paren:
-		os << token->string() << '(';
+		os << token->stringWithDataType() << '(';
 		break;
 
 	case Token::Type::Constant:
@@ -697,12 +697,12 @@ void Tester::printToken(const TokenPtr &token)
 	case Token::Type::DefFuncN:
 	case Token::Type::NoParen:
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
-			<< " |" << token->string() << '|';
+			<< " |" << token->stringWithDataType() << '|';
 		break;
 	case Token::Type::DefFuncP:
 	case Token::Type::Paren:
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
-			<< " |" << token->string() << "(|";
+			<< " |" << token->stringWithDataType() << "(|";
 		break;
 	case Token::Type::Constant:
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());

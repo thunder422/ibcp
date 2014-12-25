@@ -45,9 +45,9 @@ public:
 		// FIXME remove c-style type cast
 		return (Code)(m_word & ProgramMask_Code);
 	}
-	int instructionSubCode() const
+	SubCode instructionSubCode() const
 	{
-		return m_word & ProgramMask_SubCode;
+		return SubCode(m_word & ProgramMask_SubCode);
 	}
 	bool instructionHasSubCode(int subCode) const
 	{

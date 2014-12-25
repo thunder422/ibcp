@@ -128,7 +128,7 @@ void Recreator::pushWithOperands(std::string &&name, int count)
 void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// just push the string of the token
-	recreator.emplace(rpnItem->token()->string());
+	recreator.emplace(rpnItem->token()->stringWithDataType());
 }
 
 // function to recreate a unary operator
@@ -201,25 +201,27 @@ void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an array
 void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	// add close paren since it is not stored with name
-	recreator.pushWithOperands(rpnItem->token()->string() + '(',
-		rpnItem->attachedCount());
+	// add data type and close paren since it is not stored with name
+	std::string string = rpnItem->token()->stringWithDataType();
+	string.push_back('(');
+	recreator.pushWithOperands(std::move(string), rpnItem->attachedCount());
 }
 
 
 // function to recreate an array
 void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	// add close paren since it is not stored with name
-	recreator.pushWithOperands(rpnItem->token()->string() + '(',
-		rpnItem->attachedCount());
+	// add data type and close paren since it is not stored with name
+	std::string string = rpnItem->token()->stringWithDataType();
+	string.push_back('(');
+	recreator.pushWithOperands(std::move(string), rpnItem->attachedCount());
 }
 
 
 // function to recreate an array
 void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	std::string name {rpnItem->token()->string()};
+	std::string name {rpnItem->token()->stringWithDataType()};
 	int count {rpnItem->attachedCount()};
 	if (count > 0)
 	{

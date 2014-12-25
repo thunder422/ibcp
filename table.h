@@ -61,7 +61,7 @@ typedef void (*TranslateFunction)(Translator &translator);
 typedef uint16_t (*EncodeFunction)(ProgramModel *programUnit,
 	const TokenPtr &token);
 typedef const std::string (*OperandTextFunction)
-	(const ProgramModel *programUnit, uint16_t operand);
+	(const ProgramModel *programUnit, uint16_t operand, SubCode subCode);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, uint16_t operand);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 

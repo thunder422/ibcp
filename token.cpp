@@ -83,6 +83,37 @@ void Token::setDataType(void)
 }
 
 
+// function to append data type if applicable
+std::string Token::stringWithDataType() const
+{
+	std::string string = m_string;
+	if (!isType(Type::Constant))
+	{
+		switch (m_dataType)
+		{
+		case DataType::Double:
+			if (hasSubCode(Double_SubCode))
+			{
+				string.push_back('#');  // only if originally present
+			}
+			break;
+
+		case DataType::Integer:
+			string.push_back('%');
+			break;
+
+		case DataType::String:
+			string.push_back('$');
+			break;
+
+		default:
+			break;
+		}
+	}
+	return string;
+}
+
+
 // function to get convert code needed to convert token to data type
 Code Token::convertCode(DataType toDataType) const
 {

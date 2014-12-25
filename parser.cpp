@@ -151,8 +151,18 @@ TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 			word.string.pop_back();  // don't store parentheses in token string
 		}
 		int len = word.string.length();
+		SubCode subCode {};
+		if (word.dataType != DataType::None)
+		{
+			word.string.pop_back();  // don't store data type character
+			if (word.dataType == DataType::Double)
+			{
+				subCode = Double_SubCode;
+			}
+		}
 		return TokenUniquePtr{new Token {pos, len, m_table.type(code),
-			word.dataType, code, word.string, reference != Reference::None}};
+			word.dataType, code, std::move(word.string),
+			reference != Reference::None, subCode}};
 	}
 
 	// found word in table (command, internal function, or operator)

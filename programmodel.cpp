@@ -117,7 +117,9 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		Code code {line[i].instructionCode()};
 		if (auto operandText = m_table.operandTextFunction(code))
 		{
-			const std::string operand {operandText(this, line[++i].operand())};
+			SubCode subCode {line[i].instructionSubCode()};
+			const std::string operand {operandText(this, line[++i].operand(),
+				subCode)};
 			oss << ' ' << i << ":|" << line[i].operand() << ':' << operand
 				<< '|';
 		}
@@ -623,7 +625,8 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 
 		if (auto operandText = m_table.operandTextFunction(token->code()))
 		{
-			token->setString(operandText(this, line[++i].operand()));
+			token->setString(operandText(this, line[++i].operand(),
+				Ignore_SubCode));  // don't add data type character to token
 		}
 		rpnList.append(token);
 	}
