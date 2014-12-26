@@ -126,7 +126,9 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	if (token->hasSubCode())
 	{
 		os << '\'';
-		if (token->hasSubCode(Paren_SubCode))
+		bool command = token->isType(Token::Type::Command)
+			|| table.hasFlag(token, Command_Flag);
+		if (!command && token->hasSubCode(Paren_SubCode))
 		{
 			os << ')';
 		}
@@ -142,7 +144,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 				os << option;
 			}
 		}
-		if (token->hasSubCode(Colon_SubCode))
+		if (command && token->hasSubCode(Colon_SubCode))
 		{
 			os << ':';
 		}

@@ -46,6 +46,7 @@ enum TableFlag : unsigned
 	UseConstAsIs_Flag   = 1u << 5,	// use constant data type as is
 	Keep_Flag			= 1u << 6,	// sub-string keep assignment
 	Two_Flag			= 1u << 7,	// code can have two words or characters
+	Command_Flag		= 1u << 8,	// operator code is really a command
 	EndStmt_Flag		= 1u << 31	// end statement
 };
 

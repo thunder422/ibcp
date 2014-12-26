@@ -46,7 +46,9 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 	if (word.instructionHasSubCode(ProgramMask_SubCode))
 	{
 		os << '\'';
-		if (word.instructionHasSubCode(Paren_SubCode))
+		bool command = table.type(code) == Token::Type::Command
+			|| table.hasFlag(code, Command_Flag);
+		if (!command && word.instructionHasSubCode(Paren_SubCode))
 		{
 			os << ')';
 		}
@@ -55,7 +57,7 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 			std::string option {table.optionName(code)};
 			os << (option.empty() ? "BUG" : option);
 		}
-		if (word.instructionHasSubCode(Colon_SubCode))
+		if (command && word.instructionHasSubCode(Colon_SubCode))
 		{
 			os << ":";
 		}

@@ -49,7 +49,7 @@ public:
 	{
 		return SubCode(m_word & ProgramMask_SubCode);
 	}
-	bool instructionHasSubCode(int subCode) const
+	bool instructionHasSubCode(SubCode subCode) const
 	{
 		return (m_word & subCode) != 0;
 	}

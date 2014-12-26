@@ -52,11 +52,13 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 		{
 			recreate(*this, rpnItem);
 		}
-		if (rpnItem->token()->hasSubCode(Paren_SubCode))
+		bool command = rpnItem->token()->isType(Token::Type::Command)
+			|| m_table.hasFlag(rpnItem->token(), Command_Flag);
+		if (!command && rpnItem->token()->hasSubCode(Paren_SubCode))
 		{
 			parenRecreate(*this, rpnItem);
 		}
-		if (rpnItem->token()->hasSubCode(Colon_SubCode))
+		if (command && rpnItem->token()->hasSubCode(Colon_SubCode))
 		{
 			// FLAG option: spaces before colons (default=no)
 			m_output += ':';

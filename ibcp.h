@@ -303,12 +303,17 @@ enum class DataType
 // sub-code flags for use in Token and internal program
 enum SubCode : uint16_t
 {
-	None_SubCode		= 0x0000,	// no sub-code present
 	ProgramMask_SubCode	= 0xFC00,	// mask for actual program sub-codes
-	Paren_SubCode		= 0x0400,	// reproduce unnecessary parenthesis
-	Colon_SubCode		= 0x0800,	// reproduce ":" after token
+	Paren_SubCode		= 0x0400,	// recreate unnecessary parenthesis
+	Colon_SubCode		= 0x0400,	// recreate ":" after token
+	Unused3_SubCode		= 0x0800,	// unused option
+	// note: Paren for operators, Colon for commands
 	Option_SubCode		= 0x1000,	// reproduce command specific option
-	// sub-codes used by translator only
+	// note: command option for INPUT/INPUT PROMPT ('Keep')
+	//       command option for InputBeginStr ('Question')
+	//       recreate 'LET' on assignments
+	Unused2_SubCode		= 0x2000,	// unused option
+	Unused1_SubCode		= 0x4000,	// unused option
 	Double_SubCode		= 0x8000,	// integer constant has decimal/exponent
 	// note: for constants in translator only (not encoded in program)
 	//       recreate '#' on double identifiers

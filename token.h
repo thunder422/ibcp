@@ -66,10 +66,8 @@ public:
 	Token(int column, int length, const std::string string, int value) :
 		m_column{column}, m_length{length}, m_type{Token::Type::Constant},
 		m_dataType{DataType::Integer}, m_string{string}, m_code{Invalid_Code},
-		m_reference{}, m_subCode{None_SubCode}, m_valueInt{value}
-	{
-		m_value = value;  // convert to double in case needed
-	}
+		m_reference{}, m_subCode{}, m_value(value), /*convert*/
+		m_valueInt{value} {}
 
 	// constructor for double constants
 	Token(int column, int length, const std::string string, double value,
@@ -79,7 +77,7 @@ public:
 	Token(int column, int length, const std::string string) : m_column{column},
 		m_length{length}, m_type{Token::Type::Constant},
 		m_dataType{DataType::String}, m_string{string}, m_code{Invalid_Code},
-		m_reference{}, m_subCode{None_SubCode} {}
+		m_reference{}, m_subCode{} {}
 
 	Token(const Token &token)  // copy constructor
 	{
@@ -185,19 +183,19 @@ public:
 	{
 		return m_subCode;
 	}
-	bool hasSubCode(int subCode) const
+	bool hasSubCode(SubCode subCode) const
 	{
 		return m_subCode & subCode;
 	}
-	void addSubCode(int subCode)
+	void addSubCode(SubCode subCode)
 	{
 		m_subCode |= subCode;
 	}
-	void removeSubCode(int subCode)
+	void removeSubCode(SubCode subCode)
 	{
 		m_subCode &= ~subCode;
 	}
-	int subCodes(void) const
+	uint16_t subCodes(void) const
 	{
 		return m_subCode;
 	}
@@ -260,7 +258,7 @@ private:
 	std::string m_string;	// pointer to string of token
 	Code m_code;			// internal code of token (index of TableEntry)
 	bool m_reference;		// token is a reference flag
-	int m_subCode;			// sub-code flags of token
+	uint16_t m_subCode;		// sub-code flags of token
 	double m_value;			// double value for constant token
 	int m_valueInt;			// integer value for constant token (if possible)
 	int m_index;			// index within encoded program code line

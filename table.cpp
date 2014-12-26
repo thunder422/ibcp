@@ -663,13 +663,13 @@ static TableEntry tableEntries[] =
 	{	// Comma_Code
 		Token::Type::Operator,
 		",", "", "",
-		TableFlag{}, 6, &Null_ExprInfo,
+		Command_Flag, 6, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, printCommaRecreate
 	},
 	{	// SemiColon_Code
 		Token::Type::Operator,
 		";", "", "",
-		TableFlag{}, 6, &Null_ExprInfo,
+		Command_Flag, 6, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, printSemicolonRecreate
 	},
 	{	// Colon_Code
@@ -691,37 +691,37 @@ static TableEntry tableEntries[] =
 	{	// Assign_Code
 		Token::Type{},
 		"=", "Assign", "LET",
-		Reference_Flag, 4, &Dbl_Dbl_ExprInfo,
+		Reference_Flag | Command_Flag, 4, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignInt_Code
 		Token::Type{},
 		"=", "Assign%", "LET",
-		Reference_Flag, 4, &Int_Int_ExprInfo,
+		Reference_Flag | Command_Flag, 4, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignStr_Code
 		Token::Type{},
 		"=", "Assign$", "LET",
-		Reference_Flag, 4, &Str_Str_ExprInfo,
+		Reference_Flag | Command_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignLeft_Code
 		Token::Type{},
 		"LEFT$(", "Assign", "LET",
-		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
+		Reference_Flag | SubStr_Flag | Command_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid2_Code
 		Token::Type{},
 		"MID$(", "Assign2", "LET",
-		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
+		Reference_Flag | SubStr_Flag | Command_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid3_Code
 		Token::Type{},
 		"MID$(", "Assign3", "LET",
-		Reference_Flag | SubStr_Flag | Multiple_Flag, 4, &Str_StrIntInt_ExprInfo,
+		Reference_Flag | SubStr_Flag | Command_Flag, 4, &Str_StrIntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignRight_Code
@@ -733,19 +733,19 @@ static TableEntry tableEntries[] =
 	{	// AssignList_Code
 		Token::Type{},
 		"=", "AssignList", "LET",
-		Reference_Flag, 4, &Dbl_Dbl_ExprInfo,
+		Reference_Flag | Command_Flag, 4, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListInt_Code
 		Token::Type{},
 		"=", "AssignList%", "LET",
-		Reference_Flag, 4, &Int_Int_ExprInfo,
+		Reference_Flag | Command_Flag, 4, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListStr_Code
 		Token::Type{},
 		"=", "AssignList$", "LET",
-		Reference_Flag, 4, &Str_Str_ExprInfo,
+		Reference_Flag | Command_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignKeepStr_Code
@@ -769,8 +769,7 @@ static TableEntry tableEntries[] =
 	{	// AssignKeepMid3_Code
 		Token::Type{},
 		"MID$(", "AssignKeep3", "LET",
-		Reference_Flag | SubStr_Flag | Multiple_Flag | Keep_Flag, 4,
-		&Str_StrStrInt_ExprInfo,
+		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrStrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepRight_Code

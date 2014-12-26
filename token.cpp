@@ -60,13 +60,13 @@ Token::Token(int column, int length, const std::string string, double value,
 	{
 		m_dataType = DataType::Integer;
 		// 'double' if decimal pointer present
-		m_subCode = decimal ? Double_SubCode : None_SubCode;
+		m_subCode = decimal ? Double_SubCode : SubCode{};
 		m_valueInt = value;  // convert to integer in case needed
 	}
 	else  // number can't be converted to integer
 	{
 		m_dataType = DataType::Double;
-		m_subCode = None_SubCode;  // ignore sub-code argument
+		m_subCode = {};  // ignore sub-code argument
 	}
 }
 
