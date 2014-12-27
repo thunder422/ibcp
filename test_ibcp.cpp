@@ -46,7 +46,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		break;
 
 	case Token::Type::NoParen:
-		if (token->code() == Invalid_Code)
+		if (token->isCode(Invalid_Code))
 		{
 			os << '?';
 		}
@@ -63,7 +63,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		break;
 
 	case Token::Type::Constant:
-		if (token->code() == Invalid_Code)
+		if (token->isCode(Invalid_Code))
 		{
 			os << '?';
 		}

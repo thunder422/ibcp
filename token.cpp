@@ -173,7 +173,8 @@ bool Token::operator==(const Token &other) const
 	{
 		return false;
 	}
-	if (m_code == Rem_Code || m_code == RemOp_Code || m_code == ConstStr_Code)
+	if (m_code == Rem_Code || m_code == RemOp_Code
+		|| (isType(Type::Constant) && isDataType(DataType::String)))
 	{
 		return m_string == other.m_string;
 	}

@@ -126,8 +126,12 @@ TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 				// REMOVE for now assume a variable
 				// TODO first check if identifier is in function dictionary
 				// TODO only a function reference if name of current function
-				code = reference == Reference::None ? Var_Code : VarRef_Code;
-				reference = Reference::None;  // don't need flag in token
+				code = Var_Code;
+				if (reference != Reference::None)
+				{
+					code = m_table.alternateCode(code, 1);
+					reference = Reference::None;  // don't need flag in token
+				}
 			}
 			else
 			{

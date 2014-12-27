@@ -33,9 +33,10 @@ void inputTranslate(Translator &translator)
 {
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	TokenPtr token;
-	if (commandToken->isCode(Input_Code))
+	Code code = translator.table().alternateCode(commandToken->code(), 0);
+	if (translator.table().name2(commandToken->code()).empty())
 	{
-		token = translator.table().newToken(InputBegin_Code);
+		token = translator.table().newToken(code);
 	}
 	else  // InputPrompt_Code
 	{
@@ -61,7 +62,7 @@ void inputTranslate(Translator &translator)
 		{
 			throw TokenError {Status::ExpOpSemiOrComma, token};
 		}
-		token->setCode(InputBeginStr_Code);
+		token->setCode(code);  // reuse token
 	}
 
 	// append input begin and save iterator where to insert input parse codes
@@ -103,7 +104,8 @@ void inputTranslate(Translator &translator)
 		}
 
 		// change token to appropriate assign code and append to output
-		translator.table().setToken(token, InputAssign_Code);
+		code = translator.table().alternateCode(commandToken->code(), 1);
+		translator.table().setToken(token, code);
 		translator.processFinalOperand(token);
 
 		// create and insert input parse code at insert point

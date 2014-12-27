@@ -111,7 +111,8 @@ void letTranslate(Translator &translator)
 		{
 			token = translator.moveToken();
 			// change token to appropriate assign code
-			translator.table().setToken(token, Assign_Code);
+			translator.table().setToken(token,
+				translator.table().alternateCode(Let_Code, 0));
 			translator.processDoneStackTop(token);
 		}
 

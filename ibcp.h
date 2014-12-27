@@ -98,7 +98,7 @@ enum Code
 	Invalid_Code = -1,		// REMOVE possibly use can be removed
 	Null_Code,				// REMOVE will be replaced with Code{}
 	Let_Code,
-	Print_Code,				// REMOVE could be alternate[0] of SemiColon
+	Print_Code,				// REMOVE alternate[0] of SemiColon
 	Input_Code,				// REMOVE will be removed
 	InputPrompt_Code,		// REMOVE will be removed
 	Dim_Code,				// REMOVE not currently used
@@ -178,7 +178,7 @@ enum Code
 	SemiColon_Code,
 	Colon_Code,
 	RemOp_Code,
-	Assign_Code,			// REMOVE could be alternate to Let
+	Assign_Code,			// REMOVE alternate to Let
 	AssignInt_Code,			// REMOVE alternate[0] of Assign
 	AssignStr_Code,			// REMOVE alternate[0] of Assign
 	AssignLeft_Code,		// REMOVE alternate[1] of Left
@@ -245,12 +245,12 @@ enum Code
 	CvtInt_Code,
 	CvtDbl_Code,
 	StrInt_Code,			// REMOVE alternate[0] of Str
-	PrintDbl_Code,			// REMOVE could be alternate[0] of Print
+	PrintDbl_Code,			// REMOVE alternate[0] of Print
 	PrintInt_Code,			// REMOVE alternate[0] of PrintDbl
 	PrintStr_Code,			// REMOVE alternate[0] of PrintDbl
-	InputBegin_Code,		// REMOVE could be alternate[0] of Input
-	InputBeginStr_Code,		// REMOVE could be alternate[0] of InputPrompt
-	InputAssign_Code,		// REMOVE could be alternate[1] of Input
+	InputBegin_Code,		// REMOVE alternate[0] of Input
+	InputBeginStr_Code,		// REMOVE alternate[0] of InputPrompt
+	InputAssign_Code,		// REMOVE alternate[1] of Input & InputPtompt
 	InputAssignInt_Code,	// REMOVE alternate[0] of InputAssign
 	InputAssignStr_Code,	// REMOVE alternate[0] of InputAssign
 	InputParse_Code,		// REMOVE alternate[1] of InputAssign
@@ -258,11 +258,11 @@ enum Code
 	InputParseStr_Code,		// REMOVE alternate[1] of InputAssignStr
 	Const_Code,
 	ConstInt_Code,			// REMOVE alternate[0] of Const
-	ConstStr_Code,
+	ConstStr_Code,			// REMOVE alternate[0] of Const
 	Var_Code,
 	VarInt_Code,			// REMOVE alternate[0] of Var
 	VarStr_Code,			// REMOVE alternate[0] of Var
-	VarRef_Code,
+	VarRef_Code,			// REMOVE alternate[1] or Var
 	VarRefInt_Code,			// REMOVE alternate[0] of VarRef
 	VarRefStr_Code,			// REMOVE alternate[0] of VarRef
 	Array_Code,

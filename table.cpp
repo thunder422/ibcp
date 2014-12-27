@@ -118,6 +118,7 @@ struct AlternateInfo
 std::initializer_list<AlternateInfo> alternateInfo =
 {
 	// assignment alternate codes
+	{Let_Code, 0, {Assign_Code}},
 	{Assign_Code, 0, {AssignInt_Code, AssignStr_Code}},
 	{Assign_Code, 1, {AssignList_Code}},
 	{AssignInt_Code, 1, {AssignListInt_Code}},
@@ -135,15 +136,22 @@ std::initializer_list<AlternateInfo> alternateInfo =
 	{AssignRight_Code, 0, {AssignKeepRight_Code}},
 
 	// internal command alternate codes
+	{Input_Code, 0, {InputBegin_Code}},
+	{Input_Code, 1, {InputAssign_Code}},
+	{InputPrompt_Code, 0, {InputBeginStr_Code}},
+	{InputPrompt_Code, 1, {InputAssign_Code}},
 	{InputAssign_Code, 0, {InputAssignInt_Code, InputAssignStr_Code}},
 	{InputAssign_Code, 1, {InputParse_Code}},
 	{InputAssignInt_Code, 1, {InputParseInt_Code}},
 	{InputAssignStr_Code, 1, {InputParseStr_Code}},
+	{Print_Code, 0, {PrintDbl_Code}},
 	{PrintDbl_Code, 0, {PrintInt_Code, PrintStr_Code}},
+	{SemiColon_Code, 0, {Print_Code}},
 
 	// codes with operands alternate codes
 	{Const_Code, 0, {ConstInt_Code, ConstStr_Code}},
 	{Var_Code, 0, {VarInt_Code, VarStr_Code}},
+	{Var_Code, 1, {VarRef_Code}},
 	{VarRef_Code, 0, {VarRefInt_Code, VarRefStr_Code}}
 };
 

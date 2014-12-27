@@ -123,7 +123,7 @@ public:
 	DataType expectedDataType(const TokenPtr &token) const;
 	void setToken(TokenPtr &token, Code code);
 	TokenUniquePtr newToken(Code code, int column = -1, int length = -1,
-		const std::string string = {})
+		const std::string string = {}) const
 	{
 		return TokenUniquePtr{new Token {column, length, type(code),
 			returnDataType(code), code, string}};

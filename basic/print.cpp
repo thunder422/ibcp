@@ -73,8 +73,9 @@ void printTranslate(Translator &translator)
 			}
 			else  // append appropriate print code for done stack top item
 			{
-				TokenPtr printToken
-					= translator.table().newToken(PrintDbl_Code);
+				Code code
+					= translator.table().alternateCode(commandToken->code(), 0);
+				TokenPtr printToken = translator.table().newToken(code);
 				translator.processFinalOperand(printToken);
 				printFunction = false;
 			}
@@ -158,8 +159,6 @@ void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the print comma code
 void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	(void)rpnItem;
-
 	std::string string;
 
 	// get string on top of the stack if there is one
@@ -170,7 +169,7 @@ void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 	// append comma to string and push it back to the stack
 	// FLAG option: space after print commas (default=no)
-	string += ',';
+	string += recreator.table().name(rpnItem->token()->code());
 	recreator.emplace(string);
 
 	// set separator to space (used to not add spaces 'between' commas)
@@ -190,19 +189,23 @@ void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the print semicolon code
 void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	// push string on top of stack with final semicolon then recreate command
-	recreator.topAppend(';');
-	printRecreate(recreator, rpnItem);
+	// append final semicolon to string on top of stack then recreate command
+	std::string name {recreator.table().name(rpnItem->token()->code())};
+	recreator.topAppend(std::move(name));
+
+	Code printCode = recreator.table().alternateCode(rpnItem->token()->code());
+	TokenPtr token = recreator.table().newToken(printCode);
+	RpnItemPtr rpnItemPtr {std::make_shared<RpnItem>(token)};
+	printRecreate(recreator, rpnItemPtr);
 }
 
 
 // function to recreate the print code
 void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	(void)rpnItem;
-
 	// append PRINT keyword
-	recreator.append(std::string{recreator.table().name(Print_Code)});
+	std::string name {recreator.table().name(rpnItem->token()->code())};
+	recreator.append(std::move(name));
 
 	// if stack is not empty then append space with string on top of stack
 	if (!recreator.empty())
