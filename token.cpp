@@ -24,6 +24,7 @@
 
 #include <limits>
 
+#include "table.h"
 #include "token.h"
 #include "utility.h"
 
@@ -50,22 +51,19 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 
 
 // constructor to set double constants
-Token::Token(int column, int length, const std::string string, double value,
-	bool decimal) : m_column{column}, m_length{length},
-	m_type{Token::Type::Constant}, m_string{string}, m_code{Invalid_Code},
+Token::Token(int column, int length, const std::string string, double value) :
+	m_column{column}, m_length{length}, m_type{Token::Type::Constant},
+	m_dataType{DataType::Double}, m_string{string}, m_code{Invalid_Code},
 	m_reference{}, m_value{value}
 {
 	if (value > std::numeric_limits<int>::min() - 0.5
 		&& value < std::numeric_limits<int>::max() + 0.5)
 	{
-		m_dataType = DataType::Integer;
-		// 'double' if decimal pointer present
-		m_subCode = decimal ? Double_SubCode : SubCode{};
+		m_subCode = IntConst_SubCode;
 		m_valueInt = value;  // convert to integer in case needed
 	}
 	else  // number can't be converted to integer
 	{
-		m_dataType = DataType::Double;
 		m_subCode = {};  // ignore sub-code argument
 	}
 }
@@ -114,50 +112,97 @@ std::string Token::stringWithDataType() const
 }
 
 
-// function to get convert code needed to convert token to data type
-Code Token::convertCode(DataType toDataType) const
+// function to change constant token to desired data type
+//   - resets integer constant sub-code for numeric desired data types
+//   - does nothing if constant is not changed
+bool Token::convertConstant(DataType dataType)
 {
-	switch (dataType())
+	if (m_type != Token::Type::Constant)
+	{
+		return false;
+	}
+	if (dataType == DataType::Double)
+	{
+		if (m_dataType == DataType::Double)
+		{
+			removeSubCode(IntConst_SubCode);
+			return true;
+		}
+		if (m_dataType != DataType::Integer)
+		{
+			return false;
+		}
+	}
+	else if (dataType == DataType::Integer && m_dataType == DataType::Double
+		&& hasSubCode(IntConst_SubCode))
+	{
+		removeSubCode(IntConst_SubCode);
+	}
+	else
+	{
+		return false;
+	}
+	m_dataType = dataType;
+	Table::instance().setTokenCode(this, Const_Code);
+	return true;
+}
+
+
+// function to get convert code needed to convert token to data type
+//   - changes number constant tokens to desired data type
+//   - returns null code if no conversion needed
+//   - returns invalid code if cannot be converted
+//   - if cannot be converted then sets data type for error reporting
+Code Token::convertCode(DataType dataType)
+{
+	if (convertConstant(dataType))
+	{
+		return Null_Code;
+	}
+	switch (dataType)
 	{
 	case DataType::Double:
-		switch (toDataType)
+		if (m_dataType == DataType::Integer)
 		{
-		case DataType::Integer:
-			return CvtInt_Code;		// convert Double to Integer
-		case DataType::String:
-			return Invalid_Code;	// can't convert Double to String
-		default:
-			return Null_Code;		// no conversion needed
+			return CvtDbl_Code;
 		}
-	case DataType::Integer:
-		switch (toDataType)
+		else if (m_dataType == DataType::Double)
 		{
-		case DataType::Double:
-			return CvtDbl_Code;		// convert Integer to Double
-		case DataType::String:
-			return Invalid_Code;	// can't convert Integer to String
-		default:
-			return Null_Code;		// no conversion needed
+			return Null_Code;
 		}
-	case DataType::String:
-		switch (toDataType)
-		{
-		case DataType::String:
-		case DataType::None:
-		case DataType::Any:
-			return Null_Code;		// print function allowed if needed None
-		default:
-			return Invalid_Code;	// conversion from string no allowed
-		}
-	case DataType::None:
-		// print function allowed if needed none,
-		// else conversion from none not allowed
-		return toDataType == DataType::None ? Null_Code : Invalid_Code;
+		break;
 
-	default:
-		// Number, Any (will not have any of this data type)
-		return Invalid_Code;
+	case DataType::Integer:
+		if (m_dataType == DataType::Double)
+		{
+			return m_type == Token::Type::Constant ? Invalid_Code : CvtInt_Code;
+		}
+		else if (m_dataType == DataType::Integer)
+		{
+			return Null_Code;
+		}
+		break;
+
+	case DataType::String:
+		if (m_dataType == DataType::String)
+		{
+			return Null_Code;
+		}
+		break;
+
+	case DataType::Number:
+		if (m_dataType != DataType::String)
+		{
+			return Null_Code;
+		}
+		break;
+
+	case DataType::None:
+	case DataType::Any:
+		return Null_Code;
 	}
+	m_dataType = dataType;
+	return Invalid_Code;
 }
 
 

@@ -101,7 +101,7 @@ void letTranslate(Translator &translator)
 			translator.doneStackPop();
 
 			// change to assign sub-string code (first associated code)
-			translator.table().setToken(token,
+			translator.table().setToken(token.get(),
 				translator.table().alternateCode(token->code(), 1));
 
 			translator.resetToken();  // don't need comma/equal token
@@ -111,7 +111,7 @@ void letTranslate(Translator &translator)
 		{
 			token = translator.moveToken();
 			// change token to appropriate assign code
-			translator.table().setToken(token,
+			translator.table().setToken(token.get(),
 				translator.table().alternateCode(Let_Code, 0));
 			translator.processDoneStackTop(token);
 		}
@@ -156,7 +156,7 @@ void letTranslate(Translator &translator)
 			do
 			{
 				// change to keep code (second associated code)
-				translator.table().setToken(token,
+				translator.table().setToken(token.get(),
 					translator.table().alternateCode(token->code()));
 
 				// append to output and pop next token from let stack
@@ -168,7 +168,7 @@ void letTranslate(Translator &translator)
 		}
 		else  // have a multiple assignment, change to list code
 		{
-			translator.table().setToken(token,
+			translator.table().setToken(token.get(),
 				translator.table().alternateCode(token->code(), 1));
 		}
 	}

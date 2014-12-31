@@ -105,7 +105,7 @@ void inputTranslate(Translator &translator)
 
 		// change token to appropriate assign code and append to output
 		code = translator.table().alternateCode(commandToken->code(), 1);
-		translator.table().setToken(token, code);
+		translator.table().setToken(token.get(), code);
 		translator.processFinalOperand(token);
 
 		// create and insert input parse code at insert point

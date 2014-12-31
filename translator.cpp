@@ -303,23 +303,18 @@ void Translator::getExpression(DataType dataType, int level)
 				Code cvtCode {doneToken->convertCode(dataType)};
 				if (cvtCode == Invalid_Code)
 				{
+					if (doneToken->isType(Token::Type::Constant)
+						&& dataType == DataType::Integer
+						&& doneToken->isDataType(DataType::Double))
+					{
+						// constant could not be converted
+						throw doneStackTopTokenError(Status::ExpIntConst);
+					}
 					throw doneStackTopTokenError(expectedErrorStatus(dataType));
 				}
 				else if (cvtCode != Null_Code)
 				{
-					if (doneToken->isType(Token::Type::Constant))
-					{
-						// constants don't need conversion
-						if (dataType == DataType::Integer
-							&& doneToken->isDataType(DataType::Double))
-						{
-							throw doneStackTopTokenError(Status::ExpIntConst);
-						}
-					}
-					else  // append hidden conversion code
-					{
-						m_output.append(m_table.newToken(cvtCode));
-					}
+					m_output.append(m_table.newToken(cvtCode));
 				}
 			}
 			break;
@@ -363,24 +358,6 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 			std::move(m_token)};
 
 	case Token::Type::Constant:
-		// check if specific numeric data type requested
-		if ((dataType == DataType::Double || dataType == DataType::Integer)
-			&& m_token->isDataType(DataType::Integer))
-		{
-			// for integer constants, force to desired data type
-			m_token->setDataType(dataType);
-			m_token->removeSubCode(Double_SubCode);
-		}
-		if (dataType == DataType::Double || dataType == DataType::Integer
-			|| dataType == DataType::String)
-		{
-			m_table.setTokenCode(m_token, Const_Code);
-		}
-		if (reference != Reference::None)
-		{
-			throw TokenError {expectedErrorStatus(dataType, reference),
-				std::move(m_token)};
-		}
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncN:
@@ -401,7 +378,7 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 
 	case Token::Type::NoParen:
 		// TODO temporary until token initialize for data type in parser
-		m_table.setTokenCode(m_token, m_token->code());
+		m_table.setTokenCode(m_token.get(), m_token->code());
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncP:
@@ -482,9 +459,7 @@ try
 	if (!m_token)
 	{
 		// if data type is not blank and not string, then allow a number token
-		m_token = (*m_parse)(dataType != DataType{}
-			&& dataType != DataType::String && reference == Reference::None
-			? Parser::Number::Yes : Parser::Number::No, reference);
+		m_token = (*m_parse)(dataType, reference);
 	}
 }
 catch (TokenError &error)
@@ -567,7 +542,7 @@ void Translator::processInternalFunction(Reference reference)
 			}
 		}
 
-		// check if associated code for function is needed
+		// check if alternate code for function is needed
 		if (expectedDataType == DataType::Number)
 		{
 			TokenPtr &token = m_doneStack.top().rpnItem->token();
@@ -575,19 +550,10 @@ void Translator::processInternalFunction(Reference reference)
 				!= m_table.operandDataType(topToken->code(), 0))
 			{
 				// change token's code and data type to associated code
-				m_table.setToken(topToken,
+				m_table.setToken(topToken.get(),
 					m_table.alternateCode(topToken->code()));
 			}
-			else if (token->hasSubCode(Double_SubCode))
-			{
-				// change token (constant) from integer to double
-				token->setDataType(DataType::Double);
-				token->removeSubCode(Double_SubCode);
-			}
-			if (token->isType(Token::Type::Constant))
-			{
-				token->setCode(Const_Code);
-			}
+			token->removeSubCode(IntConst_SubCode);  // safe for all tokens
 		}
 
 		// check terminating token

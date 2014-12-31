@@ -319,6 +319,7 @@ enum SubCode : uint16_t
 	//       recreate '#' on double identifiers
 
 	Ignore_SubCode		= 0x0001,	// ignore subcode in operand text functions
+	IntConst_SubCode	= 0x0002,	// double constant convertible to integer
 
 	// code program mask
 	ProgramMask_Code	= 0x03FF	// mask for actual program codes

@@ -70,8 +70,7 @@ public:
 		m_valueInt{value} {}
 
 	// constructor for double constants
-	Token(int column, int length, const std::string string, double value,
-		bool decimal);
+	Token(int column, int length, const std::string string, double value);
 
 	// constructor for string constants
 	Token(int column, int length, const std::string string) : m_column{column},
@@ -120,10 +119,9 @@ public:
 	}
 
 	// data type access functions
-	DataType dataType(bool actual = false) const
+	DataType dataType() const
 	{
-		return !actual && hasSubCode(Double_SubCode)
-			? DataType::Double : m_dataType;
+		return m_dataType;
 	}
 	void setDataType(DataType dataType)
 	{
@@ -243,7 +241,8 @@ public:
 	}
 
 	// other functions
-	Code convertCode(DataType toDataType) const;
+	bool convertConstant(DataType dataType);
+	Code convertCode(DataType dataType);
 
 private:
 	// static members

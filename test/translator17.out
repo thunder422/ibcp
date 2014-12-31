@@ -17,6 +17,9 @@ Output: A = B + 4.0
 Input: A=B+4e40
 Output: A = B + 4e40 
 
+Input: A=B%+4e40
+Output: A = B% + 4e40 
+
 Input: A%=4+B%
 Output: A% = 4 + B% 
 

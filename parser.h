@@ -36,12 +36,7 @@ class Parser
 {
 public:
 	explicit Parser(const std::string &input);
-	enum class Number
-	{
-		No,
-		Yes
-	};
-	TokenUniquePtr operator()(Number state, Reference reference);
+	TokenUniquePtr operator()(DataType dataType, Reference reference);
 
 private:
 	// main functions

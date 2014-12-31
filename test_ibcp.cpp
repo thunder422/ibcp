@@ -465,7 +465,7 @@ try
 	Parser parse {testInput};
 	for (;;)
 	{
-		TokenPtr token {parse(Parser::Number::Yes, Reference::None)};
+		TokenPtr token {parse(DataType::Any, Reference::None)};
 		printToken(token);
 		if (token->isCode(EOL_Code))
 		{
@@ -708,26 +708,23 @@ void Tester::printToken(const TokenPtr &token)
 		break;
 	case Token::Type::Constant:
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
-		switch (token->dataType(true))
+		switch (token->dataType())
 		{
 		case DataType::Integer:
 			m_cout << ' ' << token->valueInt();
-			if (token->hasSubCode(Double_SubCode))
-			{
-				m_cout << "," << token->value();
-			}
-			m_cout << " |" << token->string() << '|';
 			break;
 		case DataType::Double:
-			m_cout << ' ' << token->value() << " |"
-				<< token->string() << '|';
-			break;
-		case DataType::String:
-			m_cout << " |" << token->string() << '|';
+			m_cout << ' ';
+			if (token->hasSubCode(IntConst_SubCode))
+			{
+				m_cout << token->valueInt() << ",";
+			}
+			m_cout << token->value();
 			break;
 		default:
 		    break;
 		}
+		m_cout << " |" << token->string() << '|';
 		break;
 	case Token::Type::Operator:
 	case Token::Type::IntFuncN:

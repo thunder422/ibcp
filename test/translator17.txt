@@ -17,6 +17,9 @@ Output: A<ref> B 4.0 + =Assign
 Input: A=B+4e40
 Output: A<ref> B 4e40 + =Assign 
 
+Input: A=B%+4e40
+Output: A<ref> B% 4e40 +%1 =Assign 
+
 Input: A%=4+B%
 Output: A%<ref> 4% B% +% =Assign% 
 

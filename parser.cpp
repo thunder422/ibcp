@@ -41,7 +41,7 @@ Parser::Parser(const std::string &input) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenUniquePtr Parser::operator()(Number number, Reference reference)
+TokenUniquePtr Parser::operator()(DataType dataType, Reference reference)
 {
 	m_input >> std::ws;
 	if (m_input.peek() == EOF)
@@ -53,15 +53,24 @@ TokenUniquePtr Parser::operator()(Number number, Reference reference)
 	{
 		return token;
 	}
-	if (number == Number::Yes)
+	if (dataType != DataType{} && dataType != DataType::String
+		&& reference == Reference::None)
 	{
 		if (TokenUniquePtr token = getNumber())
 		{
+			if (dataType == DataType::Double || (dataType == DataType::Integer
+				&& token->hasSubCode(IntConst_SubCode)))
+			{
+				token->setDataType(dataType);  // force to desired data type
+				token->removeSubCode(IntConst_SubCode);
+			}
+			m_table.setTokenCode(token.get(), Const_Code, token->dataType(), 0);
 			return token;
 		}
 	}
 	if (TokenUniquePtr token = getString())
 	{
+		m_table.setTokenCode(token.get(), Const_Code);
 		return token;
 	}
 	if (TokenUniquePtr token = getOperator())
@@ -69,8 +78,7 @@ TokenUniquePtr Parser::operator()(Number number, Reference reference)
 		return token;
 	}
 	// not a valid token, throw unknown token error
-	int pos = m_input.tellg();
-	throw TokenError {Status::UnknownToken, pos, 1};
+	throw TokenError {Status::UnknownToken, m_input.tellg(), 1};
 }
 
 
@@ -420,8 +428,7 @@ TokenUniquePtr Parser::getNumber()
 		double value {std::stod(number)};
 
 		// save string of number so it later can be reproduced
-		return TokenUniquePtr{new Token {pos, len, std::move(number), value,
-			decimal}};
+		return TokenUniquePtr{new Token {pos, len, std::move(number), value}};
 	}
 	catch (std::out_of_range)
 	{
