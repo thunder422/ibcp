@@ -742,7 +742,7 @@ void Tester::printToken(const TokenPtr &token)
 		// nothing more to output
 		break;
 	}
-	m_cout << '\n';
+	m_cout << std::endl;
 }
 
 

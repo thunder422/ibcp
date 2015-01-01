@@ -64,7 +64,7 @@ TokenUniquePtr Parser::operator()(DataType dataType, Reference reference)
 				token->setDataType(dataType);  // force to desired data type
 				token->removeSubCode(IntConst_SubCode);
 			}
-			m_table.setTokenCode(token.get(), Const_Code, token->dataType(), 0);
+			m_table.setTokenCode(token.get(), Const_Code);
 			return token;
 		}
 	}
@@ -164,7 +164,11 @@ TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 		}
 		int len = word.string.length();
 		SubCode subCode {};
-		if (word.dataType != DataType::None)
+		if (word.dataType == DataType::None)
+		{
+			word.dataType = DataType::Double;  // default data type
+		}
+		else
 		{
 			word.string.pop_back();  // don't store data type character
 			if (word.dataType == DataType::Double)
@@ -172,9 +176,8 @@ TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 				subCode = Double_SubCode;
 			}
 		}
-		return TokenUniquePtr{new Token {pos, len, m_table.type(code),
-			word.dataType, code, std::move(word.string),
-			reference != Reference::None, subCode}};
+		return TokenUniquePtr{new Token {pos, len, code, word.dataType,
+			std::move(word.string), reference != Reference::None, subCode}};
 	}
 
 	// found word in table (command, internal function, or operator)

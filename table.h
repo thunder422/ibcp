@@ -125,16 +125,17 @@ public:
 	TokenUniquePtr newToken(Code code, int column = -1, int length = -1,
 		const std::string string = {}) const
 	{
-		return TokenUniquePtr{new Token {column, length, type(code),
-			returnDataType(code), code, string}};
+		return TokenUniquePtr{new Token {column, length, code,
+			returnDataType(code), string}};
 	}
 	Code findCode(TokenPtr &token, TokenPtr &operandToken,
 		int operandIndex = 0);
 	bool setTokenCode(Token *token, Code code, DataType dataType,
 		int operandIndex);
+	void setTokenCode(Token *token, Code code, DataType dataType);
 	void setTokenCode(Token *token, Code baseCode)
 	{
-		setTokenCode(token, baseCode, token->dataType(), 0);
+		setTokenCode(token, baseCode, token->dataType());
 	}
 	std::string name(const TokenPtr &token) const;
 

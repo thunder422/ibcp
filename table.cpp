@@ -78,6 +78,7 @@ static ExprInfo Dbl_Int_ExprInfo(DataType::Double, Operands_Int);
 static ExprInfo Dbl_IntDbl_ExprInfo(DataType::Double, Operands_IntDbl);
 static ExprInfo Dbl_Str_ExprInfo(DataType::Double, Operands_Str);
 
+static ExprInfo Int_None_ExprInfo(DataType::Integer);
 static ExprInfo Int_Dbl_ExprInfo(DataType::Integer, Operands_Dbl);
 static ExprInfo Int_DblDbl_ExprInfo(DataType::Integer, Operands_DblDbl);
 static ExprInfo Int_DblInt_ExprInfo(DataType::Integer, Operands_DblInt);
@@ -89,6 +90,7 @@ static ExprInfo Int_StrInt_ExprInfo(DataType::Integer, Operands_StrInt);
 static ExprInfo Int_StrStr_ExprInfo(DataType::Integer, Operands_StrStr);
 static ExprInfo Int_StrStrInt_ExprInfo(DataType::Integer, Operands_StrStrInt);
 
+static ExprInfo Str_None_ExprInfo(DataType::String);
 static ExprInfo Str_Dbl_ExprInfo(DataType::String, Operands_Dbl);
 static ExprInfo Str_Int_ExprInfo(DataType::String, Operands_Int);
 static ExprInfo Str_Str_ExprInfo(DataType::String, Operands_Str);
@@ -1167,58 +1169,58 @@ static TableEntry tableEntries[] =
 	{	// Const_Code
 		Token::Type::Constant,
 		"", "Const", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, constNumEncode, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstInt_Code
 		Token::Type::Constant,
 		"", "ConstInt", "",
-		TableFlag{}, 2, &Int_Int_ExprInfo,
+		TableFlag{}, 2, &Int_None_ExprInfo,
 		NULL, constNumEncode, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstStr_Code
 		Token::Type::Constant,
 		"", "ConstStr", "",
-		TableFlag{}, 2, &Str_Str_ExprInfo,
+		TableFlag{}, 2, &Str_None_ExprInfo,
 		NULL, constStrEncode, constStrOperandText, constStrRemove,
 		constStrRecreate
 	},
 	{	// Var_Code
 		Token::Type::NoParen,
 		"", "Var", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarInt_Code
 		Token::Type::NoParen,
 		"", "VarInt", "",
-		TableFlag{}, 2, &Int_Int_ExprInfo,
+		TableFlag{}, 2, &Int_None_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarStr_Code
 		Token::Type::NoParen,
 		"", "VarStr", "",
-		TableFlag{}, 2, &Str_Str_ExprInfo,
+		TableFlag{}, 2, &Str_None_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// VarRef_Code
 		Token::Type::NoParen,
 		"", "VarRef", "",
-		Reference_Flag, 2, &Dbl_Dbl_ExprInfo,
+		Reference_Flag, 2, &Dbl_None_ExprInfo,
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarRefInt_Code
 		Token::Type::NoParen,
 		"", "VarRefInt", "",
-		Reference_Flag, 2, &Int_Int_ExprInfo,
+		Reference_Flag, 2, &Int_None_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarRefStr_Code
 		Token::Type::NoParen,
 		"", "VarRefStr", "",
-		Reference_Flag, 2, &Str_Str_ExprInfo,
+		Reference_Flag, 2, &Str_None_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// Array_Code
@@ -1735,6 +1737,34 @@ Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 		operandToken->setDataType(DataType{});  // to report invalid integer
 	}
 	return cvtCode;  // convert code or invalid
+}
+
+
+// function to set the code for a token for data type specified
+//
+//   - if the data type does not match the return data type of the code,
+//     then searchs alternate codes of the code if there are alternates
+//   - if no matching alternate code found, then sets to code
+//   - sets the code, type and data type of the token
+
+void Table::setTokenCode(Token *token, Code code, DataType dataType)
+{
+	if (dataType != returnDataType(code)
+		&& s_alternate.find(&m_entry[code]) != s_alternate.end())
+	{
+		for (auto alternateEntry : s_alternate[&m_entry[code]][0])
+		{
+			Code alternateCode = Code(alternateEntry - m_entry);
+			if (dataType == returnDataType(alternateCode))
+			{
+				code = alternateCode;
+				break;
+			}
+		}
+	}
+	token->setCode(code);  // use code if no alternate code found
+	token->setType(type(code));
+	token->setDataType(dataType);
 }
 
 

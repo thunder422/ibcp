@@ -22,7 +22,7 @@ Input: 0.1 .1 .01 0.01 0.01000,1000A100.001
 	16: Constant     Double  0,0.01 |0.01000|
 	23: Operator  Op None    ,
 	24: Constant     Integer 1000 |1000|
-	28: NoParen      None    |A100|
+	28: NoParen      Double  |A100|
 	32: Constant     Double  0,0.001 |.001|
 	36: Operator  Op None    EOL
 

@@ -1,9 +1,9 @@
 
 Input: fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
-	 0: DefFuncN     None    |fna|
-	 4: DefFuncN     None    |FnB|
-	 8: DefFuncN     None    |fNc|
-	12: DefFuncN     None    |FND|
+	 0: DefFuncN     Double  |fna|
+	 4: DefFuncN     Double  |FnB|
+	 8: DefFuncN     Double  |fNc|
+	12: DefFuncN     Double  |FND|
 	16: DefFuncN     String  |fna$|
 	21: DefFuncN     Integer |fna%|
 	26: DefFuncN     Double  |fnword#|
@@ -12,10 +12,10 @@ Input: fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
 	51: Operator  Op None    EOL
 
 Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
-	 0: DefFuncP  () None    |fna(|
-	 5: DefFuncP  () None    |FnB(|
-	10: DefFuncP  () None    |fNc(|
-	14: DefFuncP  () None    |FND(|
+	 0: DefFuncP  () Double  |fna(|
+	 5: DefFuncP  () Double  |FnB(|
+	10: DefFuncP  () Double  |fNc(|
+	14: DefFuncP  () Double  |FND(|
 	19: DefFuncP  () String  |fna$(|
 	24: DefFuncP  () Integer |fna%(|
 	30: DefFuncP  () Double  |fnword#(|
@@ -24,13 +24,13 @@ Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
 	57: Operator  Op None    EOL
 
 Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
-	 0: NoParen      None    |a|
-	 2: Paren     () None    |b(|
+	 0: NoParen      Double  |a|
+	 2: Paren     () Double  |b(|
 	 4: NoParen      String  |c$|
 	 7: NoParen      Double  |D#|
 	10: NoParen      String  |asdf$|
-	16: Paren     () None    |qwer(|
-	22: NoParen      None    |zxcv|
+	16: Paren     () Double  |qwer(|
+	22: NoParen      Double  |zxcv|
 	27: NoParen      Integer |Asdf%|
 	33: Paren     () Integer |QWER%(|
 	40: Paren     () String  |Nbb_34$(|
@@ -64,10 +64,10 @@ Input: rem-this should be a comment
 	28: Operator  Op None    EOL
 
 Input: fn fn( fn1 fn1( fn_ fn_(
-	 0: NoParen      None    |fn|
-	 3: Paren     () None    |fn(|
-	 7: NoParen      None    |fn1|
-	11: Paren     () None    |fn1(|
-	16: NoParen      None    |fn_|
-	20: Paren     () None    |fn_(|
+	 0: NoParen      Double  |fn|
+	 3: Paren     () Double  |fn(|
+	 7: NoParen      Double  |fn1|
+	11: Paren     () Double  |fn1(|
+	16: NoParen      Double  |fn_|
+	20: Paren     () Double  |fn_(|
 	24: Operator  Op None    EOL

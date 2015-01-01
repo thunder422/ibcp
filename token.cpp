@@ -50,6 +50,16 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 };
 
 
+// constructor for codes
+Token::Token(int column, int length, Code code, DataType dataType,
+	const std::string string, bool reference, SubCode subCode) :
+	m_column{column}, m_length{length}, m_string{string},
+	m_reference{reference}, m_subCode{subCode}
+{
+	Table::instance().setTokenCode(this, code, dataType);
+}
+
+
 // constructor to set double constants
 Token::Token(int column, int length, const std::string string, double value) :
 	m_column{column}, m_length{length}, m_type{Token::Type::Constant},
@@ -65,18 +75,6 @@ Token::Token(int column, int length, const std::string string, double value) :
 	else  // number can't be converted to integer
 	{
 		m_subCode = {};  // ignore sub-code argument
-	}
-}
-
-
-// function to set the default data type of the token
-void Token::setDataType(void)
-{
-	// only set to double if not an internal function
-	if (m_dataType == DataType::None && m_type != Type::IntFuncP)
-	{
-		// TODO for now just set default to double
-		m_dataType = DataType::Double;
 	}
 }
 

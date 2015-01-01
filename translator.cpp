@@ -341,9 +341,6 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	// get token (no numbers for a reference)
 	getToken(Status{}, dataType, reference);
 
-	// set default data type for token if it has none
-	m_token->setDataType();
-
 	bool doneAppend {true};
 	switch (m_token->type())
 	{
@@ -377,8 +374,6 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::NoParen:
-		// TODO temporary until token initialize for data type in parser
-		m_table.setTokenCode(m_token.get(), m_token->code());
 		break;  // go add token to output and push to done stack
 
 	case Token::Type::IntFuncP:
