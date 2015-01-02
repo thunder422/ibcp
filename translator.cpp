@@ -51,7 +51,7 @@ Translator::Translator(const std::string &input) :
 
 RpnList Translator::operator()(TestMode testMode)
 {
-	m_holdStack.emplace(m_table.newToken(Null_Code));
+	m_holdStack.emplace(std::make_shared<Token>(Null_Code));
 
 	if (testMode == TestMode::Expression)
 	{
@@ -314,7 +314,7 @@ void Translator::getExpression(DataType dataType, int level)
 				}
 				else if (cvtCode != Null_Code)
 				{
-					m_output.append(m_table.newToken(cvtCode));
+					m_output.append(std::make_shared<Token>(cvtCode));
 				}
 			}
 			break;
@@ -454,7 +454,7 @@ try
 	if (!m_token)
 	{
 		// if data type is not blank and not string, then allow a number token
-		m_token = (*m_parse)(dataType, reference);
+		m_token.reset((*m_parse)(dataType, reference));
 	}
 }
 catch (TokenError &error)
@@ -869,7 +869,7 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
 			// append token to end of output list (after operand)
-			m_output.append(m_table.newToken(cvtCode));
+			m_output.append(std::make_shared<Token>(cvtCode));
 		}
 	}
 	else  // no match found, throw error

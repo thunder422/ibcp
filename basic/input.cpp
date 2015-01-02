@@ -36,7 +36,7 @@ void inputTranslate(Translator &translator)
 	Code code = translator.table().alternateCode(commandToken->code(), 0);
 	if (translator.table().name2(commandToken->code()).empty())
 	{
-		token = translator.table().newToken(code);
+		token = std::make_shared<Token>(code);
 	}
 	else  // InputPrompt_Code
 	{
@@ -100,7 +100,7 @@ void inputTranslate(Translator &translator)
 					translator.token()};
 			}
 			done = true;
-			token = translator.table().newToken(Null_Code);
+			token = std::make_shared<Token>(Null_Code);
 		}
 
 		// change token to appropriate assign code and append to output
@@ -110,8 +110,9 @@ void inputTranslate(Translator &translator)
 
 		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
-		insertPoint = translator.outputInsert(insertPoint, translator.table()
-			.newToken(translator.table().alternateCode(token->code(), 1)));
+		insertPoint = translator.outputInsert(insertPoint,
+			std::make_shared<Token>(translator.table()
+			.alternateCode(token->code(), 1)));
 	}
 	while (!done);
 

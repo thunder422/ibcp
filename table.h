@@ -122,12 +122,6 @@ public:
 	int operandCount(const TokenPtr &token) const;
 	DataType expectedDataType(const TokenPtr &token) const;
 	void setToken(Token *token, Code code);
-	TokenUniquePtr newToken(Code code, int column = -1, int length = -1,
-		const std::string string = {}) const
-	{
-		return TokenUniquePtr{new Token {column, length, code,
-			returnDataType(code), string}};
-	}
 	Code findCode(TokenPtr &token, TokenPtr &operandToken,
 		int operandIndex = 0);
 	bool setTokenCode(Token *token, Code code, DataType dataType,

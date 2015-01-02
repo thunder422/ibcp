@@ -51,7 +51,16 @@ std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
 
 
 // constructor for codes
-Token::Token(int column, int length, Code code, DataType dataType,
+Token::Token(Code code, int column, int length, const std::string string) :
+	m_column{column}, m_length{length}, m_string{string}, m_reference{},
+	m_subCode{}
+{
+	Table::instance().setToken(this, code);
+}
+
+
+// constructor for codes with operands
+Token::Token(Code code, DataType dataType, int column, int length,
 	const std::string string, bool reference, SubCode subCode) :
 	m_column{column}, m_length{length}, m_string{string},
 	m_reference{reference}, m_subCode{subCode}
@@ -74,7 +83,7 @@ Token::Token(int column, int length, const std::string string, double value) :
 	}
 	else  // number can't be converted to integer
 	{
-		m_subCode = {};  // ignore sub-code argument
+		m_subCode = {};
 	}
 }
 

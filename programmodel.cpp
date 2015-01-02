@@ -622,7 +622,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 	auto line = m_code.begin() + lineInfo.offset;
 	for (int i {}; i < lineInfo.size; i++)
 	{
-		TokenPtr token {Table::instance().newToken(line[i].instructionCode())};
+		TokenPtr token {std::make_shared<Token>(line[i].instructionCode())};
 		token->addSubCode(line[i].instructionSubCode());
 
 		if (auto operandText = m_table.operandTextFunction(token->code()))

@@ -36,14 +36,14 @@ class Parser
 {
 public:
 	explicit Parser(const std::string &input);
-	TokenUniquePtr operator()(DataType dataType, Reference reference);
+	Token *operator()(DataType dataType, Reference reference);
 
 private:
 	// main functions
-	TokenUniquePtr getIdentifier(Reference reference) noexcept;
-	TokenUniquePtr getNumber();
-	TokenUniquePtr getString() noexcept;
-	TokenUniquePtr getOperator() noexcept;
+	Token *getIdentifier(Reference reference) noexcept;
+	Token *getNumber();
+	Token *getString() noexcept;
+	Token *getOperator() noexcept;
 
 	// support functions
 	struct Word

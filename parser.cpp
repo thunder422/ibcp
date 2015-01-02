@@ -41,22 +41,22 @@ Parser::Parser(const std::string &input) :
 //   - after at time of return, member token is released (set to null)
 //   - the token may contain an error message if an error was found
 
-TokenUniquePtr Parser::operator()(DataType dataType, Reference reference)
+Token *Parser::operator()(DataType dataType, Reference reference)
 {
 	m_input >> std::ws;
 	if (m_input.peek() == EOF)
 	{
 		int pos = m_input.str().length();
-		return m_table.newToken(EOL_Code, pos, 1);
+		return new Token {EOL_Code, pos, 1};
 	}
-	if (TokenUniquePtr token = getIdentifier(reference))
+	if (Token *token = getIdentifier(reference))
 	{
 		return token;
 	}
 	if (dataType != DataType{} && dataType != DataType::String
 		&& reference == Reference::None)
 	{
-		if (TokenUniquePtr token = getNumber())
+		if (Token *token = getNumber())
 		{
 			if (dataType == DataType::Double || (dataType == DataType::Integer
 				&& token->hasSubCode(IntConst_SubCode)))
@@ -64,16 +64,16 @@ TokenUniquePtr Parser::operator()(DataType dataType, Reference reference)
 				token->setDataType(dataType);  // force to desired data type
 				token->removeSubCode(IntConst_SubCode);
 			}
-			m_table.setTokenCode(token.get(), Const_Code);
+			m_table.setTokenCode(token, Const_Code);
 			return token;
 		}
 	}
-	if (TokenUniquePtr token = getString())
+	if (Token *token = getString())
 	{
-		m_table.setTokenCode(token.get(), Const_Code);
+		m_table.setTokenCode(token, Const_Code);
 		return token;
 	}
-	if (TokenUniquePtr token = getOperator())
+	if (Token *token = getOperator())
 	{
 		return token;
 	}
@@ -91,13 +91,13 @@ TokenUniquePtr Parser::operator()(DataType dataType, Reference reference)
 //   - returns default token pointer if no identifier (position not changed)
 //   - returns token pointer to new token if there is
 
-TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
+Token *Parser::getIdentifier(Reference reference) noexcept
 {
 	int pos = m_input.tellg();
 	Word word = getWord(WordType::First);
 	if (word.string.empty())
 	{
-		return TokenUniquePtr{};  // not an identifier
+		return nullptr;  // not an identifier
 	}
 
 	// check to see if this is the start of a remark
@@ -111,8 +111,8 @@ TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 		m_input.seekg(pos + name.length());
 		// read remark string to end-of-line
 		std::getline(m_input, word.string);
-		return m_table.newToken(Rem_Code, pos, name.length(),
-			std::move(word.string));
+		return new Token {Rem_Code, pos, int(name.length()),
+			std::move(word.string)};
 	}
 
 	Code code;
@@ -176,8 +176,8 @@ TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 				subCode = Double_SubCode;
 			}
 		}
-		return TokenUniquePtr{new Token {pos, len, code, word.dataType,
-			std::move(word.string), reference != Reference::None, subCode}};
+		return new Token {code, word.dataType, pos, len, std::move(word.string),
+			reference != Reference::None, subCode};
 	}
 
 	// found word in table (command, internal function, or operator)
@@ -208,7 +208,7 @@ TokenUniquePtr Parser::getIdentifier(Reference reference) noexcept
 			}
 		}
 	}
-	return m_table.newToken(code, pos, len);
+	return new Token {code, pos, len};
 }
 
 
@@ -296,7 +296,7 @@ Parser::Word Parser::getWord(WordType wordType) noexcept
 //   - string of the number is converted to a value
 //   - string of the number is saved so it can be later reproduced
 
-TokenUniquePtr Parser::getNumber()
+Token *Parser::getNumber()
 {
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
@@ -351,7 +351,7 @@ TokenUniquePtr Parser::getNumber()
 					// if there is a '-E' then not a number
 					// (need to interprete '-' as unary operator)
 					m_input.seekg(pos);  // move back to begin
-					return TokenUniquePtr{};
+					return nullptr;
 				}
 				// if there were no digits before 'E' then error
 				// (only would happen if mantissa contains only '.')
@@ -395,7 +395,7 @@ TokenUniquePtr Parser::getNumber()
 					// clear errors in case peeked past end, which sets error
 					m_input.clear();
 					m_input.seekg(pos);       // move back to begin
-					return TokenUniquePtr{};  // not a numeric constant
+					return nullptr;           // not a numeric constant
 				}
 			}
 			else if (!digits)  // only a decimal point found?
@@ -418,7 +418,7 @@ TokenUniquePtr Parser::getNumber()
 		int value {std::stoi(number)};
 
 		// save string of number so it later can be reproduced
-		return TokenUniquePtr{new Token {pos, len, std::move(number), value}};
+		return new Token {pos, len, std::move(number), value};
 	}
 	catch(std::out_of_range)
 	{
@@ -431,7 +431,7 @@ TokenUniquePtr Parser::getNumber()
 		double value {std::stod(number)};
 
 		// save string of number so it later can be reproduced
-		return TokenUniquePtr{new Token {pos, len, std::move(number), value}};
+		return new Token {pos, len, std::move(number), value};
 	}
 	catch (std::out_of_range)
 	{
@@ -449,11 +449,11 @@ TokenUniquePtr Parser::getNumber()
 //   - returns token if there is a valid string
 //   - copy string into token without surrounding quotes
 
-TokenUniquePtr Parser::getString() noexcept
+Token *Parser::getString() noexcept
 {
 	if (m_input.peek() != '"')
 	{
-		return TokenUniquePtr{};  // not a sting constant
+		return nullptr;  // not a sting constant
 	}
 
 	int pos = m_input.tellg();
@@ -478,7 +478,7 @@ TokenUniquePtr Parser::getString() noexcept
 		}
 		string.push_back(c);  // append char to string
 	}
-	return TokenUniquePtr{new Token {pos, len, std::move(string)}};
+	return new Token {pos, len, std::move(string)};
 }
 
 
@@ -488,7 +488,7 @@ TokenUniquePtr Parser::getString() noexcept
 //   - returns default token pointer if no operator (position not changed)
 //   - returns token pointer to new token if there is a valid operator
 
-TokenUniquePtr Parser::getOperator() noexcept
+Token *Parser::getOperator() noexcept
 {
 	std::string string;
 	string.push_back(m_input.peek());
@@ -498,7 +498,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 	{
 		// character(s) at current position not a valid operator
 		// (no first of two-character operator is an invalid operator)
-		return TokenUniquePtr{};
+		return nullptr;
 	}
 	int pos = m_input.tellg();
 	m_input.get();  // eat first character (already in string)
@@ -506,7 +506,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 	{
 		// remark requires special handling (remark string is to end-of-line)
 		std::getline(m_input, string);  // reads rest of line
-		return m_table.newToken(RemOp_Code, pos, 1, std::move(string));
+		return new Token {RemOp_Code, pos, 1, std::move(string)};
 	}
 
 	// current character is at least a valid one-character operator
@@ -524,7 +524,7 @@ TokenUniquePtr Parser::getOperator() noexcept
 			m_input.get();  // eat second character
 		}
 	}
-	return m_table.newToken(code, pos, len);
+	return new Token {code, pos, len};
 }
 
 

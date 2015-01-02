@@ -75,7 +75,7 @@ void printTranslate(Translator &translator)
 			{
 				Code code
 					= translator.table().alternateCode(commandToken->code(), 0);
-				TokenPtr printToken = translator.table().newToken(code);
+				TokenPtr printToken {std::make_shared<Token>(code)};
 				translator.processFinalOperand(printToken);
 				printFunction = false;
 			}
@@ -194,7 +194,7 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	recreator.topAppend(std::move(name));
 
 	Code printCode = recreator.table().alternateCode(rpnItem->token()->code());
-	TokenPtr token = recreator.table().newToken(printCode);
+	TokenPtr token {std::make_shared<Token>(printCode)};
 	RpnItemPtr rpnItemPtr {std::make_shared<RpnItem>(token)};
 	printRecreate(recreator, rpnItemPtr);
 }

@@ -33,7 +33,6 @@
 
 
 class Token;
-using TokenUniquePtr = std::unique_ptr<Token>;
 using TokenPtr = std::shared_ptr<Token>;
 
 
@@ -56,7 +55,11 @@ public:
 	};
 
 	// constructor for codes
-	Token(int column, int length, Code code, DataType dataType,
+	Token(Code code, int column = -1, int length = -1,
+		const std::string string = {});
+
+	// constructor for codes with operands
+	Token(Code code, DataType dataType, int column, int length,
 		const std::string string = {}, bool reference = {},
 		SubCode subCode = {});
 
