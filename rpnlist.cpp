@@ -24,6 +24,15 @@
 
 #include "rpnlist.h"
 #include "table.h"
+#include "token.h"
+
+
+// function to overload the comparison operator
+bool RpnItem::operator==(const RpnItem &other) const
+{
+    return *m_token == *other.m_token
+    && m_attached.size() == other.m_attached.size();
+}
 
 
 // function to overload the comparison operator

@@ -24,6 +24,7 @@
 
 #include "parser.h"
 #include "table.h"
+#include "token.h"
 #include "utility.h"
 
 

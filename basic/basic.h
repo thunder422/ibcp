@@ -30,11 +30,11 @@
 #include <vector>
 
 #include "ibcp.h"
-#include "token.h"
 #include "dictionary.h"
 
 class Translator;
 class Token;
+using TokenPtr = std::shared_ptr<Token>;
 class ProgramModel;
 class Recreator;
 class RpnItem;

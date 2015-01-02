@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "table.h"
+#include "token.h"
 #include "utility.h"
 #include "basic/basic.h"
 

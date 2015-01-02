@@ -30,8 +30,12 @@
 #include <unordered_map>
 
 #include "ibcp.h"
+// TODO remove this include once token type is replaced with code type
 #include "token.h"
 #include "utility.h"
+
+class Token;
+using TokenPtr = std::shared_ptr<Token>;
 
 
 // bit definitions for flags field

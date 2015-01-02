@@ -27,9 +27,10 @@
 
 #include <sstream>
 
-#include "token.h"
+#include "ibcp.h"
 
 class Table;
+class Token;
 
 
 class Parser

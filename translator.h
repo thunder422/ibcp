@@ -31,6 +31,7 @@
 #include "rpnlist.h"
 
 class Table;
+class TokenError;
 
 
 class Translator

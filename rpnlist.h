@@ -29,13 +29,12 @@
 #include <memory>
 #include <vector>
 
-#include "token.h"
-
 class Table;
+class Token;
+using TokenPtr = std::shared_ptr<Token>;
 class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 using RpnItemVector = std::vector<RpnItemPtr>;
-using RpnItemList = std::list<RpnItemPtr>;
 
 
 // class for holding an item in the RPN output list
@@ -61,11 +60,7 @@ public:
 		return m_attached;
 	}
 
-	bool operator==(const RpnItem &other) const
-	{
-		return *m_token == *other.m_token
-			&& m_attached.size() == other.m_attached.size();
-	}
+	bool operator==(const RpnItem &other) const;
 	bool operator!=(const RpnItem &other) const
 	{
 		return !(*this == other);
@@ -75,6 +70,8 @@ private:
 	TokenPtr m_token;				// pointer to token
 	RpnItemVector m_attached;		// array of attached item pointers
 };
+
+using RpnItemList = std::list<RpnItemPtr>;
 
 
 // class for holding a list of RPN items

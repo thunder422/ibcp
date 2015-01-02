@@ -32,10 +32,6 @@
 #include "ibcp.h"
 
 
-class Token;
-using TokenPtr = std::shared_ptr<Token>;
-
-
 class Token
 {
 public:
@@ -262,6 +258,8 @@ private:
 	int m_valueInt;			// integer value for constant token (if possible)
 	int m_index;			// index within encoded program code line
 };
+
+using TokenPtr = std::shared_ptr<Token>;
 
 
 // structure for holding information about an error exception
