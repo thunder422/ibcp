@@ -161,7 +161,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 	{
 		if (word.paren)
 		{
-			word.string.pop_back();  // don't store parentheses in token string
+			word.string.pop_back();  // remove parentheses from token string
 		}
 		int len = word.string.length();
 		SubCode subCode {};
@@ -182,6 +182,10 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 	}
 
 	// found word in table (command, internal function, or operator)
+	if (word.paren)
+	{
+		m_input.get();  // now consume '(' from input
+	}
 	int len = word.string.length();
 	if (m_table.hasFlag(code, Two_Flag))
 	{
@@ -265,7 +269,7 @@ Parser::Word Parser::getWord(WordType wordType) noexcept
 	if (m_input.peek() == '(')
 	{
 		word.paren = true;
-		word.string.push_back(m_input.get());  // get '(' character
+		word.string.push_back(m_input.peek());  // add '(' character
 	}
 	else
 	{

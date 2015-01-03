@@ -1,26 +1,26 @@
 
 Input: fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
-	 0: DefFuncN     Double  |fna|
-	 4: DefFuncN     Double  |FnB|
-	 8: DefFuncN     Double  |fNc|
-	12: DefFuncN     Double  |FND|
-	16: DefFuncN     String  |fna$|
-	21: DefFuncN     Integer |fna%|
-	26: DefFuncN     Double  |fnword#|
-	34: DefFuncN     String  |fnhello$|
-	43: DefFuncN     Integer |fnindex%|
+	 0: DefFunc      Double  |fna|
+	 4: DefFunc      Double  |FnB|
+	 8: DefFunc      Double  |fNc|
+	12: DefFunc      Double  |FND|
+	16: DefFunc      String  |fna$|
+	21: DefFunc      Integer |fna%|
+	26: DefFunc      Double  |fnword#|
+	34: DefFunc      String  |fnhello$|
+	43: DefFunc      Integer |fnindex%|
 	51: Operator  Op None    EOL
 
 Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
-	 0: DefFuncP  () Double  |fna(|
-	 5: DefFuncP  () Double  |FnB(|
-	10: DefFuncP  () Double  |fNc(|
-	14: DefFuncP  () Double  |FND(|
-	19: DefFuncP  () String  |fna$(|
-	24: DefFuncP  () Integer |fna%(|
-	30: DefFuncP  () Double  |fnword#(|
-	39: DefFuncP  () String  |fnhello$(|
-	49: DefFuncN     Integer |fnindex%|
+	 0: DefFunc   () Double  |fna(|
+	 5: DefFunc   () Double  |FnB(|
+	10: DefFunc   () Double  |fNc(|
+	14: DefFunc   () Double  |FND(|
+	19: DefFunc   () String  |fna$(|
+	24: DefFunc   () Integer |fna%(|
+	30: DefFunc   () Double  |fnword#(|
+	39: DefFunc   () String  |fnhello$(|
+	49: DefFunc      Integer |fnindex%|
 	57: Operator  Op None    EOL
 
 Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(
@@ -43,12 +43,12 @@ Input: LET PRINT end then xor Abs(CHR$(val( end if left$ left$(
 	10: Command   Op END
 	14: Command   Op THEN
 	19: Operator  Op Integer XOR
-	23: IntFuncP  () Double  ABS(
-	27: IntFuncP  () String  CHR$(
-	32: IntFuncP  () Double  VAL(
+	23: IntFunc   () Double  ABS(
+	27: IntFunc   () String  CHR$(
+	32: IntFunc   () Double  VAL(
 	37: Command   Op ENDIF
 	44: NoParen      String  |left$|
-	50: IntFuncP  () String  LEFT$(
+	50: IntFunc   () String  LEFT$(
 	56: Operator  Op None    EOL
 
 Input: rem this should be a comment

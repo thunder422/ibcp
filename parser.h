@@ -39,6 +39,17 @@ public:
 	explicit Parser(const std::string &input);
 	Token *operator()(DataType dataType, Reference reference);
 
+	// get and consume open parentheses if next character in input
+	bool getParen()
+	{
+		if (m_input.peek() == '(')
+		{
+			m_input.get();
+			return true;
+		}
+		return false;
+	}
+
 private:
 	// main functions
 	Token *getIdentifier(Reference reference) noexcept;

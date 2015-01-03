@@ -62,7 +62,7 @@ Input: A$ = """
 Input: A$ = LEFT$("TEST", 1)
 	 0: NoParen      String  |A$|
 	 3: Operator  Op Integer =
-	 5: IntFuncP  () String  LEFT$(
+	 5: IntFunc   () String  LEFT$(
 	11: Constant     String  |TEST|
 	17: Operator  Op None    ,
 	19: Constant     Integer 1 |1|

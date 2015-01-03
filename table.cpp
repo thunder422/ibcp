@@ -343,7 +343,7 @@ static TableEntry tableEntries[] =
 	//   Internal Functions (No Parentheses)
 	//-----------------------------------------
 	{	// Rnd_Code
-		Token::Type::IntFuncN,
+		Token::Type::IntFunc,
 		"RND", "", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
@@ -397,188 +397,188 @@ static TableEntry tableEntries[] =
 	//   INTERNAL FUNCTIONS (Parentheses)
 	//--------------------------------------
 	{	// Abs_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"ABS(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Fix_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"FIX(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Frac_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"FRAC(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Int_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"INT(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 
 	},
 	{	// RndArg_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"RND(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sgn_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"SGN(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cint_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"CINT(", "", "",
 		TableFlag{}, 2, &Int_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cdbl_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"CDBL(", "", "",
 		TableFlag{}, 2, &Dbl_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sqr_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"SQR(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Atn_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"ATN(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cos_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"COS(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sin_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"SIN(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tan_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"TAN(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Exp_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"EXP(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Log_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"LOG(", "", "",
 		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tab_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"TAB(", "", "",
 		Print_Flag, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Spc_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"SPC(", "", "",
 		Print_Flag, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Asc_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"ASC(", "", "",
 		TableFlag{}, 2, &Int_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Asc2_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"ASC(", "2", "",
 		TableFlag{}, 2, &Int_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Chr_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"CHR$(", "", "",
 		TableFlag{}, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr2_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"INSTR(", "2", "",
 		TableFlag{}, 2, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr3_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"INSTR(", "3", "",
 		TableFlag{}, 2, &Int_StrStrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Left_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"LEFT$(", "", "",
 		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Len_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"LEN(", "", "",
 		TableFlag{}, 2, &Int_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid2_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"MID$(", "2", "",
 		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid3_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"MID$(", "3", "",
 		SubStr_Flag, 2, &Str_StrIntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Repeat_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"REPEAT$(", "", "",
 		TableFlag{}, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Right_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"RIGHT$(", "", "",
 		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Space_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"SPACE$(", "", "",
 		TableFlag{}, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Str_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"STR$(", "", "",
 		TableFlag{}, 2, &Str_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Val_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"VAL(", "", "",
 		TableFlag{}, 2, &Dbl_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
@@ -1066,37 +1066,37 @@ static TableEntry tableEntries[] =
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AbsInt_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"ABS(", "%", "",
 		TableFlag{}, 2, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// RndArgInt_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"RND(", "%", "",
 		TableFlag{}, 2, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// SgnInt_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"SGN(", "%", "",
 		TableFlag{}, 2, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// CvtInt_Code
-		Token::Type::IntFuncN,
+		Token::Type::IntFunc,
 		"", "CvtInt", "",
 		Hidden_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// CvtDbl_Code
-		Token::Type::IntFuncN,
+		Token::Type::IntFunc,
 		"", "CvtDbl", "",
 		Hidden_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// StrInt_Code
-		Token::Type::IntFuncP,
+		Token::Type::IntFunc,
 		"STR$(", "%", "",
 		TableFlag{}, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
@@ -1233,14 +1233,14 @@ static TableEntry tableEntries[] =
 	},
 	{	// DefFuncN_Code
 		// TODO preliminary until full define function support is implemented
-		Token::Type::DefFuncN,
+		Token::Type::DefFunc,
 		"", "DefFuncN", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
 	{	// DefFuncP_Code
 		// TODO preliminary until full define function support is implemented
-		Token::Type::DefFuncP,
+		Token::Type::DefFunc,
 		"", "DefFuncP", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
@@ -1377,7 +1377,7 @@ void Table::add(TableEntry &entry)
 				iterator->second = &entry;
 				s_alternate[&entry][alternate->m_exprInfo->m_operandCount - 1]
 					.push_back(alternate);
-				if (entry.m_type == Token::Type::IntFuncP)
+				if (entry.m_type == Token::Type::IntFunc)
 				{
 					// multiple codes; set multiple flag on primary code
 					entry.m_flags |= Multiple_Flag;
@@ -1460,7 +1460,7 @@ void Table::add(TableEntry &entry)
 					break;  // no more operands, all operands match
 				}
 			}
-			if (entry.m_type == Token::Type::IntFuncP
+			if (entry.m_type == Token::Type::IntFunc
 				&& exprInfo->m_operandCount
 				> primary->m_exprInfo->m_operandCount)
 			{
@@ -1651,8 +1651,7 @@ bool Table::isUnaryOrBinaryOperator(const TokenPtr &token) const
 //   - if this is -1 then the precedences if obtained for the token's code
 int Table::precedence(const TokenPtr &token) const
 {
-	int prec {token->precedence()};
-	return prec != -1 ? prec : precedence(token->code());
+	return precedence(token->code());
 }
 
 // returns the flags of the code contained in a token

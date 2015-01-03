@@ -41,10 +41,6 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 
 	switch (token->type())
 	{
-	case Token::Type::DefFuncN:
-		os << token->stringWithDataType();
-		break;
-
 	case Token::Type::NoParen:
 		if (token->isCode(Invalid_Code))
 		{
@@ -57,7 +53,13 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		break;
 
-	case Token::Type::DefFuncP:
+	case Token::Type::DefFunc:
+		if (token->code() == DefFuncN_Code)
+		{
+			os << token->stringWithDataType();
+			break;
+		}
+		// else fall thru (has parentheses)
 	case Token::Type::Paren:
 		os << token->stringWithDataType() << '(';
 		break;
@@ -467,6 +469,11 @@ try
 	{
 		TokenPtr token {parse(DataType::Any, Reference::None)};
 		printToken(token);
+		if (token->code() == DefFuncP_Code
+			|| token->type() == Token::Type::Paren)
+		{
+			parse.getParen();
+		}
 		if (token->isCode(EOL_Code))
 		{
 			return;
@@ -658,16 +665,12 @@ static const char *tokenTypeName(Token::Type type)
 		return "Command";
 	case Token::Type::Operator:
 		return "Operator";
-	case Token::Type::IntFuncN:
-		return "IntFuncN";
-	case Token::Type::IntFuncP:
-		return "IntFuncP";
+	case Token::Type::IntFunc:
+		return "IntFunc";
 	case Token::Type::Constant:
 		return "Constant";
-	case Token::Type::DefFuncN:
-		return "DefFuncN";
-	case Token::Type::DefFuncP:
-		return "DefFuncP";
+	case Token::Type::DefFunc:
+		return "DefFunc";
 	case Token::Type::NoParen:
 		return "NoParen";
 	case Token::Type::Paren:
@@ -682,32 +685,49 @@ void Tester::printToken(const TokenPtr &token)
 {
 	Table &table = Table::instance();
 
-	std::string info {"  "};
-	if (token->hasParen())
-	{
-		info = "()";
-	}
-	else if (token->isType(Token::Type::Operator)
-		|| token->isType(Token::Type::Command))
-	{
-		info = "Op";
-	}
 	m_cout << '\t' << std::setw(2) << std::right << token->column() << std::left
-		<< ": " << std::setw(10) << tokenTypeName(token->type()) << info;
+		<< ": " << std::setw(10) << tokenTypeName(token->type());
 	switch (token->type())
 	{
-	case Token::Type::DefFuncN:
-	case Token::Type::NoParen:
-		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
-			<< " |" << token->stringWithDataType() << '|';
+	case Token::Type::DefFunc:
+		m_cout << (token->code() == DefFuncN_Code ? "  " : "()");
 		break;
-	case Token::Type::DefFuncP:
-	case Token::Type::Paren:
-		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType())
-			<< " |" << token->stringWithDataType() << "(|";
+	case Token::Type::IntFunc:
+		m_cout << (table.operandCount(token) == 0 ? "  " : "()");
 		break;
 	case Token::Type::Constant:
+	case Token::Type::NoParen:
+		m_cout << "  ";
+		break;
+	case Token::Type::Paren:
+		m_cout << "()";
+		break;
+	case Token::Type::Operator:
+	case Token::Type::Command:
+		m_cout << "Op";
+		break;
+	}
+	if (token->type() != Token::Type::Command)
+	{
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
+	}
+	switch (token->type())
+	{
+	case Token::Type::DefFunc:
+		m_cout << " |" << token->stringWithDataType();
+		if (token->code() == DefFuncP_Code)
+		{
+			m_cout << '(';
+		}
+		m_cout << '|';
+		break;
+	case Token::Type::NoParen:
+		m_cout << " |" << token->stringWithDataType() << '|';
+		break;
+	case Token::Type::Paren:
+		m_cout << " |" << token->stringWithDataType() << "(|";
+		break;
+	case Token::Type::Constant:
 		switch (token->dataType())
 		{
 		case DataType::Integer:
@@ -727,19 +747,13 @@ void Tester::printToken(const TokenPtr &token)
 		m_cout << " |" << token->string() << '|';
 		break;
 	case Token::Type::Operator:
-	case Token::Type::IntFuncN:
-	case Token::Type::IntFuncP:
-		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
-		// fall thru
+	case Token::Type::IntFunc:
 	case Token::Type::Command:
 		m_cout << " " << table.debugName(token->code());
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
 			m_cout << " |" << token->string() << '|';
 		}
-		break;
-	default:
-		// nothing more to output
 		break;
 	}
 	m_cout << std::endl;

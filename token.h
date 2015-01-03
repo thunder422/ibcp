@@ -27,7 +27,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include "ibcp.h"
 
@@ -41,11 +40,9 @@ public:
 	{
 		Command = 1,
 		Operator,
-		IntFuncN,
-		IntFuncP,
+		IntFunc,
 		Constant,
-		DefFuncN,
-		DefFuncP,
+		DefFunc,
 		NoParen,
 		Paren
 	};
@@ -223,14 +220,6 @@ public:
 	}
 
 	// token information functions
-	bool hasParen(void) const
-	{
-		return s_hasParen[m_type];
-	}
-	int precedence(void) const
-	{
-		return s_precendence[m_type];
-	}
 	bool isNull(void) const
 	{
 		return m_code == Null_Code;
@@ -241,10 +230,6 @@ public:
 	Code convertCode(DataType dataType);
 
 private:
-	// static members
-	static std::unordered_map<Type, bool, EnumClassHash> s_hasParen;
-	static std::unordered_map<Type, int, EnumClassHash> s_precendence;
-
 	// instance members
 	int m_column;			// start column of token
 	int m_length;			// length of token

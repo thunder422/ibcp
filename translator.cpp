@@ -357,26 +357,10 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	case Token::Type::Constant:
 		break;  // go add token to output and push to done stack
 
-	case Token::Type::IntFuncN:
-		if (reference != Reference::None)
-		{
-			throw TokenError {expectedErrorStatus(dataType, reference),
-				std::move(m_token)};
-		}
-		break;  // go add token to output and push to done stack
-
-	case Token::Type::DefFuncN:
-		if (reference == Reference::Variable)
-		{
-			throw TokenError {expectedErrorStatus(dataType, reference),
-				std::move(m_token)};
-		}
-		break;  // go add token to output and push to done stack
-
 	case Token::Type::NoParen:
 		break;  // go add token to output and push to done stack
 
-	case Token::Type::IntFuncP:
+	case Token::Type::IntFunc:
 		if (reference != Reference::None)
 		{
 			if (reference != Reference::All
@@ -392,29 +376,36 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 			throw TokenError {expectedErrorStatus(dataType),
 				std::move(m_token)};
 		}
-		processInternalFunction(reference);
-		doneAppend = false;  // already appended
+		if (m_table.operandCount(m_token) > 0)
+		{
+			processInternalFunction(reference);
+			doneAppend = false;  // already appended
+		}
 		break;
 
-	case Token::Type::DefFuncP:
+	case Token::Type::DefFunc:
 		if (reference == Reference::Variable)
 		{
 			throw TokenError {expectedErrorStatus(dataType, reference),
 				std::move(m_token)};
 		}
-		else if (reference != Reference::None)
+		if (m_parse->getParen())
 		{
-			// NOTE these are allowed in the DEF command
-			// just point to the open parentheses of the token
-			TokenPtr token = std::move(m_token);
-			throw TokenError {Status::ExpEqualOrComma, token->column()
-				+ token->length(), 1};
+			if (reference != Reference::None)
+			{
+				// NOTE these are allowed in the DEF command
+				// just point to the open parentheses of the token
+				TokenPtr token = std::move(m_token);
+				throw TokenError {Status::ExpEqualOrComma, token->column()
+					+ token->length(), 1};
+			}
+			processParenToken();
+			doneAppend = false;  // already appended
 		}
-		processParenToken();
-		doneAppend = false;  // already appended
-		break;
+		break;  // go add token to output and push to done stack
 
 	case Token::Type::Paren:
+		m_parse->getParen();
 		processParenToken();
 		doneAppend = false;  // already appended
 		break;

@@ -29,27 +29,6 @@
 #include "utility.h"
 
 
-// static token variables
-std::unordered_map<Token::Type, bool, EnumClassHash> Token::s_hasParen {
-	{Type::IntFuncP, true},
-	{Type::DefFuncP, true},
-	{Type::Paren, true}
-};
-// set precedence for non-table token types
-std::unordered_map<Token::Type, int, EnumClassHash> Token::s_precendence {
-	{Type::Command, -1},  // use table precedence if -1
-	{Type::Operator, -1},
-	{Type::IntFuncN, -1},
-	{Type::IntFuncP, -1},
-	// these tokens need to be lowest precedence but above Null_Code
-	{Type::Constant, 2},
-	{Type::DefFuncN, 2},
-	{Type::DefFuncP, 2},
-	{Type::NoParen, 2},
-	{Type::Paren, 2}
-};
-
-
 // constructor for codes
 Token::Token(Code code, int column, int length, const std::string string) :
 	m_column{column}, m_length{length}, m_string{string}, m_reference{},
