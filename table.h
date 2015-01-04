@@ -71,8 +71,25 @@ typedef void (*RemoveFunction)(ProgramModel *programUnit, uint16_t operand);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 // table entry structure with information for a single code
-struct TableEntry
+class TableEntry
 {
+public:
+	Code code() const;
+	bool isCode(Code code)
+	{
+		return code == this->code();
+	}
+	std::string name() const
+	{
+		return m_name;
+	}
+	bool hasFlag(unsigned flag) const
+	{
+		return m_flags & flag ? true : false;
+	}
+	TableEntry *alternate(int index = 0);
+
+public:  // TODO make private once new table fully implemented
 	Token::Type m_type;				// type of token for entry
 	const std::string m_name;		// name for table entry
 	const std::string m_name2;		// name of second word of command
@@ -138,11 +155,14 @@ public:
 	std::string name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
-	static Code find(const std::string &string);
-	static Code find(const std::string &word1, const std::string &word2)
+	static TableEntry *entry(int index);
+	static TableEntry *find(const std::string &string);
+	static TableEntry *find(const std::string &word1, const std::string &word2)
 	{
 		return find(word1 + ' ' + word2);
 	}
+
+	friend class TableEntry;
 
 private:
 	// these functions private to prevent multiple instances

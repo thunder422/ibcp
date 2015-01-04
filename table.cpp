@@ -1495,6 +1495,23 @@ void Table::addExpectedDataType(TableEntry *entry, DataType dataType)
 }
 
 
+//========================
+//  TABLE ENTRY FUNCTIONS
+//========================
+
+// function to get code for entry
+Code TableEntry::code() const
+{
+	return Code(this - tableEntries);
+}
+
+// function to get alternate entry
+TableEntry *TableEntry::alternate(int index)
+{
+	return Table::s_alternate[this][index].front();
+}
+
+
 //================================
 //  CODE RELATED TABLE FUNCTIONS
 //================================
@@ -1806,19 +1823,26 @@ bool Table::setTokenCode(Token *token, Code code, DataType dataType,
 //  TABLE SPECIFIC FUNCTIONS
 //============================
 
+// function to return table entry pointer for a code index
+TableEntry *Table::entry(int index)
+{
+	return &tableEntries[index];
+}
+
+
 // find function to look for a string in the table
 //
 //   - returns the index of the entry that is found
 //   - returns Invalid_Code if the string was not found in the table
 
-Code Table::find(const std::string &string)
+TableEntry *Table::find(const std::string &string)
 {
 	auto iterator = s_nameToEntry.find(string);
 	if (iterator != s_nameToEntry.end())
 	{
-		return Code(iterator->second - tableEntries);
+		return iterator->second;
 	}
-	return Invalid_Code;
+	return {};
 }
 
 

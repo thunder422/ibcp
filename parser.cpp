@@ -48,7 +48,7 @@ Token *Parser::operator()(DataType dataType, Reference reference)
 	if (m_input.peek() == EOF)
 	{
 		int pos = m_input.str().length();
-		return new Token {EOL_Code, pos, 1};
+		return new Token {Table::entry(EOL_Code), pos, 1};
 	}
 	if (Token *token = getIdentifier(reference))
 	{
@@ -103,7 +103,8 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 
 	// check to see if this is the start of a remark
 	// (need to check separately since a space not required after 'REM')
-	std::string name {m_table.name(Rem_Code)};
+	TableEntry *remEntry = Table::entry(Rem_Code);
+	std::string name {remEntry->name()};
 	if (noCaseStringBeginsWith(word.string, name))
 	{
 		// clear errors in case peeked past end, which sets error
@@ -112,21 +113,21 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 		m_input.seekg(pos + name.length());
 		// read remark string to end-of-line
 		std::getline(m_input, word.string);
-		return new Token {Rem_Code, pos, int(name.length()),
+		return new Token {remEntry, pos, int(name.length()),
 			std::move(word.string)};
 	}
 
-	Code code;
+	TableEntry *entry;
 	// defined function?  (must also have a letter after "FN")
 	if (word.string.length() >= 3 && toupper(word.string[0]) == 'F'
 		&& toupper(word.string[1]) == 'N' && isalpha(word.string[2]))
 	{
-		code = word.paren ? DefFuncP_Code : DefFuncN_Code;
+		entry = Table::entry(word.paren ? DefFuncP_Code : DefFuncN_Code);
 	}
 	else
 	{
-		code = Table::find(word.string);
-		if (code == Invalid_Code)
+		entry = Table::find(word.string);
+		if (!entry)
 		{
 			// word not found in table, therefore
 			// must be variable, array, generic function, or subroutine
@@ -135,10 +136,10 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 				// REMOVE for now assume a variable
 				// TODO first check if identifier is in function dictionary
 				// TODO only a function reference if name of current function
-				code = Var_Code;
+				entry = Table::entry(Var_Code);
 				if (reference != Reference::None)
 				{
-					code = m_table.alternateCode(code, 1);
+					entry = entry->alternate(1);
 					reference = Reference::None;  // don't need flag in token
 				}
 			}
@@ -150,14 +151,14 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 				//      character to decide which dictionary to search;
 				//      reset word.paren to prevent '(' from being removed below
 				// REMOVE for now assume functions start with an 'F' for testing
-				code = reference == Reference::None
+				entry = Table::entry(reference == Reference::None
 					&& toupper(word.string.front()) == 'F'
-					? Function_Code : Array_Code;
+					? Function_Code : Array_Code);
 			}
 		}
 	}
 
-	if (m_table.name(code).empty())
+	if (entry->name().empty())
 	{
 		if (word.paren)
 		{
@@ -177,8 +178,8 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 				subCode = Double_SubCode;
 			}
 		}
-		return new Token {code, word.dataType, pos, len, std::move(word.string),
-			reference != Reference::None, subCode};
+		return new Token {entry, word.dataType, pos, len,
+			std::move(word.string), reference != Reference::None, subCode};
 	}
 
 	// found word in table (command, internal function, or operator)
@@ -187,7 +188,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 		m_input.get();  // now consume '(' from input
 	}
 	int len = word.string.length();
-	if (m_table.hasFlag(code, Two_Flag))
+	if (entry->hasFlag(Two_Flag))
 	{
 		// command could be a two word command
 		m_input >> std::ws;
@@ -197,12 +198,10 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 		if (!word2.string.empty())
 		{
 			// pos2 was not -1
-			Code code2;
-			if ((code2 = Table::find(word.string, word2.string))
-				!= Invalid_Code)
+			if (TableEntry *entry2 = Table::find(word.string, word2.string))
 			{
 				// double word command found
-				code = code2;
+				entry = entry2;
 				len = pos2 - pos + word2.string.length();
 			}
 			else  // reset position back to begin of second word
@@ -213,7 +212,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 			}
 		}
 	}
-	return new Token {code, pos, len};
+	return new Token {entry, pos, len};
 }
 
 
@@ -498,8 +497,8 @@ Token *Parser::getOperator() noexcept
 	std::string string;
 	string.push_back(m_input.peek());
 	// search table for current character to see if it is a valid operator
-	Code code {Table::find(string)};
-	if (code == Invalid_Code)
+	TableEntry *entry {Table::find(string)};
+	if (!entry)
 	{
 		// character(s) at current position not a valid operator
 		// (no first of two-character operator is an invalid operator)
@@ -507,29 +506,28 @@ Token *Parser::getOperator() noexcept
 	}
 	int pos = m_input.tellg();
 	m_input.get();  // eat first character (already in string)
-	if (code == RemOp_Code)
+	if (entry->isCode(RemOp_Code))
 	{
 		// remark requires special handling (remark string is to end-of-line)
 		std::getline(m_input, string);  // reads rest of line
-		return new Token {RemOp_Code, pos, 1, std::move(string)};
+		return new Token {entry, pos, 1, std::move(string)};
 	}
 
 	// current character is at least a valid one-character operator
 	int len {1};
-	if (m_table.hasFlag(code, Two_Flag))
+	if (entry->hasFlag(Two_Flag))
 	{
 		// operator could be a two-character operator
 		string.push_back(m_input.peek());
-		Code code2;
-		if ((code2 = Table::find(string)) != Invalid_Code)
+		if (TableEntry *entry2 = Table::find(string))
 		{
 			// two-character operator found
-			code = code2;
+			entry = entry2;
 			len = 2;
 			m_input.get();  // eat second character
 		}
 	}
-	return new Token {code, pos, len};
+	return new Token {entry, pos, len};
 }
 
 

@@ -30,21 +30,27 @@
 
 
 // constructor for codes
-Token::Token(Code code, int column, int length, const std::string string) :
-	m_column{column}, m_length{length}, m_string{string}, m_reference{},
+Token::Token(Code code) : m_column{-1}, m_length{-1}, m_string{}, m_reference{},
 	m_subCode{}
 {
 	Table::instance().setToken(this, code);
 }
 
+Token::Token(TableEntry *entry, int column, int length,
+	const std::string string) : m_column{column}, m_length{length},
+	m_string{string}, m_reference{}, m_subCode{}
+{
+	Table::instance().setToken(this, entry->code());
+}
+
 
 // constructor for codes with operands
-Token::Token(Code code, DataType dataType, int column, int length,
+Token::Token(TableEntry *entry, DataType dataType, int column, int length,
 	const std::string string, bool reference, SubCode subCode) :
 	m_column{column}, m_length{length}, m_string{string},
 	m_reference{reference}, m_subCode{subCode}
 {
-	Table::instance().setTokenCode(this, code, dataType);
+	Table::instance().setTokenCode(this, entry->code(), dataType);
 }
 
 

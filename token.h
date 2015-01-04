@@ -30,6 +30,8 @@
 
 #include "ibcp.h"
 
+class TableEntry;
+
 
 class Token
 {
@@ -48,11 +50,12 @@ public:
 	};
 
 	// constructor for codes
-	Token(Code code, int column = -1, int length = -1,
+	Token(Code code);
+	Token(TableEntry *entry, int column = -1, int length = -1,
 		const std::string string = {});
 
 	// constructor for codes with operands
-	Token(Code code, DataType dataType, int column, int length,
+	Token(TableEntry *entry, DataType dataType, int column, int length,
 		const std::string string = {}, bool reference = {},
 		SubCode subCode = {});
 
