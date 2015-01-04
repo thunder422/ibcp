@@ -36,7 +36,7 @@ class Token;
 class Parser
 {
 public:
-	explicit Parser(const std::string &input);
+	explicit Parser(const std::string &input) : m_input {input} {}
 	Token *operator()(DataType dataType, Reference reference);
 
 	// get and consume open parentheses if next character in input
@@ -53,7 +53,7 @@ public:
 private:
 	// main functions
 	Token *getIdentifier(Reference reference) noexcept;
-	Token *getNumber();
+	Token *getNumber(DataType dataType);
 	Token *getString() noexcept;
 	Token *getOperator() noexcept;
 
@@ -72,7 +72,6 @@ private:
 
 	Word getWord(WordType wordType) noexcept;
 
-	Table &m_table;			// pointer to the table object
 	std::istringstream m_input;	// input line being parsed
 };
 

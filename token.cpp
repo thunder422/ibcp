@@ -54,22 +54,48 @@ Token::Token(TableEntry *entry, DataType dataType, int column, int length,
 }
 
 
+// constructor for integer constants
+Token::Token(DataType dataType, int column, int length,
+	const std::string string, int value) : m_column{column}, m_length{length},
+	m_type{Token::Type::Constant}, m_string{string}, m_reference{}, m_subCode{},
+	m_value(value), /*convert*/ m_valueInt{value}
+{
+	Table::instance().setTokenCode(this, Const_Code,
+		dataType == DataType::Double ? dataType : DataType::Integer);
+}
+
+
 // constructor to set double constants
-Token::Token(int column, int length, const std::string string, double value) :
-	m_column{column}, m_length{length}, m_type{Token::Type::Constant},
-	m_dataType{DataType::Double}, m_string{string}, m_code{Invalid_Code},
-	m_reference{}, m_value{value}
+Token::Token(DataType dataType, int column, int length,
+	const std::string string, double value) : m_column{column},
+	m_length{length}, m_type{Token::Type::Constant}, m_string{string},
+	m_reference{}, m_subCode{}, m_value{value}
 {
 	if (value > std::numeric_limits<int>::min() - 0.5
 		&& value < std::numeric_limits<int>::max() + 0.5)
 	{
-		m_subCode = IntConst_SubCode;
 		m_valueInt = value;  // convert to integer in case needed
+		if (dataType != DataType::Double && dataType != DataType::Integer)
+		{
+			m_subCode = IntConst_SubCode;
+			dataType = DataType::Double;
+		}
 	}
 	else  // number can't be converted to integer
 	{
-		m_subCode = {};
+		dataType = DataType::Double;
 	}
+	Table::instance().setTokenCode(this, Const_Code, dataType);
+}
+
+
+// constructor for string constants
+Token::Token(int column, int length, const std::string string) :
+	m_column{column}, m_length{length}, m_type{Token::Type::Constant},
+	m_dataType{DataType::String}, m_string{string}, m_code{Invalid_Code},
+	m_reference{}, m_subCode{}
+{
+	Table::instance().setTokenCode(this, Const_Code);
 }
 
 

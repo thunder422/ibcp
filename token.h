@@ -60,20 +60,15 @@ public:
 		SubCode subCode = {});
 
 	// constructor for integer constants
-	Token(int column, int length, const std::string string, int value) :
-		m_column{column}, m_length{length}, m_type{Token::Type::Constant},
-		m_dataType{DataType::Integer}, m_string{string}, m_code{Invalid_Code},
-		m_reference{}, m_subCode{}, m_value(value), /*convert*/
-		m_valueInt{value} {}
+	Token(DataType dataType, int column, int length, const std::string string,
+		int value);
 
 	// constructor for double constants
-	Token(int column, int length, const std::string string, double value);
+	Token(DataType dataType, int column, int length, const std::string string,
+		double value);
 
 	// constructor for string constants
-	Token(int column, int length, const std::string string) : m_column{column},
-		m_length{length}, m_type{Token::Type::Constant},
-		m_dataType{DataType::String}, m_string{string}, m_code{Invalid_Code},
-		m_reference{}, m_subCode{} {}
+	Token(int column, int length, const std::string string);
 
 	Token(const Token &token)  // copy constructor
 	{

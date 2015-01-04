@@ -28,14 +28,6 @@
 #include "utility.h"
 
 
-Parser::Parser(const std::string &input) :
-	m_table(Table::instance()),
-	m_input {input}
-{
-
-}
-
-
 // function to get a token at the current position
 //
 //   - a shared pointer to the token is returned
@@ -57,21 +49,13 @@ Token *Parser::operator()(DataType dataType, Reference reference)
 	if (dataType != DataType{} && dataType != DataType::String
 		&& reference == Reference::None)
 	{
-		if (Token *token = getNumber())
+		if (Token *token = getNumber(dataType))
 		{
-			if (dataType == DataType::Double || (dataType == DataType::Integer
-				&& token->hasSubCode(IntConst_SubCode)))
-			{
-				token->setDataType(dataType);  // force to desired data type
-				token->removeSubCode(IntConst_SubCode);
-			}
-			m_table.setTokenCode(token, Const_Code);
 			return token;
 		}
 	}
 	if (Token *token = getString())
 	{
-		m_table.setTokenCode(token, Const_Code);
 		return token;
 	}
 	if (Token *token = getOperator())
@@ -299,8 +283,9 @@ Parser::Word Parser::getWord(WordType wordType) noexcept
 //   - throws an exception for errors
 //   - string of the number is converted to a value
 //   - string of the number is saved so it can be later reproduced
+//   - data type argument contains desired data type
 
-Token *Parser::getNumber()
+Token *Parser::getNumber(DataType dataType)
 {
 	bool digits {};				// digits were found flag
 	bool decimal {};			// decimal point was found flag
@@ -422,7 +407,7 @@ Token *Parser::getNumber()
 		int value {std::stoi(number)};
 
 		// save string of number so it later can be reproduced
-		return new Token {pos, len, std::move(number), value};
+		return new Token {dataType, pos, len, std::move(number), value};
 	}
 	catch(std::out_of_range)
 	{
@@ -435,7 +420,7 @@ Token *Parser::getNumber()
 		double value {std::stod(number)};
 
 		// save string of number so it later can be reproduced
-		return new Token {pos, len, std::move(number), value};
+		return new Token {dataType, pos, len, std::move(number), value};
 	}
 	catch (std::out_of_range)
 	{
