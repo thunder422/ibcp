@@ -30,12 +30,22 @@
 #include <unordered_map>
 
 #include "ibcp.h"
-// TODO remove this include once token type is replaced with code type
-#include "token.h"
 #include "utility.h"
 
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
+
+// TODO temporary until code type enumeration implemented
+enum class Type
+{
+	Command = 1,
+	Operator,
+	IntFunc,
+	Constant,
+	DefFunc,
+	NoParen,
+	Paren
+};
 
 
 // bit definitions for flags field
@@ -79,6 +89,10 @@ public:
 	{
 		return code == this->code();
 	}
+	Type type() const
+	{
+		return m_type;
+	}
 	std::string name() const
 	{
 		return m_name;
@@ -90,7 +104,7 @@ public:
 	TableEntry *alternate(int index = 0);
 
 public:  // TODO make private once new table fully implemented
-	Token::Type m_type;				// type of token for entry
+	Type m_type;					// type of token for entry
 	const std::string m_name;		// name for table entry
 	const std::string m_name2;		// name of second word of command
 	const std::string m_option;		// name of option sub-code
@@ -112,7 +126,7 @@ public:
 	static Table &instance(void);
 
 	// CODE RELATED TABLE FUNCTIONS
-	Token::Type type(Code code) const;
+	Type type(Code code) const;
 	const std::string name(Code code) const;
 	const std::string name2(Code code) const;
 	const std::string optionName(Code code) const;
@@ -148,10 +162,7 @@ public:
 	bool setTokenCode(Token *token, Code code, DataType dataType,
 		int operandIndex);
 	void setTokenCode(Token *token, Code code, DataType dataType);
-	void setTokenCode(Token *token, Code baseCode)
-	{
-		setTokenCode(token, baseCode, token->dataType());
-	}
+	void setTokenCode(Token *token, Code baseCode);
 	std::string name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS

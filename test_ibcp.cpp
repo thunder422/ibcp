@@ -28,6 +28,7 @@
 
 #include "test_ibcp.h"
 #include "table.h"
+#include "token.h"
 #include "parser.h"
 #include "statusmessage.h"
 #include "utility.h"
@@ -41,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 
 	switch (token->type())
 	{
-	case Token::Type::NoParen:
+	case Type::NoParen:
 		if (token->isCode(Invalid_Code))
 		{
 			os << '?';
@@ -53,18 +54,18 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		break;
 
-	case Token::Type::DefFunc:
+	case Type::DefFunc:
 		if (token->code() == DefFuncN_Code)
 		{
 			os << token->stringWithDataType();
 			break;
 		}
 		// else fall thru (has parentheses)
-	case Token::Type::Paren:
+	case Type::Paren:
 		os << token->stringWithDataType() << '(';
 		break;
 
-	case Token::Type::Constant:
+	case Type::Constant:
 		if (token->isCode(Invalid_Code))
 		{
 			os << '?';
@@ -88,7 +89,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		break;
 
-	case Token::Type::Operator:
+	case Type::Operator:
 		if (token->isCode(RemOp_Code))
 		{
 			os << table.name(token->code());
@@ -100,7 +101,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		break;
 
-	case Token::Type::Command:
+	case Type::Command:
 		if (token->isCode(Rem_Code))
 		{
 			os << table.name(token->code());
@@ -128,7 +129,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	if (token->hasSubCode())
 	{
 		os << '\'';
-		bool command = token->isType(Token::Type::Command)
+		bool command = token->isType(Type::Command)
 			|| table.hasFlag(token, Command_Flag);
 		if (!command && token->hasSubCode(Paren_SubCode))
 		{
@@ -469,8 +470,7 @@ try
 	{
 		TokenPtr token {parse(DataType::Any, Reference::None)};
 		printToken(token);
-		if (token->code() == DefFuncP_Code
-			|| token->type() == Token::Type::Paren)
+		if (token->code() == DefFuncP_Code || token->isType(Type::Paren))
 		{
 			parse.getParen();
 		}
@@ -657,23 +657,23 @@ static const char *dataTypeName(DataType dataType)
 
 
 // function to convert token type enumerator to string
-static const char *tokenTypeName(Token::Type type)
+static const char *tokenTypeName(Type type)
 {
 	switch (type)
 	{
-	case Token::Type::Command:
+	case Type::Command:
 		return "Command";
-	case Token::Type::Operator:
+	case Type::Operator:
 		return "Operator";
-	case Token::Type::IntFunc:
+	case Type::IntFunc:
 		return "IntFunc";
-	case Token::Type::Constant:
+	case Type::Constant:
 		return "Constant";
-	case Token::Type::DefFunc:
+	case Type::DefFunc:
 		return "DefFunc";
-	case Token::Type::NoParen:
+	case Type::NoParen:
 		return "NoParen";
-	case Token::Type::Paren:
+	case Type::Paren:
 		return "Paren";
 	}
 	return "";  // silence compiler warning (doesn't reach here at run-time)
@@ -689,31 +689,31 @@ void Tester::printToken(const TokenPtr &token)
 		<< ": " << std::setw(10) << tokenTypeName(token->type());
 	switch (token->type())
 	{
-	case Token::Type::DefFunc:
+	case Type::DefFunc:
 		m_cout << (token->code() == DefFuncN_Code ? "  " : "()");
 		break;
-	case Token::Type::IntFunc:
+	case Type::IntFunc:
 		m_cout << (table.operandCount(token) == 0 ? "  " : "()");
 		break;
-	case Token::Type::Constant:
-	case Token::Type::NoParen:
+	case Type::Constant:
+	case Type::NoParen:
 		m_cout << "  ";
 		break;
-	case Token::Type::Paren:
+	case Type::Paren:
 		m_cout << "()";
 		break;
-	case Token::Type::Operator:
-	case Token::Type::Command:
+	case Type::Operator:
+	case Type::Command:
 		m_cout << "Op";
 		break;
 	}
-	if (token->type() != Token::Type::Command)
+	if (!token->isType(Type::Command))
 	{
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
 	}
 	switch (token->type())
 	{
-	case Token::Type::DefFunc:
+	case Type::DefFunc:
 		m_cout << " |" << token->stringWithDataType();
 		if (token->code() == DefFuncP_Code)
 		{
@@ -721,13 +721,13 @@ void Tester::printToken(const TokenPtr &token)
 		}
 		m_cout << '|';
 		break;
-	case Token::Type::NoParen:
+	case Type::NoParen:
 		m_cout << " |" << token->stringWithDataType() << '|';
 		break;
-	case Token::Type::Paren:
+	case Type::Paren:
 		m_cout << " |" << token->stringWithDataType() << "(|";
 		break;
-	case Token::Type::Constant:
+	case Type::Constant:
 		switch (token->dataType())
 		{
 		case DataType::Integer:
@@ -746,9 +746,9 @@ void Tester::printToken(const TokenPtr &token)
 		}
 		m_cout << " |" << token->string() << '|';
 		break;
-	case Token::Type::Operator:
-	case Token::Type::IntFunc:
-	case Token::Type::Command:
+	case Type::Operator:
+	case Type::IntFunc:
+	case Type::Command:
 		m_cout << " " << table.debugName(token->code());
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{

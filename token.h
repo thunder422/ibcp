@@ -29,29 +29,15 @@
 #include <string>
 
 #include "ibcp.h"
-
-class TableEntry;
+#include "table.h"
 
 
 class Token
 {
 public:
-	// changes to Type may require changes to initializers
-	// for s_hasParen and s_precedence maps
-	enum class Type
-	{
-		Command = 1,
-		Operator,
-		IntFunc,
-		Constant,
-		DefFunc,
-		NoParen,
-		Paren
-	};
-
 	// constructor for codes
 	Token(Code code);
-	Token(TableEntry *entry, int column = -1, int length = -1,
+	Token(TableEntry *entry, int column, int length,
 		const std::string string = {});
 
 	// constructor for codes with operands
@@ -96,18 +82,19 @@ public:
 		m_length = length;
 	}
 
+	TableEntry *table() const
+	{
+		return Table::entry(m_code);
+	}
+
 	// type access functions
 	Type type(void) const
 	{
-		return m_type;
-	}
-	void setType(Type type)
-	{
-		m_type = type;
+		return table()->type();
 	}
 	bool isType(Type type) const
 	{
-		return type == m_type;
+		return type == table()->type();
 	}
 
 	// data type access functions
@@ -231,7 +218,6 @@ private:
 	// instance members
 	int m_column;			// start column of token
 	int m_length;			// length of token
-	Type m_type;			// type of the token
 	DataType m_dataType;	// data type of token
 	std::string m_string;	// pointer to string of token
 	Code m_code;			// internal code of token (index of TableEntry)

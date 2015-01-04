@@ -25,6 +25,7 @@
 #include "recreator.h"
 #include "rpnlist.h"
 #include "table.h"
+#include "token.h"
 #include "basic/basic.h"
 
 
@@ -52,7 +53,7 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 		{
 			recreate(*this, rpnItem);
 		}
-		bool command = rpnItem->token()->isType(Token::Type::Command)
+		bool command = rpnItem->token()->isType(Type::Command)
 			|| m_table.hasFlag(rpnItem->token(), Command_Flag);
 		if (!command && rpnItem->token()->hasSubCode(Paren_SubCode))
 		{

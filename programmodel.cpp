@@ -26,6 +26,7 @@
 #include "rpnlist.h"
 #include "statusmessage.h"
 #include "table.h"
+#include "token.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +47,7 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 	if (word.instructionHasSubCode(ProgramMask_SubCode))
 	{
 		os << '\'';
-		bool command = table.type(code) == Token::Type::Command
+		bool command = table.type(code) == Type::Command
 			|| table.hasFlag(code, Command_Flag);
 		if (!command && word.instructionHasSubCode(Paren_SubCode))
 		{

@@ -57,8 +57,8 @@ Token::Token(TableEntry *entry, DataType dataType, int column, int length,
 // constructor for integer constants
 Token::Token(DataType dataType, int column, int length,
 	const std::string string, int value) : m_column{column}, m_length{length},
-	m_type{Token::Type::Constant}, m_string{string}, m_reference{}, m_subCode{},
-	m_value(value), /*convert*/ m_valueInt{value}
+	m_string{string}, m_reference{}, m_subCode{}, m_value(value), /*convert*/
+	m_valueInt{value}
 {
 	Table::instance().setTokenCode(this, Const_Code,
 		dataType == DataType::Double ? dataType : DataType::Integer);
@@ -68,8 +68,8 @@ Token::Token(DataType dataType, int column, int length,
 // constructor to set double constants
 Token::Token(DataType dataType, int column, int length,
 	const std::string string, double value) : m_column{column},
-	m_length{length}, m_type{Token::Type::Constant}, m_string{string},
-	m_reference{}, m_subCode{}, m_value{value}
+	m_length{length}, m_string{string}, m_reference{}, m_subCode{},
+	m_value{value}
 {
 	if (value > std::numeric_limits<int>::min() - 0.5
 		&& value < std::numeric_limits<int>::max() + 0.5)
@@ -91,9 +91,8 @@ Token::Token(DataType dataType, int column, int length,
 
 // constructor for string constants
 Token::Token(int column, int length, const std::string string) :
-	m_column{column}, m_length{length}, m_type{Token::Type::Constant},
-	m_dataType{DataType::String}, m_string{string}, m_code{Invalid_Code},
-	m_reference{}, m_subCode{}
+	m_column{column}, m_length{length}, m_dataType{DataType::String},
+	m_string{string}, m_code{Invalid_Code}, m_reference{}, m_subCode{}
 {
 	Table::instance().setTokenCode(this, Const_Code);
 }
@@ -135,7 +134,7 @@ std::string Token::stringWithDataType() const
 //   - does nothing if constant is not changed
 bool Token::convertConstant(DataType dataType)
 {
-	if (m_type != Token::Type::Constant)
+	if (!isType(Type::Constant))
 	{
 		return false;
 	}
@@ -193,7 +192,7 @@ Code Token::convertCode(DataType dataType)
 	case DataType::Integer:
 		if (m_dataType == DataType::Double)
 		{
-			return m_type == Token::Type::Constant ? Invalid_Code : CvtInt_Code;
+			return isType(Type::Constant) ? Invalid_Code : CvtInt_Code;
 		}
 		else if (m_dataType == DataType::Integer)
 		{
