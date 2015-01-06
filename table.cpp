@@ -1730,8 +1730,15 @@ Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 	// check if constant should be converted to needed data type
 	if (operandIndex == operandCount(token) - 1      // last operand?
 		&& !hasFlag(token, UseConstAsIs_Flag))
+	try
 	{
 		operandToken->convertConstant(expectedDataType);
+	}
+	catch (Status)
+	{
+		// don't throw unconvertible doubles to integer errors here
+		// doubles as is may be acceptable depending on operator
+		// (will catch if double can't be converted if integer needed below)
 	}
 
 	// see if any alternate code's data types match
@@ -1742,14 +1749,7 @@ Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 	}
 
 	// get a conversion code if no alternate code was found
-	Code cvtCode {operandToken->convertCode(expectedDataType)};
-	if (operandToken->isType(Type::Constant)
-		&& expectedDataType == DataType::Integer
-		&& operandToken->isDataType(DataType::Double))
-	{
-		operandToken->setDataType(DataType{});  // to report invalid integer
-	}
-	return cvtCode;  // convert code or invalid
+	return operandToken->convertCode(expectedDataType);
 }
 
 
@@ -1777,11 +1777,6 @@ void Table::setTokenCode(Token *token, Code code, DataType dataType)
 	}
 	token->setCode(code);  // use code if no alternate code found
 	token->setDataType(dataType);
-}
-
-void Table::setTokenCode(Token *token, Code baseCode)
-{
-    setTokenCode(token, baseCode, token->dataType());
 }
 
 

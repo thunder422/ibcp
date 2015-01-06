@@ -162,7 +162,6 @@ public:
 	bool setTokenCode(Token *token, Code code, DataType dataType,
 		int operandIndex);
 	void setTokenCode(Token *token, Code code, DataType dataType);
-	void setTokenCode(Token *token, Code baseCode);
 	std::string name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS

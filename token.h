@@ -110,6 +110,13 @@ public:
 	{
 		return dataType == m_dataType;
 	}
+	bool isDataTypeCompatible(DataType dataType)
+	{
+		// check if token data type is compatible with desired data type
+		return dataType == m_dataType
+			|| (dataType == DataType::Number && m_dataType != DataType::String)
+			|| dataType == DataType::Any || dataType == DataType::None;
+	}
 
 	// string access function
 	std::string string(void) const

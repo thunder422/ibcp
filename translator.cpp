@@ -297,25 +297,18 @@ void Translator::getExpression(DataType dataType, int level)
 		if (!processOperator())
 		{
 			if (level == 0)
+			try
 			{
 				// add convert code if needed or report error
 				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-				Code cvtCode {doneToken->convertCode(dataType)};
-				if (cvtCode == Invalid_Code)
-				{
-					if (doneToken->isType(Type::Constant)
-						&& dataType == DataType::Integer
-						&& doneToken->isDataType(DataType::Double))
-					{
-						// constant could not be converted
-						throw doneStackTopTokenError(Status::ExpIntConst);
-					}
-					throw doneStackTopTokenError(expectedErrorStatus(dataType));
-				}
-				else if (cvtCode != Null_Code)
+				if (Code cvtCode = doneToken->convertCode(dataType))
 				{
 					m_output.append(std::make_shared<Token>(cvtCode));
 				}
+			}
+			catch (Status status)
+			{
+				throw doneStackTopTokenError(status);
 			}
 			break;
 		}
@@ -423,8 +416,7 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	}
 	// for reference, check data type
 	if (reference != Reference::None
-		&& m_doneStack.top().rpnItem->token()->convertCode(dataType)
-		!= Null_Code)
+		&& !m_doneStack.top().rpnItem->token()->isDataTypeCompatible(dataType))
 	{
 		throw doneStackTopTokenError(expectedErrorStatus(dataType, reference));
 	}
@@ -845,16 +837,12 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 	{
 		*last = localLast;
 	}
+	m_doneStack.pop();  // remove from done stack
 
 	// see if main code's data type matches
-	Code cvtCode {m_table.findCode(token, topToken, operandIndex)};
-
-	if (cvtCode != Invalid_Code)
+	try
 	{
-		m_doneStack.pop();  // remove from done stack
-
-		// is there an actual conversion code to insert?
-		if (cvtCode != Null_Code)
+		if (Code cvtCode  = m_table.findCode(token, topToken, operandIndex))
 		{
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
@@ -862,15 +850,11 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 			m_output.append(std::make_shared<Token>(cvtCode));
 		}
 	}
-	else  // no match found, throw error
+	catch (Status status)
 	{
-		// use main code's expected data type for operand
-		// (if no data type, then double constant can't be converted to integer)
 		// report entire expression from first token through last
-		throw TokenError {topToken->isDataType(DataType{})
-			? Status::ExpIntConst : expectedErrorStatus(topToken->dataType()),
-			localFirst->column(), localLast->column() + localLast->length()
-			- localFirst->column()};
+		throw TokenError {status, localFirst->column(), localLast->column()
+			+ localLast->length() - localFirst->column()};
 	}
 }
 
