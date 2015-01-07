@@ -95,9 +95,7 @@ enum class Status
 // code enumeration
 enum Code
 {
-	Invalid_Code = -1,		// REMOVE possibly use can be removed
-	Null_Code,				// REMOVE will be replaced with Code{}
-	Let_Code,
+	Let_Code = 1,
 	Print_Code,				// REMOVE alternate[0] of SemiColon
 	Input_Code,				// REMOVE will be removed
 	InputPrompt_Code,		// REMOVE will be removed

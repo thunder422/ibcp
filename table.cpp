@@ -163,8 +163,8 @@ std::initializer_list<AlternateInfo> alternateInfo =
 // (code enumeration generated from these by enums.awk)
 static TableEntry tableEntries[] =
 {
-	// Null_Code entry at beginning so Null_Code == 0
-	{	// Null_Code
+	// Code{} entry at beginning because Code{} == 0
+	{	// Code{}
 		Type{},
 		"", "NULL", "",
 		TableFlag{}, 0, &Null_ExprInfo,
@@ -1542,8 +1542,7 @@ const std::string Table::optionName(Code code) const
 // except for internal functions with multiple argument footprints
 const std::string Table::debugName(Code code) const
 {
-	return code == Invalid_Code
-		? "<NotSet>" : m_entry[code].m_name + m_entry[code].m_name2;
+	return m_entry[code].m_name + m_entry[code].m_name2;
 }
 
 // returns if the flag is set to the code
@@ -1637,14 +1636,6 @@ RecreateFunction Table::recreateFunction(Code code) const
 //  TOKEN RELATED TABLE FUNCTIONS
 //=================================
 
-// returns the unary operator code (or Null_Code if none) for token code
-Code Table::unaryCode(const TokenPtr &token) const
-{
-	return token->isType(Type::Operator)
-		&& m_entry[token->code()].m_exprInfo->m_operandCount == 1
-		? token->code() : Null_Code;
-}
-
 // returns whether the token contains a unary operator code
 // (convenience function to avoid confusion)
 bool Table::isUnaryOperator(const TokenPtr &token) const
@@ -1674,7 +1665,7 @@ int Table::precedence(const TokenPtr &token) const
 bool Table::hasFlag(const TokenPtr &token, unsigned flag) const
 {
 	// (invalid code tokens have no flags)
-	return token->hasValidCode() ? hasFlag(token->code(), flag) : false;
+	return hasFlag(token->code(), flag);
 }
 
 // returns number of operands expected for code in token token
@@ -1713,9 +1704,9 @@ std::string Table::name(const TokenPtr &token) const
 // and possibly return a conversion code if data type is convertible
 //
 //   - if data type matches expected data type for operand, no action
-//   - else finds associated code that matches data type
-//   - if no associated code, returns possible conversion code for data type
-//   - if no associated code, returns expected data type
+//   - else finds alternate code that matches data type
+//   - if no alternate code, returns conversion code for data type
+//   - if no alternate code, throws error status
 
 Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 {
@@ -1724,7 +1715,7 @@ Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 	if (operandToken->dataType() == expectedDataType)     // exact match?
 	{
 		operandToken->removeSubCode(IntConst_SubCode);  // safe for any token
-		return Null_Code;
+		return Code{};
 	}
 
 	// check if constant should be converted to needed data type
@@ -1745,7 +1736,7 @@ Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 	if (setTokenCode(token.get(), token->code(), operandToken->dataType(),
 		operandIndex))
 	{
-		return Null_Code;
+		return Code{};
 	}
 
 	// get a conversion code if no alternate code was found

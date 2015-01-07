@@ -217,7 +217,7 @@ Code Token::convertCode(DataType dataType)
 			break;
 		}
 	}
-	return Null_Code;
+	return Code{};
 }
 
 

@@ -43,8 +43,7 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 	for (RpnItemPtr rpnItem : rpnList)
 	{
 		RecreateFunction recreate;
-		if (!rpnItem->token()->hasValidCode()
-			|| !(recreate = m_table.recreateFunction(rpnItem->token()->code())))
+		if (!(recreate = m_table.recreateFunction(rpnItem->token()->code())))
 		{
 			// if no recreate function, then it is missing from table
 			emplace('?' + rpnItem->token()->string() + '?');

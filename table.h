@@ -149,7 +149,6 @@ public:
 	RecreateFunction recreateFunction(Code code) const;
 
 	// TOKEN RELATED TABLE FUNCTIONS
-	Code unaryCode(const TokenPtr &token) const;
 	bool isUnaryOperator(const TokenPtr &token) const;
 	bool isUnaryOrBinaryOperator(const TokenPtr &token) const;
 	int precedence(const TokenPtr &token) const;

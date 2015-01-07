@@ -51,7 +51,7 @@ Translator::Translator(const std::string &input) :
 
 RpnList Translator::operator()(TestMode testMode)
 {
-	m_holdStack.emplace(std::make_shared<Token>(Null_Code));
+	m_holdStack.emplace(std::make_shared<Token>(Code{}));
 
 	if (testMode == TestMode::Expression)
 	{

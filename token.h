@@ -146,10 +146,6 @@ public:
 	{
 		return code == m_code;
 	}
-	bool hasValidCode(void) const
-	{
-		return m_code != Invalid_Code;
-	}
 
 	// reference access functions
 	bool reference(void) const
@@ -214,7 +210,7 @@ public:
 	// token information functions
 	bool isNull(void) const
 	{
-		return m_code == Null_Code;
+		return !m_code;
 	}
 
 	// other functions

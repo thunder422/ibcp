@@ -43,10 +43,6 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	switch (token->type())
 	{
 	case Type::NoParen:
-		if (token->isCode(Invalid_Code))
-		{
-			os << '?';
-		}
 		os << token->stringWithDataType();
 		if (table.hasFlag(token->code(), Reference_Flag))
 		{
@@ -66,10 +62,6 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		break;
 
 	case Type::Constant:
-		if (token->isCode(Invalid_Code))
-		{
-			os << '?';
-		}
 		switch (token->dataType())
 		{
 		case DataType::Integer:
