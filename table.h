@@ -80,6 +80,22 @@ typedef const std::string (*OperandTextFunction)
 typedef void (*RemoveFunction)(ProgramModel *programUnit, uint16_t operand);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
+// expression information for operators and internal functions
+struct ExprInfo
+{
+	DataType m_returnDataType;		// return data type of operator/function
+	short m_operandCount;			// number of operands (operators/functions)
+	const DataType *m_operandDataType;	// data type of each operand
+
+	ExprInfo(DataType returnDataType = DataType::None,
+		const std::initializer_list<const DataType> &operands = {}) :
+		m_returnDataType {returnDataType},
+		m_operandCount(operands.size()),
+		m_operandDataType {operands.begin()}
+	{
+	}
+};
+
 // table entry structure with information for a single code
 class TableEntry
 {
@@ -92,6 +108,10 @@ public:
 	Type type() const
 	{
 		return m_type;
+	}
+	DataType dataType() const
+	{
+		return m_exprInfo->m_returnDataType;
 	}
 	std::string name() const
 	{

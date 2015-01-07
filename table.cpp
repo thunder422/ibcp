@@ -33,22 +33,6 @@
 #include "basic/basic.h"
 
 
-// expression information for operators and internal functions
-struct ExprInfo
-{
-	DataType m_returnDataType;		// return data type of operator/function
-	short m_operandCount;			// number of operands (operators/functions)
-	const DataType *m_operandDataType;	// data type of each operand
-
-	ExprInfo(DataType returnDataType = DataType::None,
-		const std::initializer_list<const DataType> &operands = {}) :
-		m_returnDataType {returnDataType},
-		m_operandCount(operands.size()),
-		m_operandDataType {operands.begin()}
-	{
-	}
-};
-
 // operands initializers
 constexpr auto Operands_Dbl    = {DataType::Double};
 constexpr auto Operands_DblDbl = {DataType::Double, DataType::Double};
@@ -155,7 +139,11 @@ std::initializer_list<AlternateInfo> alternateInfo =
 	{Const_Code, 0, {ConstInt_Code, ConstStr_Code}},
 	{Var_Code, 0, {VarInt_Code, VarStr_Code}},
 	{Var_Code, 1, {VarRef_Code}},
-	{VarRef_Code, 0, {VarRefInt_Code, VarRefStr_Code}}
+	{VarRef_Code, 0, {VarRefInt_Code, VarRefStr_Code}},
+	{Array_Code, 0, {ArrayInt_Code, ArrayStr_Code}},
+	{DefFuncN_Code, 0, {DefFuncNInt_Code, DefFuncNStr_Code}},
+	{DefFuncP_Code, 0, {DefFuncPInt_Code, DefFuncPStr_Code}},
+	{Function_Code, 0, {FunctionInt_Code, FunctionStr_Code}}
 };
 
 
@@ -1225,31 +1213,75 @@ static TableEntry tableEntries[] =
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// Array_Code
-		// TODO preliminary until full array support is implemented
 		Type::Paren,
 		"", "Array", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, arrayRecreate
 	},
+	{	// ArrayInt_Code
+		Type::Paren,
+		"", "ArrayInt", "",
+		TableFlag{}, 2, &Int_None_ExprInfo,
+		NULL, NULL, NULL, NULL, arrayRecreate
+	},
+	{	// ArrayStr_Code
+		Type::Paren,
+		"", "ArrayStr", "",
+		TableFlag{}, 2, &Str_None_ExprInfo,
+		NULL, NULL, NULL, NULL, arrayRecreate
+	},
 	{	// DefFuncN_Code
-		// TODO preliminary until full define function support is implemented
 		Type::DefFunc,
 		"", "DefFuncN", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
+	{	// DefFuncNInt_Code
+		Type::DefFunc,
+		"", "DefFuncNInt", "",
+		TableFlag{}, 2, &Int_None_ExprInfo,
+		NULL, NULL, NULL, NULL, defineFunctionRecreate
+	},
+	{	// DefFuncNStr_Code
+		Type::DefFunc,
+		"", "DefFuncNStr", "",
+		TableFlag{}, 2, &Str_None_ExprInfo,
+		NULL, NULL, NULL, NULL, defineFunctionRecreate
+	},
 	{	// DefFuncP_Code
-		// TODO preliminary until full define function support is implemented
 		Type::DefFunc,
 		"", "DefFuncP", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
+	{	// DefFuncPInt_Code
+		Type::DefFunc,
+		"", "DefFuncPInt", "",
+		TableFlag{}, 2, &Int_None_ExprInfo,
+		NULL, NULL, NULL, NULL, defineFunctionRecreate
+	},
+	{	// DefFuncPStr_Code
+		Type::DefFunc,
+		"", "DefFuncPStr", "",
+		TableFlag{}, 2, &Str_None_ExprInfo,
+		NULL, NULL, NULL, NULL, defineFunctionRecreate
+	},
 	{	// Function_Code
-		// TODO preliminary until full user function support is implemented
 		Type::Paren,
 		"", "Function", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
+		NULL, NULL, NULL, NULL, functionRecreate
+	},
+	{	// FunctionInt_Code
+		Type::Paren,
+		"", "FunctionInt", "",
+		TableFlag{}, 2, &Int_None_ExprInfo,
+		NULL, NULL, NULL, NULL, functionRecreate
+	},
+	{	// FunctionStr_Code
+		Type::Paren,
+		"", "FunctionStr", "",
+		TableFlag{}, 2, &Str_None_ExprInfo,
 		NULL, NULL, NULL, NULL, functionRecreate
 	}
 };
@@ -1684,7 +1716,6 @@ DataType Table::expectedDataType(const TokenPtr &token) const
 void Table::setToken(Token *token, Code code)
 {
 	token->setCode(code);
-	token->setDataType(returnDataType(code));
 }
 
 // function to return text for an command, operator or function code in a token
@@ -1767,7 +1798,6 @@ void Table::setTokenCode(Token *token, Code code, DataType dataType)
 		}
 	}
 	token->setCode(code);  // use code if no alternate code found
-	token->setDataType(dataType);
 }
 
 

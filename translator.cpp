@@ -604,7 +604,8 @@ void Translator::processParenToken()
 	DataType dataType {DataType::Any};
 	// TODO temporary until array and functions are fully implemented
 	// TODO this check needs updated for data typed array codes
-	if (m_token->isCode(Array_Code))
+	if (m_token->isCode(Array_Code) || m_token->isCode(ArrayInt_Code)
+		|| m_token->isCode(ArrayStr_Code))
 	{
 		dataType = DataType::Integer;  // array subscripts
 	}

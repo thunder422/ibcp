@@ -51,7 +51,8 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		break;
 
 	case Type::DefFunc:
-		if (token->code() == DefFuncN_Code)
+		if (token->code() == DefFuncN_Code || token->code() == DefFuncNInt_Code
+			|| token->code() == DefFuncNStr_Code)
 		{
 			os << token->stringWithDataType();
 			break;
@@ -462,7 +463,8 @@ try
 	{
 		TokenPtr token {parse(DataType::Any, Reference::None)};
 		printToken(token);
-		if (token->code() == DefFuncP_Code || token->isType(Type::Paren))
+		if (token->code() == DefFuncP_Code || token->code() == DefFuncPInt_Code
+			|| token->code() == DefFuncPStr_Code || token->isType(Type::Paren))
 		{
 			parse.getParen();
 		}
@@ -682,7 +684,9 @@ void Tester::printToken(const TokenPtr &token)
 	switch (token->type())
 	{
 	case Type::DefFunc:
-		m_cout << (token->code() == DefFuncN_Code ? "  " : "()");
+		m_cout << (token->code() == DefFuncN_Code
+			|| token->code() == DefFuncNInt_Code
+			|| token->code() == DefFuncNStr_Code ? "  " : "()");
 		break;
 	case Type::IntFunc:
 		m_cout << (table.operandCount(token) == 0 ? "  " : "()");
@@ -707,7 +711,9 @@ void Tester::printToken(const TokenPtr &token)
 	{
 	case Type::DefFunc:
 		m_cout << " |" << token->stringWithDataType();
-		if (token->code() == DefFuncP_Code)
+		if (token->code() == DefFuncP_Code
+			|| token->code() == DefFuncPInt_Code
+			|| token->code() == DefFuncPStr_Code)
 		{
 			m_cout << '(';
 		}

@@ -100,21 +100,18 @@ public:
 	// data type access functions
 	DataType dataType() const
 	{
-		return m_dataType;
-	}
-	void setDataType(DataType dataType)
-	{
-		m_dataType = dataType;
+		return table()->dataType();
 	}
 	bool isDataType(DataType dataType) const
 	{
-		return dataType == m_dataType;
+		return dataType == table()->dataType();
 	}
 	bool isDataTypeCompatible(DataType dataType)
 	{
 		// check if token data type is compatible with desired data type
-		return dataType == m_dataType
-			|| (dataType == DataType::Number && m_dataType != DataType::String)
+		return dataType == table()->dataType()
+			|| (dataType == DataType::Number
+			&& table()->dataType() != DataType::String)
 			|| dataType == DataType::Any || dataType == DataType::None;
 	}
 
@@ -221,7 +218,6 @@ private:
 	// instance members
 	int m_column;			// start column of token
 	int m_length;			// length of token
-	DataType m_dataType;	// data type of token
 	std::string m_string;	// pointer to string of token
 	Code m_code;			// internal code of token (index of TableEntry)
 	bool m_reference;		// token is a reference flag

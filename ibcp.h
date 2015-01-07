@@ -264,9 +264,17 @@ enum Code
 	VarRefInt_Code,			// REMOVE alternate[0] of VarRef
 	VarRefStr_Code,			// REMOVE alternate[0] of VarRef
 	Array_Code,
+	ArrayInt_Code,			// REMOVE alternate[0] of Array
+	ArrayStr_Code,			// REMOVE alternate[0] of Array
 	DefFuncN_Code,
+	DefFuncNInt_Code,		// REMOVE alternate[0] of DefFuncN
+	DefFuncNStr_Code,		// REMOVE alternate[0] of DefFuncN
 	DefFuncP_Code,
-	Function_Code
+	DefFuncPInt_Code,		// REMOVE alternate[0] of DefFuncP
+	DefFuncPStr_Code,		// REMOVE alternate[0] of DefFuncP
+	Function_Code,
+	FunctionInt_Code,		// REMOVE alternate[0] of Function
+	FunctionStr_Code		// REMOVE alternate[0] of Function
 };
 
 

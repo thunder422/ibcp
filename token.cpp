@@ -104,7 +104,7 @@ std::string Token::stringWithDataType() const
 	std::string string = m_string;
 	if (!isType(Type::Constant))
 	{
-		switch (m_dataType)
+		switch (dataType())
 		{
 		case DataType::Double:
 			if (hasSubCode(Double_SubCode))
@@ -141,12 +141,12 @@ bool Token::convertConstant(DataType dataType)
 	}
 	if (dataType == DataType::Double)
 	{
-		if (m_dataType == DataType::Double)
+		if (table()->dataType() == DataType::Double)
 		{
 			removeSubCode(IntConst_SubCode);
 			return true;
 		}
-		if (m_dataType != DataType::Integer)
+		if (table()->dataType() != DataType::Integer)
 		{
 			return false;
 		}
@@ -154,7 +154,7 @@ bool Token::convertConstant(DataType dataType)
 	}
 	else if (dataType == DataType::Integer)
 	{
-		if (m_dataType == DataType::Double)
+		if (table()->dataType() == DataType::Double)
 		{
 			if (!hasSubCode(IntConst_SubCode))
 			{
@@ -165,7 +165,7 @@ bool Token::convertConstant(DataType dataType)
 		}
 		else
 		{
-			return m_dataType == DataType::Integer;
+			return table()->dataType() == DataType::Integer;
 		}
 	}
 	else
@@ -184,19 +184,19 @@ bool Token::convertConstant(DataType dataType)
 //   - throws error status if cannot be converted
 Code Token::convertCode(DataType dataType)
 {
-	if (!convertConstant(dataType) && m_dataType != dataType)
+	if (!convertConstant(dataType) && table()->dataType() != dataType)
 	{
 		switch (dataType)
 		{
 		case DataType::Double:
-			if (m_dataType != DataType::Integer)
+			if (table()->dataType() != DataType::Integer)
 			{
 				throw Status::ExpNumExpr;
 			}
 			return CvtDbl_Code;
 
 		case DataType::Integer:
-			if (m_dataType != DataType::Double)
+			if (table()->dataType() != DataType::Double)
 			{
 				throw Status::ExpNumExpr;
 			}
@@ -206,7 +206,7 @@ Code Token::convertCode(DataType dataType)
 			throw Status::ExpStrExpr;
 
 		case DataType::Number:
-			if (m_dataType == DataType::String)
+			if (table()->dataType() == DataType::String)
 			{
 				throw Status::ExpNumExpr;
 			}
