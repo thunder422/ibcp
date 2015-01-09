@@ -36,25 +36,36 @@ class Token
 {
 public:
 	// constructor for codes
-	Token(Code code);
+	Token(Code code) : m_column{-1}, m_length{-1}, m_string{}, m_code{code},
+		m_reference{}, m_subCode{} {}
+
 	Token(TableEntry *entry, int column, int length,
-		const std::string string = {});
+		const std::string string = {}) : m_column{column}, m_length{length},
+		m_string{string}, m_code{entry->code()}, m_reference{}, m_subCode{} {}
 
 	// constructor for codes with operands
 	Token(TableEntry *entry, DataType dataType, int column, int length,
 		const std::string string = {}, bool reference = {},
-		SubCode subCode = {});
+		SubCode subCode = {}) : m_column{column}, m_length{length},
+		m_string{string}, m_code{entry->alternate(dataType)->code()},
+		m_reference{reference}, m_subCode{subCode} {}
 
 	// constructor for integer constants
 	Token(DataType dataType, int column, int length, const std::string string,
-		int value);
+		int value) : m_column{column}, m_length{length}, m_string{string},
+		m_code{Table::entry(Const_Code, dataType == DataType::Double
+		? dataType : DataType::Integer)->code()}, m_reference{}, m_subCode{},
+		m_value(value), /*convert*/ m_valueInt{value} {}
 
 	// constructor for double constants
 	Token(DataType dataType, int column, int length, const std::string string,
 		double value);
 
 	// constructor for string constants
-	Token(int column, int length, const std::string string);
+	Token(int column, int length, const std::string string) :
+		m_column{column}, m_length{length}, m_string{string},
+		m_code{Table::entry(Const_Code, DataType::String)->code()},
+		m_reference{}, m_subCode{} {}
 
 	Token(const Token &token)  // copy constructor
 	{
@@ -143,6 +154,10 @@ public:
 	{
 		return code == m_code;
 	}
+	void setFirstAlternate(int operandIndex)
+	{
+		m_code = table()->alternate(operandIndex)->code();
+	}
 
 	// reference access functions
 	bool reference(void) const
@@ -212,7 +227,7 @@ public:
 
 	// other functions
 	bool convertConstant(DataType dataType);
-	Code convertCode(DataType dataType);
+	TableEntry *convertCode(DataType dataType);
 
 private:
 	// instance members

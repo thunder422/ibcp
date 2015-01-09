@@ -73,8 +73,7 @@ void printTranslate(Translator &translator)
 			}
 			else  // append appropriate print code for done stack top item
 			{
-				Code code
-					= translator.table().alternateCode(commandToken->code(), 0);
+				Code code = commandToken->table()->alternate(0)->code();
 				TokenPtr printToken {std::make_shared<Token>(code)};
 				translator.processFinalOperand(printToken);
 				printFunction = false;
@@ -193,7 +192,7 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	std::string name {recreator.table().name(rpnItem->token()->code())};
 	recreator.topAppend(std::move(name));
 
-	Code printCode = recreator.table().alternateCode(rpnItem->token()->code());
+	Code printCode = rpnItem->token()->table()->alternate()->code();
 	TokenPtr token {std::make_shared<Token>(printCode)};
 	RpnItemPtr rpnItemPtr {std::make_shared<RpnItem>(token)};
 	printRecreate(recreator, rpnItemPtr);

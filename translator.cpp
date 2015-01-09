@@ -280,10 +280,9 @@ void Translator::getExpression(DataType dataType, int level)
 			if (m_table.isUnaryOperator(m_token))
 			{
 				// check if code has a binary operator
-				if (m_table.alternateCodeCount(m_token->code(), 1) > 0)
+				if (m_token->table()->alternateCount(1) > 0)
 				{
-					// change token to binary operator
-					m_token->setCode(m_table.alternateCode(m_token->code(), 1));
+					m_token->setFirstAlternate(1);  // change to binary operator
 				}
 				else
 				{
@@ -301,9 +300,9 @@ void Translator::getExpression(DataType dataType, int level)
 			{
 				// add convert code if needed or report error
 				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-				if (Code cvtCode = doneToken->convertCode(dataType))
+				if (TableEntry *convert = doneToken->convertCode(dataType))
 				{
-					m_output.append(std::make_shared<Token>(cvtCode));
+					m_output.append(std::make_shared<Token>(convert->code()));
 				}
 			}
 			catch (Status status)
@@ -527,9 +526,7 @@ void Translator::processInternalFunction(Reference reference)
 			if (token->dataType()
 				!= m_table.operandDataType(topToken->code(), 0))
 			{
-				// change token's code and data type to associated code
-				m_table.setToken(topToken.get(),
-					m_table.alternateCode(topToken->code()));
+				topToken->setFirstAlternate(0);
 			}
 			token->removeSubCode(IntConst_SubCode);  // safe for all tokens
 		}
@@ -544,8 +541,8 @@ void Translator::processInternalFunction(Reference reference)
 					// function doesn't have multiple entries
 					throw TokenError {Status::ExpOpOrParen, m_token};
 				}
-				// get second associated code; update code and last operand
-				code = m_table.alternateCode(topToken->code(), ++lastOperand);
+				// get second alternate code; update code and last operand
+				code = topToken->table()->alternate(++lastOperand)->code();
 				topToken->setCode(code);
 			}
 			m_token.reset();  // delete comma token, it's not needed
@@ -805,7 +802,7 @@ void Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
 //
 //   - if requested, the first and last operands of the item are returned
 //   - calls Table::findCode() to check the data type of item:
-//     changes token code to a matching associated code if available
+//     changes token code to a matching alternate code if available
 //     else returns a conversion code if conversion is possible
 //   - if no match found or conversion not possible, an error is thrown
 //   - if conversion possible, a conversion code token is appended to output
@@ -843,12 +840,13 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 	// see if main code's data type matches
 	try
 	{
-		if (Code cvtCode  = m_table.findCode(token, topToken, operandIndex))
+		if (TableEntry *convert  = m_table.findCode(token, topToken,
+			operandIndex))
 		{
 			// INSERT CONVERSION CODE
 			// create convert token with convert code
 			// append token to end of output list (after operand)
-			m_output.append(std::make_shared<Token>(cvtCode));
+			m_output.append(std::make_shared<Token>(convert->code()));
 		}
 	}
 	catch (Status status)

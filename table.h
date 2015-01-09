@@ -121,7 +121,10 @@ public:
 	{
 		return m_flags & flag ? true : false;
 	}
-	TableEntry *alternate(int index = 0);
+	TableEntry *alternate(DataType dataType);
+	int alternateCount(int operandIndex);
+	TableEntry *alternate(int operandIndex = 0);
+	TableEntry *alternate(int operandIndex, DataType dataType);
 
 public:  // TODO make private once new table fully implemented
 	Type m_type;					// type of token for entry
@@ -158,9 +161,6 @@ public:
 	DataType operandDataType(Code code, int operand) const;
 	DataType expectedDataType(Code code) const;
 
-	Code alternateCode(Code primaryCode, int index = 0) const;
-	int alternateCodeCount(Code code, int index) const;
-
 	TranslateFunction translateFunction(Code code) const;
 	EncodeFunction encodeFunction(Code code) const;
 	bool hasOperand(Code code) const;
@@ -175,16 +175,13 @@ public:
 	bool hasFlag(const TokenPtr &token, unsigned flag) const;
 	int operandCount(const TokenPtr &token) const;
 	DataType expectedDataType(const TokenPtr &token) const;
-	void setToken(Token *token, Code code);
-	Code findCode(TokenPtr &token, TokenPtr &operandToken,
+	TableEntry *findCode(TokenPtr &token, TokenPtr &operandToken,
 		int operandIndex = 0);
-	bool setTokenCode(Token *token, Code code, DataType dataType,
-		int operandIndex);
-	void setTokenCode(Token *token, Code code, DataType dataType);
 	std::string name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
 	static TableEntry *entry(int index);
+	static TableEntry *entry(int index, DataType dataType);
 	static TableEntry *find(const std::string &string);
 	static TableEntry *find(const std::string &word1, const std::string &word2)
 	{

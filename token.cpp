@@ -29,42 +29,6 @@
 #include "utility.h"
 
 
-// constructor for codes
-Token::Token(Code code) : m_column{-1}, m_length{-1}, m_string{}, m_reference{},
-	m_subCode{}
-{
-	Table::instance().setToken(this, code);
-}
-
-Token::Token(TableEntry *entry, int column, int length,
-	const std::string string) : m_column{column}, m_length{length},
-	m_string{string}, m_reference{}, m_subCode{}
-{
-	Table::instance().setToken(this, entry->code());
-}
-
-
-// constructor for codes with operands
-Token::Token(TableEntry *entry, DataType dataType, int column, int length,
-	const std::string string, bool reference, SubCode subCode) :
-	m_column{column}, m_length{length}, m_string{string},
-	m_reference{reference}, m_subCode{subCode}
-{
-	Table::instance().setTokenCode(this, entry->code(), dataType);
-}
-
-
-// constructor for integer constants
-Token::Token(DataType dataType, int column, int length,
-	const std::string string, int value) : m_column{column}, m_length{length},
-	m_string{string}, m_reference{}, m_subCode{}, m_value(value), /*convert*/
-	m_valueInt{value}
-{
-	Table::instance().setTokenCode(this, Const_Code,
-		dataType == DataType::Double ? dataType : DataType::Integer);
-}
-
-
 // constructor to set double constants
 Token::Token(DataType dataType, int column, int length,
 	const std::string string, double value) : m_column{column},
@@ -85,16 +49,7 @@ Token::Token(DataType dataType, int column, int length,
 	{
 		dataType = DataType::Double;
 	}
-	Table::instance().setTokenCode(this, Const_Code, dataType);
-}
-
-
-// constructor for string constants
-Token::Token(int column, int length, const std::string string) :
-	m_column{column}, m_length{length}, m_string{string}, m_reference{},
-	m_subCode{}
-{
-	Table::instance().setTokenCode(this, Const_Code, DataType::String);
+	m_code = Table::entry(Const_Code, dataType)->code();
 }
 
 
@@ -172,7 +127,7 @@ bool Token::convertConstant(DataType dataType)
 	{
 		return false;  // can't convert to number or any
 	}
-	Table::instance().setTokenCode(this, Const_Code, dataType);
+	m_code = Table::entry(Const_Code, dataType)->code();
 	return true;
 }
 
@@ -182,7 +137,7 @@ bool Token::convertConstant(DataType dataType)
 //   - returns conversion code if needed
 //   - returns null code if no conversion needed
 //   - throws error status if cannot be converted
-Code Token::convertCode(DataType dataType)
+TableEntry *Token::convertCode(DataType dataType)
 {
 	if (!convertConstant(dataType) && table()->dataType() != dataType)
 	{
@@ -193,14 +148,14 @@ Code Token::convertCode(DataType dataType)
 			{
 				throw Status::ExpNumExpr;
 			}
-			return CvtDbl_Code;
+			return Table::entry(CvtDbl_Code);
 
 		case DataType::Integer:
 			if (table()->dataType() != DataType::Double)
 			{
 				throw Status::ExpNumExpr;
 			}
-			return CvtInt_Code;
+			return Table::entry(CvtInt_Code);
 
 		case DataType::String:
 			throw Status::ExpStrExpr;
@@ -217,7 +172,7 @@ Code Token::convertCode(DataType dataType)
 			break;
 		}
 	}
-	return Code{};
+	return {};
 }
 
 

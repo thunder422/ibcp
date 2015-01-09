@@ -1536,10 +1536,68 @@ Code TableEntry::code() const
 	return Code(this - tableEntries);
 }
 
-// function to get alternate entry
-TableEntry *TableEntry::alternate(int index)
+// function to get an alternate table entry for the data type specified
+//
+//   - if the data type does not match the return data type of the entry,
+//     then searches its alternates if there are any
+//   - if no matching alternate entry found, then returns the entry
+
+TableEntry *TableEntry::alternate(DataType dataType)
 {
-	return Table::s_alternate[this][index].front();
+	if (dataType != m_exprInfo->m_returnDataType
+		&& Table::s_alternate.find(this) != Table::s_alternate.end())
+	{
+		for (TableEntry *alternateEntry : Table::s_alternate[this][0])
+		{
+			if (dataType == alternateEntry->dataType())
+			{
+				return alternateEntry;
+			}
+		}
+	}
+	return this;  // use entry if no alternate
+}
+
+// function to get count of alternate codes for an operand index
+int TableEntry::alternateCount(int operandIndex)
+{
+	return Table::s_alternate[this][operandIndex].size();
+}
+
+// function to get first alternate entry for an operand index
+TableEntry *TableEntry::alternate(int operandIndex)
+{
+    return Table::s_alternate[this][operandIndex].front();
+}
+
+// function to get alternate entry for specified operand index and data type
+//
+//   - if the data type does not match the operand data type of the code,
+//     then the alternate codes are searched for a matching code
+//   - if there are no alternate codes, or none is found, returns null
+//   - upon success, returns alternate code table entry
+
+TableEntry *TableEntry::alternate(int operandIndex, DataType dataType)
+{
+	// first check if data type already matches data type of code
+	if (dataType == m_exprInfo->m_operandDataType[operandIndex])
+	{
+		return this;
+	}
+	// if not, see if data type of any alternate code matches
+	if (Table::s_alternate.find(this) != Table::s_alternate.end())
+	{
+		for (TableEntry *alternateEntry
+			: Table::s_alternate[this][operandIndex])
+		{
+			if (dataType
+				== alternateEntry->m_exprInfo->m_operandDataType[operandIndex])
+			{
+				return alternateEntry;
+			}
+		}
+	}
+	return {};  // did not find an alternate code for data type
 }
 
 
@@ -1611,21 +1669,6 @@ DataType Table::operandDataType(Code code, int operand) const
 DataType Table::expectedDataType(Code code) const
 {
 	return s_expectedDataType.at(&m_entry[code]);
-}
-
-// temporary function to get alternate code
-Code Table::alternateCode(Code code, int index) const
-{
-	TableEntry *primary = &m_entry[code];
-	TableEntry *alternate = s_alternate[primary][index].front();
-	return Code(alternate - m_entry);
-}
-
-// temporary function to get count of alternate codes
-int Table::alternateCodeCount(Code code, int index) const
-{
-	TableEntry *primary = &m_entry[code];
-	return s_alternate[primary][index].size();
 }
 
 // returns the pointer to the translate function (if any) for code
@@ -1712,12 +1755,6 @@ DataType Table::expectedDataType(const TokenPtr &token) const
 	return expectedDataType(token->code());
 }
 
-// function to set a token for a code (code, token type and data type)
-void Table::setToken(Token *token, Code code)
-{
-	token->setCode(code);
-}
-
 // function to return text for an command, operator or function code in a token
 std::string Table::name(const TokenPtr &token) const
 {
@@ -1739,14 +1776,15 @@ std::string Table::name(const TokenPtr &token) const
 //   - if no alternate code, returns conversion code for data type
 //   - if no alternate code, throws error status
 
-Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
+TableEntry *Table::findCode(TokenPtr &token, TokenPtr &operandToken,
+	int operandIndex)
 {
 	DataType expectedDataType {operandDataType(token->code(), operandIndex)};
 
 	if (operandToken->dataType() == expectedDataType)     // exact match?
 	{
 		operandToken->removeSubCode(IntConst_SubCode);  // safe for any token
-		return Code{};
+		return {};
 	}
 
 	// check if constant should be converted to needed data type
@@ -1764,74 +1802,15 @@ Code Table::findCode(TokenPtr &token, TokenPtr &operandToken, int operandIndex)
 	}
 
 	// see if any alternate code's data types match
-	if (setTokenCode(token.get(), token->code(), operandToken->dataType(),
-		operandIndex))
+	if (TableEntry *entry = token->table()->alternate(operandIndex,
+		operandToken->dataType()))
 	{
-		return Code{};
+		token->setCode(entry->code());
+		return {};
 	}
 
 	// get a conversion code if no alternate code was found
 	return operandToken->convertCode(expectedDataType);
-}
-
-
-// function to set the code for a token for data type specified
-//
-//   - if the data type does not match the return data type of the code,
-//     then searchs alternate codes of the code if there are alternates
-//   - if no matching alternate code found, then sets to code
-//   - sets the code, type and data type of the token
-
-void Table::setTokenCode(Token *token, Code code, DataType dataType)
-{
-	if (dataType != returnDataType(code)
-		&& s_alternate.find(&m_entry[code]) != s_alternate.end())
-	{
-		for (auto alternateEntry : s_alternate[&m_entry[code]][0])
-		{
-			Code alternateCode = Code(alternateEntry - m_entry);
-			if (dataType == returnDataType(alternateCode))
-			{
-				code = alternateCode;
-				break;
-			}
-		}
-	}
-	token->setCode(code);  // use code if no alternate code found
-}
-
-
-// function to set the code for of token for the specified operand
-// appropriate for the data type specified
-//
-//   - if the data type does not match the operand data type of the code,
-//     then the associated codes of the code searched for a matching code
-//   - if there are no associated codes, or none is found, returns false
-//   - upon success, sets the code, type and data type of the token
-
-bool Table::setTokenCode(Token *token, Code code, DataType dataType,
-	int operandIndex)
-{
-	// first check if data type already matches data type of code
-	if (dataType == operandDataType(code, operandIndex))
-	{
-		setToken(token, code);
-		return true;
-	}
-	// if not, see if data type of any associated code matches
-	if (s_alternate.find(&m_entry[code]) != s_alternate.end())
-	{
-		for (auto alternateEntry : s_alternate[&m_entry[code]][operandIndex])
-		{
-			Code alternateCode = Code(alternateEntry - m_entry);
-			if (dataType == operandDataType(alternateCode, operandIndex))
-			{
-				setToken(token, alternateCode);
-				return true;
-			}
-		}
-	}
-	return false;  // did not find an alternate code for data type
 }
 
 
@@ -1843,6 +1822,13 @@ bool Table::setTokenCode(Token *token, Code code, DataType dataType,
 TableEntry *Table::entry(int index)
 {
 	return &tableEntries[index];
+}
+
+
+// function to return table entry pointer for a code index and data type
+TableEntry *Table::entry(int index, DataType dataType)
+{
+	return tableEntries[index].alternate(dataType);
 }
 
 

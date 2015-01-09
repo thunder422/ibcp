@@ -33,10 +33,10 @@ void inputTranslate(Translator &translator)
 {
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	TokenPtr token;
-	Code code = translator.table().alternateCode(commandToken->code(), 0);
+	TableEntry *entry = commandToken->table()->alternate(0);
 	if (translator.table().name2(commandToken->code()).empty())
 	{
-		token = std::make_shared<Token>(code);
+		token = std::make_shared<Token>(entry->code());
 	}
 	else  // InputPrompt_Code
 	{
@@ -62,7 +62,7 @@ void inputTranslate(Translator &translator)
 		{
 			throw TokenError {Status::ExpOpSemiOrComma, token};
 		}
-		token->setCode(code);  // reuse token
+		token->setCode(entry->code());  // reuse token
 	}
 
 	// append input begin and save iterator where to insert input parse codes
@@ -104,15 +104,13 @@ void inputTranslate(Translator &translator)
 		}
 
 		// change token to appropriate assign code and append to output
-		code = translator.table().alternateCode(commandToken->code(), 1);
-		translator.table().setToken(token.get(), code);
+		token->setCode(commandToken->table()->alternate(1)->code());
 		translator.processFinalOperand(token);
 
 		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
 		insertPoint = translator.outputInsert(insertPoint,
-			std::make_shared<Token>(translator.table()
-			.alternateCode(token->code(), 1)));
+			std::make_shared<Token>(token->table()->alternate(1)->code()));
 	}
 	while (!done);
 
