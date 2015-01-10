@@ -100,6 +100,25 @@ struct ExprInfo
 class TableEntry
 {
 public:
+	TableEntry(Type type, const std::string name, const std::string name2,
+		const std::string option, unsigned flags, int precedence,
+		ExprInfo *exprInfo, TranslateFunction _translate,
+		EncodeFunction _encode, OperandTextFunction _operandText,
+		RemoveFunction _remove, RecreateFunction _recreate) :
+		m_type {type},
+		m_name {name},
+		m_name2 {name2},
+		m_option {option},
+		m_flags {flags},
+		m_precedence {precedence},
+		m_exprInfo {exprInfo},
+		translate {_translate},
+		encode {_encode},
+		operandText {_operandText},
+		remove {_remove},
+		recreate {_recreate}
+		{}
+
 	Code code() const;
 	bool isCode(Code code)
 	{
@@ -109,24 +128,86 @@ public:
 	{
 		return m_type;
 	}
-	DataType dataType() const
-	{
-		return m_exprInfo->m_returnDataType;
-	}
 	std::string name() const
 	{
 		return m_name;
+	}
+	const std::string name2() const
+	{
+		return m_name2;
+	}
+	std::string commandName() const;
+	const std::string debugName() const
+	{
+		return m_name + m_name2;
+	}
+	const std::string optionName() const
+	{
+		return m_option;
 	}
 	bool hasFlag(unsigned flag) const
 	{
 		return m_flags & flag ? true : false;
 	}
-	TableEntry *alternate(DataType dataType);
+	int precedence() const
+	{
+		return m_precedence;
+	}
+	DataType returnDataType() const
+	{
+		return m_exprInfo->m_returnDataType;
+	}
+	int operandCount() const
+	{
+		return m_exprInfo->m_operandCount;
+	}
+	DataType operandDataType(int operandIndex) const
+	{
+		return m_exprInfo->m_operandDataType[operandIndex];
+	}
+	DataType expectedDataType();
+
+	bool isUnaryOperator() const
+	{
+		return m_type == Type::Operator && m_exprInfo->m_operandCount == 1;
+	}
+	bool isUnaryOrBinaryOperator() const
+	{
+		return m_type == Type::Operator && m_exprInfo->m_operandCount > 0;
+	}
+
+	TableEntry *alternate(DataType returnDataType);
 	int alternateCount(int operandIndex);
 	TableEntry *alternate(int operandIndex = 0);
-	TableEntry *alternate(int operandIndex, DataType dataType);
+	TableEntry *alternate(int operandIndex, DataType operandDataType);
 
-public:  // TODO make private once new table fully implemented
+	TranslateFunction translateFunction() const
+	{
+		return translate;
+	}
+	EncodeFunction encodeFunction() const
+	{
+		return encode;
+	}
+	bool hasOperand() const
+	{
+		return operandText;
+	}
+	OperandTextFunction operandTextFunction() const
+	{
+		return operandText;
+	}
+	RemoveFunction removeFunction() const
+	{
+		return remove;
+	}
+	RecreateFunction recreateFunction() const
+	{
+		return recreate;
+	}
+	friend class Table;
+
+private:
 	Type m_type;					// type of token for entry
 	const std::string m_name;		// name for table entry
 	const std::string m_name2;		// name of second word of command
@@ -148,36 +229,9 @@ public:
 	// function to return a reference to the single table instance
 	static Table &instance(void);
 
-	// CODE RELATED TABLE FUNCTIONS
-	Type type(Code code) const;
-	const std::string name(Code code) const;
-	const std::string name2(Code code) const;
-	const std::string optionName(Code code) const;
-	const std::string debugName(Code code) const;
-	bool hasFlag(Code code, unsigned flag) const;
-	int precedence(Code code) const;
-	DataType returnDataType(Code code) const;
-	int operandCount(Code code) const;
-	DataType operandDataType(Code code, int operand) const;
-	DataType expectedDataType(Code code) const;
-
-	TranslateFunction translateFunction(Code code) const;
-	EncodeFunction encodeFunction(Code code) const;
-	bool hasOperand(Code code) const;
-	OperandTextFunction operandTextFunction(Code code) const;
-	RemoveFunction removeFunction(Code code) const;
-	RecreateFunction recreateFunction(Code code) const;
-
 	// TOKEN RELATED TABLE FUNCTIONS
-	bool isUnaryOperator(const TokenPtr &token) const;
-	bool isUnaryOrBinaryOperator(const TokenPtr &token) const;
-	int precedence(const TokenPtr &token) const;
-	bool hasFlag(const TokenPtr &token, unsigned flag) const;
-	int operandCount(const TokenPtr &token) const;
-	DataType expectedDataType(const TokenPtr &token) const;
 	TableEntry *findCode(TokenPtr &token, TokenPtr &operandToken,
 		int operandIndex = 0);
-	std::string name(const TokenPtr &token) const;
 
 	// TABLE SPECIFIC FUNCTIONS
 	static TableEntry *entry(int index);

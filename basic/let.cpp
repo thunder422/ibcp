@@ -92,8 +92,7 @@ void letTranslate(Translator &translator)
 
 		// check if this is a sub-string assignment
 		TokenPtr token;
-		if (translator.table().hasFlag(translator.doneStackTopToken(),
-			SubStr_Flag))
+		if (translator.doneStackTopToken()->hasFlag(SubStr_Flag))
 		{
 			// get sub-string function token from rpn item on top of stack
 			// (delete rpn item since it was not appended to output)
@@ -138,7 +137,7 @@ void letTranslate(Translator &translator)
 	}
 
 	// check terminating token for end-of-statement
-	if (!translator.table().hasFlag(translator.token(), EndStmt_Flag))
+	if (!translator.token()->hasFlag(EndStmt_Flag))
 	{
 		throw TokenError {Status::ExpOpOrEnd, translator.token()};
 	}
@@ -185,7 +184,7 @@ void letRecreate(Recreator &recreator, TokenPtr token)
 {
 	if (token->hasSubCode(Option_SubCode))
 	{
-		recreator.append(recreator.table().optionName(token->code()) + ' ');
+		recreator.append(token->table()->optionName() + ' ');
 	}
 }
 
@@ -196,8 +195,7 @@ void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	std::stack<std::string> stack;
 
 	stack.emplace(recreator.popString());  // push value
-	std::string separator = ' ' + recreator.table().name(rpnItem->token())
-		+ ' ';
+	std::string separator = ' ' + rpnItem->token()->table()->name() + ' ';
 	while (!recreator.empty())
 	{
 		stack.emplace(recreator.popString() + separator);
@@ -220,7 +218,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// check if this first assign code
 	if (!recreator.separatorIsSet())
 	{
-		string = ' ' + recreator.table().name(Assign_Code) + ' ';
+		string = ' ' + Table::entry(Eq_Code)->name() + ' ';
 		recreator.setSeparator(',');
 	}
 	else  // continuation of assignment list
@@ -230,16 +228,16 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	}
 	string.append(recreator.popString());
 
-	Code code {rpnItem->token()->code()};
-	if (recreator.table().hasFlag(code, SubStr_Flag))
+	TableEntry *entry {rpnItem->token()->table()};
+	if (entry->hasFlag(SubStr_Flag))
 	{
 		// for sub-string assignments, treat as function to recreate
-		recreator.pushWithOperands(std::string{recreator.table().name(code)},
-			recreator.table().operandCount(code));
+		recreator.pushWithOperands(std::string{entry->name()},
+			entry->operandCount());
 	}
 
 	// deterine if assignment is an sub-string assignment keep code
-	if (recreator.table().hasFlag(code, Keep_Flag))
+	if (entry->hasFlag(Keep_Flag))
 	{
 		// for keep codes, append string so far to reference string on stack
 		recreator.topAppend(std::move(string));

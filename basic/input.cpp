@@ -34,7 +34,7 @@ void inputTranslate(Translator &translator)
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	TokenPtr token;
 	TableEntry *entry = commandToken->table()->alternate(0);
-	if (translator.table().name2(commandToken->code()).empty())
+	if (commandToken->table()->name2().empty())
 	{
 		token = std::make_shared<Token>(entry->code());
 	}
@@ -94,7 +94,7 @@ void inputTranslate(Translator &translator)
 		else  // possible end-of-statement
 		{
 			// check terminating token for end-of-statement
-			if (!translator.table().hasFlag(translator.token(), EndStmt_Flag))
+			if (!translator.token()->hasFlag(EndStmt_Flag))
 			{
 				throw TokenError {Status::ExpCommaSemiOrEnd,
 					translator.token()};
@@ -148,7 +148,7 @@ void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the input command code
 void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	recreator.append(recreator.table().name(rpnItem->token()));
+	recreator.append(rpnItem->token()->table()->commandName());
 	// FLAG option: all spaces after commands (default=yes)
 	recreator.append(' ');
 	recreator.append(recreator.popString());

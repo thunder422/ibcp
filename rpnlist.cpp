@@ -61,7 +61,7 @@ bool RpnList::operator==(const RpnList &other) const
 //   - sets code size required for encoded line
 //   - upon error returns token of code not yet implemented
 
-bool RpnList::setCodeSize(Table &table, TokenPtr &token)
+bool RpnList::setCodeSize(TokenPtr &token)
 {
 	// count number of program words needed
 	m_codeSize = 0;
@@ -70,7 +70,7 @@ bool RpnList::setCodeSize(Table &table, TokenPtr &token)
 		// assign position index to tokens (increment count for instruction)
 		token = rpnItem->token();
 		token->setIndex(m_codeSize++);
-		if (table.hasOperand(token->code()))
+		if (token->table()->hasOperand())
 		{
 			m_codeSize++;  // increment count for operand
 		}

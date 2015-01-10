@@ -1362,7 +1362,7 @@ void Table::add(TableEntry &entry)
 	int index = &entry - m_entry;
 
 	// is code two-words?
-	if (hasFlag((Code)index, Two_Flag) && !entry.m_name2.empty())
+	if (entry.hasFlag(Two_Flag) && !entry.m_name2.empty())
 	{
 		std::string name {entry.m_name + ' ' + entry.m_name2};
 		auto iterator = s_nameToEntry.find(name);
@@ -1398,8 +1398,7 @@ void Table::add(TableEntry &entry)
 			return;  // primary code, nothing more to do
 		}
 		ExprInfo *exprInfo {entry.m_exprInfo};
-		if (exprInfo->m_operandCount > 0
-			&& !hasFlag((Code)index, Reference_Flag))
+		if (exprInfo->m_operandCount > 0 && !entry.hasFlag(Reference_Flag))
 		{
 			TableEntry *primary = iterator->second;
 
@@ -1536,20 +1535,35 @@ Code TableEntry::code() const
 	return Code(this - tableEntries);
 }
 
+std::string TableEntry::commandName() const
+{
+	std::string string {m_name};
+	if (hasFlag(Two_Flag) && !m_name2.empty())
+	{
+		string += ' ' + m_name2;
+	}
+	return string;
+}
+
+DataType TableEntry::expectedDataType()
+{
+	return Table::s_expectedDataType.at(this);
+}
+
 // function to get an alternate table entry for the data type specified
 //
 //   - if the data type does not match the return data type of the entry,
 //     then searches its alternates if there are any
 //   - if no matching alternate entry found, then returns the entry
 
-TableEntry *TableEntry::alternate(DataType dataType)
+TableEntry *TableEntry::alternate(DataType returnDataType)
 {
-	if (dataType != m_exprInfo->m_returnDataType
+	if (returnDataType != m_exprInfo->m_returnDataType
 		&& Table::s_alternate.find(this) != Table::s_alternate.end())
 	{
 		for (TableEntry *alternateEntry : Table::s_alternate[this][0])
 		{
-			if (dataType == alternateEntry->dataType())
+			if (returnDataType == alternateEntry->returnDataType())
 			{
 				return alternateEntry;
 			}
@@ -1577,10 +1591,10 @@ TableEntry *TableEntry::alternate(int operandIndex)
 //   - if there are no alternate codes, or none is found, returns null
 //   - upon success, returns alternate code table entry
 
-TableEntry *TableEntry::alternate(int operandIndex, DataType dataType)
+TableEntry *TableEntry::alternate(int operandIndex, DataType operandDataType)
 {
 	// first check if data type already matches data type of code
-	if (dataType == m_exprInfo->m_operandDataType[operandIndex])
+	if (operandDataType == m_exprInfo->m_operandDataType[operandIndex])
 	{
 		return this;
 	}
@@ -1590,7 +1604,7 @@ TableEntry *TableEntry::alternate(int operandIndex, DataType dataType)
 		for (TableEntry *alternateEntry
 			: Table::s_alternate[this][operandIndex])
 		{
-			if (dataType
+			if (operandDataType
 				== alternateEntry->m_exprInfo->m_operandDataType[operandIndex])
 			{
 				return alternateEntry;
@@ -1601,172 +1615,9 @@ TableEntry *TableEntry::alternate(int operandIndex, DataType dataType)
 }
 
 
-//================================
-//  CODE RELATED TABLE FUNCTIONS
-//================================
-
-// returns token type for code
-Type Table::type(Code code) const
-{
-	return m_entry[code].m_type;
-}
-
-// returns primary name for code
-const std::string Table::name(Code code) const
-{
-	return m_entry[code].m_name;
-}
-
-// returns second name of a two word command for code
-const std::string Table::name2(Code code) const
-{
-	return m_entry[code].m_name2;
-}
-
-const std::string Table::optionName(Code code) const
-{
-	return m_entry[code].m_option;
-}
-
-// returns the debug name for code, which is the primary name
-// except for internal functions with multiple argument footprints
-const std::string Table::debugName(Code code) const
-{
-	return m_entry[code].m_name + m_entry[code].m_name2;
-}
-
-// returns if the flag is set to the code
-bool Table::hasFlag(Code code, unsigned flag) const
-{
-	return m_entry[code].m_flags & flag ? true : false;
-}
-
-// returns the precedence for code
-int Table::precedence(Code code) const
-{
-	return m_entry[code].m_precedence;
-}
-
-// returns data type for code
-DataType Table::returnDataType(Code code) const
-{
-	return m_entry[code].m_exprInfo->m_returnDataType;
-}
-
-// returns the number of operators (arguments) for code
-int Table::operandCount(Code code) const
-{
-	return m_entry[code].m_exprInfo->m_operandCount;
-}
-
-// returns the data type for a specific operator for code
-DataType Table::operandDataType(Code code, int operand) const
-{
-	return m_entry[code].m_exprInfo->m_operandDataType[operand];
-}
-
-// returns the expected data type for table entry
-DataType Table::expectedDataType(Code code) const
-{
-	return s_expectedDataType.at(&m_entry[code]);
-}
-
-// returns the pointer to the translate function (if any) for code
-TranslateFunction Table::translateFunction(Code code) const
-{
-	return m_entry[code].translate;
-}
-
-// returns the pointer to the encode function (if any) for code
-EncodeFunction Table::encodeFunction(Code code) const
-{
-	return m_entry[code].encode;
-}
-
-// returns whether the code has an operand
-bool Table::hasOperand(Code code) const
-{
-	return m_entry[code].operandText;
-}
-
-// returns the pointer to the operand text function (if any) for code
-OperandTextFunction Table::operandTextFunction(Code code) const
-{
-	return m_entry[code].operandText;
-}
-
-// returns the pointer to the remove function (if any) for code
-RemoveFunction Table::removeFunction(Code code) const
-{
-	return m_entry[code].remove;
-}
-
-// returns the pointer to the recreate function (if any) for code
-RecreateFunction Table::recreateFunction(Code code) const
-{
-	return m_entry[code].recreate;
-}
-
 //=================================
 //  TOKEN RELATED TABLE FUNCTIONS
 //=================================
-
-// returns whether the token contains a unary operator code
-// (convenience function to avoid confusion)
-bool Table::isUnaryOperator(const TokenPtr &token) const
-{
-	return token->isType(Type::Operator) ? operandCount(token) == 1 : false;
-}
-
-// returns whether the token is a unary or binary operator
-// (token type must be operator and have operands)
-bool Table::isUnaryOrBinaryOperator(const TokenPtr &token) const
-{
-	return token->isType(Type::Operator) ? operandCount(token) > 0 : false;
-}
-
-// returns the precedence of the code contained in a token
-//
-//   - the precedence is obtained from the token
-//   - if this is -1 then the precedences if obtained for the token's code
-int Table::precedence(const TokenPtr &token) const
-{
-	return precedence(token->code());
-}
-
-// returns the flags of the code contained in a token
-//
-//   - returns default table flag if the token does not contain a code
-bool Table::hasFlag(const TokenPtr &token, unsigned flag) const
-{
-	// (invalid code tokens have no flags)
-	return hasFlag(token->code(), flag);
-}
-
-// returns number of operands expected for code in token token
-int Table::operandCount(const TokenPtr &token) const
-{
-	return operandCount(token->code());
-}
-
-// returns the expected data type for table entry in token
-DataType Table::expectedDataType(const TokenPtr &token) const
-{
-	return expectedDataType(token->code());
-}
-
-// function to return text for an command, operator or function code in a token
-std::string Table::name(const TokenPtr &token) const
-{
-	TableEntry &entry = m_entry[token->code()];
-	std::string string {entry.m_name};
-	if (hasFlag(token, Two_Flag) && !entry.m_name2.empty())
-	{
-		string += ' ' + entry.m_name2;
-	}
-	return string;
-}
-
 
 // function to find and set code in token for a data type
 // and possibly return a conversion code if data type is convertible
@@ -1779,7 +1630,7 @@ std::string Table::name(const TokenPtr &token) const
 TableEntry *Table::findCode(TokenPtr &token, TokenPtr &operandToken,
 	int operandIndex)
 {
-	DataType expectedDataType {operandDataType(token->code(), operandIndex)};
+	DataType expectedDataType {token->table()->operandDataType(operandIndex)};
 
 	if (operandToken->dataType() == expectedDataType)     // exact match?
 	{
@@ -1788,8 +1639,8 @@ TableEntry *Table::findCode(TokenPtr &token, TokenPtr &operandToken,
 	}
 
 	// check if constant should be converted to needed data type
-	if (operandIndex == operandCount(token) - 1      // last operand?
-		&& !hasFlag(token, UseConstAsIs_Flag))
+	if (operandIndex == token->table()->operandCount() - 1   // last operand?
+		&& !token->hasFlag(UseConstAsIs_Flag))
 	try
 	{
 		operandToken->convertConstant(expectedDataType);

@@ -31,6 +31,7 @@
 #include "rpnlist.h"
 
 class Table;
+class TableEntry;
 class TokenError;
 
 
@@ -133,7 +134,7 @@ private:
 	enum class Popped {No, Yes};
 	void checkPendingParen(const TokenPtr &token, Popped popped) noexcept;
 	Status expressionErrorStatus(bool lastOperand, bool unaryOperator,
-		Code code) noexcept;
+		TableEntry *entry) noexcept;
 
 	struct HoldItem
 	{

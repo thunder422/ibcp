@@ -93,12 +93,11 @@ public:
 		m_length = length;
 	}
 
+	// table access functions
 	TableEntry *table() const
 	{
 		return Table::entry(m_code);
 	}
-
-	// type access functions
 	Type type(void) const
 	{
 		return table()->type();
@@ -107,22 +106,30 @@ public:
 	{
 		return type == table()->type();
 	}
+	bool hasFlag(unsigned flag) const
+	{
+		return table()->hasFlag(flag);
+	}
+	int precedence() const
+	{
+		return table()->precedence();
+	}
 
 	// data type access functions
 	DataType dataType() const
 	{
-		return table()->dataType();
+		return table()->returnDataType();
 	}
 	bool isDataType(DataType dataType) const
 	{
-		return dataType == table()->dataType();
+		return dataType == table()->returnDataType();
 	}
 	bool isDataTypeCompatible(DataType dataType)
 	{
 		// check if token data type is compatible with desired data type
-		return dataType == table()->dataType()
+		return dataType == table()->returnDataType()
 			|| (dataType == DataType::Number
-			&& table()->dataType() != DataType::String)
+			&& table()->returnDataType() != DataType::String)
 			|| dataType == DataType::Any || dataType == DataType::None;
 	}
 

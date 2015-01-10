@@ -100,7 +100,7 @@ RpnList Translator::operator()(TestMode testMode)
 		}
 
 		if (testMode == TestMode::No
-			&& !m_output.setCodeSize(m_table, m_token))
+			&& !m_output.setCodeSize(m_token))
 		{
 			throw TokenError {Status::BUG_NotYetImplemented, m_token};
 		}
@@ -151,9 +151,9 @@ void Translator::getCommands()
 		}
 
 		// process command (assume assignment statement if not command token)
-		if (TranslateFunction translate =
-			m_table.translateFunction(m_token->isType(Type::Command)
-			? m_token->code() : Let_Code))
+		if (TranslateFunction translate = m_token->isType(Type::Command)
+			? m_token->table()->translateFunction()
+			: Table::entry(Let_Code)->translateFunction())
 		{
 			(*translate)(*this);
 		}
@@ -246,12 +246,12 @@ void Translator::getExpression(DataType dataType, int level)
 			// (no operators in the parentheses)
 			topToken = m_doneStack.top().rpnItem->token();
 			m_lastPrecedence = topToken->isType(Type::Operator)
-				? m_table.precedence(topToken) : HighestPrecedence;
+				? topToken->precedence() : HighestPrecedence;
 
 			// set pending parentheses token pointer
 			m_pendingParen = std::move(m_token);
 		}
-		else if (!m_table.isUnaryOperator(m_token))
+		else if (!m_token->table()->isUnaryOperator())
 		{
 			if (!getOperand(expectedDataType))
 			{
@@ -277,7 +277,7 @@ void Translator::getExpression(DataType dataType, int level)
 				break;
 			}
 			// check for unary operator (token should be a binary operator)
-			if (m_table.isUnaryOperator(m_token))
+			if (m_token->table()->isUnaryOperator())
 			{
 				// check if code has a binary operator
 				if (m_token->table()->alternateCount(1) > 0)
@@ -313,7 +313,7 @@ void Translator::getExpression(DataType dataType, int level)
 		}
 
 		// get operator's expected data type (was pushed on hold stack)
-		expectedDataType = m_table.expectedDataType(m_holdStack.top().token);
+		expectedDataType = m_holdStack.top().token->table()->expectedDataType();
 	}
 }
 
@@ -355,8 +355,7 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	case Type::IntFunc:
 		if (reference != Reference::None)
 		{
-			if (reference != Reference::All
-				|| !m_table.hasFlag(m_token, SubStr_Flag))
+			if (reference != Reference::All || !m_token->hasFlag(SubStr_Flag))
 			{
 				throw TokenError {expectedErrorStatus(dataType, reference),
 					std::move(m_token)};
@@ -368,7 +367,7 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 			throw TokenError {expectedErrorStatus(dataType),
 				std::move(m_token)};
 		}
-		if (m_table.operandCount(m_token) > 0)
+		if (m_token->table()->operandCount() > 0)
 		{
 			processInternalFunction(reference);
 			doneAppend = false;  // already appended
@@ -476,8 +475,7 @@ void Translator::processInternalFunction(Reference reference)
 	TokenPtr topToken {std::move(m_token)};
 	m_holdStack.emplace(topToken);
 
-	Code code {topToken->code()};
-	int lastOperand {m_table.operandCount(code) - 1};
+	int lastOperand {topToken->table()->operandCount() - 1};
 	for (int i {}; ; i++)
 	{
 		DataType expectedDataType;
@@ -496,8 +494,8 @@ void Translator::processInternalFunction(Reference reference)
 		}
 		else
 		{
-			expectedDataType = i == 0 ? m_table.expectedDataType(topToken)
-				: m_table.operandDataType(code, i);
+			expectedDataType = i == 0 ? topToken->table()->expectedDataType()
+				: topToken->table()->operandDataType(i);
 			try
 			{
 				getExpression(expectedDataType);
@@ -507,13 +505,14 @@ void Translator::processInternalFunction(Reference reference)
 				if (error(Status::ExpBinOpOrEnd))  // (aka unary operator?)
 				{
 					// determine error for unary operator token
-					error = expressionErrorStatus(i == lastOperand, true, code);
+					error = expressionErrorStatus(i == lastOperand, true,
+						topToken->table());
 				}
 				else if (error(Status::UnknownToken))
 				{
 					// determine error for unknown tokens
 					error = expressionErrorStatus(i == lastOperand, false,
-						code);
+						topToken->table());
 				}
 				throw;
 			}
@@ -523,8 +522,7 @@ void Translator::processInternalFunction(Reference reference)
 		if (expectedDataType == DataType::Number)
 		{
 			TokenPtr &token = m_doneStack.top().rpnItem->token();
-			if (token->dataType()
-				!= m_table.operandDataType(topToken->code(), 0))
+			if (token->dataType() != topToken->table()->operandDataType(0))
 			{
 				topToken->setFirstAlternate(0);
 			}
@@ -536,14 +534,13 @@ void Translator::processInternalFunction(Reference reference)
 		{
 			if (i == lastOperand)
 			{
-				if (!m_table.hasFlag(code, Multiple_Flag))
+				if (!topToken->hasFlag(Multiple_Flag))
 				{
 					// function doesn't have multiple entries
 					throw TokenError {Status::ExpOpOrParen, m_token};
 				}
 				// get second alternate code; update code and last operand
-				code = topToken->table()->alternate(++lastOperand)->code();
-				topToken->setCode(code);
+				topToken->setFirstAlternate(++lastOperand);
 			}
 			m_token.reset();  // delete comma token, it's not needed
 			m_doneStack.pop();
@@ -579,7 +576,7 @@ void Translator::processInternalFunction(Reference reference)
 		{
 			// determine error for unknown tokens
 			throw TokenError {expressionErrorStatus(i == lastOperand, false,
-				code), m_token};
+				topToken->table()), m_token};
 		}
 	}
 }
@@ -711,32 +708,32 @@ bool Translator::processOperator()
 	// determine precedence of incoming token
 	// (set highest precedence for unary operators,
 	// which don't force other operators from hold stack)
-	int tokenPrecedence {m_table.isUnaryOperator(m_token)
-		? HighestPrecedence : m_table.precedence(m_token)};
+	int tokenPrecedence {m_token->table()->isUnaryOperator()
+		? HighestPrecedence : m_token->precedence()};
 
 	// process and drop unary or binary operators on hold stack
 	// while they have higher or same precedence as incoming token
 	TokenPtr topToken;
-	while (m_table.precedence(topToken = m_holdStack.top().token)
-		>= tokenPrecedence && m_table.isUnaryOrBinaryOperator(topToken))
+	while ((topToken = m_holdStack.top().token)->precedence() >= tokenPrecedence
+		&& topToken->table()->isUnaryOrBinaryOperator())
 	{
 		checkPendingParen(topToken, Popped::Yes);
 
 		// change token operator code or insert conversion codes as needed
 		processFinalOperand(topToken, std::move(m_holdStack.top().first),
-			m_table.isUnaryOperator(topToken) ? 0 : 1);
+			topToken->table()->isUnaryOperator() ? 0 : 1);
 
 		// save precedence of operator being added
 		// (doesn't matter if not currently within parentheses,
 		// it will be reset upon next open parentheses)
-		m_lastPrecedence = m_table.precedence(topToken->code());
+		m_lastPrecedence = topToken->precedence();
 
 		m_holdStack.pop();
 	}
 
 	checkPendingParen(m_token, Popped::No);
 
-	if (!m_table.isUnaryOrBinaryOperator(m_token))
+	if (!m_token->table()->isUnaryOrBinaryOperator())
 	{
 		return false;  // not unary or binary operator, end of expression
 	}
@@ -744,7 +741,7 @@ bool Translator::processOperator()
 	TokenPtr first;			// first operand token (empty for unary operator)
 
 	// check first operand of binary operators
-	if (!m_table.isUnaryOperator(m_token))
+	if (!m_token->table()->isUnaryOperator())
 	{
 		// changed token operator code or insert conversion codes as needed
 		processDoneStackTop(m_token, 0, &first);
@@ -881,7 +878,7 @@ void Translator::checkPendingParen(const TokenPtr &token, Popped popped)
 		// may need to add a dummy token if the precedence of the last
 		// operator added within the last parentheses sub-expression
 		// is higher than or same as (popped tokens only) the operator
-		int precedence {m_table.precedence(token)};
+		int precedence {token->precedence()};
 		if (m_lastPrecedence > precedence
 			|| (popped == Popped::No && m_lastPrecedence == precedence))
 		{
@@ -974,13 +971,13 @@ Status Translator::expectedErrorStatus(DataType dataType, Reference reference)
 
 // function to determine error status for an expression error
 Status Translator::expressionErrorStatus(bool lastOperand, bool unaryOperator,
-	Code code) noexcept
+	TableEntry *entry) noexcept
 {
 	if (!lastOperand)
 	{
 		return unaryOperator ? Status::ExpBinOpOrComma : Status::ExpOpOrComma;
 	}
-	else if (!m_table.hasFlag(code, Multiple_Flag))
+	else if (!entry->hasFlag(Multiple_Flag))
 	{
 		// function doesn't have multiple entries
 		return unaryOperator ? Status::ExpBinOpOrParen : Status::ExpOpOrParen;

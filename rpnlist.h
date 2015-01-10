@@ -144,7 +144,7 @@ public:
 	{
 		return m_codeSize;
 	}
-	bool setCodeSize(Table &table, TokenPtr &token);
+	bool setCodeSize(TokenPtr &token);
 
 private:
 	RpnItemList m_list;				// list of rpn items

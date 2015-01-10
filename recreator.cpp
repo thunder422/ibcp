@@ -43,7 +43,7 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 	for (RpnItemPtr rpnItem : rpnList)
 	{
 		RecreateFunction recreate;
-		if (!(recreate = m_table.recreateFunction(rpnItem->token()->code())))
+		if (!(recreate = rpnItem->token()->table()->recreateFunction()))
 		{
 			// if no recreate function, then it is missing from table
 			emplace('?' + rpnItem->token()->string() + '?');
@@ -53,7 +53,7 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 			recreate(*this, rpnItem);
 		}
 		bool command = rpnItem->token()->isType(Type::Command)
-			|| m_table.hasFlag(rpnItem->token(), Command_Flag);
+			|| rpnItem->token()->hasFlag(Command_Flag);
 		if (!command && rpnItem->token()->hasSubCode(Paren_SubCode))
 		{
 			parenRecreate(*this, rpnItem);
@@ -136,7 +136,7 @@ void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate a unary operator
 void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	int precedence {recreator.table().precedence(rpnItem->token()->code())};
+	int precedence {rpnItem->token()->precedence()};
 
 	// get string of operand from stack
 	// (add parens if item on top of the stack is not a unary operator
@@ -145,7 +145,7 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 		&& precedence > recreator.topPrecedence())};
 
 	// get string for operator
-	std::string string {recreator.table().name(rpnItem->token())};
+	std::string string {rpnItem->token()->table()->name()};
 	// if operator is a plain word operator or operand is a number,
 	//  then need to add a space
 	if (isalpha(string.back())
@@ -165,7 +165,7 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	std::string string;
-	int precedence {recreator.table().precedence(rpnItem->token()->code())};
+	int precedence {rpnItem->token()->precedence()};
 
 	// get string of second operand
 	// (add parens if operator precedence is higher than or same as operand
@@ -176,7 +176,7 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// get string of operator with spaces, append to first operand
 	// (add parens if operator precendence is higher than the operand)
 	string = recreator.popWithParens(precedence > recreator.topPrecedence())
-		+ ' ' + recreator.table().name(rpnItem->token()) + ' ' + string;
+		+ ' ' + rpnItem->token()->table()->name() + ' ' + string;
 
 	// push operator expression back to stack with precedence of operator
 	recreator.emplace(string, precedence);
@@ -195,8 +195,8 @@ void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an internal function
 void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	recreator.pushWithOperands(recreator.table().name(rpnItem->token()),
-		recreator.table().operandCount(rpnItem->token()));
+	TableEntry *entry {rpnItem->token()->table()};
+	recreator.pushWithOperands(entry->name(), entry->operandCount());
 }
 
 
@@ -244,7 +244,7 @@ void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to do nothing (for hidden codes)
 void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	std::string string {recreator.table().name(rpnItem->token())};
+	std::string string {rpnItem->token()->table()->name()};
 	std::string remark {rpnItem->token()->string()};
 	if (islower(remark.front()))
 	{

@@ -101,7 +101,7 @@ void printTranslate(Translator &translator)
 		}
 		else  // some other token, maybe end-of-statement
 		{
-			if (!translator.table().hasFlag(translator.token(), EndStmt_Flag))
+			if (!translator.token()->hasFlag(EndStmt_Flag))
 			{
 				throw TokenError {printFunction ? Status::ExpSemiCommaOrEnd
 					: Status::ExpOpSemiCommaOrEnd, translator.token()};
@@ -168,7 +168,7 @@ void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 	// append comma to string and push it back to the stack
 	// FLAG option: space after print commas (default=no)
-	string += recreator.table().name(rpnItem->token()->code());
+	string += rpnItem->token()->table()->name();
 	recreator.emplace(string);
 
 	// set separator to space (used to not add spaces 'between' commas)
@@ -189,7 +189,7 @@ void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// append final semicolon to string on top of stack then recreate command
-	std::string name {recreator.table().name(rpnItem->token()->code())};
+	std::string name {rpnItem->token()->table()->name()};
 	recreator.topAppend(std::move(name));
 
 	Code printCode = rpnItem->token()->table()->alternate()->code();
@@ -203,7 +203,7 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// append PRINT keyword
-	std::string name {recreator.table().name(rpnItem->token()->code())};
+	std::string name {rpnItem->token()->table()->name()};
 	recreator.append(std::move(name));
 
 	// if stack is not empty then append space with string on top of stack

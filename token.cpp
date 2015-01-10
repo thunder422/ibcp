@@ -96,12 +96,12 @@ bool Token::convertConstant(DataType dataType)
 	}
 	if (dataType == DataType::Double)
 	{
-		if (table()->dataType() == DataType::Double)
+		if (table()->returnDataType() == DataType::Double)
 		{
 			removeSubCode(IntConst_SubCode);
 			return true;
 		}
-		if (table()->dataType() != DataType::Integer)
+		if (table()->returnDataType() != DataType::Integer)
 		{
 			return false;
 		}
@@ -109,7 +109,7 @@ bool Token::convertConstant(DataType dataType)
 	}
 	else if (dataType == DataType::Integer)
 	{
-		if (table()->dataType() == DataType::Double)
+		if (table()->returnDataType() == DataType::Double)
 		{
 			if (!hasSubCode(IntConst_SubCode))
 			{
@@ -120,7 +120,7 @@ bool Token::convertConstant(DataType dataType)
 		}
 		else
 		{
-			return table()->dataType() == DataType::Integer;
+			return table()->returnDataType() == DataType::Integer;
 		}
 	}
 	else
@@ -139,19 +139,19 @@ bool Token::convertConstant(DataType dataType)
 //   - throws error status if cannot be converted
 TableEntry *Token::convertCode(DataType dataType)
 {
-	if (!convertConstant(dataType) && table()->dataType() != dataType)
+	if (!convertConstant(dataType) && table()->returnDataType() != dataType)
 	{
 		switch (dataType)
 		{
 		case DataType::Double:
-			if (table()->dataType() != DataType::Integer)
+			if (table()->returnDataType() != DataType::Integer)
 			{
 				throw Status::ExpNumExpr;
 			}
 			return Table::entry(CvtDbl_Code);
 
 		case DataType::Integer:
-			if (table()->dataType() != DataType::Double)
+			if (table()->returnDataType() != DataType::Double)
 			{
 				throw Status::ExpNumExpr;
 			}
@@ -161,7 +161,7 @@ TableEntry *Token::convertCode(DataType dataType)
 			throw Status::ExpStrExpr;
 
 		case DataType::Number:
-			if (table()->dataType() == DataType::String)
+			if (table()->returnDataType() == DataType::String)
 			{
 				throw Status::ExpNumExpr;
 			}

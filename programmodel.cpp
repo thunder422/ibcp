@@ -39,23 +39,21 @@
 // overloaded output stream operator for contents of an instruction word
 std::ostream &operator<<(std::ostream &os, ProgramWord word)
 {
-	Table &table = Table::instance();
-
-	Code code {word.instructionCode()};
-	os << table.debugName(code);
+	TableEntry *entry {Table::entry(word.instructionCode())};
+	os << entry->debugName();
 
 	if (word.instructionHasSubCode(ProgramMask_SubCode))
 	{
 		os << '\'';
-		bool command = table.type(code) == Type::Command
-			|| table.hasFlag(code, Command_Flag);
+		bool command = entry->type() == Type::Command
+			|| entry->hasFlag(Command_Flag);
 		if (!command && word.instructionHasSubCode(Paren_SubCode))
 		{
 			os << ')';
 		}
 		if (word.instructionHasSubCode(Option_SubCode))
 		{
-			std::string option {table.optionName(code)};
+			std::string option {entry->optionName()};
 			os << (option.empty() ? "BUG" : option);
 		}
 		if (command && word.instructionHasSubCode(Colon_SubCode))
@@ -118,7 +116,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << i << ':' << line[i];
 
 		Code code {line[i].instructionCode()};
-		if (auto operandText = m_table.operandTextFunction(code))
+		if (auto operandText = Table::entry(code)->operandTextFunction())
 		{
 			SubCode subCode {line[i].instructionSubCode()};
 			const std::string operand {operandText(this, line[++i].operand(),
@@ -592,7 +590,7 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 	{
 		TokenPtr token {rpnItem->token()};
 		programLine.emplace_back(token->code(), token->subCodes());
-		if (auto encode = m_table.encodeFunction(token->code()))
+		if (auto encode = token->table()->encodeFunction())
 		{
 			programLine.emplace_back(encode(this, token));
 		}
@@ -608,7 +606,7 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 	for (int i {}; i < lineInfo.size; i++)
 	{
 		Code code {line[i].instructionCode()};
-		if (auto remove = m_table.removeFunction(code))
+		if (auto remove = Table::entry(code)->removeFunction())
 		{
 			remove(this, line[++i].operand());
 		}
@@ -626,7 +624,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 		TokenPtr token {std::make_shared<Token>(line[i].instructionCode())};
 		token->addSubCode(line[i].instructionSubCode());
 
-		if (auto operandText = m_table.operandTextFunction(token->code()))
+		if (auto operandText = token->table()->operandTextFunction())
 		{
 			token->setString(operandText(this, line[++i].operand(),
 				Ignore_SubCode));  // don't add data type character to token

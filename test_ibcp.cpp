@@ -37,14 +37,13 @@
 // overloaded output stream operator for abbreviated contents of a token
 std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 {
-	Table &table = Table::instance();
 	bool second {};
 
 	switch (token->type())
 	{
 	case Type::NoParen:
 		os << token->stringWithDataType();
-		if (table.hasFlag(token->code(), Reference_Flag))
+		if (token->table()->hasFlag(Reference_Flag))
 		{
 			os << "<ref>";
 		}
@@ -85,34 +84,34 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	case Type::Operator:
 		if (token->isCode(RemOp_Code))
 		{
-			os << table.name(token->code());
+			os << token->table()->name();
 			second = true;
 		}
 		else
 		{
-			os << table.debugName(token->code());
+			os << token->table()->debugName();
 		}
 		break;
 
 	case Type::Command:
 		if (token->isCode(Rem_Code))
 		{
-			os << table.name(token->code());
+			os << token->table()->name();
 			second = true;
 		}
 		else
 		{
-			os << table.name(token->code());
-			if (!table.name2(token->code()).empty())
+			os << token->table()->name();
+			if (!token->table()->name2().empty())
 			{
-				os << '-' << table.name2(token->code());
+				os << '-' << token->table()->name2();
 			}
 		}
 		break;
 
 	default:
 		// output debug name by default
-		os << table.debugName(token->code());
+		os << token->table()->debugName();
 		break;
 	}
 	if (token->reference())
@@ -123,14 +122,14 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	{
 		os << '\'';
 		bool command = token->isType(Type::Command)
-			|| table.hasFlag(token, Command_Flag);
+			|| token->hasFlag(Command_Flag);
 		if (!command && token->hasSubCode(Paren_SubCode))
 		{
 			os << ')';
 		}
 		if (token->hasSubCode(Option_SubCode))
 		{
-			std::string option {table.optionName(token->code())};
+			std::string option {token->table()->optionName()};
 			if (option.empty())
 			{
 				os << "BUG";
@@ -677,8 +676,6 @@ static const char *tokenTypeName(Type type)
 // function to print the contents of a token
 void Tester::printToken(const TokenPtr &token)
 {
-	Table &table = Table::instance();
-
 	m_cout << '\t' << std::setw(2) << std::right << token->column() << std::left
 		<< ": " << std::setw(10) << tokenTypeName(token->type());
 	switch (token->type())
@@ -689,7 +686,7 @@ void Tester::printToken(const TokenPtr &token)
 			|| token->code() == DefFuncNStr_Code ? "  " : "()");
 		break;
 	case Type::IntFunc:
-		m_cout << (table.operandCount(token) == 0 ? "  " : "()");
+		m_cout << (token->table()->operandCount() == 0 ? "  " : "()");
 		break;
 	case Type::Constant:
 	case Type::NoParen:
@@ -747,7 +744,7 @@ void Tester::printToken(const TokenPtr &token)
 	case Type::Operator:
 	case Type::IntFunc:
 	case Type::Command:
-		m_cout << " " << table.debugName(token->code());
+		m_cout << " " << token->table()->debugName();
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
 			m_cout << " |" << token->string() << '|';
