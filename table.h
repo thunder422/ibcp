@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: table.h - table class header file
-//	Copyright (C) 2012  Thunder422
+//	Copyright (C) 2012-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -228,10 +228,6 @@ class Table
 public:
 	// function to return a reference to the single table instance
 	static Table &instance(void);
-
-	// TOKEN RELATED TABLE FUNCTIONS
-	TableEntry *findCode(TokenPtr &token, TokenPtr &operandToken,
-		int operandIndex = 0);
 
 	// TABLE SPECIFIC FUNCTIONS
 	static TableEntry *entry(int index);

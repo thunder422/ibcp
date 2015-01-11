@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: translator.cpp - translator class source file
-//	Copyright (C) 2010-2013  Thunder422
+//	Copyright (C) 2010-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -298,9 +298,8 @@ void Translator::getExpression(DataType dataType, int level)
 			if (level == 0)
 			try
 			{
-				// add convert code if needed or report error
 				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-				if (TableEntry *convert = doneToken->convertCode(dataType))
+				if (TableEntry *convert = doneToken->convertCodeEntry(dataType))
 				{
 					m_output.append(std::make_shared<Token>(convert->code()));
 				}
@@ -834,15 +833,10 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 	}
 	m_doneStack.pop();  // remove from done stack
 
-	// see if main code's data type matches
 	try
 	{
-		if (TableEntry *convert  = m_table.findCode(token, topToken,
-			operandIndex))
+		if (TableEntry *convert = token->convert(topToken, operandIndex))
 		{
-			// INSERT CONVERSION CODE
-			// create convert token with convert code
-			// append token to end of output list (after operand)
 			m_output.append(std::make_shared<Token>(convert->code()));
 		}
 	}

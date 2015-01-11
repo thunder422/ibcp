@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: token.h - token class header file
-//	Copyright (C) 2012-2013  Thunder422
+//	Copyright (C) 2012-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -161,6 +161,10 @@ public:
 	{
 		return code == m_code;
 	}
+	bool isLastOperand(int operandIndex)
+	{
+		return operandIndex == table()->operandCount() - 1;
+	}
 	void setFirstAlternate(int operandIndex)
 	{
 		m_code = table()->alternate(operandIndex)->code();
@@ -233,8 +237,10 @@ public:
 	}
 
 	// other functions
-	bool convertConstant(DataType dataType);
-	TableEntry *convertCode(DataType dataType);
+	TableEntry *convert(TokenPtr &operandToken, int operandIndex);
+	TableEntry *convertCodeEntry(DataType dataType);
+	void changeConstantIgnoreError(DataType toDataType) noexcept;
+	bool changeConstant(DataType toDataType);
 
 private:
 	// instance members

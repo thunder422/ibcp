@@ -72,7 +72,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif (NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-set(ibcp_COPYRIGHT_YEAR 2014)
+set(ibcp_COPYRIGHT_YEAR 2015)
 
 set(ibcp_RELEASE_MAJOR 0)
 set(ibcp_RELEASE_MINOR 6)

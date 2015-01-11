@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: token.cpp - token class source file
-//	Copyright (C) 2012-2013  Thunder422
+//	Copyright (C) 2012-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -84,64 +84,37 @@ std::string Token::stringWithDataType() const
 }
 
 
-// function to change constant token to desired data type
-//   - resets integer constant sub-code on double constants
-//   - does nothing if constant is not changed
-//   - throws error if double cannot be converted to integer
-bool Token::convertConstant(DataType dataType)
+TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
 {
-	if (!isType(Type::Constant))
+	DataType expectedDataType {table()->operandDataType(operandIndex)};
+
+	if (operandToken->dataType() == expectedDataType)
 	{
-		return false;
+		operandToken->removeSubCode(IntConst_SubCode);  // safe for any token
+		return {};
 	}
-	if (dataType == DataType::Double)
+
+	if (isLastOperand(operandIndex) && !hasFlag(UseConstAsIs_Flag))
 	{
-		if (table()->returnDataType() == DataType::Double)
-		{
-			removeSubCode(IntConst_SubCode);
-			return true;
-		}
-		if (table()->returnDataType() != DataType::Integer)
-		{
-			return false;
-		}
-		// fall to below and change constant type to double
+		operandToken->changeConstantIgnoreError(expectedDataType);
 	}
-	else if (dataType == DataType::Integer)
+
+	if (TableEntry *entry = table()->alternate(operandIndex,
+		operandToken->dataType()))
 	{
-		if (table()->returnDataType() == DataType::Double)
-		{
-			if (!hasSubCode(IntConst_SubCode))
-			{
-				throw Status::ExpIntConst;
-			}
-			removeSubCode(IntConst_SubCode);
-			// fall to below and change constant type to integer
-		}
-		else
-		{
-			return table()->returnDataType() == DataType::Integer;
-		}
+		setCode(entry->code());
+		return {};
 	}
-	else
-	{
-		return false;  // can't convert to number or any
-	}
-	m_code = Table::entry(Const_Code, dataType)->code();
-	return true;
+
+	return operandToken->convertCodeEntry(expectedDataType);
 }
 
 
-// function to get convert code needed to convert token to data type
-//   - changes number constant tokens to desired data type
-//   - returns conversion code if needed
-//   - returns null code if no conversion needed
-//   - throws error status if cannot be converted
-TableEntry *Token::convertCode(DataType dataType)
+TableEntry *Token::convertCodeEntry(DataType toDataType)
 {
-	if (!convertConstant(dataType) && table()->returnDataType() != dataType)
+	if (!changeConstant(toDataType) && table()->returnDataType() != toDataType)
 	{
-		switch (dataType)
+		switch (toDataType)
 		{
 		case DataType::Double:
 			if (table()->returnDataType() != DataType::Integer)
@@ -173,6 +146,60 @@ TableEntry *Token::convertCode(DataType dataType)
 		}
 	}
 	return {};
+}
+
+
+void Token::changeConstantIgnoreError(DataType toDataType) noexcept
+{
+	try
+	{
+		changeConstant(toDataType);
+	}
+	catch (Status) {}  // ignore unconvertible double to integer error
+}
+
+
+bool Token::changeConstant(DataType toDataType)
+{
+	if (!isType(Type::Constant))
+	{
+		return false;
+	}
+	if (toDataType == DataType::Double)
+	{
+		if (table()->returnDataType() == DataType::Double)
+		{
+			removeSubCode(IntConst_SubCode);
+			return true;
+		}
+		if (table()->returnDataType() != DataType::Integer)
+		{
+			return false;
+		}
+		// fall to below
+	}
+	else if (toDataType == DataType::Integer)
+	{
+		if (table()->returnDataType() == DataType::Double)
+		{
+			if (!hasSubCode(IntConst_SubCode))
+			{
+				throw Status::ExpIntConst;
+			}
+			removeSubCode(IntConst_SubCode);
+			// fall to below
+		}
+		else
+		{
+			return table()->returnDataType() == DataType::Integer;
+		}
+	}
+	else
+	{
+		return false;  // can't convert to number or any
+	}
+	m_code = Table::entry(Const_Code, toDataType)->code();
+	return true;
 }
 
 

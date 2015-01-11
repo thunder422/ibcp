@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: table.cpp - operator/command/function table source file
-//	Copyright (C) 2010-2013  Thunder422
+//	Copyright (C) 2010-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -1612,56 +1612,6 @@ TableEntry *TableEntry::alternate(int operandIndex, DataType operandDataType)
 		}
 	}
 	return {};  // did not find an alternate code for data type
-}
-
-
-//=================================
-//  TOKEN RELATED TABLE FUNCTIONS
-//=================================
-
-// function to find and set code in token for a data type
-// and possibly return a conversion code if data type is convertible
-//
-//   - if data type matches expected data type for operand, no action
-//   - else finds alternate code that matches data type
-//   - if no alternate code, returns conversion code for data type
-//   - if no alternate code, throws error status
-
-TableEntry *Table::findCode(TokenPtr &token, TokenPtr &operandToken,
-	int operandIndex)
-{
-	DataType expectedDataType {token->table()->operandDataType(operandIndex)};
-
-	if (operandToken->dataType() == expectedDataType)     // exact match?
-	{
-		operandToken->removeSubCode(IntConst_SubCode);  // safe for any token
-		return {};
-	}
-
-	// check if constant should be converted to needed data type
-	if (operandIndex == token->table()->operandCount() - 1   // last operand?
-		&& !token->hasFlag(UseConstAsIs_Flag))
-	try
-	{
-		operandToken->convertConstant(expectedDataType);
-	}
-	catch (Status)
-	{
-		// don't throw unconvertible doubles to integer errors here
-		// doubles as is may be acceptable depending on operator
-		// (will catch if double can't be converted if integer needed below)
-	}
-
-	// see if any alternate code's data types match
-	if (TableEntry *entry = token->table()->alternate(operandIndex,
-		operandToken->dataType()))
-	{
-		token->setCode(entry->code());
-		return {};
-	}
-
-	// get a conversion code if no alternate code was found
-	return operandToken->convertCode(expectedDataType);
 }
 
 
