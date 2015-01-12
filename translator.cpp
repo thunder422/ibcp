@@ -240,7 +240,7 @@ void Translator::getExpression(DataType dataType, int level)
 			}
 
 			// replace first and last operands of token on done stack
-			m_doneStack.top().replaceFirstLast(topToken, m_token);
+			m_doneStack.top().replaceOperands(topToken, m_token);
 
 			// set highest precedence if not an operator on done stack top
 			// (no operators in the parentheses)
@@ -474,7 +474,7 @@ void Translator::processInternalFunction(Reference reference)
 	TokenPtr topToken {std::move(m_token)};
 	m_holdStack.emplace(topToken);
 
-	int lastOperand {topToken->table()->operandCount() - 1};
+	int lastOperand {topToken->lastOperand()};
 	for (int i {}; ; i++)
 	{
 		DataType expectedDataType;
@@ -719,8 +719,7 @@ bool Translator::processOperator()
 		checkPendingParen(topToken, Popped::Yes);
 
 		// change token operator code or insert conversion codes as needed
-		processFinalOperand(topToken, std::move(m_holdStack.top().first),
-			topToken->table()->isUnaryOperator() ? 0 : 1);
+		processFinalOperand(topToken, std::move(m_holdStack.top().first));
 
 		// save precedence of operator being added
 		// (doesn't matter if not currently within parentheses,
@@ -736,102 +735,56 @@ bool Translator::processOperator()
 	{
 		return false;  // not unary or binary operator, end of expression
 	}
-	// otherwise process first operand and return
-	TokenPtr first;			// first operand token (empty for unary operator)
 
-	// check first operand of binary operators
+	Operands operands;
 	if (!m_token->table()->isUnaryOperator())
 	{
-		// changed token operator code or insert conversion codes as needed
-		processDoneStackTop(m_token, 0, &first);
+		operands = processDoneStackTop(m_token, 0);
 	}
 
-	// push it onto the holding stack and attach first operand
-	m_holdStack.emplace(std::move(m_token), std::move(first));
+	m_holdStack.emplace(std::move(m_token), std::move(operands.first));
 	return true;
 }
 
 
-// function to process the final operand for an operator or internal code
-//
-//   - called with token final operand is for (operator or internal code)
-//   - operand_index is zero except for binary operator second operand
-//   - processDoneStackTop() is called to set correct code for data type of
-//     done stack top item and insert any necessary hidden conversion code
-//   - first/last of done stack top item transferred to non-reference tokens
-//   - operator or internal code token appended to RPN output list
-//	 - RPN item is pushed to done stack if operator
-//
-//   - for operator, token2 is first operand of operator on hold stack
-//   - for internal code, token2 is not set
-
-void Translator::processFinalOperand(TokenPtr &token, TokenPtr token2,
-	int operandIndex)
+void Translator::processFinalOperand(TokenPtr &token, TokenPtr &&first)
 {
-	TokenPtr first;			// first operand token
-	TokenPtr last;			// last operand token
-
-	processDoneStackTop(token, operandIndex, &first, &last);
+	Operands operands = processDoneStackTop(token, token->lastOperand());
 
 	if (token->isType(Type::Operator))
 	{
-		// set first token
-		// unary operator: unary operator token
-		// binary operator: first operator of operator (token2)
-		first = operandIndex == 0 ? token : token2;
-		// last operand set from token that was on done stack
+		operands.first = token->table()->isUnaryOperator()
+			? token : std::move(first);
 	}
 
-	// add token to output list
 	m_output.append(token);
 
-	// push operator token to the done stack
 	if (token->isType(Type::Operator))
 	{
-		m_doneStack.emplace(m_output.back(), first, last);
+		m_doneStack.emplace(m_output.back(), std::move(operands));
 	}
 }
 
 
-// function to process the item on top of the done stack for a given operand
-// of an operator or only operand of an internal code token
-//
-//   - if requested, the first and last operands of the item are returned
-//   - calls Table::findCode() to check the data type of item:
-//     changes token code to a matching alternate code if available
-//     else returns a conversion code if conversion is possible
-//   - if no match found or conversion not possible, an error is thrown
-//   - if conversion possible, a conversion code token is appended to output
-
-void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
-	TokenPtr *first, TokenPtr *last)
+Translator::Operands Translator::processDoneStackTop(TokenPtr &token,
+	int operandIndex)
 {
 	if (m_doneStack.empty())
 	{
-		// oops, there should have been operands on done stack
 		throw TokenError {Status::BUG_DoneStackEmptyFindCode, token};
 	}
 	TokenPtr topToken {m_doneStack.top().rpnItem->token()};
-	// get first and last operands for top token
-	TokenPtr localFirst {m_doneStack.top().first};
-	if (!localFirst)
+
+	Operands operands {m_doneStack.top().operands};
+	if (!operands.first)
 	{
-		localFirst = topToken;  // first operand not set, set to operand token
+		operands.first = topToken;
 	}
-	if (first)  // requested by caller?
+	if (!operands.second)
 	{
-		*first = localFirst;
+		operands.second = topToken;
 	}
-	TokenPtr localLast {m_doneStack.top().last};
-	if (!localLast)
-	{
-		localLast = topToken;  // last operand not set, set to operand token
-	}
-	if (last)  // requested by caller?
-	{
-		*last = localLast;
-	}
-	m_doneStack.pop();  // remove from done stack
+	m_doneStack.pop();
 
 	try
 	{
@@ -842,10 +795,11 @@ void Translator::processDoneStackTop(TokenPtr &token, int operandIndex,
 	}
 	catch (Status status)
 	{
-		// report entire expression from first token through last
-		throw TokenError {status, localFirst->column(), localLast->column()
-			+ localLast->length() - localFirst->column()};
+		throw TokenError {status, operands.first->column(),
+			operands.second->column() + operands.second->length()
+			- operands.first->column()};  // report entire expression
 	}
+	return operands;
 }
 
 
@@ -894,22 +848,17 @@ void Translator::checkPendingParen(const TokenPtr &token, Popped popped)
 }
 
 
-// function to create token error from done stack top
-// (error is from first operand to the last operand)
-
 TokenError Translator::doneStackTopTokenError(Status errorStatus) noexcept
 {
-	TokenPtr token {std::move(m_doneStack.top().first)};
+	TokenPtr token {std::move(m_doneStack.top().operands.first)};
 	if (!token)
 	{
-		// if no first operand token, start at token itself
 		token = m_doneStack.top().rpnItem->token();
 	}
 	int column = token->column();
 	int length = token->length();
 
-	// if last operand token set, set error length through last token
-	if (TokenPtr token = std::move(m_doneStack.top().last))
+	if (TokenPtr token = std::move(m_doneStack.top().operands.second))
 	{
 		length = token->column() - column + token->length();
 	}

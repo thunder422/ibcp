@@ -161,9 +161,13 @@ public:
 	{
 		return code == m_code;
 	}
+	bool lastOperand()
+	{
+		return table()->operandCount() - 1;
+	}
 	bool isLastOperand(int operandIndex)
 	{
-		return operandIndex == table()->operandCount() - 1;
+		return operandIndex == lastOperand();
 	}
 	void setFirstAlternate(int operandIndex)
 	{

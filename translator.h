@@ -45,6 +45,7 @@ public:
 		Expression,		// translate as expression only
 		Yes				// don't set code size after translation
 	};
+	using Operands = std::pair<TokenPtr, TokenPtr>;
 
 	// Main Function
 	RpnList operator()(TestMode testMode = {});
@@ -57,10 +58,8 @@ public:
 		Reference reference = Reference::None);
 
 	// Public Processing Functions
-	void processFinalOperand(TokenPtr &token,
-		TokenPtr token2 = TokenPtr{}, int operandIndex = 0);
-	void processDoneStackTop(TokenPtr &token, int operandIndex = 0,
-		TokenPtr *first = nullptr, TokenPtr *last = nullptr);
+	void processFinalOperand(TokenPtr &token, TokenPtr &&first = {});
+	Operands processDoneStackTop(TokenPtr &token, int operandIndex = 0);
 
 	// Public Support Functions
 	static Status expectedErrorStatus(DataType dataType,
@@ -149,22 +148,22 @@ private:
 
 	struct DoneItem
 	{
-		DoneItem(RpnItemPtr _rpnItem) : rpnItem{_rpnItem}, first{}, last{} {}
-		DoneItem(RpnItemPtr _rpnItem, TokenPtr _last) : rpnItem{_rpnItem},
-			first{}, last{_last} {}
-		DoneItem(RpnItemPtr _rpnItem, TokenPtr _first, TokenPtr _last) :
-			rpnItem{_rpnItem}, first{_first}, last{_last} {}
+		DoneItem(RpnItemPtr _rpnItem) : rpnItem{_rpnItem}, operands{} {}
+		DoneItem(RpnItemPtr _rpnItem, TokenPtr second) : rpnItem{_rpnItem},
+			operands{{}, second} {}
+		DoneItem(RpnItemPtr _rpnItem, TokenPtr first, TokenPtr second) :
+			rpnItem{_rpnItem}, operands{first, second} {}
+		DoneItem(RpnItemPtr _rpnItem, Operands &&_operands) : rpnItem{_rpnItem},
+			operands{_operands} {}
 
-		// replace the item's first and last operand token
-		void replaceFirstLast(TokenPtr _first, TokenPtr _last)
+		void replaceOperands(TokenPtr first, TokenPtr second)
 		{
-			first = _first;
-			last = _last;
+			operands.first = first;
+			operands.second = second;
 		}
 
 		RpnItemPtr rpnItem;			// pointer to RPN item
-		TokenPtr first;				// operator token's first operand pointer
-		TokenPtr last;				// operator token's last operand pointer
+		Operands operands;			// first/second operand of RPN item
 	};
 	using DoneStack = std::stack<DoneItem>;
 
