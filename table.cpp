@@ -89,7 +89,6 @@ static ExprInfo None_Int_ExprInfo(DataType::None, Operands_Int);
 static ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
 
 
-Table *Table::s_instance;			// pointer to single table instance
 Table::NameMap Table::s_nameToEntry;		// name to code table map
 std::unordered_map<TableEntry *, Table::EntryVectorArray> Table::s_alternate;
 std::unordered_map<TableEntry *, DataType> Table::s_expectedDataType;
@@ -1287,26 +1286,8 @@ static TableEntry tableEntries[] =
 };
 
 
-// static function to return a refernce to the single table instance
-//
-//   - creates the single table instance with the table entries
-//   - constructor fails (abort application) if there are table errors
-
-Table &Table::instance(void)
-{
-	if (!s_instance)
-	try
-	{
-		s_instance = new Table(tableEntries, sizeof(tableEntries)
-			/ sizeof(TableEntry));
-	}
-	catch (std::string &error)
-	{
-		std::cerr << "Table Bug: " << error << std::endl;
-		abort();
-	}
-	return *s_instance;
-}
+// TODO temporary table instance
+static Table table(tableEntries, sizeof(tableEntries) / sizeof(TableEntry));
 
 
 // constructor function that initializes the table instance variables

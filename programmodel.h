@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: programmodel.h - program model class header file
-//	Copyright (C) 2013-2014  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -204,8 +204,6 @@ private:
 	ProgramCode encode(RpnList &&input);
 	void dereference(const LineInfo &lineInfo);
 	RpnList decode(const LineInfo &lineInfo);
-
-	Table &m_table;						// reference to the table object
 
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list

@@ -29,7 +29,6 @@
 
 
 Translator::Translator(const std::string &input) :
-	m_table(Table::instance()),
 	m_parse {new Parser {input}}
 {
 

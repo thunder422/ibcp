@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: recreator.h - recreator class header file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -127,14 +127,7 @@ public:
 		m_separator = separator;
 	}
 
-	// table instance access function
-	const Table &table() const
-	{
-		return m_table;
-	}
-
 private:
-	Table &m_table;					// reference to table instance
 	std::stack<StackItem> m_stack;	// holding string stack
 	char m_separator;				// current separator character
 	std::string m_output;			// output string

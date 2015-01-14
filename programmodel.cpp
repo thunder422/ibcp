@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: programmodel.h - program model class source file
-//	Copyright (C) 2013-2014  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -75,7 +75,6 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 
 ProgramModel::ProgramModel(QObject *parent) :
 	QAbstractListModel(parent),
-	m_table(Table::instance()),
 
 	m_remDictionary {new Dictionary(CaseSensitive::Yes)},
 	m_constNumDictionary {new ConstNumDictionary},

@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: translator.h - translator class header file
-//	Copyright (C) 2012-2013  Thunder422
+//	Copyright (C) 2012-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -64,12 +64,6 @@ public:
 	// Public Support Functions
 	static Status expectedErrorStatus(DataType dataType,
 		Reference reference = Reference::None) noexcept;
-
-	// Table Access Function
-	Table &table() const
-	{
-		return m_table;
-	}
 
 	// Current Token Access Functions
 	const TokenPtr &token() const
@@ -167,7 +161,6 @@ private:
 	};
 	using DoneStack = std::stack<DoneItem>;
 
-	Table &m_table;					// reference to the table instance
 	std::unique_ptr<Parser> m_parse;	// pointer to parser instance
 	RpnList m_output;				// pointer to RPN list output
 	HoldStack m_holdStack;			// operator/function holding stack

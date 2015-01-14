@@ -226,8 +226,7 @@ private:
 class Table
 {
 public:
-	// function to return a reference to the single table instance
-	static Table &instance(void);
+	Table(TableEntry *entry, int entryCount);
 
 	// TABLE SPECIFIC FUNCTIONS
 	static TableEntry *entry(int index);
@@ -243,15 +242,12 @@ public:
 private:
 	// these functions private to prevent multiple instances
 	Table(void) {}
-	Table(TableEntry *entry, int entryCount);
 	Table(Table const &) {}
 	Table &operator=(Table const &) {return *this;}
 
 	static void addExpectedDataType(TableEntry *entry, DataType dataType);
 
 	void add(TableEntry &entry);
-
-	static Table *s_instance;		// single instance of table
 
 	TableEntry *m_entry;			// pointer to table entries
 
