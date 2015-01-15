@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: let.cpp - let command functions source file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ void letTranslate(Translator &translator)
 		{
 			token = translator.moveToken();
 			// change token to appropriate assign code
-			token->setCode(Table::entry(Let_Code)->alternate(0)->code());
+			token->setTableEntry(Table::entry(Let_Code)->alternate(0));
 			translator.processDoneStackTop(token);
 		}
 
@@ -151,8 +151,8 @@ void letTranslate(Translator &translator)
 			// add each token saved in let stack except the last
 			do
 			{
-				// change to keep code (first alternate code)
-				token->setCode(token->table()->alternate()->code());
+				// change to keep code (first alternate)
+				token->setTableEntry(token->table()->alternate());
 
 				// append to output and pop next token from let stack
 				translator.outputAppend(std::move(token));

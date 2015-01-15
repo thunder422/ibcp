@@ -50,7 +50,7 @@ Translator::Translator(const std::string &input) :
 
 RpnList Translator::operator()(TestMode testMode)
 {
-	m_holdStack.emplace(std::make_shared<Token>(Code{}));
+	m_holdStack.emplace(std::make_shared<Token>(Table::entry(Code{})));
 
 	if (testMode == TestMode::Expression)
 	{
@@ -300,7 +300,7 @@ void Translator::getExpression(DataType dataType, int level)
 				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
 				if (TableEntry *convert = doneToken->convertCodeEntry(dataType))
 				{
-					m_output.append(std::make_shared<Token>(convert->code()));
+					m_output.append(std::make_shared<Token>(convert));
 				}
 			}
 			catch (Status status)
@@ -789,7 +789,7 @@ Translator::Operands Translator::processDoneStackTop(TokenPtr &token,
 	{
 		if (TableEntry *convert = token->convert(topToken, operandIndex))
 		{
-			m_output.append(std::make_shared<Token>(convert->code()));
+			m_output.append(std::make_shared<Token>(convert));
 		}
 	}
 	catch (Status status)

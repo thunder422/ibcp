@@ -114,8 +114,8 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		}
 		oss << i << ':' << line[i];
 
-		Code code {line[i].instructionCode()};
-		if (auto operandText = Table::entry(code)->operandTextFunction())
+		TableEntry *entry {Table::entry(line[i].instructionCode())};
+		if (auto operandText = entry->operandTextFunction())
 		{
 			SubCode subCode {line[i].instructionSubCode()};
 			const std::string operand {operandText(this, line[++i].operand(),
@@ -604,8 +604,8 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 	auto line = m_code.begin() + lineInfo.offset;
 	for (int i {}; i < lineInfo.size; i++)
 	{
-		Code code {line[i].instructionCode()};
-		if (auto remove = Table::entry(code)->removeFunction())
+		TableEntry *entry {Table::entry(line[i].instructionCode())};
+		if (auto remove = entry->removeFunction())
 		{
 			remove(this, line[++i].operand());
 		}
@@ -620,7 +620,8 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 	auto line = m_code.begin() + lineInfo.offset;
 	for (int i {}; i < lineInfo.size; i++)
 	{
-		TokenPtr token {std::make_shared<Token>(line[i].instructionCode())};
+		TableEntry *entry {Table::entry(line[i].instructionCode())};
+		TokenPtr token {std::make_shared<Token>(entry)};
 		token->addSubCode(line[i].instructionSubCode());
 
 		if (auto operandText = token->table()->operandTextFunction())

@@ -102,7 +102,7 @@ TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
 	if (TableEntry *entry = table()->alternate(operandIndex,
 		operandToken->dataType()))
 	{
-		setCode(entry->code());
+		setTableEntry(entry);
 		return {};
 	}
 

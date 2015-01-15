@@ -2,7 +2,7 @@
 
 //	Interactive BASIC Compiler Project
 //	File: print.cpp - print command functions source file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -73,8 +73,8 @@ void printTranslate(Translator &translator)
 			}
 			else  // append appropriate print code for done stack top item
 			{
-				Code code = commandToken->table()->alternate(0)->code();
-				TokenPtr printToken {std::make_shared<Token>(code)};
+				TableEntry *entry = commandToken->table()->alternate(0);
+				TokenPtr printToken {std::make_shared<Token>(entry)};
 				translator.processFinalOperand(printToken);
 				printFunction = false;
 			}
@@ -192,8 +192,8 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	std::string name {rpnItem->token()->table()->name()};
 	recreator.topAppend(std::move(name));
 
-	Code printCode = rpnItem->token()->table()->alternate()->code();
-	TokenPtr token {std::make_shared<Token>(printCode)};
+	TableEntry *printEntry = rpnItem->token()->table()->alternate();
+	TokenPtr token {std::make_shared<Token>(printEntry)};
 	RpnItemPtr rpnItemPtr {std::make_shared<RpnItem>(token)};
 	printRecreate(recreator, rpnItemPtr);
 }

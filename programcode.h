@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: programcode.h - program word and code class header file
-//	Copyright (C) 2014  Thunder422
+//	Copyright (C) 2014-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -36,14 +36,13 @@ class ProgramWord
 {
 public:
 	// instruction access functions
-	ProgramWord(Code code, unsigned subCode) :
-		// FIXME remove c-style type cast
-		m_word((unsigned)code | (subCode & ProgramMask_SubCode)) {}
+	ProgramWord(uint16_t code, uint16_t subCode) :
+		m_word(code | (subCode & ProgramMask_SubCode)) {}
 
-	Code instructionCode() const
+	uint16_t instructionCode() const
 	{
 		// FIXME remove c-style type cast
-		return (Code)(m_word & ProgramMask_Code);
+		return m_word & ProgramMask_Code;
 	}
 	SubCode instructionSubCode() const
 	{

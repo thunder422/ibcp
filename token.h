@@ -35,11 +35,8 @@
 class Token
 {
 public:
-	// constructor for codes
-	Token(Code code) : m_column{-1}, m_length{-1}, m_string{}, m_code{code},
-		m_reference{}, m_subCode{} {}
-
-	Token(TableEntry *entry, int column, int length,
+	// constructor for table entries
+	Token(TableEntry *entry, int column = -1, int length = -1,
 		const std::string string = {}) : m_column{column}, m_length{length},
 		m_string{string}, m_code{entry->code()}, m_reference{}, m_subCode{} {}
 
@@ -153,10 +150,6 @@ public:
 	{
 		return m_code;
 	}
-	void setCode(Code code)
-	{
-		m_code = code;
-	}
 	bool isCode(Code code) const
 	{
 		return code == m_code;
@@ -168,6 +161,10 @@ public:
 	bool isLastOperand(int operandIndex)
 	{
 		return operandIndex == lastOperand();
+	}
+	void setTableEntry(TableEntry *entry)
+	{
+		m_code = entry->code();
 	}
 	void setFirstAlternate(int operandIndex)
 	{
