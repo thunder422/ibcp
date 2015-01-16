@@ -49,7 +49,7 @@ Token::Token(DataType dataType, int column, int length,
 	{
 		dataType = DataType::Double;
 	}
-	m_code = Table::entry(Const_Code, dataType)->code();
+	m_entry = Table::entry(Const_Code, dataType);
 }
 
 
@@ -86,7 +86,7 @@ std::string Token::stringWithDataType() const
 
 TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
 {
-	DataType expectedDataType {table()->operandDataType(operandIndex)};
+	DataType expectedDataType {m_entry->operandDataType(operandIndex)};
 
 	if (operandToken->dataType() == expectedDataType)
 	{
@@ -99,7 +99,7 @@ TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
 		operandToken->changeConstantIgnoreError(expectedDataType);
 	}
 
-	if (TableEntry *entry = table()->alternate(operandIndex,
+	if (TableEntry *entry = m_entry->alternate(operandIndex,
 		operandToken->dataType()))
 	{
 		setTableEntry(entry);
@@ -112,19 +112,19 @@ TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
 
 TableEntry *Token::convertCodeEntry(DataType toDataType)
 {
-	if (!changeConstant(toDataType) && table()->returnDataType() != toDataType)
+	if (!changeConstant(toDataType) && m_entry->returnDataType() != toDataType)
 	{
 		switch (toDataType)
 		{
 		case DataType::Double:
-			if (table()->returnDataType() != DataType::Integer)
+			if (m_entry->returnDataType() != DataType::Integer)
 			{
 				throw Status::ExpNumExpr;
 			}
 			return Table::entry(CvtDbl_Code);
 
 		case DataType::Integer:
-			if (table()->returnDataType() != DataType::Double)
+			if (m_entry->returnDataType() != DataType::Double)
 			{
 				throw Status::ExpNumExpr;
 			}
@@ -134,7 +134,7 @@ TableEntry *Token::convertCodeEntry(DataType toDataType)
 			throw Status::ExpStrExpr;
 
 		case DataType::Number:
-			if (table()->returnDataType() == DataType::String)
+			if (m_entry->returnDataType() == DataType::String)
 			{
 				throw Status::ExpNumExpr;
 			}
@@ -167,12 +167,12 @@ bool Token::changeConstant(DataType toDataType)
 	}
 	if (toDataType == DataType::Double)
 	{
-		if (table()->returnDataType() == DataType::Double)
+		if (m_entry->returnDataType() == DataType::Double)
 		{
 			removeSubCode(IntConst_SubCode);
 			return true;
 		}
-		if (table()->returnDataType() != DataType::Integer)
+		if (m_entry->returnDataType() != DataType::Integer)
 		{
 			return false;
 		}
@@ -180,7 +180,7 @@ bool Token::changeConstant(DataType toDataType)
 	}
 	else if (toDataType == DataType::Integer)
 	{
-		if (table()->returnDataType() == DataType::Double)
+		if (m_entry->returnDataType() == DataType::Double)
 		{
 			if (!hasSubCode(IntConst_SubCode))
 			{
@@ -191,14 +191,14 @@ bool Token::changeConstant(DataType toDataType)
 		}
 		else
 		{
-			return table()->returnDataType() == DataType::Integer;
+			return m_entry->returnDataType() == DataType::Integer;
 		}
 	}
 	else
 	{
 		return false;  // can't convert to number or any
 	}
-	m_code = Table::entry(Const_Code, toDataType)->code();
+	m_entry = Table::entry(Const_Code, toDataType);
 	return true;
 }
 
@@ -206,7 +206,7 @@ bool Token::changeConstant(DataType toDataType)
 // function to overload the comparison operator
 bool Token::operator==(const Token &other) const
 {
-	if (m_code != other.m_code)
+	if (m_entry != other.m_entry)
 	{
 		return false;
 	}
@@ -215,7 +215,7 @@ bool Token::operator==(const Token &other) const
 	{
 		return false;
 	}
-	if (m_code == Rem_Code || m_code == RemOp_Code
+	if (isCode(Rem_Code) || isCode(RemOp_Code)
 		|| (isType(Type::Constant) && isDataType(DataType::String)))
 	{
 		return m_string == other.m_string;

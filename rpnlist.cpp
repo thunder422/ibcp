@@ -69,8 +69,8 @@ bool RpnList::setCodeSize(TokenPtr &token)
 	{
 		// assign position index to tokens (increment count for instruction)
 		token = rpnItem->token();
-		token->setIndex(m_codeSize++);
-		if (token->table()->hasOperand())
+		token->setOffset(m_codeSize++);
+		if (token->hasOperand())
 		{
 			m_codeSize++;  // increment count for operand
 		}

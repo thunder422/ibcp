@@ -588,8 +588,8 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 	for (RpnItemPtr rpnItem : input)
 	{
 		TokenPtr token {rpnItem->token()};
-		programLine.emplace_back(token->code(), token->subCodes());
-		if (auto encode = token->table()->encodeFunction())
+		programLine.emplace_back(token->index(), token->subCodes());
+		if (auto encode = token->tableEntry()->encodeFunction())
 		{
 			programLine.emplace_back(encode(this, token));
 		}
@@ -624,7 +624,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 		TokenPtr token {std::make_shared<Token>(entry)};
 		token->addSubCode(line[i].instructionSubCode());
 
-		if (auto operandText = token->table()->operandTextFunction())
+		if (auto operandText = token->tableEntry()->operandTextFunction())
 		{
 			token->setString(operandText(this, line[++i].operand(),
 				Ignore_SubCode));  // don't add data type character to token

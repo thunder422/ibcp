@@ -1511,9 +1511,9 @@ void Table::addExpectedDataType(TableEntry *entry, DataType dataType)
 //========================
 
 // function to get code for entry
-Code TableEntry::code() const
+int TableEntry::index() const
 {
-	return Code(this - tableEntries);
+	return this - tableEntries;
 }
 
 std::string TableEntry::commandName() const

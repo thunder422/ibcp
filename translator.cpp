@@ -151,7 +151,7 @@ void Translator::getCommands()
 
 		// process command (assume assignment statement if not command token)
 		if (TranslateFunction translate = m_token->isType(Type::Command)
-			? m_token->table()->translateFunction()
+			? m_token->tableEntry()->translateFunction()
 			: Table::entry(Let_Code)->translateFunction())
 		{
 			(*translate)(*this);
@@ -232,7 +232,7 @@ void Translator::getExpression(DataType dataType, int level)
 			// make sure holding stack contains the open parentheses
 			TokenPtr topToken {std::move(m_holdStack.top().token)};
 			m_holdStack.pop();
-			if (!topToken->code() == OpenParen_Code)
+			if (!topToken->isCode(OpenParen_Code))
 			{
 				// oops, no open parentheses (this should not happen)
 				throw TokenError {Status::BUG_UnexpectedCloseParen, m_token};
@@ -250,7 +250,7 @@ void Translator::getExpression(DataType dataType, int level)
 			// set pending parentheses token pointer
 			m_pendingParen = std::move(m_token);
 		}
-		else if (!m_token->table()->isUnaryOperator())
+		else if (!m_token->isUnaryOperator())
 		{
 			if (!getOperand(expectedDataType))
 			{
@@ -269,17 +269,17 @@ void Translator::getExpression(DataType dataType, int level)
 			// if parser error then caller needs to handle it
 			getToken(Status{});
 			if (doneStackTopToken()->isDataType(DataType::None)
-				&& m_holdStack.top().token->isNull()
+				&& m_holdStack.top().token->isCode(Code{})
 				&& dataType == DataType::None)
 			{
 				// for print functions return now with token as terminator
 				break;
 			}
 			// check for unary operator (token should be a binary operator)
-			if (m_token->table()->isUnaryOperator())
+			if (m_token->isUnaryOperator())
 			{
 				// check if code has a binary operator
-				if (m_token->table()->alternateCount(1) > 0)
+				if (m_token->alternateCount(1) > 0)
 				{
 					m_token->setFirstAlternate(1);  // change to binary operator
 				}
@@ -311,7 +311,7 @@ void Translator::getExpression(DataType dataType, int level)
 		}
 
 		// get operator's expected data type (was pushed on hold stack)
-		expectedDataType = m_holdStack.top().token->table()->expectedDataType();
+		expectedDataType = m_holdStack.top().token->expectedDataType();
 	}
 }
 
@@ -365,7 +365,7 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 			throw TokenError {expectedErrorStatus(dataType),
 				std::move(m_token)};
 		}
-		if (m_token->table()->operandCount() > 0)
+		if (m_token->operandCount() > 0)
 		{
 			processInternalFunction(reference);
 			doneAppend = false;  // already appended
@@ -492,8 +492,8 @@ void Translator::processInternalFunction(Reference reference)
 		}
 		else
 		{
-			expectedDataType = i == 0 ? topToken->table()->expectedDataType()
-				: topToken->table()->operandDataType(i);
+			expectedDataType = i == 0 ? topToken->expectedDataType()
+				: topToken->operandDataType(i);
 			try
 			{
 				getExpression(expectedDataType);
@@ -504,13 +504,13 @@ void Translator::processInternalFunction(Reference reference)
 				{
 					// determine error for unary operator token
 					error = expressionErrorStatus(i == lastOperand, true,
-						topToken->table());
+						topToken->tableEntry());
 				}
 				else if (error(Status::UnknownToken))
 				{
 					// determine error for unknown tokens
 					error = expressionErrorStatus(i == lastOperand, false,
-						topToken->table());
+						topToken->tableEntry());
 				}
 				throw;
 			}
@@ -520,7 +520,7 @@ void Translator::processInternalFunction(Reference reference)
 		if (expectedDataType == DataType::Number)
 		{
 			TokenPtr &token = m_doneStack.top().rpnItem->token();
-			if (token->dataType() != topToken->table()->operandDataType(0))
+			if (token->dataType() != topToken->operandDataType(0))
 			{
 				topToken->setFirstAlternate(0);
 			}
@@ -574,7 +574,7 @@ void Translator::processInternalFunction(Reference reference)
 		{
 			// determine error for unknown tokens
 			throw TokenError {expressionErrorStatus(i == lastOperand, false,
-				topToken->table()), m_token};
+				topToken->tableEntry()), m_token};
 		}
 	}
 }
@@ -706,14 +706,14 @@ bool Translator::processOperator()
 	// determine precedence of incoming token
 	// (set highest precedence for unary operators,
 	// which don't force other operators from hold stack)
-	int tokenPrecedence {m_token->table()->isUnaryOperator()
+	int tokenPrecedence {m_token->isUnaryOperator()
 		? HighestPrecedence : m_token->precedence()};
 
 	// process and drop unary or binary operators on hold stack
 	// while they have higher or same precedence as incoming token
 	TokenPtr topToken;
 	while ((topToken = m_holdStack.top().token)->precedence() >= tokenPrecedence
-		&& topToken->table()->isUnaryOrBinaryOperator())
+		&& topToken->isUnaryOrBinaryOperator())
 	{
 		checkPendingParen(topToken, Popped::Yes);
 
@@ -730,13 +730,13 @@ bool Translator::processOperator()
 
 	checkPendingParen(m_token, Popped::No);
 
-	if (!m_token->table()->isUnaryOrBinaryOperator())
+	if (!m_token->isUnaryOrBinaryOperator())
 	{
 		return false;  // not unary or binary operator, end of expression
 	}
 
 	Operands operands;
-	if (!m_token->table()->isUnaryOperator())
+	if (!m_token->isUnaryOperator())
 	{
 		operands = processDoneStackTop(m_token, 0);
 	}
@@ -752,8 +752,7 @@ void Translator::processFinalOperand(TokenPtr &token, TokenPtr &&first)
 
 	if (token->isType(Type::Operator))
 	{
-		operands.first = token->table()->isUnaryOperator()
-			? token : std::move(first);
+		operands.first = token->isUnaryOperator() ? token : std::move(first);
 	}
 
 	m_output.append(token);

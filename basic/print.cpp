@@ -73,7 +73,7 @@ void printTranslate(Translator &translator)
 			}
 			else  // append appropriate print code for done stack top item
 			{
-				TableEntry *entry = commandToken->table()->alternate(0);
+				TableEntry *entry = commandToken->alternate(0);
 				TokenPtr printToken {std::make_shared<Token>(entry)};
 				translator.processFinalOperand(printToken);
 				printFunction = false;
@@ -168,7 +168,7 @@ void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 	// append comma to string and push it back to the stack
 	// FLAG option: space after print commas (default=no)
-	string += rpnItem->token()->table()->name();
+	string += rpnItem->token()->name();
 	recreator.emplace(string);
 
 	// set separator to space (used to not add spaces 'between' commas)
@@ -189,10 +189,10 @@ void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// append final semicolon to string on top of stack then recreate command
-	std::string name {rpnItem->token()->table()->name()};
+	std::string name {rpnItem->token()->name()};
 	recreator.topAppend(std::move(name));
 
-	TableEntry *printEntry = rpnItem->token()->table()->alternate();
+	TableEntry *printEntry = rpnItem->token()->alternate();
 	TokenPtr token {std::make_shared<Token>(printEntry)};
 	RpnItemPtr rpnItemPtr {std::make_shared<RpnItem>(token)};
 	printRecreate(recreator, rpnItemPtr);
@@ -203,7 +203,7 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// append PRINT keyword
-	std::string name {rpnItem->token()->table()->name()};
+	std::string name {rpnItem->token()->name()};
 	recreator.append(std::move(name));
 
 	// if stack is not empty then append space with string on top of stack

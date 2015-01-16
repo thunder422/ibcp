@@ -42,7 +42,7 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 	for (RpnItemPtr rpnItem : rpnList)
 	{
 		RecreateFunction recreate;
-		if (!(recreate = rpnItem->token()->table()->recreateFunction()))
+		if (!(recreate = rpnItem->token()->tableEntry()->recreateFunction()))
 		{
 			// if no recreate function, then it is missing from table
 			emplace('?' + rpnItem->token()->string() + '?');
@@ -144,7 +144,7 @@ void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 		&& precedence > recreator.topPrecedence())};
 
 	// get string for operator
-	std::string string {rpnItem->token()->table()->name()};
+	std::string string {rpnItem->token()->name()};
 	// if operator is a plain word operator or operand is a number,
 	//  then need to add a space
 	if (isalpha(string.back())
@@ -175,7 +175,7 @@ void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// get string of operator with spaces, append to first operand
 	// (add parens if operator precendence is higher than the operand)
 	string = recreator.popWithParens(precedence > recreator.topPrecedence())
-		+ ' ' + rpnItem->token()->table()->name() + ' ' + string;
+		+ ' ' + rpnItem->token()->name() + ' ' + string;
 
 	// push operator expression back to stack with precedence of operator
 	recreator.emplace(string, precedence);
@@ -194,7 +194,7 @@ void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an internal function
 void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	TableEntry *entry {rpnItem->token()->table()};
+	TableEntry *entry {rpnItem->token()->tableEntry()};
 	recreator.pushWithOperands(entry->name(), entry->operandCount());
 }
 
@@ -243,7 +243,7 @@ void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to do nothing (for hidden codes)
 void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	std::string string {rpnItem->token()->table()->name()};
+	std::string string {rpnItem->token()->name()};
 	std::string remark {rpnItem->token()->string()};
 	if (islower(remark.front()))
 	{

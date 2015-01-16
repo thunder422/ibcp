@@ -119,10 +119,10 @@ public:
 		recreate {_recreate}
 		{}
 
-	Code code() const;
+	int index() const;
 	bool isCode(Code code)
 	{
-		return code == this->code();
+		return code == this->index();
 	}
 	Type type() const
 	{

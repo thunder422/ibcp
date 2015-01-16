@@ -38,20 +38,20 @@ public:
 	// constructor for table entries
 	Token(TableEntry *entry, int column = -1, int length = -1,
 		const std::string string = {}) : m_column{column}, m_length{length},
-		m_string{string}, m_code{entry->code()}, m_reference{}, m_subCode{} {}
+		m_string{string}, m_entry{entry}, m_reference{}, m_subCode{} {}
 
 	// constructor for codes with operands
 	Token(TableEntry *entry, DataType dataType, int column, int length,
 		const std::string string = {}, bool reference = {},
 		SubCode subCode = {}) : m_column{column}, m_length{length},
-		m_string{string}, m_code{entry->alternate(dataType)->code()},
+		m_string{string}, m_entry{entry->alternate(dataType)},
 		m_reference{reference}, m_subCode{subCode} {}
 
 	// constructor for integer constants
 	Token(DataType dataType, int column, int length, const std::string string,
 		int value) : m_column{column}, m_length{length}, m_string{string},
-		m_code{Table::entry(Const_Code, dataType == DataType::Double
-		? dataType : DataType::Integer)->code()}, m_reference{}, m_subCode{},
+		m_entry{Table::entry(Const_Code, dataType == DataType::Double
+		? dataType : DataType::Integer)}, m_reference{}, m_subCode{},
 		m_value(value), /*convert*/ m_valueInt{value} {}
 
 	// constructor for double constants
@@ -61,7 +61,7 @@ public:
 	// constructor for string constants
 	Token(int column, int length, const std::string string) :
 		m_column{column}, m_length{length}, m_string{string},
-		m_code{Table::entry(Const_Code, DataType::String)->code()},
+		m_entry{Table::entry(Const_Code, DataType::String)},
 		m_reference{}, m_subCode{} {}
 
 	Token(const Token &token)  // copy constructor
@@ -76,7 +76,7 @@ public:
 		return !(*this == other);
 	}
 
-	// column and length access functions
+	// access functions
 	int column(void) const
 	{
 		return m_column;
@@ -85,52 +85,7 @@ public:
 	{
 		return m_length;
 	}
-	void setLength(int length)
-	{
-		m_length = length;
-	}
 
-	// table access functions
-	TableEntry *table() const
-	{
-		return Table::entry(m_code);
-	}
-	Type type(void) const
-	{
-		return table()->type();
-	}
-	bool isType(Type type) const
-	{
-		return type == table()->type();
-	}
-	bool hasFlag(unsigned flag) const
-	{
-		return table()->hasFlag(flag);
-	}
-	int precedence() const
-	{
-		return table()->precedence();
-	}
-
-	// data type access functions
-	DataType dataType() const
-	{
-		return table()->returnDataType();
-	}
-	bool isDataType(DataType dataType) const
-	{
-		return dataType == table()->returnDataType();
-	}
-	bool isDataTypeCompatible(DataType dataType)
-	{
-		// check if token data type is compatible with desired data type
-		return dataType == table()->returnDataType()
-			|| (dataType == DataType::Number
-			&& table()->returnDataType() != DataType::String)
-			|| dataType == DataType::Any || dataType == DataType::None;
-	}
-
-	// string access function
 	std::string string(void) const
 	{
 		return m_string;
@@ -145,33 +100,15 @@ public:
 		return m_string.length();
 	}
 
-	// code access functions
-	Code code(void) const
+	TableEntry *tableEntry() const
 	{
-		return m_code;
-	}
-	bool isCode(Code code) const
-	{
-		return code == m_code;
-	}
-	bool lastOperand()
-	{
-		return table()->operandCount() - 1;
-	}
-	bool isLastOperand(int operandIndex)
-	{
-		return operandIndex == lastOperand();
+		return m_entry;
 	}
 	void setTableEntry(TableEntry *entry)
 	{
-		m_code = entry->code();
-	}
-	void setFirstAlternate(int operandIndex)
-	{
-		m_code = table()->alternate(operandIndex)->code();
+		m_entry = entry;
 	}
 
-	// reference access functions
 	bool reference(void) const
 	{
 		return m_reference;
@@ -181,7 +118,6 @@ public:
 		m_reference = reference;
 	}
 
-	// sub-code access functions
 	bool hasSubCode() const
 	{
 		return m_subCode;
@@ -203,7 +139,6 @@ public:
 		return m_subCode;
 	}
 
-	// value access functions
 	double value(void) const
 	{
 		return m_value;
@@ -221,20 +156,122 @@ public:
 		m_valueInt = value;
 	}
 
-	// index access functions
-	int index(void)
+	int offset(void)
 	{
-		return m_index;
+		return m_offset;
 	}
-	void setIndex(int index)
+	void setOffset(int offset)
 	{
-		m_index = index;
+		m_offset = offset;
 	}
 
-	// token information functions
-	bool isNull(void) const
+	// table pass-thru access functions
+	Type type(void) const
 	{
-		return !m_code;
+		return m_entry->type();
+	}
+	bool isType(Type type) const
+	{
+		return type == m_entry->type();
+	}
+	bool isCode(Code code) const
+	{
+		return code == m_entry->index();
+	}
+	int index(void) const
+	{
+		return m_entry->index();
+	}
+
+	const std::string name() const
+	{
+		return m_entry->name();
+	}
+	const std::string name2() const
+	{
+		return m_entry->name2();
+	}
+	std::string commandName() const
+	{
+		return m_entry->commandName();
+	}
+	const std::string debugName() const
+	{
+		return m_entry->debugName();
+	}
+	const std::string optionName() const
+	{
+		return m_entry->optionName();
+	}
+
+	bool hasFlag(unsigned flag) const
+	{
+		return m_entry->hasFlag(flag);
+	}
+	int precedence() const
+	{
+		return m_entry->precedence();
+	}
+
+	DataType dataType() const
+	{
+		return m_entry->returnDataType();
+	}
+	bool isDataType(DataType dataType) const
+	{
+		return dataType == m_entry->returnDataType();
+	}
+	bool isDataTypeCompatible(DataType dataType)
+	{
+		return dataType == m_entry->returnDataType()
+			|| (dataType == DataType::Number
+			&& m_entry->returnDataType() != DataType::String)
+			|| dataType == DataType::Any || dataType == DataType::None;
+	}
+	int operandCount() const
+	{
+		return m_entry->operandCount();
+	}
+	DataType operandDataType(int operandIndex) const
+	{
+		return m_entry->operandDataType(operandIndex);
+	}
+	DataType expectedDataType() const
+	{
+		return m_entry->expectedDataType();
+	}
+	bool lastOperand() const
+	{
+		return tableEntry()->operandCount() - 1;
+	}
+	bool isLastOperand(int operandIndex) const
+	{
+		return operandIndex == lastOperand();
+	}
+	bool isUnaryOperator() const
+	{
+		return m_entry->isUnaryOperator();
+	}
+	bool isUnaryOrBinaryOperator() const
+	{
+		return m_entry->isUnaryOrBinaryOperator();
+	}
+	bool hasOperand() const
+	{
+		return m_entry->hasOperand();
+	}
+
+	int alternateCount(int operandIndex) const
+	{
+		return m_entry->alternateCount(operandIndex);
+	}
+	TableEntry *alternate(int operandIndex = 0) const
+	{
+		return m_entry->alternate(operandIndex);
+	}
+	void setFirstAlternate(int operandIndex)
+	{
+		m_entry = tableEntry()->alternate(operandIndex);
 	}
 
 	// other functions
@@ -248,12 +285,12 @@ private:
 	int m_column;			// start column of token
 	int m_length;			// length of token
 	std::string m_string;	// pointer to string of token
-	Code m_code;			// internal code of token (index of TableEntry)
+	TableEntry *m_entry;	// pointer to table entry of token
 	bool m_reference;		// token is a reference flag
 	uint16_t m_subCode;		// sub-code flags of token
 	double m_value;			// double value for constant token
 	int m_valueInt;			// integer value for constant token (if possible)
-	int m_index;			// index within encoded program code line
+	int m_offset;			// index within encoded program code line
 };
 
 using TokenPtr = std::shared_ptr<Token>;

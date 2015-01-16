@@ -43,15 +43,16 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	{
 	case Type::NoParen:
 		os << token->stringWithDataType();
-		if (token->table()->hasFlag(Reference_Flag))
+		if (token->hasFlag(Reference_Flag))
 		{
 			os << "<ref>";
 		}
 		break;
 
 	case Type::DefFunc:
-		if (token->code() == DefFuncN_Code || token->code() == DefFuncNInt_Code
-			|| token->code() == DefFuncNStr_Code)
+		if (token->index() == DefFuncN_Code
+			|| token->index() == DefFuncNInt_Code
+			|| token->index() == DefFuncNStr_Code)
 		{
 			os << token->stringWithDataType();
 			break;
@@ -84,34 +85,34 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	case Type::Operator:
 		if (token->isCode(RemOp_Code))
 		{
-			os << token->table()->name();
+			os << token->name();
 			second = true;
 		}
 		else
 		{
-			os << token->table()->debugName();
+			os << token->debugName();
 		}
 		break;
 
 	case Type::Command:
 		if (token->isCode(Rem_Code))
 		{
-			os << token->table()->name();
+			os << token->name();
 			second = true;
 		}
 		else
 		{
-			os << token->table()->name();
-			if (!token->table()->name2().empty())
+			os << token->name();
+			if (!token->name2().empty())
 			{
-				os << '-' << token->table()->name2();
+				os << '-' << token->name2();
 			}
 		}
 		break;
 
 	default:
 		// output debug name by default
-		os << token->table()->debugName();
+		os << token->debugName();
 		break;
 	}
 	if (token->reference())
@@ -129,7 +130,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		if (token->hasSubCode(Option_SubCode))
 		{
-			std::string option {token->table()->optionName()};
+			std::string option {token->optionName()};
 			if (option.empty())
 			{
 				os << "BUG";
@@ -462,8 +463,9 @@ try
 	{
 		TokenPtr token {parse(DataType::Any, Reference::None)};
 		printToken(token);
-		if (token->code() == DefFuncP_Code || token->code() == DefFuncPInt_Code
-			|| token->code() == DefFuncPStr_Code || token->isType(Type::Paren))
+		if (token->index() == DefFuncP_Code
+			|| token->index() == DefFuncPInt_Code
+			|| token->index() == DefFuncPStr_Code || token->isType(Type::Paren))
 		{
 			parse.getParen();
 		}
@@ -681,12 +683,12 @@ void Tester::printToken(const TokenPtr &token)
 	switch (token->type())
 	{
 	case Type::DefFunc:
-		m_cout << (token->code() == DefFuncN_Code
-			|| token->code() == DefFuncNInt_Code
-			|| token->code() == DefFuncNStr_Code ? "  " : "()");
+		m_cout << (token->index() == DefFuncN_Code
+			|| token->index() == DefFuncNInt_Code
+			|| token->index() == DefFuncNStr_Code ? "  " : "()");
 		break;
 	case Type::IntFunc:
-		m_cout << (token->table()->operandCount() == 0 ? "  " : "()");
+		m_cout << (token->operandCount() == 0 ? "  " : "()");
 		break;
 	case Type::Constant:
 	case Type::NoParen:
@@ -708,9 +710,9 @@ void Tester::printToken(const TokenPtr &token)
 	{
 	case Type::DefFunc:
 		m_cout << " |" << token->stringWithDataType();
-		if (token->code() == DefFuncP_Code
-			|| token->code() == DefFuncPInt_Code
-			|| token->code() == DefFuncPStr_Code)
+		if (token->index() == DefFuncP_Code
+			|| token->index() == DefFuncPInt_Code
+			|| token->index() == DefFuncPStr_Code)
 		{
 			m_cout << '(';
 		}
@@ -744,7 +746,7 @@ void Tester::printToken(const TokenPtr &token)
 	case Type::Operator:
 	case Type::IntFunc:
 	case Type::Command:
-		m_cout << " " << token->table()->debugName();
+		m_cout << " " << token->debugName();
 		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
 		{
 			m_cout << " |" << token->string() << '|';

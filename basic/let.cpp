@@ -152,7 +152,7 @@ void letTranslate(Translator &translator)
 			do
 			{
 				// change to keep code (first alternate)
-				token->setTableEntry(token->table()->alternate());
+				token->setTableEntry(token->alternate());
 
 				// append to output and pop next token from let stack
 				translator.outputAppend(std::move(token));
@@ -184,7 +184,7 @@ void letRecreate(Recreator &recreator, TokenPtr token)
 {
 	if (token->hasSubCode(Option_SubCode))
 	{
-		recreator.append(token->table()->optionName() + ' ');
+		recreator.append(token->optionName() + ' ');
 	}
 }
 
@@ -195,7 +195,7 @@ void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	std::stack<std::string> stack;
 
 	stack.emplace(recreator.popString());  // push value
-	std::string separator = ' ' + rpnItem->token()->table()->name() + ' ';
+	std::string separator = ' ' + rpnItem->token()->name() + ' ';
 	while (!recreator.empty())
 	{
 		stack.emplace(recreator.popString() + separator);
@@ -228,7 +228,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	}
 	string.append(recreator.popString());
 
-	TableEntry *entry {rpnItem->token()->table()};
+	TableEntry *entry {rpnItem->token()->tableEntry()};
 	if (entry->hasFlag(SubStr_Flag))
 	{
 		// for sub-string assignments, treat as function to recreate

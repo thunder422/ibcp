@@ -33,8 +33,8 @@ void inputTranslate(Translator &translator)
 {
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	TokenPtr token;
-	TableEntry *entry = commandToken->table()->alternate(0);
-	if (commandToken->table()->name2().empty())
+	TableEntry *entry = commandToken->alternate(0);
+	if (commandToken->name2().empty())
 	{
 		token = std::make_shared<Token>(entry);
 	}
@@ -104,13 +104,13 @@ void inputTranslate(Translator &translator)
 		}
 
 		// change token to appropriate assign code and append to output
-		token->setTableEntry(commandToken->table()->alternate(1));
+		token->setTableEntry(commandToken->alternate(1));
 		translator.processFinalOperand(token);
 
 		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
 		insertPoint = translator.outputInsert(insertPoint,
-			std::make_shared<Token>(token->table()->alternate(1)));
+			std::make_shared<Token>(token->alternate(1)));
 	}
 	while (!done);
 
@@ -148,7 +148,7 @@ void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate the input command code
 void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	recreator.append(rpnItem->token()->table()->commandName());
+	recreator.append(rpnItem->token()->commandName());
 	// FLAG option: all spaces after commands (default=yes)
 	recreator.append(' ');
 	recreator.append(recreator.popString());
