@@ -63,20 +63,20 @@ Input: LEFT$(A$,1),B$,C$ = D$
 Output: A$<ref> 1% B$<ref> C$<ref> D$ AssignKeep$ AssignKeep$ LEFT$(Assign 
 
 Input: A$,LEFT$(B$,1) = C$
-Output: A$<ref> B$<ref> 1% C$ LEFT$(AssignKeep =Assign$ 
+Output: A$<ref> B$<ref> 1% C$ LEFT$(AssignKeep Assign$ 
 
 Input: A$,LEFT$(B$,1),C$ = D$
-Output: A$<ref> B$<ref> 1% C$<ref> D$ AssignKeep$ LEFT$(AssignKeep =Assign$ 
+Output: A$<ref> B$<ref> 1% C$<ref> D$ AssignKeep$ LEFT$(AssignKeep Assign$ 
 
 Input: A$,B$,C$ = D$
-Output: A$<ref> B$<ref> C$<ref> D$ =AssignList$ 
+Output: A$<ref> B$<ref> C$<ref> D$ AssignList$ 
 
 Input: A$,B$,LEFT$(C$,1) = D$
-Output: A$<ref> B$<ref> C$<ref> 1% D$ LEFT$(AssignKeep AssignKeep$ =Assign$ 
+Output: A$<ref> B$<ref> C$<ref> 1% D$ LEFT$(AssignKeep AssignKeep$ Assign$ 
 
 Input: LEFT$(A$,1),B$,RIGHT$(C$,1) = D$
 Output: A$<ref> 1% B$<ref> C$<ref> 1% D$ RIGHT$(AssignKeep AssignKeep$ LEFT$(Assign 
 
 Input: A(int(B))=C
-Output: B INT( CvtInt A(<ref> C =Assign 
+Output: B INT( CvtInt A(<ref> C Assign 
 

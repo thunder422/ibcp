@@ -688,19 +688,19 @@ static TableEntry tableEntries[] =
 	//***************************
 	{	// Assign_Code
 		Type{},
-		"=", "Assign", "LET",
+		"", "Assign", "LET",
 		Reference_Flag | Command_Flag, 4, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignInt_Code
 		Type{},
-		"=", "Assign%", "LET",
+		"", "Assign%", "LET",
 		Reference_Flag | Command_Flag, 4, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignStr_Code
 		Type{},
-		"=", "Assign$", "LET",
+		"", "Assign$", "LET",
 		Reference_Flag | Command_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
@@ -730,19 +730,19 @@ static TableEntry tableEntries[] =
 	},
 	{	// AssignList_Code
 		Type{},
-		"=", "AssignList", "LET",
+		"", "AssignList", "LET",
 		Reference_Flag | Command_Flag, 4, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListInt_Code
 		Type{},
-		"=", "AssignList%", "LET",
+		"", "AssignList%", "LET",
 		Reference_Flag | Command_Flag, 4, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},
 	{	// AssignListStr_Code
 		Type{},
-		"=", "AssignList$", "LET",
+		"", "AssignList$", "LET",
 		Reference_Flag | Command_Flag, 4, &Str_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, assignRecreate
 	},

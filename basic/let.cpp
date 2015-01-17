@@ -195,7 +195,7 @@ void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	std::stack<std::string> stack;
 
 	stack.emplace(recreator.popString());  // push value
-	std::string separator = ' ' + rpnItem->token()->name() + ' ';
+	std::string separator = ' ' + Table::entry(Eq_Code)->name() + ' ';
 	while (!recreator.empty())
 	{
 		stack.emplace(recreator.popString() + separator);

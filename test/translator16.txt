@@ -1,6 +1,6 @@
 
 Input: A=SQR(17):PRINT A
-Output: A<ref> 17 SQR( =Assign':' A PrintDbl PRINT 
+Output: A<ref> 17 SQR( Assign':' A PrintDbl PRINT 
 
 Input: PRINT A:PRINT B
 Output: A PrintDbl PRINT':' B PrintDbl PRINT 
@@ -12,10 +12,10 @@ Input: INPUT A:PRINT A
 Output: InputParse InputBegin A<ref> InputAssign INPUT':' A PrintDbl PRINT 
 
 Input: A,B,C=5.0:INPUT D
-Output: A<ref> B<ref> C<ref> 5.0 =AssignList':' InputParse InputBegin D<ref> InputAssign INPUT 
+Output: A<ref> B<ref> C<ref> 5.0 AssignList':' InputParse InputBegin D<ref> InputAssign INPUT 
 
 Input: A$,LEFT$(B$,1),MID$(C$,2,3)="A":PRINT A$
-Output: A$<ref> B$<ref> 1% C$<ref> 2% 3% "A" MID$(AssignKeep3 LEFT$(AssignKeep =Assign$':' A$ PrintStr PRINT 
+Output: A$<ref> B$<ref> 1% C$<ref> 2% 3% "A" MID$(AssignKeep3 LEFT$(AssignKeep Assign$':' A$ PrintStr PRINT 
 
 Input: INPUT PROMPT "Number",A:PRINT A
 Output: "Number" InputParse InputBeginStr'Question' A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 
@@ -36,7 +36,7 @@ Input: PRINT A:'output A:test
 Output: A PrintDbl PRINT':' '|output A:test| 
 
 Input: INPUT A;:R=SQR(A):PRINT"Sqrt(";A;")=";R
-Output: InputParse InputBegin A<ref> InputAssign INPUT'Keep:' R<ref> A SQR( =Assign':' "Sqrt(" PrintStr A PrintDbl ")=" PrintStr R PrintDbl PRINT 
+Output: InputParse InputBegin A<ref> InputAssign INPUT'Keep:' R<ref> A SQR( Assign':' "Sqrt(" PrintStr A PrintDbl ")=" PrintStr R PrintDbl PRINT 
 
 Input: :
        ^-- expected command or item for assignment

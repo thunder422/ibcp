@@ -1,175 +1,175 @@
 
 Input: A=4+B
-Output: A<ref> 4 B + =Assign 
+Output: A<ref> 4 B + Assign 
 
 Input: A=4.0+B
-Output: A<ref> 4.0 B + =Assign 
+Output: A<ref> 4.0 B + Assign 
 
 Input: A=4e40+B
-Output: A<ref> 4e40 B + =Assign 
+Output: A<ref> 4e40 B + Assign 
 
 Input: A=B+4
-Output: A<ref> B 4 + =Assign 
+Output: A<ref> B 4 + Assign 
 
 Input: A=B+4.0
-Output: A<ref> B 4.0 + =Assign 
+Output: A<ref> B 4.0 + Assign 
 
 Input: A=B+4e40
-Output: A<ref> B 4e40 + =Assign 
+Output: A<ref> B 4e40 + Assign 
 
 Input: A=B%+4e40
-Output: A<ref> B% 4e40 +%1 =Assign 
+Output: A<ref> B% 4e40 +%1 Assign 
 
 Input: A%=4+B%
-Output: A%<ref> 4% B% +% =Assign% 
+Output: A%<ref> 4% B% +% Assign% 
 
 Input: A%=4.0+B%
-Output: A%<ref> 4.0% B% +% =Assign% 
+Output: A%<ref> 4.0% B% +% Assign% 
 
 Input: A%=4e40+B%
-Output: A%<ref> 4e40 B% +%2 CvtInt =Assign% 
+Output: A%<ref> 4e40 B% +%2 CvtInt Assign% 
 
 Input: A%=B%+4
-Output: A%<ref> B% 4% +% =Assign% 
+Output: A%<ref> B% 4% +% Assign% 
 
 Input: A%=B%+4.0
-Output: A%<ref> B% 4.0% +% =Assign% 
+Output: A%<ref> B% 4.0% +% Assign% 
 
 Input: A%=B%+4e40
-Output: A%<ref> B% 4e40 +%1 CvtInt =Assign% 
+Output: A%<ref> B% 4e40 +%1 CvtInt Assign% 
 
 Input: A$="4"+B$
-Output: A$<ref> "4" B$ +$ =Assign$ 
+Output: A$<ref> "4" B$ +$ Assign$ 
 
 Input: A$=B$+"4"
-Output: A$<ref> B$ "4" +$ =Assign$ 
+Output: A$<ref> B$ "4" +$ Assign$ 
 
 Input: A%=4\B
-Output: A%<ref> 4 B \ =Assign% 
+Output: A%<ref> 4 B \ Assign% 
 
 Input: A%=4.0\B
-Output: A%<ref> 4.0 B \ =Assign% 
+Output: A%<ref> 4.0 B \ Assign% 
 
 Input: A%=4e40\B
-Output: A%<ref> 4e40 B \ =Assign% 
+Output: A%<ref> 4e40 B \ Assign% 
 
 Input: A%=B\4
-Output: A%<ref> B 4 \ =Assign% 
+Output: A%<ref> B 4 \ Assign% 
 
 Input: A%=B\4.0
-Output: A%<ref> B 4.0 \ =Assign% 
+Output: A%<ref> B 4.0 \ Assign% 
 
 Input: A%=B\4e40
-Output: A%<ref> B 4e40 \ =Assign% 
+Output: A%<ref> B 4e40 \ Assign% 
 
 Input: A%=4 AND B%
-Output: A%<ref> 4% B% AND =Assign% 
+Output: A%<ref> 4% B% AND Assign% 
 
 Input: A%=4.0 AND B%
-Output: A%<ref> 4.0% B% AND =Assign% 
+Output: A%<ref> 4.0% B% AND Assign% 
 
 Input: A%=4e40 AND B%
           ^^^^-- expected valid integer constant
 
 Input: A%=B% AND 4
-Output: A%<ref> B% 4% AND =Assign% 
+Output: A%<ref> B% 4% AND Assign% 
 
 Input: A%=B% AND 4.0
-Output: A%<ref> B% 4.0% AND =Assign% 
+Output: A%<ref> B% 4.0% AND Assign% 
 
 Input: A%=B% AND 4e40
                  ^^^^-- expected valid integer constant
 
 Input: A=- 4
-Output: A<ref> 4% -U% CvtDbl =Assign 
+Output: A<ref> 4% -U% CvtDbl Assign 
 
 Input: A=- 4.0
-Output: A<ref> 4.0 -U =Assign 
+Output: A<ref> 4.0 -U Assign 
 
 Input: A=- 4e40
-Output: A<ref> 4e40 -U =Assign 
+Output: A<ref> 4e40 -U Assign 
 
 Input: A%=- 4
-Output: A%<ref> 4% -U% =Assign% 
+Output: A%<ref> 4% -U% Assign% 
 
 Input: A%=- 4.0
-Output: A%<ref> 4.0 -U CvtInt =Assign% 
+Output: A%<ref> 4.0 -U CvtInt Assign% 
 
 Input: A%=- 4e40
-Output: A%<ref> 4e40 -U CvtInt =Assign% 
+Output: A%<ref> 4e40 -U CvtInt Assign% 
 
 Input: A%=NOT 4
-Output: A%<ref> 4% NOT =Assign% 
+Output: A%<ref> 4% NOT Assign% 
 
 Input: A%=NOT 4.0
-Output: A%<ref> 4.0% NOT =Assign% 
+Output: A%<ref> 4.0% NOT Assign% 
 
 Input: A%=NOT 4e40
               ^^^^-- expected valid integer constant
 
 Input: A=ABS(4)
-Output: A<ref> 4% ABS(% CvtDbl =Assign 
+Output: A<ref> 4% ABS(% CvtDbl Assign 
 
 Input: A=ABS(4.0)
-Output: A<ref> 4.0 ABS( =Assign 
+Output: A<ref> 4.0 ABS( Assign 
 
 Input: A=ABS(4e40)
-Output: A<ref> 4e40 ABS( =Assign 
+Output: A<ref> 4e40 ABS( Assign 
 
 Input: A$=STR$(4)
-Output: A$<ref> 4% STR$(% =Assign$ 
+Output: A$<ref> 4% STR$(% Assign$ 
 
 Input: A$=STR$(4.0)
-Output: A$<ref> 4.0 STR$( =Assign$ 
+Output: A$<ref> 4.0 STR$( Assign$ 
 
 Input: A$=STR$(4e40)
-Output: A$<ref> 4e40 STR$( =Assign$ 
+Output: A$<ref> 4e40 STR$( Assign$ 
 
 Input: A$=CHR$(4)
-Output: A$<ref> 4% CHR$( =Assign$ 
+Output: A$<ref> 4% CHR$( Assign$ 
 
 Input: A$=CHR$(4.0)
-Output: A$<ref> 4.0% CHR$( =Assign$ 
+Output: A$<ref> 4.0% CHR$( Assign$ 
 
 Input: A$=CHR$(4e40)
                ^^^^-- expected valid integer constant
 
 Input: A=4
-Output: A<ref> 4 =Assign 
+Output: A<ref> 4 Assign 
 
 Input: A=4.0
-Output: A<ref> 4.0 =Assign 
+Output: A<ref> 4.0 Assign 
 
 Input: A=4e40
-Output: A<ref> 4e40 =Assign 
+Output: A<ref> 4e40 Assign 
 
 Input: A$="4"
-Output: A$<ref> "4" =Assign$ 
+Output: A$<ref> "4" Assign$ 
 
 Input: A%=4
-Output: A%<ref> 4% =Assign% 
+Output: A%<ref> 4% Assign% 
 
 Input: A%=4.0
-Output: A%<ref> 4.0% =Assign% 
+Output: A%<ref> 4.0% Assign% 
 
 Input: A%=4e40
           ^^^^-- expected valid integer constant
 
 Input: A=4^B
-Output: A<ref> 4 B ^ =Assign 
+Output: A<ref> 4 B ^ Assign 
 
 Input: A=4.0^B
-Output: A<ref> 4.0 B ^ =Assign 
+Output: A<ref> 4.0 B ^ Assign 
 
 Input: A=4e40^B
-Output: A<ref> 4e40 B ^ =Assign 
+Output: A<ref> 4e40 B ^ Assign 
 
 Input: A=B^4
-Output: A<ref> B 4% ^* =Assign 
+Output: A<ref> B 4% ^* Assign 
 
 Input: A=B^4.0
-Output: A<ref> B 4.0 ^ =Assign 
+Output: A<ref> B 4.0 ^ Assign 
 
 Input: A=B^4e40
-Output: A<ref> B 4e40 ^ =Assign 
+Output: A<ref> B 4e40 ^ Assign 
 

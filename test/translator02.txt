@@ -1,54 +1,54 @@
 
 Input: Z = not A < 5.0 = B > 2.0
-Output: Z<ref> A 5.0 < B 2.0 > =% NOT CvtDbl =Assign 
+Output: Z<ref> A 5.0 < B 2.0 > =% NOT CvtDbl Assign 
 
 Input: Z% = not A% < 5 and B% > 2 or C% < 1 and D% <> 2
-Output: Z%<ref> A% 5% <% NOT B% 2% >% AND C% 1% <% D% 2% <>% AND OR =Assign% 
+Output: Z%<ref> A% 5% <% NOT B% 2% >% AND C% 1% <% D% 2% <>% AND OR Assign% 
 
 Input: Z$=STR$(VAL("1.23"))
-Output: Z$<ref> "1.23" VAL( STR$( =Assign$ 
+Output: Z$<ref> "1.23" VAL( STR$( Assign$ 
 
 Input: Z$=MID$(A$+B$,(C%+5)*D%,4)+" Test"
-Output: Z$<ref> A$ B$ +$ C% 5% +% D% *% 4% MID$(3 " Test" +$ =Assign$ 
+Output: Z$<ref> A$ B$ +$ C% 5% +% D% *% 4% MID$(3 " Test" +$ Assign$ 
 
 Input: Z% = (a$ = "this" + "test")
-Output: Z%<ref> a$ "this" "test" +$ =$')' =Assign% 
+Output: Z%<ref> a$ "this" "test" +$ =$')' Assign% 
 
 Input: Z = A% + B
-Output: Z<ref> A% B +%1 =Assign 
+Output: Z<ref> A% B +%1 Assign 
 
 Input: Z = A + B%
-Output: Z<ref> A B% +%2 =Assign 
+Output: Z<ref> A B% +%2 Assign 
 
 Input: Z% = A% + B%
-Output: Z%<ref> A% B% +% =Assign% 
+Output: Z%<ref> A% B% +% Assign% 
 
 Input: Z = A% + B% + C
-Output: Z<ref> A% B% +% C +%1 =Assign 
+Output: Z<ref> A% B% +% C +%1 Assign 
 
 Input: Z = A% - B
-Output: Z<ref> A% B -%1 =Assign 
+Output: Z<ref> A% B -%1 Assign 
 
 Input: Z = A - B%
-Output: Z<ref> A B% -%2 =Assign 
+Output: Z<ref> A B% -%2 Assign 
 
 Input: Z% = A% - B%
-Output: Z%<ref> A% B% -% =Assign% 
+Output: Z%<ref> A% B% -% Assign% 
 
 Input: Z = A% - B% * C
-Output: Z<ref> A% B% C *%1 -%1 =Assign 
+Output: Z<ref> A% B% C *%1 -%1 Assign 
 
 Input: Z = ABS(A%) + SGN(B%) + ABS(C) * SGN(D)
-Output: Z<ref> A% ABS(% B% SGN(% +% C ABS( D SGN( * +%1 =Assign 
+Output: Z<ref> A% ABS(% B% SGN(% +% C ABS( D SGN( * +%1 Assign 
 
 Input: Z = ABS(-A%) + SGN(-B%) + ABS(-C) * SGN(-D)
-Output: Z<ref> A% -U% ABS(% B% -U% SGN(% +% C -U ABS( D -U SGN( * +%1 =Assign 
+Output: Z<ref> A% -U% ABS(% B% -U% SGN(% +% C -U ABS( D -U SGN( * +%1 Assign 
 
 Input: Z$ = STR$(A) + STR$(A%)
-Output: Z$<ref> A STR$( A% STR$(% +$ =Assign$ 
+Output: Z$<ref> A STR$( A% STR$(% +$ Assign$ 
 
 Input: Z = A% + B * C ^ D
-Output: Z<ref> A% B C D ^ * +%1 =Assign 
+Output: Z<ref> A% B C D ^ * +%1 Assign 
 
 Input: Z = A$ + B
                 ^-- expected string expression
