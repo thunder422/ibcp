@@ -43,6 +43,7 @@ enum class Type
 	IntFunc,
 	Constant,
 	DefFunc,
+	DefFuncNoArgs,
 	NoParen,
 	Paren
 };

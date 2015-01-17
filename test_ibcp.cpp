@@ -49,15 +49,11 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 		}
 		break;
 
+	case Type::DefFuncNoArgs:
+		os << token->stringWithDataType();
+		break;
+
 	case Type::DefFunc:
-		if (token->index() == DefFuncN_Code
-			|| token->index() == DefFuncNInt_Code
-			|| token->index() == DefFuncNStr_Code)
-		{
-			os << token->stringWithDataType();
-			break;
-		}
-		// else fall thru (has parentheses)
 	case Type::Paren:
 		os << token->stringWithDataType() << '(';
 		break;
@@ -463,9 +459,7 @@ try
 	{
 		TokenPtr token {parse(DataType::Any, Reference::None)};
 		printToken(token);
-		if (token->index() == DefFuncP_Code
-			|| token->index() == DefFuncPInt_Code
-			|| token->index() == DefFuncPStr_Code || token->isType(Type::Paren))
+		if (token->isType(Type::DefFunc) || token->isType(Type::Paren))
 		{
 			parse.getParen();
 		}
@@ -666,6 +660,8 @@ static const char *tokenTypeName(Type type)
 		return "Constant";
 	case Type::DefFunc:
 		return "DefFunc";
+	case Type::DefFuncNoArgs:
+		return "DefFuncN";
 	case Type::NoParen:
 		return "NoParen";
 	case Type::Paren:
@@ -682,19 +678,16 @@ void Tester::printToken(const TokenPtr &token)
 		<< ": " << std::setw(10) << tokenTypeName(token->type());
 	switch (token->type())
 	{
-	case Type::DefFunc:
-		m_cout << (token->index() == DefFuncN_Code
-			|| token->index() == DefFuncNInt_Code
-			|| token->index() == DefFuncNStr_Code ? "  " : "()");
-		break;
 	case Type::IntFunc:
 		m_cout << (token->operandCount() == 0 ? "  " : "()");
 		break;
 	case Type::Constant:
 	case Type::NoParen:
+	case Type::DefFuncNoArgs:
 		m_cout << "  ";
 		break;
 	case Type::Paren:
+	case Type::DefFunc:
 		m_cout << "()";
 		break;
 	case Type::Operator:
@@ -708,19 +701,11 @@ void Tester::printToken(const TokenPtr &token)
 	}
 	switch (token->type())
 	{
-	case Type::DefFunc:
-		m_cout << " |" << token->stringWithDataType();
-		if (token->index() == DefFuncP_Code
-			|| token->index() == DefFuncPInt_Code
-			|| token->index() == DefFuncPStr_Code)
-		{
-			m_cout << '(';
-		}
-		m_cout << '|';
-		break;
+	case Type::DefFuncNoArgs:
 	case Type::NoParen:
 		m_cout << " |" << token->stringWithDataType() << '|';
 		break;
+	case Type::DefFunc:
 	case Type::Paren:
 		m_cout << " |" << token->stringWithDataType() << "(|";
 		break;

@@ -1230,19 +1230,19 @@ static TableEntry tableEntries[] =
 		NULL, NULL, NULL, NULL, arrayRecreate
 	},
 	{	// DefFuncN_Code
-		Type::DefFunc,
+		Type::DefFuncNoArgs,
 		"", "DefFuncN", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
 	{	// DefFuncNInt_Code
-		Type::DefFunc,
+		Type::DefFuncNoArgs,
 		"", "DefFuncNInt", "",
 		TableFlag{}, 2, &Int_None_ExprInfo,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate
 	},
 	{	// DefFuncNStr_Code
-		Type::DefFunc,
+		Type::DefFuncNoArgs,
 		"", "DefFuncNStr", "",
 		TableFlag{}, 2, &Str_None_ExprInfo,
 		NULL, NULL, NULL, NULL, defineFunctionRecreate

@@ -1,14 +1,14 @@
 
 Input: fna FnB fNc FND fna$ fna% fnword# fnhello$ fnindex%
-	 0: DefFunc      Double  |fna|
-	 4: DefFunc      Double  |FnB|
-	 8: DefFunc      Double  |fNc|
-	12: DefFunc      Double  |FND|
-	16: DefFunc      String  |fna$|
-	21: DefFunc      Integer |fna%|
-	26: DefFunc      Double  |fnword#|
-	34: DefFunc      String  |fnhello$|
-	43: DefFunc      Integer |fnindex%|
+	 0: DefFuncN     Double  |fna|
+	 4: DefFuncN     Double  |FnB|
+	 8: DefFuncN     Double  |fNc|
+	12: DefFuncN     Double  |FND|
+	16: DefFuncN     String  |fna$|
+	21: DefFuncN     Integer |fna%|
+	26: DefFuncN     Double  |fnword#|
+	34: DefFuncN     String  |fnhello$|
+	43: DefFuncN     Integer |fnindex%|
 	51: Operator  Op None    EOL
 
 Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
@@ -20,7 +20,7 @@ Input: fna( FnB( fNc(FND( fna$(fna%( fnword#( fnhello$( fnindex%
 	24: DefFunc   () Integer |fna%(|
 	30: DefFunc   () Double  |fnword#(|
 	39: DefFunc   () String  |fnhello$(|
-	49: DefFunc      Integer |fnindex%|
+	49: DefFuncN     Integer |fnindex%|
 	57: Operator  Op None    EOL
 
 Input: a b(c$ D# asdf$ qwer( zxcv Asdf% QWER%( Nbb_34$( h_544_4#(

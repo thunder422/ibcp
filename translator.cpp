@@ -373,6 +373,7 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 		break;
 
 	case Type::DefFunc:
+	case Type::DefFuncNoArgs:
 		if (reference == Reference::Variable)
 		{
 			throw TokenError {expectedErrorStatus(dataType, reference),
