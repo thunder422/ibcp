@@ -208,6 +208,10 @@ public:
 	{
 		return m_entry->hasFlag(flag);
 	}
+	bool isCommand() const
+	{
+		return m_entry->isCommand();
+	}
 	int precedence() const
 	{
 		return m_entry->precedence();

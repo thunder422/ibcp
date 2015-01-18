@@ -162,167 +162,167 @@ static TableEntry tableEntries[] =
 	//   Commands
 	//--------------
 	{	// Let_Code
-		Type::Command,
+		Type{},
 		"LET", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		letTranslate, NULL, NULL, NULL, NULL
 	},
 	{	// Print_Code
-		Type::Command,
+		Type{},
 		"PRINT", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		printTranslate, NULL, NULL, NULL, printRecreate
 	},
 	{	// Input_Code
-		Type::Command,
+		Type{},
 		"INPUT", "", "Keep",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// InputPrompt_Code
-		Type::Command,
+		Type{},
 		"INPUT", "PROMPT", "Keep",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// Dim_Code
-		Type::Command,
+		Type{},
 		"DIM", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Def_Code
-		Type::Command,
+		Type{},
 		"DEF", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Rem_Code
-		Type::Command,
+		Type{},
 		"REM", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	{	// If_Code
-		Type::Command,
+		Type{},
 		"IF", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Then_Code
-		Type::Command,
+		Type{},
 		"THEN", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Else_Code
-		Type::Command,
+		Type{},
 		"ELSE", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// End_Code
-		Type::Command,
+		Type{},
 		"END", "", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// EndIf_Code
-		Type::Command,
+		Type{},
 		"END", "IF", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// For_Code
-		Type::Command,
+		Type{},
 		"FOR", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// To_Code
-		Type::Command,
+		Type{},
 		"TO", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Step_Code
-		Type::Command,
+		Type{},
 		"STEP", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Next_Code
-		Type::Command,
+		Type{},
 		"NEXT", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Do_Code
-		Type::Command,
+		Type{},
 		"DO", "", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoWhile_Code
-		Type::Command,
+		Type{},
 		"DO", "WHILE", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoUntil_Code
-		Type::Command,
+		Type{},
 		"DO", "UNTIL", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// While_Code
-		Type::Command,
+		Type{},
 		"WHILE", "", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Until_Code
-		Type::Command,
+		Type{},
 		"UNTIL", "", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Loop_Code
-		Type::Command,
+		Type{},
 		"LOOP", "", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopWhile_Code
-		Type::Command,
+		Type{},
 		"LOOP", "WHILE", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopUntil_Code
-		Type::Command,
+		Type{},
 		"LOOP", "UNTIL", "",
-		Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},

@@ -38,8 +38,7 @@ using TokenPtr = std::shared_ptr<Token>;
 // TODO temporary until code type enumeration implemented
 enum class Type
 {
-	Command = 1,
-	Operator,
+	Operator = 1,
 	IntFunc,
 	Constant,
 	DefFunc,
@@ -61,7 +60,7 @@ enum TableFlag : unsigned
 	UseConstAsIs_Flag   = 1u << 5,	// use constant data type as is
 	Keep_Flag			= 1u << 6,	// sub-string keep assignment
 	Two_Flag			= 1u << 7,	// code can have two words or characters
-	Command_Flag		= 1u << 8,	// operator code is really a command
+	Command_Flag		= 1u << 8,	// code is a command
 	EndStmt_Flag		= 1u << 31	// end statement
 };
 
@@ -149,6 +148,11 @@ public:
 	bool hasFlag(unsigned flag) const
 	{
 		return m_flags & flag ? true : false;
+	}
+	bool isCommand() const
+	{
+		return hasFlag(Command_Flag) && !hasFlag(Reference_Flag)
+			&& m_type != Type::Operator;
 	}
 	int precedence() const
 	{

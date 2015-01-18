@@ -39,58 +39,8 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 {
 	bool second {};
 
-	switch (token->type())
+	if (token->isCommand())
 	{
-	case Type::NoParen:
-		os << token->stringWithDataType();
-		if (token->hasFlag(Reference_Flag))
-		{
-			os << "<ref>";
-		}
-		break;
-
-	case Type::DefFuncNoArgs:
-		os << token->stringWithDataType();
-		break;
-
-	case Type::DefFunc:
-	case Type::Paren:
-		os << token->stringWithDataType() << '(';
-		break;
-
-	case Type::Constant:
-		switch (token->dataType())
-		{
-		case DataType::Integer:
-		case DataType::Double:
-			os << token->string();
-			if (token->dataType() == DataType::Integer)
-			{
-				os << "%";
-			}
-			break;
-
-		case DataType::String:
-			os << '"' << token->string() << '"';
-			break;
-		default:
-			break;
-		}
-		break;
-
-	case Type::Operator:
-		if (token->isCode(RemOp_Code))
-		{
-			os << token->name();
-			second = true;
-		}
-		else
-		{
-			os << token->debugName();
-		}
-		break;
-
-	case Type::Command:
 		if (token->isCode(Rem_Code))
 		{
 			os << token->name();
@@ -104,12 +54,65 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 				os << '-' << token->name2();
 			}
 		}
-		break;
+	}
+	else
+	{
+		switch (token->type())
+		{
+		case Type::NoParen:
+			os << token->stringWithDataType();
+			if (token->hasFlag(Reference_Flag))
+			{
+				os << "<ref>";
+			}
+			break;
 
-	default:
-		// output debug name by default
-		os << token->debugName();
-		break;
+		case Type::DefFuncNoArgs:
+			os << token->stringWithDataType();
+			break;
+
+		case Type::DefFunc:
+		case Type::Paren:
+			os << token->stringWithDataType() << '(';
+			break;
+
+		case Type::Constant:
+			switch (token->dataType())
+			{
+			case DataType::Integer:
+			case DataType::Double:
+				os << token->string();
+				if (token->dataType() == DataType::Integer)
+				{
+					os << "%";
+				}
+				break;
+
+			case DataType::String:
+				os << '"' << token->string() << '"';
+				break;
+			default:
+				break;
+			}
+			break;
+
+		case Type::Operator:
+			if (token->isCode(RemOp_Code))
+			{
+				os << token->name();
+				second = true;
+			}
+			else
+			{
+				os << token->debugName();
+			}
+			break;
+
+		default:
+			// output debug name by default
+			os << token->debugName();
+			break;
+		}
 	}
 	if (token->reference())
 	{
@@ -118,9 +121,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	if (token->hasSubCode())
 	{
 		os << '\'';
-		bool command = token->isType(Type::Command)
-			|| token->hasFlag(Command_Flag);
-		if (!command && token->hasSubCode(Paren_SubCode))
+		if (!token->hasFlag(Command_Flag) && token->hasSubCode(Paren_SubCode))
 		{
 			os << ')';
 		}
@@ -136,7 +137,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 				os << option;
 			}
 		}
-		if (command && token->hasSubCode(Colon_SubCode))
+		if (token->hasFlag(Command_Flag) && token->hasSubCode(Colon_SubCode))
 		{
 			os << ':';
 		}
@@ -646,26 +647,31 @@ static const char *dataTypeName(DataType dataType)
 
 
 // function to convert token type enumerator to string
-static const char *tokenTypeName(Type type)
+static const char *tokenTypeName(const TokenPtr &token)
 {
-	switch (type)
+	if (token->isCommand())
 	{
-	case Type::Command:
 		return "Command";
-	case Type::Operator:
-		return "Operator";
-	case Type::IntFunc:
-		return "IntFunc";
-	case Type::Constant:
-		return "Constant";
-	case Type::DefFunc:
-		return "DefFunc";
-	case Type::DefFuncNoArgs:
-		return "DefFuncN";
-	case Type::NoParen:
-		return "NoParen";
-	case Type::Paren:
-		return "Paren";
+	}
+	else
+	{
+		switch (token->type())
+		{
+		case Type::Operator:
+			return "Operator";
+		case Type::IntFunc:
+			return "IntFunc";
+		case Type::Constant:
+			return "Constant";
+		case Type::DefFunc:
+			return "DefFunc";
+		case Type::DefFuncNoArgs:
+			return "DefFuncN";
+		case Type::NoParen:
+			return "NoParen";
+		case Type::Paren:
+			return "Paren";
+		}
 	}
 	return "";  // silence compiler warning (doesn't reach here at run-time)
 }
@@ -675,68 +681,74 @@ static const char *tokenTypeName(Type type)
 void Tester::printToken(const TokenPtr &token)
 {
 	m_cout << '\t' << std::setw(2) << std::right << token->column() << std::left
-		<< ": " << std::setw(10) << tokenTypeName(token->type());
-	switch (token->type())
+		<< ": " << std::setw(10) << tokenTypeName(token);
+	if (token->isCommand())
 	{
-	case Type::IntFunc:
-		m_cout << (token->operandCount() == 0 ? "  " : "()");
-		break;
-	case Type::Constant:
-	case Type::NoParen:
-	case Type::DefFuncNoArgs:
-		m_cout << "  ";
-		break;
-	case Type::Paren:
-	case Type::DefFunc:
-		m_cout << "()";
-		break;
-	case Type::Operator:
-	case Type::Command:
-		m_cout << "Op";
-		break;
-	}
-	if (!token->isType(Type::Command))
-	{
-		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
-	}
-	switch (token->type())
-	{
-	case Type::DefFuncNoArgs:
-	case Type::NoParen:
-		m_cout << " |" << token->stringWithDataType() << '|';
-		break;
-	case Type::DefFunc:
-	case Type::Paren:
-		m_cout << " |" << token->stringWithDataType() << "(|";
-		break;
-	case Type::Constant:
-		switch (token->dataType())
-		{
-		case DataType::Integer:
-			m_cout << ' ' << token->valueInt();
-			break;
-		case DataType::Double:
-			m_cout << ' ';
-			if (token->hasSubCode(IntConst_SubCode))
-			{
-				m_cout << token->valueInt() << ",";
-			}
-			m_cout << token->value();
-			break;
-		default:
-		    break;
-		}
-		m_cout << " |" << token->string() << '|';
-		break;
-	case Type::Operator:
-	case Type::IntFunc:
-	case Type::Command:
-		m_cout << " " << token->debugName();
-		if (token->isCode(Rem_Code) || token->isCode(RemOp_Code))
+		m_cout << "Op " << token->debugName();
+		if (token->isCode(Rem_Code))
 		{
 			m_cout << " |" << token->string() << '|';
 		}
-		break;
+	}
+	else
+	{
+		switch (token->type())
+		{
+		case Type::IntFunc:
+			m_cout << (token->operandCount() == 0 ? "  " : "()");
+			break;
+		case Type::Constant:
+		case Type::NoParen:
+		case Type::DefFuncNoArgs:
+			m_cout << "  ";
+			break;
+		case Type::Paren:
+		case Type::DefFunc:
+			m_cout << "()";
+			break;
+		case Type::Operator:
+			m_cout << "Op";
+			break;
+		}
+		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
+		switch (token->type())
+		{
+		case Type::DefFuncNoArgs:
+		case Type::NoParen:
+			m_cout << " |" << token->stringWithDataType() << '|';
+			break;
+		case Type::DefFunc:
+		case Type::Paren:
+			m_cout << " |" << token->stringWithDataType() << "(|";
+			break;
+		case Type::Constant:
+			switch (token->dataType())
+			{
+			case DataType::Integer:
+				m_cout << ' ' << token->valueInt();
+				break;
+			case DataType::Double:
+				m_cout << ' ';
+				if (token->hasSubCode(IntConst_SubCode))
+				{
+					m_cout << token->valueInt() << ",";
+				}
+				m_cout << token->value();
+				break;
+			default:
+				break;
+			}
+			m_cout << " |" << token->string() << '|';
+			break;
+		case Type::Operator:
+		case Type::IntFunc:
+			m_cout << " " << token->debugName();
+			if (token->isCode(RemOp_Code))
+			{
+				m_cout << " |" << token->string() << '|';
+			}
+			break;
+		}
 	}
 	m_cout << std::endl;
 }

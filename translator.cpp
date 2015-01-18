@@ -150,7 +150,7 @@ void Translator::getCommands()
 		}
 
 		// process command (assume assignment statement if not command token)
-		if (TranslateFunction translate = m_token->isType(Type::Command)
+		if (TranslateFunction translate = m_token->isCommand()
 			? m_token->tableEntry()->translateFunction()
 			: Table::entry(Let_Code)->translateFunction())
 		{
@@ -332,9 +332,18 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	getToken(Status{}, dataType, reference);
 
 	bool doneAppend {true};
+	if (m_token->isCommand())
+	{
+		if (dataType == DataType::None)
+		{
+			// nothing is acceptable, this is terminating token
+			return false;
+		}
+		throw TokenError {expectedErrorStatus(dataType, reference),
+			std::move(m_token)};
+	}
 	switch (m_token->type())
 	{
-	case Type::Command:
 	case Type::Operator:
 		if (dataType == DataType::None)
 		{
