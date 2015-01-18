@@ -342,15 +342,8 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 		throw TokenError {expectedErrorStatus(dataType, reference),
 			std::move(m_token)};
 	}
-	switch (m_token->type())
+	if (m_token->isFunction())
 	{
-	case Type::Constant:
-		break;  // go add token to output and push to done stack
-
-	case Type::NoParen:
-		break;  // go add token to output and push to done stack
-
-	case Type::IntFunc:
 		if (reference != Reference::None)
 		{
 			if (reference != Reference::All || !m_token->hasFlag(SubStr_Flag))
@@ -370,38 +363,49 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 			processInternalFunction(reference);
 			doneAppend = false;  // already appended
 		}
-		break;
+	}
+	else
+	{
+		switch (m_token->type())
+		{
+		case Type::Constant:
+			break;  // go add token to output and push to done stack
 
-	case Type::DefFunc:
-	case Type::DefFuncNoArgs:
-		if (reference == Reference::Variable)
-		{
-			throw TokenError {expectedErrorStatus(dataType, reference),
-				std::move(m_token)};
-		}
-		if (m_parse->getParen())
-		{
-			if (reference != Reference::None)
+		case Type::NoParen:
+			break;  // go add token to output and push to done stack
+
+		case Type::DefFunc:
+		case Type::DefFuncNoArgs:
+			if (reference == Reference::Variable)
 			{
-				// NOTE these are allowed in the DEF command
-				// just point to the open parentheses of the token
-				TokenPtr token = std::move(m_token);
-				throw TokenError {Status::ExpEqualOrComma, token->column()
-					+ token->length(), 1};
+				throw TokenError {expectedErrorStatus(dataType, reference),
+					std::move(m_token)};
 			}
+			if (m_parse->getParen())
+			{
+				if (reference != Reference::None)
+				{
+					// NOTE these are allowed in the DEF command
+					// just point to the open parentheses of the token
+					TokenPtr token = std::move(m_token);
+					throw TokenError {Status::ExpEqualOrComma, token->column()
+						+ token->length(), 1};
+				}
+				processParenToken();
+				doneAppend = false;  // already appended
+			}
+			break;  // go add token to output and push to done stack
+
+		case Type::Paren:
+			m_parse->getParen();
 			processParenToken();
 			doneAppend = false;  // already appended
+			break;
+
+		default:
+			throw TokenError {Status::BUG_NotYetImplemented,
+				std::move(m_token)};
 		}
-		break;  // go add token to output and push to done stack
-
-	case Type::Paren:
-		m_parse->getParen();
-		processParenToken();
-		doneAppend = false;  // already appended
-		break;
-
-	default:
-		throw TokenError {Status::BUG_NotYetImplemented, std::move(m_token)};
 	}
 
 	if (doneAppend)

@@ -330,9 +330,9 @@ static TableEntry tableEntries[] =
 	//   Internal Functions (No Parentheses)
 	//-----------------------------------------
 	{	// Rnd_Code
-		Type::IntFunc,
+		Type{},
 		"RND", "", "",
-		TableFlag{}, 2, &Dbl_None_ExprInfo,
+		Function_Flag, 2, &Dbl_None_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	//--------------------
@@ -384,190 +384,190 @@ static TableEntry tableEntries[] =
 	//   INTERNAL FUNCTIONS (Parentheses)
 	//--------------------------------------
 	{	// Abs_Code
-		Type::IntFunc,
+		Type{},
 		"ABS(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Fix_Code
-		Type::IntFunc,
+		Type{},
 		"FIX(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Frac_Code
-		Type::IntFunc,
+		Type{},
 		"FRAC(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Int_Code
-		Type::IntFunc,
+		Type{},
 		"INT(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 
 	},
 	{	// RndArg_Code
-		Type::IntFunc,
+		Type{},
 		"RND(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sgn_Code
-		Type::IntFunc,
+		Type{},
 		"SGN(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cint_Code
-		Type::IntFunc,
+		Type{},
 		"CINT(", "", "",
-		TableFlag{}, 2, &Int_Dbl_ExprInfo,
+		Function_Flag, 2, &Int_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cdbl_Code
-		Type::IntFunc,
+		Type{},
 		"CDBL(", "", "",
-		TableFlag{}, 2, &Dbl_Int_ExprInfo,
+		Function_Flag, 2, &Dbl_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sqr_Code
-		Type::IntFunc,
+		Type{},
 		"SQR(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Atn_Code
-		Type::IntFunc,
+		Type{},
 		"ATN(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Cos_Code
-		Type::IntFunc,
+		Type{},
 		"COS(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Sin_Code
-		Type::IntFunc,
+		Type{},
 		"SIN(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tan_Code
-		Type::IntFunc,
+		Type{},
 		"TAN(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Exp_Code
-		Type::IntFunc,
+		Type{},
 		"EXP(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Log_Code
-		Type::IntFunc,
+		Type{},
 		"LOG(", "", "",
-		TableFlag{}, 2, &Dbl_Dbl_ExprInfo,
+		Function_Flag, 2, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Tab_Code
-		Type::IntFunc,
+		Type{},
 		"TAB(", "", "",
-		Print_Flag, 2, &None_Int_ExprInfo,
+		Function_Flag | Print_Flag, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Spc_Code
-		Type::IntFunc,
+		Type{},
 		"SPC(", "", "",
-		Print_Flag, 2, &None_Int_ExprInfo,
+		Function_Flag | Print_Flag, 2, &None_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, printFunctionRecreate
 	},
 	{	// Asc_Code
-		Type::IntFunc,
+		Type{},
 		"ASC(", "", "",
-		TableFlag{}, 2, &Int_Str_ExprInfo,
+		Function_Flag, 2, &Int_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Asc2_Code
-		Type::IntFunc,
+		Type{},
 		"ASC(", "2", "",
-		TableFlag{}, 2, &Int_StrInt_ExprInfo,
+		Function_Flag, 2, &Int_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Chr_Code
-		Type::IntFunc,
+		Type{},
 		"CHR$(", "", "",
-		TableFlag{}, 2, &Str_Int_ExprInfo,
+		Function_Flag, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr2_Code
-		Type::IntFunc,
+		Type{},
 		"INSTR(", "2", "",
-		TableFlag{}, 2, &Int_StrStr_ExprInfo,
+		Function_Flag, 2, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Instr3_Code
-		Type::IntFunc,
+		Type{},
 		"INSTR(", "3", "",
-		TableFlag{}, 2, &Int_StrStrInt_ExprInfo,
+		Function_Flag, 2, &Int_StrStrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Left_Code
-		Type::IntFunc,
+		Type{},
 		"LEFT$(", "", "",
-		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
+		Function_Flag | SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Len_Code
-		Type::IntFunc,
+		Type{},
 		"LEN(", "", "",
-		TableFlag{}, 2, &Int_Str_ExprInfo,
+		Function_Flag, 2, &Int_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid2_Code
-		Type::IntFunc,
+		Type{},
 		"MID$(", "2", "",
-		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
+		Function_Flag | SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Mid3_Code
-		Type::IntFunc,
+		Type{},
 		"MID$(", "3", "",
-		SubStr_Flag, 2, &Str_StrIntInt_ExprInfo,
+		Function_Flag | SubStr_Flag, 2, &Str_StrIntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Repeat_Code
-		Type::IntFunc,
+		Type{},
 		"REPEAT$(", "", "",
-		TableFlag{}, 2, &Str_StrInt_ExprInfo,
+		Function_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Right_Code
-		Type::IntFunc,
+		Type{},
 		"RIGHT$(", "", "",
-		SubStr_Flag, 2, &Str_StrInt_ExprInfo,
+		Function_Flag | SubStr_Flag, 2, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Space_Code
-		Type::IntFunc,
+		Type{},
 		"SPACE$(", "", "",
-		TableFlag{}, 2, &Str_Int_ExprInfo,
+		Function_Flag, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Str_Code
-		Type::IntFunc,
+		Type{},
 		"STR$(", "", "",
-		TableFlag{}, 2, &Str_Dbl_ExprInfo,
+		Function_Flag, 2, &Str_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// Val_Code
-		Type::IntFunc,
+		Type{},
 		"VAL(", "", "",
-		TableFlag{}, 2, &Dbl_Str_ExprInfo,
+		Function_Flag, 2, &Dbl_Str_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	//----------------------
@@ -1053,39 +1053,39 @@ static TableEntry tableEntries[] =
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AbsInt_Code
-		Type::IntFunc,
+		Type{},
 		"ABS(", "%", "",
-		TableFlag{}, 2, &Int_Int_ExprInfo,
+		Function_Flag, 2, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// RndArgInt_Code
-		Type::IntFunc,
+		Type{},
 		"RND(", "%", "",
-		TableFlag{}, 2, &Int_Int_ExprInfo,
+		Function_Flag, 2, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// SgnInt_Code
-		Type::IntFunc,
+		Type{},
 		"SGN(", "%", "",
-		TableFlag{}, 2, &Int_Int_ExprInfo,
+		Function_Flag, 2, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// CvtInt_Code
-		Type::IntFunc,
+		Type{},
 		"", "CvtInt", "",
-		Hidden_Flag, 2, &Null_ExprInfo,
+		Function_Flag | Hidden_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// CvtDbl_Code
-		Type::IntFunc,
+		Type{},
 		"", "CvtDbl", "",
-		Hidden_Flag, 2, &Null_ExprInfo,
+		Function_Flag | Hidden_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// StrInt_Code
-		Type::IntFunc,
+		Type{},
 		"STR$(", "%", "",
-		TableFlag{}, 2, &Str_Int_ExprInfo,
+		Function_Flag, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
 	},
 	{	// PrintDbl_Code
@@ -1388,7 +1388,7 @@ void Table::add(TableEntry &entry)
 				iterator->second = &entry;
 				s_alternate[&entry][alternate->m_exprInfo->m_operandCount - 1]
 					.push_back(alternate);
-				if (entry.m_type == Type::IntFunc)
+				if (entry.isFunction())
 				{
 					// multiple codes; set multiple flag on primary code
 					entry.m_flags |= Multiple_Flag;
@@ -1469,7 +1469,7 @@ void Table::add(TableEntry &entry)
 					break;  // no more operands, all operands match
 				}
 			}
-			if (entry.m_type == Type::IntFunc && exprInfo->m_operandCount
+			if (entry.isFunction() && exprInfo->m_operandCount
 				> primary->m_exprInfo->m_operandCount)
 			{
 				// multiple codes; set multiple flag on primary code

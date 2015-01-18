@@ -216,6 +216,10 @@ public:
 	{
 		return m_entry->isCommand();
 	}
+	bool isFunction() const
+	{
+		return m_entry->isFunction();
+	}
 	int precedence() const
 	{
 		return m_entry->precedence();

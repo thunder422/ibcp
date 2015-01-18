@@ -657,12 +657,14 @@ static const char *tokenTypeName(const TokenPtr &token)
 	{
 		return "Operator";
 	}
+	else if (token->isFunction())
+	{
+		return "IntFunc";
+	}
 	else
 	{
 		switch (token->type())
 		{
-		case Type::IntFunc:
-			return "IntFunc";
 		case Type::Constant:
 			return "Constant";
 		case Type::DefFunc:
@@ -701,13 +703,16 @@ void Tester::printToken(const TokenPtr &token)
 			m_cout << " |" << token->string() << '|';
 		}
 	}
+	else if (token->isFunction())
+	{
+		m_cout << (token->operandCount() == 0 ? "  " : "()") << ' '
+			<< std::setw(7) << dataTypeName(token->dataType()) << " "
+			<< token->debugName();
+	}
 	else
 	{
 		switch (token->type())
 		{
-		case Type::IntFunc:
-			m_cout << (token->operandCount() == 0 ? "  " : "()");
-			break;
 		case Type::Constant:
 		case Type::NoParen:
 		case Type::DefFuncNoArgs:
@@ -747,9 +752,6 @@ void Tester::printToken(const TokenPtr &token)
 				break;
 			}
 			m_cout << " |" << token->string() << '|';
-			break;
-		case Type::IntFunc:
-			m_cout << " " << token->debugName();
 			break;
 		}
 	}
