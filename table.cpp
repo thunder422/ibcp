@@ -339,45 +339,45 @@ static TableEntry tableEntries[] =
 	//   Word Operators
 	//--------------------
 	{	// Mod_Code
-		Type::Operator,
+		Type{},
 		"MOD", "", "",
-		TableFlag{}, 42, &Dbl_DblDbl_ExprInfo,
+		Operator_Flag, 42, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// And_Code
-		Type::Operator,
+		Type{},
 		"AND", "", "",
-		TableFlag{}, 18, &Int_IntInt_ExprInfo,
+		Operator_Flag, 18, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Or_Code
-		Type::Operator,
+		Type{},
 		"OR", "", "",
-		TableFlag{}, 14, &Int_IntInt_ExprInfo,
+		Operator_Flag, 14, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Not_Code
-		Type::Operator,
+		Type{},
 		"NOT", "", "",
-		TableFlag{}, 20, &Int_Int_ExprInfo,
+		Operator_Flag, 20, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// Eqv_Code
-		Type::Operator,
+		Type{},
 		"EQV", "", "",
-		TableFlag{}, 12, &Int_IntInt_ExprInfo,
+		Operator_Flag, 12, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Imp_Code
-		Type::Operator,
+		Type{},
 		"IMP", "", "",
-		TableFlag{}, 10, &Int_IntInt_ExprInfo,
+		Operator_Flag, 10, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Xor_Code
-		Type::Operator,
+		Type{},
 		"XOR", "", "",
-		TableFlag{}, 16, &Int_IntInt_ExprInfo,
+		Operator_Flag, 16, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	//--------------------------------------
@@ -574,113 +574,113 @@ static TableEntry tableEntries[] =
 	//   Symbol Operators
 	//----------------------
 	{	// Add_Code
-		Type::Operator,
+		Type{},
 		"+", "", "",
-		TableFlag{}, 40, &Dbl_DblDbl_ExprInfo,
+		Operator_Flag, 40, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Neg_Code
-		Type::Operator,
+		Type{},
 		"-", "U", "",
-		UseConstAsIs_Flag, 48, &Dbl_Dbl_ExprInfo,
+		Operator_Flag | UseConstAsIs_Flag, 48, &Dbl_Dbl_ExprInfo,
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// Mul_Code
-		Type::Operator,
+		Type{},
 		"*", "", "",
-		TableFlag{}, 46, &Dbl_DblDbl_ExprInfo,
+		Operator_Flag, 46, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Div_Code
-		Type::Operator,
+		Type{},
 		"/", "", "",
-		TableFlag{}, 46, &Dbl_DblDbl_ExprInfo,
+		Operator_Flag, 46, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// IntDiv_Code
-		Type::Operator,
+		Type{},
 		"\\", "", "",
-		TableFlag{}, 44, &Int_DblDbl_ExprInfo,
+		Operator_Flag, 44, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Power_Code
-		Type::Operator,
+		Type{},
 		"^", "", "",
-		UseConstAsIs_Flag, 50, &Dbl_DblDbl_ExprInfo,
+		Operator_Flag | UseConstAsIs_Flag, 50, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Eq_Code
-		Type::Operator,
+		Type{},
 		"=", "", "",
-		TableFlag{}, 30, &Int_DblDbl_ExprInfo,
+		Operator_Flag, 30, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Gt_Code
-		Type::Operator,
+		Type{},
 		">", "", "",
-		Two_Flag, 32, &Int_DblDbl_ExprInfo,
+		Operator_Flag | Two_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEq_Code
-		Type::Operator,
+		Type{},
 		">=", "", "",
-		TableFlag{}, 32, &Int_DblDbl_ExprInfo,
+		Operator_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Lt_Code
-		Type::Operator,
+		Type{},
 		"<", "", "",
-		Two_Flag, 32, &Int_DblDbl_ExprInfo,
+		Operator_Flag | Two_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEq_Code
-		Type::Operator,
+		Type{},
 		"<=", "", "",
-		TableFlag{}, 32, &Int_DblDbl_ExprInfo,
+		Operator_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEq_Code
-		Type::Operator,
+		Type{},
 		"<>", "", "",
-		Two_Flag, 30, &Int_DblDbl_ExprInfo,
+		Operator_Flag | Two_Flag, 30, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// OpenParen_Code
-		Type::Operator,
+		Type{},
 		"(", "", "",
-		TableFlag{}, 2, &Null_ExprInfo,
+		Operator_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// CloseParen_Code
-		Type::Operator,
+		Type{},
 		")", "", "",
-		TableFlag{}, 4, &Null_ExprInfo,
+		Operator_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, parenRecreate
 	},
 	{	// Comma_Code
-		Type::Operator,
+		Type{},
 		",", "", "",
-		Command_Flag, 6, &Null_ExprInfo,
+		Operator_Flag | Command_Flag, 6, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, printCommaRecreate
 	},
 	{	// SemiColon_Code
-		Type::Operator,
+		Type{},
 		";", "", "",
-		Command_Flag, 6, &Null_ExprInfo,
+		Operator_Flag | Command_Flag, 6, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, printSemicolonRecreate
 	},
 	{	// Colon_Code
-		Type::Operator,
+		Type{},
 		":", "", "",
-		EndStmt_Flag, 4, &Null_ExprInfo,
+		Operator_Flag | EndStmt_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// RemOp_Code
-		Type::Operator,
+		Type{},
 		"'", "", "",
-		EndStmt_Flag, 2, &Null_ExprInfo,
+		Operator_Flag | EndStmt_Flag, 2, &Null_ExprInfo,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	//***************************
@@ -777,279 +777,279 @@ static TableEntry tableEntries[] =
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// EOL_Code
-		Type::Operator,
+		Type{},
 		"", "EOL", "",
-		EndStmt_Flag, 4, &Null_ExprInfo,
+		Operator_Flag | EndStmt_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 	},
 	{	// AddI1_Code
-		Type::Operator,
+		Type{},
 		"+", "%1", "",
-		TableFlag{}, 40, &Dbl_IntDbl_ExprInfo,
+		Operator_Flag, 40, &Dbl_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AddI2_Code
-		Type::Operator,
+		Type{},
 		"+", "%2", "",
-		TableFlag{}, 40, &Dbl_DblInt_ExprInfo,
+		Operator_Flag, 40, &Dbl_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AddInt_Code
-		Type::Operator,
+		Type{},
 		"+", "%", "",
-		TableFlag{}, 40, &Int_IntInt_ExprInfo,
+		Operator_Flag, 40, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// CatStr_Code
-		Type::Operator,
+		Type{},
 		"+", "$", "",
-		TableFlag{}, 40, &Str_StrStr_ExprInfo,
+		Operator_Flag, 40, &Str_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// Sub_Code
-		Type::Operator,
+		Type{},
 		"-", "", "",
-		TableFlag{}, 40, &Dbl_DblDbl_ExprInfo,
+		Operator_Flag, 40, &Dbl_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI1_Code
-		Type::Operator,
+		Type{},
 		"-", "%1", "",
-		TableFlag{}, 40, &Dbl_IntDbl_ExprInfo,
+		Operator_Flag, 40, &Dbl_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubI2_Code
-		Type::Operator,
+		Type{},
 		"-", "%2", "",
-		TableFlag{}, 40, &Dbl_DblInt_ExprInfo,
+		Operator_Flag, 40, &Dbl_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// SubInt_Code
-		Type::Operator,
+		Type{},
 		"-", "%", "",
-		TableFlag{}, 40, &Int_IntInt_ExprInfo,
+		Operator_Flag, 40, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NegInt_Code
-		Type::Operator,
+		Type{},
 		"-", "U%", "",
-		TableFlag{}, 48, &Int_Int_ExprInfo,
+		Operator_Flag, 48, &Int_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, unaryOperatorRecreate
 	},
 	{	// MulI1_Code
-		Type::Operator,
+		Type{},
 		"*", "%1", "",
-		TableFlag{}, 46, &Dbl_IntDbl_ExprInfo,
+		Operator_Flag, 46, &Dbl_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// MulI2_Code
-		Type::Operator,
+		Type{},
 		"*", "%2", "",
-		TableFlag{}, 46, &Dbl_DblInt_ExprInfo,
+		Operator_Flag, 46, &Dbl_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// MulInt_Code
-		Type::Operator,
+		Type{},
 		"*", "%", "",
-		TableFlag{}, 46, &Int_IntInt_ExprInfo,
+		Operator_Flag, 46, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivI1_Code
-		Type::Operator,
+		Type{},
 		"/", "%1", "",
-		TableFlag{}, 46, &Dbl_IntDbl_ExprInfo,
+		Operator_Flag, 46, &Dbl_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivI2_Code
-		Type::Operator,
+		Type{},
 		"/", "%2", "",
-		TableFlag{}, 46, &Dbl_DblInt_ExprInfo,
+		Operator_Flag, 46, &Dbl_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// DivInt_Code
-		Type::Operator,
+		Type{},
 		"/", "%", "",
-		TableFlag{}, 46, &Int_IntInt_ExprInfo,
+		Operator_Flag, 46, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModI1_Code
-		Type::Operator,
+		Type{},
 		"MOD", "%1", "",
-		TableFlag{}, 42, &Dbl_IntDbl_ExprInfo,
+		Operator_Flag, 42, &Dbl_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModI2_Code
-		Type::Operator,
+		Type{},
 		"MOD", "%2", "",
-		TableFlag{}, 42, &Dbl_DblInt_ExprInfo,
+		Operator_Flag, 42, &Dbl_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// ModInt_Code
-		Type::Operator,
+		Type{},
 		"MOD", "%", "",
-		TableFlag{}, 42, &Int_IntInt_ExprInfo,
+		Operator_Flag, 42, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerI1_Code
-		Type::Operator,
+		Type{},
 		"^", "%1", "",
-		TableFlag{}, 50, &Dbl_IntDbl_ExprInfo,
+		Operator_Flag, 50, &Dbl_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerMul_Code
-		Type::Operator,
+		Type{},
 		"^", "*", "",
-		TableFlag{}, 50, &Dbl_DblInt_ExprInfo,
+		Operator_Flag, 50, &Dbl_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// PowerInt_Code
-		Type::Operator,
+		Type{},
 		"^", "%", "",
-		TableFlag{}, 50, &Int_IntInt_ExprInfo,
+		Operator_Flag, 50, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqI1_Code
-		Type::Operator,
+		Type{},
 		"=", "%1", "",
-		TableFlag{}, 30, &Int_IntDbl_ExprInfo,
+		Operator_Flag, 30, &Int_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqI2_Code
-		Type::Operator,
+		Type{},
 		"=", "%2", "",
-		TableFlag{}, 30, &Int_DblInt_ExprInfo,
+		Operator_Flag, 30, &Int_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqInt_Code
-		Type::Operator,
+		Type{},
 		"=", "%", "",
-		TableFlag{}, 30, &Int_IntInt_ExprInfo,
+		Operator_Flag, 30, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// EqStr_Code
-		Type::Operator,
+		Type{},
 		"=", "$", "",
-		TableFlag{}, 30, &Int_StrStr_ExprInfo,
+		Operator_Flag, 30, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtI1_Code
-		Type::Operator,
+		Type{},
 		">", "%1", "",
-		TableFlag{}, 32, &Int_IntDbl_ExprInfo,
+		Operator_Flag, 32, &Int_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtI2_Code
-		Type::Operator,
+		Type{},
 		">", "%2", "",
-		TableFlag{}, 32, &Int_DblInt_ExprInfo,
+		Operator_Flag, 32, &Int_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtInt_Code
-		Type::Operator,
+		Type{},
 		">", "%", "",
-		TableFlag{}, 32, &Int_IntInt_ExprInfo,
+		Operator_Flag, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtStr_Code
-		Type::Operator,
+		Type{},
 		">", "$", "",
-		TableFlag{}, 32, &Int_StrStr_ExprInfo,
+		Operator_Flag, 32, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqI1_Code
-		Type::Operator,
+		Type{},
 		">=", "%1", "",
-		TableFlag{}, 32, &Int_IntDbl_ExprInfo,
+		Operator_Flag, 32, &Int_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqI2_Code
-		Type::Operator,
+		Type{},
 		">=", "%2", "",
-		TableFlag{}, 32, &Int_DblInt_ExprInfo,
+		Operator_Flag, 32, &Int_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqInt_Code
-		Type::Operator,
+		Type{},
 		">=", "%", "",
-		TableFlag{}, 32, &Int_IntInt_ExprInfo,
+		Operator_Flag, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEqStr_Code
-		Type::Operator,
+		Type{},
 		">=", "$", "",
-		TableFlag{}, 32, &Int_StrStr_ExprInfo,
+		Operator_Flag, 32, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtI1_Code
-		Type::Operator,
+		Type{},
 		"<", "%1", "",
-		TableFlag{}, 32, &Int_IntDbl_ExprInfo,
+		Operator_Flag, 32, &Int_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtI2_Code
-		Type::Operator,
+		Type{},
 		"<", "%2", "",
-		TableFlag{}, 32, &Int_DblInt_ExprInfo,
+		Operator_Flag, 32, &Int_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtInt_Code
-		Type::Operator,
+		Type{},
 		"<", "%", "",
-		TableFlag{}, 32, &Int_IntInt_ExprInfo,
+		Operator_Flag, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtStr_Code
-		Type::Operator,
+		Type{},
 		"<", "$", "",
-		TableFlag{}, 32, &Int_StrStr_ExprInfo,
+		Operator_Flag, 32, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqI1_Code
-		Type::Operator,
+		Type{},
 		"<=", "%1", "",
-		TableFlag{}, 32, &Int_IntDbl_ExprInfo,
+		Operator_Flag, 32, &Int_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqI2_Code
-		Type::Operator,
+		Type{},
 		"<=", "%2", "",
-		TableFlag{}, 32, &Int_DblInt_ExprInfo,
+		Operator_Flag, 32, &Int_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqInt_Code
-		Type::Operator,
+		Type{},
 		"<=", "%", "",
-		TableFlag{}, 32, &Int_IntInt_ExprInfo,
+		Operator_Flag, 32, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEqStr_Code
-		Type::Operator,
+		Type{},
 		"<=", "$", "",
-		TableFlag{}, 32, &Int_StrStr_ExprInfo,
+		Operator_Flag, 32, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqI1_Code
-		Type::Operator,
+		Type{},
 		"<>", "%1", "",
-		TableFlag{}, 30, &Int_IntDbl_ExprInfo,
+		Operator_Flag, 30, &Int_IntDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqI2_Code
-		Type::Operator,
+		Type{},
 		"<>", "%2", "",
-		TableFlag{}, 30, &Int_DblInt_ExprInfo,
+		Operator_Flag, 30, &Int_DblInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqInt_Code
-		Type::Operator,
+		Type{},
 		"<>", "%", "",
-		TableFlag{}, 30, &Int_IntInt_ExprInfo,
+		Operator_Flag, 30, &Int_IntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// NotEqStr_Code
-		Type::Operator,
+		Type{},
 		"<>", "$", "",
-		TableFlag{}, 30, &Int_StrStr_ExprInfo,
+		Operator_Flag, 30, &Int_StrStr_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// AbsInt_Code
@@ -1360,8 +1360,7 @@ void Table::add(TableEntry &entry)
 		auto iterator = s_nameToEntry.find(entry.m_name);
 		if (iterator == s_nameToEntry.end())  // not in table?
 		{
-			if (entry.m_type == Type::Operator
-				&& entry.m_exprInfo->m_operandCount == 2
+			if (entry.isOperator() && entry.m_exprInfo->m_operandCount == 2
 				&& entry.m_exprInfo->m_operandDataType[0]
 				!= entry.m_exprInfo->m_operandDataType[1])
 			{
@@ -1371,7 +1370,7 @@ void Table::add(TableEntry &entry)
 			s_nameToEntry.emplace(entry.m_name, &entry);
 			if (entry.m_exprInfo->m_operandCount > 0)
 			{
-				int index = entry.m_type == Type::Operator
+				int index = entry.isOperator()
 					? entry.m_exprInfo->m_operandCount - 1 : 0;
 				addExpectedDataType(&entry,
 					entry.m_exprInfo->m_operandDataType[index]);
@@ -1401,8 +1400,7 @@ void Table::add(TableEntry &entry)
 				return;  // new primary code, nothing more to do
 			}
 
-			if (entry.m_type == Type::Operator
-				&& exprInfo->m_operandCount
+			if (entry.isOperator() && exprInfo->m_operandCount
 				> primary->m_exprInfo->m_operandCount)
 			{
 				// not the correct primary entry
@@ -1411,7 +1409,7 @@ void Table::add(TableEntry &entry)
 					- 1];
 				if (vector.empty())
 				{
-					if (entry.m_type == Type::Operator
+					if (entry.isOperator()
 						&& entry.m_exprInfo->m_operandCount == 2
 						&& entry.m_exprInfo->m_operandDataType[0]
 						!= entry.m_exprInfo->m_operandDataType[1])
@@ -1441,7 +1439,7 @@ void Table::add(TableEntry &entry)
 							if (exprInfo->m_operandDataType[i]
 								== alternate->m_exprInfo->m_operandDataType[i])
 							{
-								if (entry.m_type == Type::Operator
+								if (entry.isOperator()
 									&& entry.m_exprInfo->m_operandCount == 2
 									&& entry.m_exprInfo->m_operandDataType[0]
 									== entry.m_exprInfo->m_operandDataType[1])
@@ -1459,8 +1457,7 @@ void Table::add(TableEntry &entry)
 						if (!newPrimary)
 						{
 							s_alternate[primary][i].push_back(newEntry);
-							addExpectedDataType(i == 0
-								&& newEntry->m_type == Type::Operator
+							addExpectedDataType(i == 0 && newEntry->isOperator()
 								&& newEntry->m_exprInfo->m_operandCount == 2
 								? newEntry : primary,
 								newEntry->m_exprInfo->m_operandDataType[i]);

@@ -38,8 +38,7 @@ using TokenPtr = std::shared_ptr<Token>;
 // TODO temporary until code type enumeration implemented
 enum class Type
 {
-	Operator = 1,
-	IntFunc,
+	IntFunc = 1,
 	Constant,
 	DefFunc,
 	DefFuncNoArgs,
@@ -61,6 +60,7 @@ enum TableFlag : unsigned
 	Keep_Flag			= 1u << 6,	// sub-string keep assignment
 	Two_Flag			= 1u << 7,	// code can have two words or characters
 	Command_Flag		= 1u << 8,	// code is a command
+	Operator_Flag		= 1u << 9,	// code is an operator
 	EndStmt_Flag		= 1u << 31	// end statement
 };
 
@@ -149,10 +149,14 @@ public:
 	{
 		return m_flags & flag ? true : false;
 	}
+	bool isOperator() const
+	{
+		return hasFlag(Operator_Flag);
+	}
 	bool isCommand() const
 	{
 		return hasFlag(Command_Flag) && !hasFlag(Reference_Flag)
-			&& m_type != Type::Operator;
+			&& !isOperator();
 	}
 	int precedence() const
 	{
@@ -174,11 +178,11 @@ public:
 
 	bool isUnaryOperator() const
 	{
-		return m_type == Type::Operator && m_exprInfo->m_operandCount == 1;
+		return isOperator() && m_exprInfo->m_operandCount == 1;
 	}
 	bool isUnaryOrBinaryOperator() const
 	{
-		return m_type == Type::Operator && m_exprInfo->m_operandCount > 0;
+		return isOperator() && m_exprInfo->m_operandCount > 0;
 	}
 
 	TableEntry *alternate(DataType returnDataType);

@@ -208,6 +208,10 @@ public:
 	{
 		return m_entry->hasFlag(flag);
 	}
+	bool isOperator() const
+	{
+		return m_entry->isOperator();
+	}
 	bool isCommand() const
 	{
 		return m_entry->isCommand();

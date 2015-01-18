@@ -55,6 +55,18 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 			}
 		}
 	}
+	else if (token->isOperator())
+	{
+		if (token->isCode(RemOp_Code))
+		{
+			os << token->name();
+			second = true;
+		}
+		else
+		{
+			os << token->debugName();
+		}
+	}
 	else
 	{
 		switch (token->type())
@@ -93,18 +105,6 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 				break;
 			default:
 				break;
-			}
-			break;
-
-		case Type::Operator:
-			if (token->isCode(RemOp_Code))
-			{
-				os << token->name();
-				second = true;
-			}
-			else
-			{
-				os << token->debugName();
 			}
 			break;
 
@@ -653,12 +653,14 @@ static const char *tokenTypeName(const TokenPtr &token)
 	{
 		return "Command";
 	}
+	else if (token->isOperator())
+	{
+		return "Operator";
+	}
 	else
 	{
 		switch (token->type())
 		{
-		case Type::Operator:
-			return "Operator";
 		case Type::IntFunc:
 			return "IntFunc";
 		case Type::Constant:
@@ -690,6 +692,15 @@ void Tester::printToken(const TokenPtr &token)
 			m_cout << " |" << token->string() << '|';
 		}
 	}
+	else if (token->isOperator())
+	{
+		m_cout << "Op " << std::setw(7) << dataTypeName(token->dataType())
+			<< ' ' << token->debugName();
+		if (token->isCode(RemOp_Code))
+		{
+			m_cout << " |" << token->string() << '|';
+		}
+	}
 	else
 	{
 		switch (token->type())
@@ -705,9 +716,6 @@ void Tester::printToken(const TokenPtr &token)
 		case Type::Paren:
 		case Type::DefFunc:
 			m_cout << "()";
-			break;
-		case Type::Operator:
-			m_cout << "Op";
 			break;
 		}
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
@@ -740,13 +748,8 @@ void Tester::printToken(const TokenPtr &token)
 			}
 			m_cout << " |" << token->string() << '|';
 			break;
-		case Type::Operator:
 		case Type::IntFunc:
 			m_cout << " " << token->debugName();
-			if (token->isCode(RemOp_Code))
-			{
-				m_cout << " |" << token->string() << '|';
-			}
 			break;
 		}
 	}

@@ -244,7 +244,7 @@ void Translator::getExpression(DataType dataType, int level)
 			// set highest precedence if not an operator on done stack top
 			// (no operators in the parentheses)
 			topToken = m_doneStack.top().rpnItem->token();
-			m_lastPrecedence = topToken->isType(Type::Operator)
+			m_lastPrecedence = topToken->isOperator()
 				? topToken->precedence() : HighestPrecedence;
 
 			// set pending parentheses token pointer
@@ -332,7 +332,7 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	getToken(Status{}, dataType, reference);
 
 	bool doneAppend {true};
-	if (m_token->isCommand())
+	if (m_token->isCommand() || m_token->isOperator())
 	{
 		if (dataType == DataType::None)
 		{
@@ -344,15 +344,6 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	}
 	switch (m_token->type())
 	{
-	case Type::Operator:
-		if (dataType == DataType::None)
-		{
-			// nothing is acceptable, this is terminating token
-			return false;
-		}
-		throw TokenError {expectedErrorStatus(dataType, reference),
-			std::move(m_token)};
-
 	case Type::Constant:
 		break;  // go add token to output and push to done stack
 
@@ -760,14 +751,14 @@ void Translator::processFinalOperand(TokenPtr &token, TokenPtr &&first)
 {
 	Operands operands = processDoneStackTop(token, token->lastOperand());
 
-	if (token->isType(Type::Operator))
+	if (token->isOperator())
 	{
 		operands.first = token->isUnaryOperator() ? token : std::move(first);
 	}
 
 	m_output.append(token);
 
-	if (token->isType(Type::Operator))
+	if (token->isOperator())
 	{
 		m_doneStack.emplace(m_output.back(), std::move(operands));
 	}
