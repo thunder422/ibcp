@@ -1,66 +1,66 @@
 
 Input: A$ = "this is a test"
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |this is a test|
 	21: Operator  Op None    EOL
 
 Input: A$ = "this is a test
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |this is a test|
 	20: Operator  Op None    EOL
 
 Input: A$ = "this is a ""test"""
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |this is a "test"|
 	25: Operator  Op None    EOL
 
 Input: A$ = """this"" is a test"
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |"this" is a test|
 	25: Operator  Op None    EOL
 
 Input: A$ = "this is ""a"" test"
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |this is "a" test|
 	25: Operator  Op None    EOL
 
 Input: A$ = "this is "" a test"
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |this is " a test|
 	24: Operator  Op None    EOL
 
 Input: A$ = ""
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  ||
 	 7: Operator  Op None    EOL
 
 Input: A$ = "
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  ||
 	 6: Operator  Op None    EOL
 
 Input: A$ = """"
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |"|
 	 9: Operator  Op None    EOL
 
 Input: A$ = """
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: Constant     String  |"|
 	 8: Operator  Op None    EOL
 
 Input: A$ = LEFT$("TEST", 1)
-	 0: NoParen      String  |A$|
+	 0: Variable     String  |A$|
 	 3: Operator  Op Integer =
 	 5: IntFunc   () String  LEFT$(
 	11: Constant     String  |TEST|

@@ -35,16 +35,6 @@
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
 
-// TODO temporary until code type enumeration implemented
-enum class Type
-{
-	Constant = 1,
-	DefFunc,
-	DefFuncNoArgs,
-	NoParen,
-	Paren
-};
-
 
 // bit definitions for flags field
 enum TableFlag : unsigned
@@ -100,12 +90,12 @@ struct ExprInfo
 class TableEntry
 {
 public:
-	TableEntry(Type type, const std::string name, const std::string name2,
+	TableEntry(Code code, const std::string name, const std::string name2,
 		const std::string option, unsigned flags, int precedence,
 		ExprInfo *exprInfo, TranslateFunction _translate,
 		EncodeFunction _encode, OperandTextFunction _operandText,
 		RemoveFunction _remove, RecreateFunction _recreate) :
-		m_type {type},
+		m_code {code},
 		m_name {name},
 		m_name2 {name2},
 		m_option {option},
@@ -120,13 +110,13 @@ public:
 		{}
 
 	int index() const;
+	Code code() const
+	{
+		return m_code;
+	}
 	bool isCode(Code code)
 	{
-		return code == this->index();
-	}
-	Type type() const
-	{
-		return m_type;
+		return code == m_code;
 	}
 	std::string name() const
 	{
@@ -221,7 +211,7 @@ public:
 	friend class Table;
 
 private:
-	Type m_type;					// type of token for entry
+	Code m_code;					// code type of table entry
 	const std::string m_name;		// name for table entry
 	const std::string m_name2;		// name of second word of command
 	const std::string m_option;		// name of option sub-code
@@ -242,8 +232,9 @@ public:
 	Table(TableEntry *entry, int entryCount);
 
 	// TABLE SPECIFIC FUNCTIONS
+	static TableEntry *entry(Code code);
+	static TableEntry *entry(Code code, DataType dataType);
 	static TableEntry *entry(int index);
-	static TableEntry *entry(int index, DataType dataType);
 	static TableEntry *find(const std::string &string);
 	static TableEntry *find(const std::string &word1, const std::string &word2)
 	{
@@ -269,6 +260,10 @@ private:
 		CaseOptionalHash, CaseOptionalEqual>;
 
 	static NameMap s_nameToEntry;	// name to code table map
+
+	using CodeMap = std::unordered_map<Code, TableEntry *, EnumClassHash>;
+
+	static CodeMap s_codeToEntry;
 
 	// entry to alternate entries arrays
 	using EntryVectorArray = std::array<std::vector<TableEntry *>, 3>;

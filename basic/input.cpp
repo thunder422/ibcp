@@ -38,7 +38,7 @@ void inputTranslate(Translator &translator)
 	{
 		token = std::make_shared<Token>(entry);
 	}
-	else  // InputPrompt_Code
+	else  // Input Prompt
 	{
 		try
 		{
@@ -54,11 +54,11 @@ void inputTranslate(Translator &translator)
 		}
 		translator.doneStackPop();
 		token = translator.moveToken();  // take next token
-		if (token->isCode(Comma_Code))
+		if (token->isCode(Code::Comma))
 		{
 			token->addSubCode(Option_SubCode);
 		}
-		else if (!token->isCode(SemiColon_Code))
+		else if (!token->isCode(Code::Semicolon))
 		{
 			throw TokenError {Status::ExpOpSemiOrComma, token};
 		}
@@ -79,12 +79,12 @@ void inputTranslate(Translator &translator)
 		// get and check next token
 		translator.getToken(Status::ExpCommaSemiOrEnd);
 
-		if (translator.token()->isCode(Comma_Code))
+		if (translator.token()->isCode(Code::Comma))
 		{
 			done = false;
 			token = translator.moveToken();
 		}
-		else if (translator.token()->isCode(SemiColon_Code))
+		else if (translator.token()->isCode(Code::Semicolon))
 		{
 			commandToken->addSubCode(Option_SubCode);
 			done = true;
@@ -100,7 +100,7 @@ void inputTranslate(Translator &translator)
 					translator.token()};
 			}
 			done = true;
-			token = std::make_shared<Token>(Table::entry(Code{}));
+			token = std::make_shared<Token>(Table::entry(Code::Null));
 		}
 
 		// change token to appropriate assign code and append to output

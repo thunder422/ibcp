@@ -82,7 +82,7 @@ void printTranslate(Translator &translator)
 			lastSemiColon.reset();  // don't need last semicolon token
 		}
 
-		if (translator.token()->isCode(Comma_Code))
+		if (translator.token()->isCode(Code::Comma))
 		{
 			if (lastSemiColon)
 			{
@@ -90,7 +90,7 @@ void printTranslate(Translator &translator)
 			}
 			translator.outputAppend(translator.moveToken());
 		}
-		else if (translator.token()->isCode(SemiColon_Code))
+		else if (translator.token()->isCode(Code::Semicolon))
 		{
 			if (!separator)
 			{

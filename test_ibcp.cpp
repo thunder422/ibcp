@@ -41,7 +41,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 
 	if (token->isCommand())
 	{
-		if (token->isCode(Rem_Code))
+		if (token->isCode(Code::Rem))
 		{
 			os << token->name();
 			second = true;
@@ -57,7 +57,7 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	}
 	else if (token->isOperator())
 	{
-		if (token->isCode(RemOp_Code))
+		if (token->isCode(Code::RemOp))
 		{
 			os << token->name();
 			second = true;
@@ -69,9 +69,9 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 	}
 	else
 	{
-		switch (token->type())
+		switch (token->code())
 		{
-		case Type::NoParen:
+		case Code::Variable:
 			os << token->stringWithDataType();
 			if (token->hasFlag(Reference_Flag))
 			{
@@ -79,16 +79,17 @@ std::ostream &operator<<(std::ostream &os, const TokenPtr &token)
 			}
 			break;
 
-		case Type::DefFuncNoArgs:
+		case Code::DefFuncNoArgs:
 			os << token->stringWithDataType();
 			break;
 
-		case Type::DefFunc:
-		case Type::Paren:
+		case Code::DefFunc:
+		case Code::Array:
+		case Code::UserFunc:
 			os << token->stringWithDataType() << '(';
 			break;
 
-		case Type::Constant:
+		case Code::Constant:
 			switch (token->dataType())
 			{
 			case DataType::Integer:
@@ -460,11 +461,12 @@ try
 	{
 		TokenPtr token {parse(DataType::Any, Reference::None)};
 		printToken(token);
-		if (token->isType(Type::DefFunc) || token->isType(Type::Paren))
+		if (token->isCode(Code::Array) || token->isCode(Code::DefFunc)
+			|| token->isCode(Code::UserFunc))
 		{
 			parse.getParen();
 		}
-		if (token->isCode(EOL_Code))
+		if (token->isCode(Code::EOL))
 		{
 			return;
 		}
@@ -663,18 +665,22 @@ static const char *tokenTypeName(const TokenPtr &token)
 	}
 	else
 	{
-		switch (token->type())
+		switch (token->code())
 		{
-		case Type::Constant:
+		case Code::Constant:
 			return "Constant";
-		case Type::DefFunc:
+		case Code::DefFunc:
 			return "DefFunc";
-		case Type::DefFuncNoArgs:
+		case Code::DefFuncNoArgs:
 			return "DefFuncN";
-		case Type::NoParen:
-			return "NoParen";
-		case Type::Paren:
-			return "Paren";
+		case Code::Variable:
+			return "Variable";
+		case Code::Array:
+			return "Array";
+		case Code::UserFunc:
+			return "UserFunc";
+		default:
+			return "<ERROR>";
 		}
 	}
 	return "";  // silence compiler warning (doesn't reach here at run-time)
@@ -689,7 +695,7 @@ void Tester::printToken(const TokenPtr &token)
 	if (token->isCommand())
 	{
 		m_cout << "Op " << token->debugName();
-		if (token->isCode(Rem_Code))
+		if (token->isCode(Code::Rem))
 		{
 			m_cout << " |" << token->string() << '|';
 		}
@@ -698,7 +704,7 @@ void Tester::printToken(const TokenPtr &token)
 	{
 		m_cout << "Op " << std::setw(7) << dataTypeName(token->dataType())
 			<< ' ' << token->debugName();
-		if (token->isCode(RemOp_Code))
+		if (token->isCode(Code::RemOp))
 		{
 			m_cout << " |" << token->string() << '|';
 		}
@@ -711,30 +717,34 @@ void Tester::printToken(const TokenPtr &token)
 	}
 	else
 	{
-		switch (token->type())
+		switch (token->code())
 		{
-		case Type::Constant:
-		case Type::NoParen:
-		case Type::DefFuncNoArgs:
+		case Code::Constant:
+		case Code::Variable:
+		case Code::DefFuncNoArgs:
 			m_cout << "  ";
 			break;
-		case Type::Paren:
-		case Type::DefFunc:
+		case Code::Array:
+		case Code::DefFunc:
+		case Code::UserFunc:
 			m_cout << "()";
 			break;
+		default:
+			m_cout << "??";
 		}
 		m_cout << ' ' << std::setw(7) << dataTypeName(token->dataType());
-		switch (token->type())
+		switch (token->code())
 		{
-		case Type::DefFuncNoArgs:
-		case Type::NoParen:
+		case Code::Variable:
+		case Code::DefFuncNoArgs:
 			m_cout << " |" << token->stringWithDataType() << '|';
 			break;
-		case Type::DefFunc:
-		case Type::Paren:
+		case Code::Array:
+		case Code::DefFunc:
+		case Code::UserFunc:
 			m_cout << " |" << token->stringWithDataType() << "(|";
 			break;
-		case Type::Constant:
+		case Code::Constant:
 			switch (token->dataType())
 			{
 			case DataType::Integer:
@@ -753,6 +763,8 @@ void Tester::printToken(const TokenPtr &token)
 			}
 			m_cout << " |" << token->string() << '|';
 			break;
+		default:
+			m_cout << " <PrintTokenError>";
 		}
 	}
 	m_cout << std::endl;

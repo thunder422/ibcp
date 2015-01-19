@@ -50,7 +50,7 @@ Translator::Translator(const std::string &input) :
 
 RpnList Translator::operator()(TestMode testMode)
 {
-	m_holdStack.emplace(std::make_shared<Token>(Table::entry(Code{})));
+	m_holdStack.emplace(std::make_shared<Token>(Table::entry(Code::Null)));
 
 	if (testMode == TestMode::Expression)
 	{
@@ -79,7 +79,7 @@ RpnList Translator::operator()(TestMode testMode)
 		getCommands();
 	}
 
-	if (!m_token->isCode(EOL_Code))
+	if (!m_token->isCode(Code::EOL))
 	{
 		throw TokenError {Status::ExpOpOrEnd, m_token};
 	}
@@ -139,12 +139,12 @@ void Translator::getCommands()
 			throw;
 		}
 
-		if (m_token->isCode(EOL_Code) && m_output.empty())
+		if (m_token->isCode(Code::EOL) && m_output.empty())
 		{
 			return;  // blank line allowed
 		}
 
-		if (m_token->isCode(Rem_Code) || m_token->isCode(RemOp_Code))
+		if (m_token->isCode(Code::Rem) || m_token->isCode(Code::RemOp))
 		{
 			break;
 		}
@@ -152,7 +152,7 @@ void Translator::getCommands()
 		// process command (assume assignment statement if not command token)
 		if (TranslateFunction translate = m_token->isCommand()
 			? m_token->tableEntry()->translateFunction()
-			: Table::entry(Let_Code)->translateFunction())
+			: Table::entry(Code::Let)->translateFunction())
 		{
 			(*translate)(*this);
 		}
@@ -161,11 +161,11 @@ void Translator::getCommands()
 			throw TokenError {Status::BUG_NotYetImplemented, m_token};
 		}
 
-		if (m_token->isCode(RemOp_Code))
+		if (m_token->isCode(Code::RemOp))
 		{
 			break;
 		}
-		else if (m_token->isCode(Colon_Code))
+		else if (m_token->isCode(Code::Colon))
 		{
 			// set colon sub-code on last token
 			outputLastToken()->addSubCode(Colon_SubCode);
@@ -195,7 +195,7 @@ void Translator::getExpression(DataType dataType, int level)
 	{
 		getToken(Status{}, expectedDataType);
 
-		if (m_token->isCode(OpenParen_Code))
+		if (m_token->isCode(Code::OpenParen))
 		{
 			// push open parentheses onto hold stack to block waiting tokens
 			// during the processing of the expression inside the parentheses
@@ -224,7 +224,7 @@ void Translator::getExpression(DataType dataType, int level)
 			}
 
 			// check terminating token
-			if (!m_token->isCode(CloseParen_Code))
+			if (!m_token->isCode(Code::CloseParen))
 			{
 				throw TokenError {Status::ExpOpOrParen, m_token};
 			}
@@ -232,7 +232,7 @@ void Translator::getExpression(DataType dataType, int level)
 			// make sure holding stack contains the open parentheses
 			TokenPtr topToken {std::move(m_holdStack.top().token)};
 			m_holdStack.pop();
-			if (!topToken->isCode(OpenParen_Code))
+			if (!topToken->isCode(Code::OpenParen))
 			{
 				// oops, no open parentheses (this should not happen)
 				throw TokenError {Status::BUG_UnexpectedCloseParen, m_token};
@@ -269,7 +269,7 @@ void Translator::getExpression(DataType dataType, int level)
 			// if parser error then caller needs to handle it
 			getToken(Status{});
 			if (doneStackTopToken()->isDataType(DataType::None)
-				&& m_holdStack.top().token->isCode(Code{})
+				&& m_holdStack.top().token->isCode(Code::Null)
 				&& dataType == DataType::None)
 			{
 				// for print functions return now with token as terminator
@@ -366,16 +366,16 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 	}
 	else
 	{
-		switch (m_token->type())
+		switch (m_token->code())
 		{
-		case Type::Constant:
+		case Code::Constant:
 			break;  // go add token to output and push to done stack
 
-		case Type::NoParen:
+		case Code::Variable:
 			break;  // go add token to output and push to done stack
 
-		case Type::DefFunc:
-		case Type::DefFuncNoArgs:
+		case Code::DefFunc:
+		case Code::DefFuncNoArgs:
 			if (reference == Reference::Variable)
 			{
 				throw TokenError {expectedErrorStatus(dataType, reference),
@@ -396,7 +396,8 @@ bool Translator::getOperand(DataType dataType, Reference reference)
 			}
 			break;  // go add token to output and push to done stack
 
-		case Type::Paren:
+		case Code::Array:
+		case Code::UserFunc:
 			m_parse->getParen();
 			processParenToken();
 			doneAppend = false;  // already appended
@@ -490,7 +491,7 @@ void Translator::processInternalFunction(Reference reference)
 			getOperand(expectedDataType, Reference::VarDefFn);
 			// get next token (should be a comma)
 			getToken(Status::ExpComma);
-			if (!m_token->isCode(Comma_Code))
+			if (!m_token->isCode(Code::Comma))
 			{
 				throw TokenError {Status::ExpComma, m_token};
 			}
@@ -533,7 +534,7 @@ void Translator::processInternalFunction(Reference reference)
 		}
 
 		// check terminating token
-		if (m_token->isCode(Comma_Code))
+		if (m_token->isCode(Code::Comma))
 		{
 			if (i == lastOperand)
 			{
@@ -548,7 +549,7 @@ void Translator::processInternalFunction(Reference reference)
 			m_token.reset();  // delete comma token, it's not needed
 			m_doneStack.pop();
 		}
-		else if (m_token->isCode(CloseParen_Code))
+		else if (m_token->isCode(Code::CloseParen))
 		{
 			if (i < lastOperand)
 			{
@@ -601,8 +602,7 @@ void Translator::processParenToken()
 	DataType dataType {DataType::Any};
 	// TODO temporary until array and functions are fully implemented
 	// TODO this check needs updated for data typed array codes
-	if (m_token->isCode(Array_Code) || m_token->isCode(ArrayInt_Code)
-		|| m_token->isCode(ArrayStr_Code))
+	if (m_token->isCode(Code::Array))
 	{
 		dataType = DataType::Integer;  // array subscripts
 	}
@@ -628,7 +628,7 @@ void Translator::processParenToken()
 		}
 
 		// set reference for appropriate token types
-		if (topToken->isType(Type::Paren))
+		if (topToken->isCode(Code::Array) || topToken->isCode(Code::UserFunc))
 		{
 			if (dataType == DataType::Integer)  // array subscript?
 			{
@@ -638,7 +638,9 @@ void Translator::processParenToken()
 			{
 				TokenPtr &token = m_doneStack.top().rpnItem->token();
 				// TODO may also need to check for DefFuncN type here
-				if ((token->isType(Type::NoParen) || token->isType(Type::Paren))
+				if ((token->isCode(Code::Variable)
+					|| token->isCode(Code::Array)
+					|| token->isCode(Code::UserFunc))
 					&& !token->hasSubCode(Paren_SubCode))
 				{
 					token->setReference();
@@ -647,11 +649,11 @@ void Translator::processParenToken()
 		}
 
 		// check terminating token
-		if (m_token->isCode(Comma_Code))
+		if (m_token->isCode(Code::Comma))
 		{
 			m_token.reset();  // delete comma token, it's not needed
 		}
-		else if (m_token->isCode(CloseParen_Code))
+		else if (m_token->isCode(Code::CloseParen))
 		{
 			RpnItemVector attached;
 			// save operands for storage in output list

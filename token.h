@@ -50,7 +50,7 @@ public:
 	// constructor for integer constants
 	Token(DataType dataType, int column, int length, const std::string string,
 		int value) : m_column{column}, m_length{length}, m_string{string},
-		m_entry{Table::entry(Const_Code, dataType == DataType::Double
+		m_entry{Table::entry(Code::Constant, dataType == DataType::Double
 		? dataType : DataType::Integer)}, m_reference{}, m_subCode{},
 		m_value(value), /*convert*/ m_valueInt{value} {}
 
@@ -61,7 +61,7 @@ public:
 	// constructor for string constants
 	Token(int column, int length, const std::string string) :
 		m_column{column}, m_length{length}, m_string{string},
-		m_entry{Table::entry(Const_Code, DataType::String)},
+		m_entry{Table::entry(Code::Constant, DataType::String)},
 		m_reference{}, m_subCode{} {}
 
 	Token(const Token &token)  // copy constructor
@@ -166,17 +166,13 @@ public:
 	}
 
 	// table pass-thru access functions
-	Type type(void) const
+	Code code(void) const
 	{
-		return m_entry->type();
-	}
-	bool isType(Type type) const
-	{
-		return type == m_entry->type();
+		return m_entry->code();
 	}
 	bool isCode(Code code) const
 	{
-		return code == m_entry->index();
+		return code == m_entry->code();
 	}
 	int index(void) const
 	{

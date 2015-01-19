@@ -40,7 +40,7 @@ Token *Parser::operator()(DataType dataType, Reference reference)
 	if (m_input.peek() == EOF)
 	{
 		int pos = m_input.str().length();
-		return new Token {Table::entry(EOL_Code), pos, 1};
+		return new Token {Table::entry(Code::EOL), pos, 1};
 	}
 	if (Token *token = getIdentifier(reference))
 	{
@@ -87,7 +87,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 
 	// check to see if this is the start of a remark
 	// (need to check separately since a space not required after 'REM')
-	TableEntry *remEntry = Table::entry(Rem_Code);
+	TableEntry *remEntry = Table::entry(Code::Rem);
 	std::string name {remEntry->name()};
 	if (noCaseStringBeginsWith(word.string, name))
 	{
@@ -106,7 +106,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 	if (word.string.length() >= 3 && toupper(word.string[0]) == 'F'
 		&& toupper(word.string[1]) == 'N' && isalpha(word.string[2]))
 	{
-		entry = Table::entry(word.paren ? DefFuncP_Code : DefFuncN_Code);
+		entry = Table::entry(word.paren ? Code::DefFunc : Code::DefFuncNoArgs);
 	}
 	else
 	{
@@ -120,7 +120,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 				// REMOVE for now assume a variable
 				// TODO first check if identifier is in function dictionary
 				// TODO only a function reference if name of current function
-				entry = Table::entry(Var_Code);
+				entry = Table::entry(Code::Variable);
 				if (reference != Reference::None)
 				{
 					entry = entry->alternate(1);
@@ -137,7 +137,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 				// REMOVE for now assume functions start with an 'F' for testing
 				entry = Table::entry(reference == Reference::None
 					&& toupper(word.string.front()) == 'F'
-					? Function_Code : Array_Code);
+					? Code::UserFunc : Code::Array);
 			}
 		}
 	}
@@ -491,7 +491,7 @@ Token *Parser::getOperator() noexcept
 	}
 	int pos = m_input.tellg();
 	m_input.get();  // eat first character (already in string)
-	if (entry->isCode(RemOp_Code))
+	if (entry->isCode(Code::RemOp))
 	{
 		// remark requires special handling (remark string is to end-of-line)
 		std::getline(m_input, string);  // reads rest of line

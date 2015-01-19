@@ -249,7 +249,7 @@ void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		std::transform(string.begin(), string.end(), string.begin(), tolower);
 	}
-	if (rpnItem->token()->isCode(RemOp_Code) && recreator.backIsNotSpace())
+	if (rpnItem->token()->isCode(Code::RemOp) && recreator.backIsNotSpace())
 	{
 		// FLAG option: space before rem operator (default=yes)
 		recreator.append(' ');

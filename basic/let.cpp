@@ -36,7 +36,7 @@ void letTranslate(Translator &translator)
 
 	int column {translator.token()->column()};
 	bool hidden;
-	if (!translator.token()->isCode(Let_Code))
+	if (!translator.token()->isCode(Code::Let))
 	{
 		hidden = true;
 	}
@@ -63,8 +63,8 @@ void letTranslate(Translator &translator)
 					// next token determines error
 					translator.resetToken();
 					translator.getToken(Status{});
-					error = translator.token()->isCode(Comma_Code)
-						|| translator.token()->isCode(Eq_Code)
+					error = translator.token()->isCode(Code::Comma)
+						|| translator.token()->isCode(Code::Equal)
 						? Status::ExpAssignItem : Status::ExpCmdOrAssignItem;
 				}
 				catch (TokenError)
@@ -77,11 +77,11 @@ void letTranslate(Translator &translator)
 
 		// get and check next token for comma or equal
 		translator.getToken(Status::ExpEqualOrComma);
-		if (translator.token()->isCode(Comma_Code))
+		if (translator.token()->isCode(Code::Comma))
 		{
 			done = false;
 		}
-		else if (translator.token()->isCode(Eq_Code))
+		else if (translator.token()->isCode(Code::Equal))
 		{
 			done = true;
 		}
@@ -108,7 +108,7 @@ void letTranslate(Translator &translator)
 		{
 			token = translator.moveToken();
 			// change token to appropriate assign code
-			token->setTableEntry(Table::entry(Let_Code)->alternate(0));
+			token->setTableEntry(Table::entry(Code::Let)->alternate(0));
 			translator.processDoneStackTop(token);
 		}
 
@@ -195,7 +195,7 @@ void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	std::stack<std::string> stack;
 
 	stack.emplace(recreator.popString());  // push value
-	std::string separator = ' ' + Table::entry(Eq_Code)->name() + ' ';
+	std::string separator = ' ' + Table::entry(Code::Equal)->name() + ' ';
 	while (!recreator.empty())
 	{
 		stack.emplace(recreator.popString() + separator);
@@ -218,7 +218,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	// check if this first assign code
 	if (!recreator.separatorIsSet())
 	{
-		string = ' ' + Table::entry(Eq_Code)->name() + ' ';
+		string = ' ' + Table::entry(Code::Equal)->name() + ' ';
 		recreator.setSeparator(',');
 	}
 	else  // continuation of assignment list

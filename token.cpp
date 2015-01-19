@@ -49,7 +49,7 @@ Token::Token(DataType dataType, int column, int length,
 	{
 		dataType = DataType::Double;
 	}
-	m_entry = Table::entry(Const_Code, dataType);
+	m_entry = Table::entry(Code::Constant, dataType);
 }
 
 
@@ -57,7 +57,7 @@ Token::Token(DataType dataType, int column, int length,
 std::string Token::stringWithDataType() const
 {
 	std::string string = m_string;
-	if (!isType(Type::Constant))
+	if (!isCode(Code::Constant))
 	{
 		switch (dataType())
 		{
@@ -121,14 +121,14 @@ TableEntry *Token::convertCodeEntry(DataType toDataType)
 			{
 				throw Status::ExpNumExpr;
 			}
-			return Table::entry(CvtDbl_Code);
+			return Table::entry(Code::CvtDbl);
 
 		case DataType::Integer:
 			if (m_entry->returnDataType() != DataType::Double)
 			{
 				throw Status::ExpNumExpr;
 			}
-			return Table::entry(CvtInt_Code);
+			return Table::entry(Code::CvtInt);
 
 		case DataType::String:
 			throw Status::ExpStrExpr;
@@ -161,7 +161,7 @@ void Token::changeConstantIgnoreError(DataType toDataType) noexcept
 
 bool Token::changeConstant(DataType toDataType)
 {
-	if (!isType(Type::Constant))
+	if (!isCode(Code::Constant))
 	{
 		return false;
 	}
@@ -198,7 +198,7 @@ bool Token::changeConstant(DataType toDataType)
 	{
 		return false;  // can't convert to number or any
 	}
-	m_entry = Table::entry(Const_Code, toDataType);
+	m_entry = Table::entry(Code::Constant, toDataType);
 	return true;
 }
 
@@ -215,8 +215,8 @@ bool Token::operator==(const Token &other) const
 	{
 		return false;
 	}
-	if (isCode(Rem_Code) || isCode(RemOp_Code)
-		|| (isType(Type::Constant) && isDataType(DataType::String)))
+	if (isCode(Code::Rem) || isCode(Code::RemOp)
+		|| (isCode(Code::Constant) && isDataType(DataType::String)))
 	{
 		return m_string == other.m_string;
 	}
