@@ -1473,7 +1473,7 @@ static TableEntry tableEntries[] =
 
 
 // TODO temporary table instance
-static Table table(tableEntries, sizeof(tableEntries) / sizeof(TableEntry));
+static Table table;
 
 
 // constructor function that initializes the table instance variables
@@ -1481,140 +1481,121 @@ static Table table(tableEntries, sizeof(tableEntries) / sizeof(TableEntry));
 //   - fatally aborts application if table entry errors were detected
 //   - table entry errors are output before aborting
 
-Table::Table(TableEntry *entry, int entryCount) :
-	m_entry(entry)
+Table::Table()
 {
-	std::vector<std::string> errorList;
-
 	// iterate entries and build alternate code map
-	for (int i = 0; i < entryCount; i++)
+	for (unsigned i = 0; i < sizeof(tableEntries) / sizeof(TableEntry); i++)
 	{
-		try
-		{
-			add(m_entry[i]);
-		}
-		catch (std::string &error)
-		{
-			errorList.emplace_back(std::move(error));
-		}
+		tableEntries[i].addToTable();
 	}
 
 	// manually set up other alternates (temporary)
 	for (auto info : alternateInfo)
 	{
-		auto primary = &m_entry[info.primaryCode];
+		auto primary = &tableEntries[info.primaryCode];
 		for (CodeIndex codeIndex : info.codes)
 		{
-			auto alternate = &m_entry[codeIndex];
+			auto alternate = &tableEntries[codeIndex];
 			s_alternate[primary][info.index].push_back(alternate);
 		}
-	}
-
-	// if errors then output messages and abort
-	if (!errorList.empty())
-	{
-		int n {};
-		for (std::string &error : errorList)
-		{
-			std::cerr << "Table Error #" << ++n << ": " << error << std::endl;
-		}
-		abort();
 	}
 }
 
 
-// function to added code entry info to the table
-void Table::add(TableEntry &entry)
-{
-	int index = &entry - m_entry;
+//========================
+//  TABLE ENTRY FUNCTIONS
+//========================
 
-	if (entry.m_code != Code{})
+int TableEntry::index() const
+{
+	return this - tableEntries;
+}
+
+
+void TableEntry::addToTable()
+try
+{
+	int index = this - tableEntries;
+
+	if (m_code != Code{})
 	{
-		auto iterator = s_codeToEntry.find(entry.m_code);
-		if (iterator == s_codeToEntry.end())
+		auto iterator = Table::s_codeToEntry.find(m_code);
+		if (iterator == Table::s_codeToEntry.end())
 		{
-			s_codeToEntry[entry.m_code] = &entry;
+			Table::s_codeToEntry[m_code] = this;
 		}
 	}
 
-	// is code two-words?
-	if (entry.hasFlag(Two_Flag) && !entry.m_name2.empty())
+	if (hasFlag(Two_Flag) && !m_name2.empty())
 	{
-		std::string name {entry.m_name + ' ' + entry.m_name2};
-		auto iterator = s_nameToEntry.find(name);
-		if (iterator != s_nameToEntry.end())  // already in map?
+		std::string name {m_name + ' ' + m_name2};
+		auto iterator = Table::s_nameToEntry.find(name);
+		if (iterator != Table::s_nameToEntry.end())
 		{
 			throw "Multiple two-word command '" + name + '\'';
 		}
-		s_nameToEntry.emplace(std::move(name), &entry);
+		Table::s_nameToEntry.emplace(std::move(name), this);
 		return;
 	}
 
-	if (!entry.m_name.empty())
+	if (!m_name.empty())
 	{
-		auto iterator = s_nameToEntry.find(entry.m_name);
-		if (iterator == s_nameToEntry.end())  // not in table?
+		auto iterator = Table::s_nameToEntry.find(m_name);
+		if (iterator == Table::s_nameToEntry.end())
 		{
-			if (entry.isOperator() && entry.m_exprInfo->m_operandCount == 2
-				&& entry.m_exprInfo->m_operandDataType[0]
-				!= entry.m_exprInfo->m_operandDataType[1])
+			if (isOperator() && m_exprInfo->m_operandCount == 2
+				&& m_exprInfo->m_operandDataType[0]
+				!= m_exprInfo->m_operandDataType[1])
 			{
-				throw "Binary operator '" + entry.m_name + entry.m_name2
+				throw "Binary operator '" + m_name + m_name2
 					+ "' not homogeneous";
 			}
-			s_nameToEntry.emplace(entry.m_name, &entry);
-			if (entry.m_exprInfo->m_operandCount > 0)
+			Table::s_nameToEntry.emplace(m_name, this);
+			if (m_exprInfo->m_operandCount > 0)
 			{
-				int index = entry.isOperator()
-					? entry.m_exprInfo->m_operandCount - 1 : 0;
-				addExpectedDataType(&entry,
-					entry.m_exprInfo->m_operandDataType[index]);
+				int index = isOperator() ? m_exprInfo->m_operandCount - 1 : 0;
+				addExpectedDataType(m_exprInfo->m_operandDataType[index]);
 			}
 			return;  // primary code, nothing more to do
 		}
-		ExprInfo *exprInfo {entry.m_exprInfo};
-		if (exprInfo->m_operandCount > 0 && !entry.hasFlag(Reference_Flag))
+		if (m_exprInfo->m_operandCount > 0 && !hasFlag(Reference_Flag))
 		{
 			TableEntry *primary = iterator->second;
 
-			if (exprInfo->m_operandCount < primary->m_exprInfo->m_operandCount)
+			if (m_exprInfo->m_operandCount
+				< primary->m_exprInfo->m_operandCount)
 			{
 				TableEntry *alternate = primary;
-				iterator->second = &entry;
-				s_alternate[&entry][alternate->m_exprInfo->m_operandCount - 1]
-					.push_back(alternate);
-				if (entry.isFunction())
+				iterator->second = this;
+				Table::s_alternate[this][alternate->m_exprInfo->m_operandCount
+					- 1].push_back(alternate);
+				if (isFunction())
 				{
-					// multiple codes; set multiple flag on primary code
-					entry.m_flags |= Multiple_Flag;
-					// erase original expected data type of function
-					s_expectedDataType.erase(alternate);
+					m_flags |= Multiple_Flag;
+					Table::s_expectedDataType.erase(alternate);
 				}
-				addExpectedDataType(&entry,
-					entry.m_exprInfo->m_operandDataType[0]);
+				addExpectedDataType(m_exprInfo->m_operandDataType[0]);
 				return;  // new primary code, nothing more to do
 			}
 
-			if (entry.isOperator() && exprInfo->m_operandCount
+			if (isOperator() && m_exprInfo->m_operandCount
 				> primary->m_exprInfo->m_operandCount)
 			{
 				// not the correct primary entry
 				// need to get correct primary entry
-				auto &vector = s_alternate[primary][exprInfo->m_operandCount
-					- 1];
+				auto &vector = Table::s_alternate[primary]
+					[m_exprInfo->m_operandCount - 1];
 				if (vector.empty())
 				{
-					if (entry.isOperator()
-						&& entry.m_exprInfo->m_operandCount == 2
-						&& entry.m_exprInfo->m_operandDataType[0]
-						!= entry.m_exprInfo->m_operandDataType[1])
+					if (isOperator() && m_exprInfo->m_operandCount == 2
+						&& m_exprInfo->m_operandDataType[0]
+						!= m_exprInfo->m_operandDataType[1])
 					{
-						throw "First binary operator '" + entry.m_name
-							+ entry.m_name2 + "' not homogeneous";
+						throw "First binary operator '" + m_name + m_name2
+							+ "' not homogeneous";
 					}
-					vector.push_back(&entry);
-					addExpectedDataType(&entry,
-						entry.m_exprInfo->m_operandDataType[0]);
+					vector.push_back(this);
+					addExpectedDataType(m_exprInfo->m_operandDataType[0]);
 					return;  // first alternate, nothing more to do
 				}
 				primary = vector.front();
@@ -1622,25 +1603,25 @@ void Table::add(TableEntry &entry)
 
 			for (int i = 0; i < primary->m_exprInfo->m_operandCount; ++i)
 			{
-				if (exprInfo->m_operandDataType[i]
+				if (m_exprInfo->m_operandDataType[i]
 					!= primary->m_exprInfo->m_operandDataType[i])
 				{
-					auto newEntry = &entry;
+					auto newEntry = this;
 					do
 					{
 						TableEntry *newPrimary {};
-						for (auto &alternate : s_alternate[primary][i])
+						for (auto &alternate : Table::s_alternate[primary][i])
 						{
-							if (exprInfo->m_operandDataType[i]
+							if (m_exprInfo->m_operandDataType[i]
 								== alternate->m_exprInfo->m_operandDataType[i])
 							{
-								if (entry.isOperator()
-									&& entry.m_exprInfo->m_operandCount == 2
-									&& entry.m_exprInfo->m_operandDataType[0]
-									== entry.m_exprInfo->m_operandDataType[1])
+								if (isOperator()
+									&& m_exprInfo->m_operandCount == 2
+									&& m_exprInfo->m_operandDataType[0]
+									== m_exprInfo->m_operandDataType[1])
 								{
-									s_expectedDataType.erase(alternate);
-									addExpectedDataType(newEntry, newEntry
+									Table::s_expectedDataType.erase(alternate);
+									newEntry->addExpectedDataType(newEntry
 										->m_exprInfo->m_operandDataType[i]);
 									std::swap(newEntry, alternate);
 								}
@@ -1651,62 +1632,56 @@ void Table::add(TableEntry &entry)
 						}
 						if (!newPrimary)
 						{
-							s_alternate[primary][i].push_back(newEntry);
-							addExpectedDataType(i == 0 && newEntry->isOperator()
+							Table::s_alternate[primary][i].push_back(newEntry);
+							(i == 0 && newEntry->isOperator()
 								&& newEntry->m_exprInfo->m_operandCount == 2
-								? newEntry : primary,
+								? newEntry : primary)->addExpectedDataType(
 								newEntry->m_exprInfo->m_operandDataType[i]);
 							return;  // alternate added, nothing more to do
 						}
 						primary = newPrimary;  // new primary, next operand
 					}
-					while (i < exprInfo->m_operandCount);
+					while (i < m_exprInfo->m_operandCount);
 					break;  // no more operands, all operands match
 				}
 			}
-			if (entry.isFunction() && exprInfo->m_operandCount
+			if (isFunction() && m_exprInfo->m_operandCount
 				> primary->m_exprInfo->m_operandCount)
 			{
 				// multiple codes; set multiple flag on primary code
 				primary->m_flags |= Multiple_Flag;
-				s_alternate[primary][exprInfo->m_operandCount - 1]
-					.push_back(&entry);
+				Table::s_alternate[primary][m_exprInfo->m_operandCount - 1]
+					.push_back(this);
 			}
 			else
 			{
 				throw "Multiple entries with same operand data types ("
 					+ std::to_string(index) + ','
-					+ std::to_string(primary - m_entry) + ')';
+					+ std::to_string(primary - tableEntries) + ')';
 			}
 		}
 	}
 }
-
-
-// function to add an expected data type for an entry
-void Table::addExpectedDataType(TableEntry *entry, DataType dataType)
+catch (std::string &error)
 {
-	DataType current = s_expectedDataType[entry];
+	std::cerr << "Table Error:" << error << std::endl;
+	abort();
+}
+
+
+void TableEntry::addExpectedDataType(DataType dataType)
+{
+	DataType current = Table::s_expectedDataType[this];
 	if (current == DataType{})
 	{
-		s_expectedDataType[entry] = dataType;
+		Table::s_expectedDataType[this] = dataType;
 	}
 	else if (current == DataType::Double || current == DataType::Integer)
 	{
-		s_expectedDataType[entry] = DataType::Number;
+		Table::s_expectedDataType[this] = DataType::Number;
 	}
 }
 
-
-//========================
-//  TABLE ENTRY FUNCTIONS
-//========================
-
-// function to get code for entry
-int TableEntry::index() const
-{
-	return this - tableEntries;
-}
 
 std::string TableEntry::commandName() const
 {
@@ -1788,9 +1763,9 @@ TableEntry *TableEntry::alternate(int operandIndex, DataType operandDataType)
 }
 
 
-//============================
-//  TABLE SPECIFIC FUNCTIONS
-//============================
+//==========================
+//  STATIC TABLE FUNCTIONS
+//==========================
 
 TableEntry *Table::entry(Code code)
 {

@@ -211,6 +211,9 @@ public:
 	friend class Table;
 
 private:
+	void addToTable();
+	void addExpectedDataType(DataType dataType);
+
 	Code m_code;					// code type of table entry
 	const std::string m_name;		// name for table entry
 	const std::string m_name2;		// name of second word of command
@@ -229,7 +232,7 @@ private:
 class Table
 {
 public:
-	Table(TableEntry *entry, int entryCount);
+	Table();
 
 	// TABLE SPECIFIC FUNCTIONS
 	static TableEntry *entry(Code code);
@@ -245,15 +248,8 @@ public:
 
 private:
 	// these functions private to prevent multiple instances
-	Table(void) {}
 	Table(Table const &) {}
 	Table &operator=(Table const &) {return *this;}
-
-	static void addExpectedDataType(TableEntry *entry, DataType dataType);
-
-	void add(TableEntry &entry);
-
-	TableEntry *m_entry;			// pointer to table entries
 
 	// case insensitive unordered map alias
 	using NameMap = std::unordered_map<std::string, TableEntry *,
