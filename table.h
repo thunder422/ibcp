@@ -170,6 +170,10 @@ public:
 	}
 	DataType expectedDataType();
 
+	bool lastOperand() const
+	{
+		return m_exprInfo->m_operandCount - 1;
+	}
 	bool isUnaryOperator() const
 	{
 		return isOperator() && m_exprInfo->m_operandCount == 1;
@@ -211,8 +215,15 @@ public:
 	friend class Table;
 
 private:
-	void addToTable();
-	void addExpectedDataType(DataType dataType);
+	void addToTable() noexcept;
+	void addToCodeMap() noexcept;
+	bool addTwoWordCommand();
+	void addPrimaryCodeToNameMap();
+	TableEntry *setNewPrimaryOrGetPrimary(TableEntry *primary) noexcept;
+	TableEntry *getCorrectPrimary(TableEntry *primary);
+	TableEntry *addAlternateOrGetNewPrimary(TableEntry *primary) noexcept;
+	void addExpectedDataType(DataType dataType) noexcept;
+	void checkIfMulipleFunctionEntry(TableEntry *primary);
 
 	Code m_code;					// code type of table entry
 	const std::string m_name;		// name for table entry
@@ -262,7 +273,8 @@ private:
 	static CodeMap s_codeToEntry;
 
 	// entry to alternate entries arrays
-	using EntryVectorArray = std::array<std::vector<TableEntry *>, 3>;
+	using EntryVector = std::vector<TableEntry *>;
+	using EntryVectorArray = std::array<EntryVector, 3>;
 	static std::unordered_map<TableEntry *, EntryVectorArray> s_alternate;
 
 	// entry to expected data type map

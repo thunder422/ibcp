@@ -250,7 +250,7 @@ public:
 	}
 	bool lastOperand() const
 	{
-		return tableEntry()->operandCount() - 1;
+		return m_entry->lastOperand();
 	}
 	bool isLastOperand(int operandIndex) const
 	{
@@ -279,7 +279,7 @@ public:
 	}
 	void setFirstAlternate(int operandIndex)
 	{
-		m_entry = tableEntry()->alternate(operandIndex);
+		m_entry = m_entry->alternate(operandIndex);
 	}
 
 	// other functions
