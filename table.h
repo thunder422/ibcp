@@ -219,9 +219,9 @@ private:
 	void addToCodeMap() noexcept;
 	bool addTwoWordCommand();
 	void addPrimaryCodeToNameMap();
-	TableEntry *setNewPrimaryOrGetPrimary(TableEntry *primary) noexcept;
+	TableEntry *setNewPrimaryOrGetPrimary(TableEntry *primary);
 	TableEntry *getCorrectPrimary(TableEntry *primary);
-	TableEntry *addAlternateOrGetNewPrimary(TableEntry *primary) noexcept;
+	TableEntry *addAlternateOrGetNewPrimary(TableEntry *primary);
 	void addExpectedDataType(DataType dataType) noexcept;
 	void checkIfMulipleFunctionEntry(TableEntry *primary);
 

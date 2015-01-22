@@ -1512,50 +1512,35 @@ int TableEntry::index() const
 }
 
 
+struct Done {};
+
 inline void TableEntry::addToTable() noexcept
 try
 {
 	addToCodeMap();
-	if (addTwoWordCommand())
-	{
-		return;
-	}
-
-	if (!m_name.empty())
+	if (!addTwoWordCommand() && !m_name.empty())
 	{
 		auto iterator = Table::s_nameToEntry.find(m_name);
 		if (iterator == Table::s_nameToEntry.end())
 		{
 			addPrimaryCodeToNameMap();
-			return;
 		}
-		if (m_exprInfo->m_operandCount > 0 && !hasFlag(Reference_Flag))
+		else if (m_exprInfo->m_operandCount > 0 && !hasFlag(Reference_Flag))
 		{
-			TableEntry *primary;
-			if (!(primary = setNewPrimaryOrGetPrimary(iterator->second)))
-			{
-				return;
-			}
+			TableEntry *primary = setNewPrimaryOrGetPrimary(iterator->second);
 
 			if (isOperator() && m_exprInfo->m_operandCount
 				> primary->m_exprInfo->m_operandCount)
 			{
 				// not the correct primary entry
-				if (!(primary = getCorrectPrimary(primary)))
-				{
-					return;
-				}
+				primary = getCorrectPrimary(primary);
 			}
-
-			if (!(primary = addAlternateOrGetNewPrimary(primary)))
-			{
-				return;
-			}
-
+			primary = addAlternateOrGetNewPrimary(primary);
 			checkIfMulipleFunctionEntry(primary);
 		}
 	}
 }
+catch (Done) {}
 catch (std::string &error)
 {
 	std::cerr << "Table Error: " << error << std::endl;
@@ -1610,7 +1595,6 @@ inline void TableEntry::addPrimaryCodeToNameMap()
 }
 
 inline TableEntry *TableEntry::setNewPrimaryOrGetPrimary(TableEntry *primary)
-	noexcept
 {
 	if (m_exprInfo->m_operandCount < primary->m_exprInfo->m_operandCount)
 	{
@@ -1623,7 +1607,7 @@ inline TableEntry *TableEntry::setNewPrimaryOrGetPrimary(TableEntry *primary)
 			Table::s_expectedDataType.erase(alternate);
 		}
 		addExpectedDataType(m_exprInfo->m_operandDataType[0]);
-		return {};
+		throw Done{};
 	}
 	return primary;
 }
@@ -1643,14 +1627,13 @@ inline TableEntry *TableEntry::getCorrectPrimary(TableEntry *primary)
 		}
 		vector.push_back(this);
 		addExpectedDataType(m_exprInfo->m_operandDataType[0]);
-		return {};
+		throw Done{};
 	}
 	return vector.front();
 }
 
 
 inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
-	noexcept
 {
 	for (int i = 0; i < primary->m_exprInfo->m_operandCount; ++i)
 	{
@@ -1687,7 +1670,7 @@ inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
 						&& newEntry->m_exprInfo->m_operandCount == 2
 						? newEntry : primary)->addExpectedDataType(
 						newEntry->m_exprInfo->m_operandDataType[i]);
-					return {};
+					throw Done{};
 				}
 				primary = newPrimary;  // new primary, next operand
 			}
