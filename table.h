@@ -145,7 +145,7 @@ public:
 	}
 	bool isCommand() const
 	{
-		return hasFlag(Command_Flag) && !hasFlag(Reference_Flag)
+		return hasFlag(Command_Flag) && isNotAssignmentOperator()
 			&& !isOperator();
 	}
 	bool isFunction() const
@@ -170,7 +170,11 @@ public:
 	}
 	DataType expectedDataType();
 
-	bool lastOperand() const
+	int firstOperand() const
+	{
+		return 0;
+	}
+	int lastOperand() const
 	{
 		return m_exprInfo->m_operandCount - 1;
 	}
@@ -180,7 +184,7 @@ public:
 	}
 	bool isUnaryOrBinaryOperator() const
 	{
-		return isOperator() && m_exprInfo->m_operandCount > 0;
+		return isOperator() && hasOperands();
 	}
 
 	TableEntry *alternate(DataType returnDataType);
@@ -196,7 +200,7 @@ public:
 	{
 		return encode;
 	}
-	bool hasOperand() const
+	bool isCodeWithOperand() const
 	{
 		return operandText;
 	}
@@ -217,13 +221,54 @@ public:
 private:
 	void addToTable() noexcept;
 	void addToCodeMap() noexcept;
-	bool addTwoWordCommand();
-	void addPrimaryCodeToNameMap();
+	void ifTwoWordCommandAddToNameMap();
+	TableEntry *getPrimaryOrAddToNameMap() noexcept;
+	void addToNameMap();
 	TableEntry *setNewPrimaryOrGetPrimary(TableEntry *primary);
-	TableEntry *getCorrectPrimary(TableEntry *primary);
 	TableEntry *addAlternateOrGetNewPrimary(TableEntry *primary);
-	void addExpectedDataType(DataType dataType) noexcept;
-	void checkIfMulipleFunctionEntry(TableEntry *primary);
+	void checkIfBinaryOperatorAndOperandsNotSameDataType() const;
+	TableEntry *addAlternateElseGetNewPrimary(TableEntry *primary);
+	void addToExpectedDataType(DataType dataType) noexcept;
+	void checkIfFunctionIsMulipleEntry(TableEntry *primary);
+
+	bool hasName() const
+	{
+		return !m_name.empty();
+	}
+	bool isTwoWordCommand() const
+	{
+		return hasFlag(Two_Flag) && !m_name2.empty();
+	}
+	bool isNotAssignmentOperator() const
+	{
+		return !hasFlag(Reference_Flag);
+	}
+	void setMultipleFlag()
+	{
+		m_flags |= Multiple_Flag;
+	}
+	bool hasOperands() const
+	{
+		return m_exprInfo->m_operandCount > 0;
+	}
+	bool isBinaryOperator() const
+	{
+		return isOperator() && m_exprInfo->m_operandCount == 2;
+	}
+	bool isBinaryOperatorAndOperandsNotSameDataType() const
+	{
+		return isBinaryOperator()
+			&& m_exprInfo->m_operandDataType[0]
+			!= m_exprInfo->m_operandDataType[1];
+	}
+	bool hasLessOperandsThan(TableEntry *other)
+	{
+		return operandCount() < other->operandCount();
+	}
+	bool hasMoreOperandsThan(TableEntry *other)
+	{
+		return operandCount() > other->operandCount();
+	}
 
 	Code m_code;					// code type of table entry
 	const std::string m_name;		// name for table entry

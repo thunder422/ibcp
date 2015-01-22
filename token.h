@@ -248,7 +248,7 @@ public:
 	{
 		return m_entry->expectedDataType();
 	}
-	bool lastOperand() const
+	int lastOperand() const
 	{
 		return m_entry->lastOperand();
 	}
@@ -264,9 +264,9 @@ public:
 	{
 		return m_entry->isUnaryOrBinaryOperator();
 	}
-	bool hasOperand() const
+	bool isCodeWithOperand() const
 	{
-		return m_entry->hasOperand();
+		return m_entry->isCodeWithOperand();
 	}
 
 	int alternateCount(int operandIndex) const

@@ -1518,25 +1518,23 @@ inline void TableEntry::addToTable() noexcept
 try
 {
 	addToCodeMap();
-	if (!addTwoWordCommand() && !m_name.empty())
+	ifTwoWordCommandAddToNameMap();
+	if (hasName())
 	{
-		auto iterator = Table::s_nameToEntry.find(m_name);
-		if (iterator == Table::s_nameToEntry.end())
+		if (TableEntry *primary = getPrimaryOrAddToNameMap())
 		{
-			addPrimaryCodeToNameMap();
-		}
-		else if (m_exprInfo->m_operandCount > 0 && !hasFlag(Reference_Flag))
-		{
-			TableEntry *primary = setNewPrimaryOrGetPrimary(iterator->second);
-
-			if (isOperator() && m_exprInfo->m_operandCount
-				> primary->m_exprInfo->m_operandCount)
+			if (hasOperands() && isNotAssignmentOperator())
 			{
-				// not the correct primary entry
-				primary = getCorrectPrimary(primary);
+				primary = setNewPrimaryOrGetPrimary(primary);
+
+				if (isOperator() && hasMoreOperandsThan(primary))
+				{
+					primary = addAlternateOrGetNewPrimary(primary);
+				}
+				primary = addAlternateElseGetNewPrimary(primary);
+
+				checkIfFunctionIsMulipleEntry(primary);
 			}
-			primary = addAlternateOrGetNewPrimary(primary);
-			checkIfMulipleFunctionEntry(primary);
 		}
 	}
 }
@@ -1550,90 +1548,95 @@ catch (std::string &error)
 
 inline void TableEntry::addToCodeMap() noexcept
 {
-	if (m_code != Code{})
+	if (m_code != Code{}
+		&& Table::s_codeToEntry.find(m_code) == Table::s_codeToEntry.end())
 	{
-		auto iterator = Table::s_codeToEntry.find(m_code);
-		if (iterator == Table::s_codeToEntry.end())
-		{
-			Table::s_codeToEntry[m_code] = this;
-		}
+		Table::s_codeToEntry[m_code] = this;
 	}
 }
 
 
-inline bool TableEntry::addTwoWordCommand()
+inline void TableEntry::ifTwoWordCommandAddToNameMap()
 {
-	if (hasFlag(Two_Flag) && !m_name2.empty())
+	if (isTwoWordCommand())
 	{
-		std::string name {m_name + ' ' + m_name2};
-		auto iterator = Table::s_nameToEntry.find(name);
-		if (iterator != Table::s_nameToEntry.end())
+		if (Table::find(m_name, m_name2))
 		{
-			throw "Multiple two-word command '" + name + '\'';
+			throw "Multiple two-word command '" + commandName() + '\'';
 		}
-		Table::s_nameToEntry.emplace(std::move(name), this);
-		return true;
+		Table::s_nameToEntry.emplace(commandName(), this);
+		throw Done{};
 	}
-	return false;
 }
 
 
-inline void TableEntry::addPrimaryCodeToNameMap()
+inline TableEntry *TableEntry::getPrimaryOrAddToNameMap() noexcept
 {
-	if (isOperator() && m_exprInfo->m_operandCount == 2
-		&& m_exprInfo->m_operandDataType[0]
-		!= m_exprInfo->m_operandDataType[1])
+	if (TableEntry *primary = Table::find(m_name))
 	{
-		throw "Binary operator '" + m_name + m_name2 + "' not homogeneous";
+		return primary;
 	}
+	addToNameMap();
+	return {};
+}
+
+
+inline void TableEntry::addToNameMap()
+{
+	checkIfBinaryOperatorAndOperandsNotSameDataType();
 	Table::s_nameToEntry.emplace(m_name, this);
-	if (m_exprInfo->m_operandCount > 0)
+	if (hasOperands())
 	{
-		int index = isOperator() ? m_exprInfo->m_operandCount - 1 : 0;
-		addExpectedDataType(m_exprInfo->m_operandDataType[index]);
+		int operandIndex = isOperator() ? lastOperand() : firstOperand();
+		addToExpectedDataType(m_exprInfo->m_operandDataType[operandIndex]);
 	}
 }
+
 
 inline TableEntry *TableEntry::setNewPrimaryOrGetPrimary(TableEntry *primary)
 {
-	if (m_exprInfo->m_operandCount < primary->m_exprInfo->m_operandCount)
+	if (hasLessOperandsThan(primary))
 	{
 		TableEntry *alternate = primary;
 		primary = this;
 		Table::s_alternate[this][alternate->lastOperand()].push_back(alternate);
 		if (isFunction())
 		{
-			m_flags |= Multiple_Flag;
+			setMultipleFlag();
 			Table::s_expectedDataType.erase(alternate);
 		}
-		addExpectedDataType(m_exprInfo->m_operandDataType[0]);
+		addToExpectedDataType(m_exprInfo->m_operandDataType[0]);
 		throw Done{};
 	}
 	return primary;
 }
 
 
-inline TableEntry *TableEntry::getCorrectPrimary(TableEntry *primary)
+inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
 {
 	Table::EntryVector &vector = Table::s_alternate[primary][lastOperand()];
 	if (vector.empty())
 	{
-		if (isOperator() && m_exprInfo->m_operandCount == 2
-			&& m_exprInfo->m_operandDataType[0]
-			!= m_exprInfo->m_operandDataType[1])
-		{
-			throw "First binary operator '" + m_name + m_name2
-				+ "' not homogeneous";
-		}
+		checkIfBinaryOperatorAndOperandsNotSameDataType();
 		vector.push_back(this);
-		addExpectedDataType(m_exprInfo->m_operandDataType[0]);
+		addToExpectedDataType(m_exprInfo->m_operandDataType[0]);
 		throw Done{};
 	}
 	return vector.front();
 }
 
 
-inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
+void TableEntry::checkIfBinaryOperatorAndOperandsNotSameDataType() const
+{
+	if (isBinaryOperatorAndOperandsNotSameDataType())
+	{
+		throw "Binary operator '" + m_name + m_name2 + "' not homogeneous";
+	}
+}
+
+
+inline TableEntry *
+TableEntry::addAlternateElseGetNewPrimary(TableEntry *primary)
 {
 	for (int i = 0; i < primary->m_exprInfo->m_operandCount; ++i)
 	{
@@ -1654,7 +1657,7 @@ inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
 							== m_exprInfo->m_operandDataType[1])
 						{
 							Table::s_expectedDataType.erase(alternate);
-							newEntry->addExpectedDataType(newEntry
+							newEntry->addToExpectedDataType(newEntry
 								->m_exprInfo->m_operandDataType[i]);
 							std::swap(newEntry, alternate);
 						}
@@ -1668,7 +1671,7 @@ inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
 					Table::s_alternate[primary][i].push_back(newEntry);
 					(i == 0 && newEntry->isOperator()
 						&& newEntry->m_exprInfo->m_operandCount == 2
-						? newEntry : primary)->addExpectedDataType(
+						? newEntry : primary)->addToExpectedDataType(
 						newEntry->m_exprInfo->m_operandDataType[i]);
 					throw Done{};
 				}
@@ -1682,29 +1685,27 @@ inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
 }
 
 
-void TableEntry::addExpectedDataType(DataType dataType) noexcept
+void TableEntry::addToExpectedDataType(DataType dataType) noexcept
 {
-	DataType current = Table::s_expectedDataType[this];
-	if (current == DataType{})
+	auto iterator = Table::s_expectedDataType.find(this);
+	if (iterator == Table::s_expectedDataType.end())
 	{
 		Table::s_expectedDataType[this] = dataType;
 	}
-	else if (current == DataType::Double || current == DataType::Integer)
+	else if (iterator->second == DataType::Double
+		|| iterator->second == DataType::Integer)
 	{
-		Table::s_expectedDataType[this] = DataType::Number;
+		iterator->second = DataType::Number;
 	}
 }
 
 
-inline void TableEntry::checkIfMulipleFunctionEntry(TableEntry *primary)
+inline void TableEntry::checkIfFunctionIsMulipleEntry(TableEntry *primary)
 {
-	if (isFunction()
-		&& m_exprInfo->m_operandCount > primary->m_exprInfo->m_operandCount)
+	if (isFunction() && hasMoreOperandsThan(primary))
 	{
-		// multiple codes; set multiple flag on primary code
-		primary->m_flags |= Multiple_Flag;
-		Table::s_alternate[primary][m_exprInfo->m_operandCount - 1]
-			.push_back(this);
+		primary->setMultipleFlag();
+		Table::s_alternate[primary][lastOperand()].push_back(this);
 	}
 	else
 	{
@@ -1718,7 +1719,7 @@ inline void TableEntry::checkIfMulipleFunctionEntry(TableEntry *primary)
 std::string TableEntry::commandName() const
 {
 	std::string string {m_name};
-	if (hasFlag(Two_Flag) && !m_name2.empty())
+	if (isTwoWordCommand())
 	{
 		string += ' ' + m_name2;
 	}
