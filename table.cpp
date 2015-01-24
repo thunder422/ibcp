@@ -1531,9 +1531,10 @@ try
 				{
 					primary = addAlternateOrGetNewPrimary(primary);
 				}
-				primary = addAlternateElseGetNewPrimary(primary);
-
-				checkIfFunctionIsMulipleEntry(primary);
+				if (!iterateOperandsAndAddAlternate(primary))
+				{
+					checkIfFunctionIsMulipleEntry(primary);
+				}
 			}
 		}
 	}
@@ -1587,8 +1588,7 @@ inline void TableEntry::addToNameMap()
 	Table::s_nameToEntry.emplace(m_name, this);
 	if (hasOperands())
 	{
-		int operandIndex = isOperator() ? lastOperand() : firstOperand();
-		addToExpectedDataType(m_exprInfo->m_operandDataType[operandIndex]);
+		addToExpectedDataType(isOperator() ? lastOperand() : firstOperand());
 	}
 }
 
@@ -1605,7 +1605,7 @@ inline TableEntry *TableEntry::setNewPrimaryOrGetPrimary(TableEntry *primary)
 			setMultipleFlag();
 			Table::s_expectedDataType.erase(alternate);
 		}
-		addToExpectedDataType(m_exprInfo->m_operandDataType[0]);
+		addToExpectedDataType(firstOperand());
 		throw Done{};
 	}
 	return primary;
@@ -1619,7 +1619,7 @@ inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
 	{
 		checkIfBinaryOperatorAndOperandsNotSameDataType();
 		vector.push_back(this);
-		addToExpectedDataType(m_exprInfo->m_operandDataType[0]);
+		addToExpectedDataType(firstOperand());
 		throw Done{};
 	}
 	return vector.front();
@@ -1628,60 +1628,100 @@ inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
 
 void TableEntry::checkIfBinaryOperatorAndOperandsNotSameDataType() const
 {
-	if (isBinaryOperatorAndOperandsNotSameDataType())
+	if (isBinaryOperatorAndNotHomogeneous())
 	{
 		throw "Binary operator '" + m_name + m_name2 + "' not homogeneous";
 	}
 }
 
 
-inline TableEntry *
-TableEntry::addAlternateElseGetNewPrimary(TableEntry *primary)
+inline bool TableEntry::iterateOperandsAndAddAlternate(TableEntry *primary)
+	noexcept
 {
-	for (int i = 0; i < primary->m_exprInfo->m_operandCount; ++i)
+	for (int operand = firstOperand(); operand <= primary->lastOperand();
+		++operand)
 	{
-		if (m_exprInfo->m_operandDataType[i]
-			!= primary->m_exprInfo->m_operandDataType[i])
+		if (hasDifferentOperandDataType(primary, operand)
+			&& addAlternate(primary, operand))
 		{
-			auto newEntry = this;
-			do
-			{
-				TableEntry *newPrimary {};
-				for (auto &alternate : Table::s_alternate[primary][i])
-				{
-					if (m_exprInfo->m_operandDataType[i]
-						== alternate->m_exprInfo->m_operandDataType[i])
-					{
-						if (isOperator() && m_exprInfo->m_operandCount == 2
-							&& m_exprInfo->m_operandDataType[0]
-							== m_exprInfo->m_operandDataType[1])
-						{
-							Table::s_expectedDataType.erase(alternate);
-							newEntry->addToExpectedDataType(newEntry
-								->m_exprInfo->m_operandDataType[i]);
-							std::swap(newEntry, alternate);
-						}
-						newPrimary = alternate;
-						++i;
-						break;
-					}
-				}
-				if (!newPrimary)
-				{
-					Table::s_alternate[primary][i].push_back(newEntry);
-					(i == 0 && newEntry->isOperator()
-						&& newEntry->m_exprInfo->m_operandCount == 2
-						? newEntry : primary)->addToExpectedDataType(
-						newEntry->m_exprInfo->m_operandDataType[i]);
-					throw Done{};
-				}
-				primary = newPrimary;  // new primary, next operand
-			}
-			while (i < m_exprInfo->m_operandCount);
-			break;  // no more operands, all operands match
+			return true;
 		}
 	}
-	return primary;
+	return false;
+}
+
+
+inline bool TableEntry::addAlternate(TableEntry *primary, int operand) noexcept
+{
+	TableEntry *alternate = this;
+	do
+	{
+		if (!updatePrimaryAndAlternate(primary, alternate, operand))
+		{
+			addAlternateToPrimary(primary, operand, alternate);
+			return true;
+		}
+	}
+	while (++operand <= lastOperand());
+	return false;
+}
+
+
+inline bool TableEntry::updatePrimaryAndAlternate(TableEntry *&primary,
+	TableEntry *&alternate, int operand) noexcept
+{
+	for (TableEntry *&alternateIterator : Table::s_alternate[primary][operand])
+	{
+		if (hasSameOperandDataType(alternateIterator, operand))
+		{
+			if (isBinaryOperatorAndHomogeneous())
+			{
+				replaceExpectedDataTypeWithEntry(alternateIterator, operand);
+				alternate = swapAlternateWithEntry(alternateIterator);
+			}
+			primary = alternateIterator;
+			return true;
+		}
+	}
+	return false;
+}
+
+
+inline void TableEntry::addAlternateToPrimary(TableEntry *primary, int operand,
+	TableEntry *alternate) noexcept
+{
+	Table::s_alternate[primary][operand].push_back(alternate);
+	if (operand == firstOperand() && isBinaryOperator())
+	{
+		alternate->addToExpectedDataType(operand);
+	}
+	else
+	{
+		primary->addToExpectedDataType(alternate->operandDataType(operand));
+	}
+}
+
+
+inline void TableEntry::replaceExpectedDataTypeWithEntry(
+	TableEntry *oldAlternate, int operand) noexcept
+{
+	Table::s_expectedDataType.erase(oldAlternate);
+	addToExpectedDataType(operand);
+}
+
+
+inline TableEntry *TableEntry::swapAlternateWithEntry(
+	TableEntry *&alternateIterator) noexcept
+{
+	TableEntry *alternate = alternateIterator;
+	alternateIterator = this;
+	return alternate;
+}
+
+
+inline void TableEntry::addToExpectedDataType(int operandIndex) noexcept
+{
+	addToExpectedDataType(operandDataType(operandIndex));
 }
 
 

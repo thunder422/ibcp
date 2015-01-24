@@ -227,7 +227,16 @@ private:
 	TableEntry *setNewPrimaryOrGetPrimary(TableEntry *primary);
 	TableEntry *addAlternateOrGetNewPrimary(TableEntry *primary);
 	void checkIfBinaryOperatorAndOperandsNotSameDataType() const;
-	TableEntry *addAlternateElseGetNewPrimary(TableEntry *primary);
+	bool iterateOperandsAndAddAlternate(TableEntry *primary) noexcept;
+	bool addAlternate(TableEntry *primary, int operand) noexcept;
+	bool updatePrimaryAndAlternate(TableEntry *&primary, TableEntry *&alternate,
+		int operand) noexcept;
+	void addAlternateToPrimary(TableEntry *primary, int operand,
+		TableEntry *alternate) noexcept;
+	void replaceExpectedDataTypeWithEntry(TableEntry *oldAlternate,
+		int operand) noexcept;
+	TableEntry *swapAlternateWithEntry(TableEntry *&alternateIterator) noexcept;
+	void addToExpectedDataType(int operandIndex) noexcept;
 	void addToExpectedDataType(DataType dataType) noexcept;
 	void checkIfFunctionIsMulipleEntry(TableEntry *primary);
 
@@ -255,7 +264,13 @@ private:
 	{
 		return isOperator() && m_exprInfo->m_operandCount == 2;
 	}
-	bool isBinaryOperatorAndOperandsNotSameDataType() const
+	bool isBinaryOperatorAndHomogeneous() const
+	{
+		return isBinaryOperator()
+			&& m_exprInfo->m_operandDataType[0]
+			== m_exprInfo->m_operandDataType[1];
+	}
+	bool isBinaryOperatorAndNotHomogeneous() const
 	{
 		return isBinaryOperator()
 			&& m_exprInfo->m_operandDataType[0]
@@ -268,6 +283,15 @@ private:
 	bool hasMoreOperandsThan(TableEntry *other)
 	{
 		return operandCount() > other->operandCount();
+	}
+	bool hasSameOperandDataType(TableEntry *other, int operandIndex)
+	{
+		return operandDataType(operandIndex)
+			== other->operandDataType(operandIndex);
+	}
+	bool hasDifferentOperandDataType(TableEntry *other, int operandIndex)
+	{
+		return !hasSameOperandDataType(other, operandIndex);
 	}
 
 	Code m_code;					// code type of table entry
