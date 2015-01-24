@@ -87,8 +87,8 @@ static ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
 
 Table::NameMap Table::s_nameToEntry;		// name to code table map
 Table::CodeMap Table::s_codeToEntry;
-std::unordered_map<TableEntry *, Table::EntryVectorArray> Table::s_alternate;
-std::unordered_map<TableEntry *, DataType> Table::s_expectedDataType;
+std::unordered_map<Table *, Table::EntryVectorArray> Table::s_alternate;
+std::unordered_map<Table *, DataType> Table::s_expectedDataType;
 
 
 // TODO temporary code index enumeration
@@ -330,7 +330,7 @@ std::initializer_list<AlternateInfo> alternateInfo =
 
 // code enumeration names in comments after opening brace
 // (code enumeration generated from these by enums.awk)
-static TableEntry tableEntries[] =
+static Table tableEntries[] =
 {
 	// CodeIndex{} entry at beginning because CodeIndex{} == 0
 	{	// Code{}
@@ -1472,19 +1472,9 @@ static TableEntry tableEntries[] =
 static Table table;
 
 
-// constructor function that initializes the table instance variables
-//
-//   - fatally aborts application if table entry errors were detected
-//   - table entry errors are output before aborting
-
+// TODO temporary constructor to initialize other alternates
 Table::Table()
 {
-	// iterate entries and build alternate code map
-	for (unsigned i = 0; i < sizeof(tableEntries) / sizeof(TableEntry); i++)
-	{
-		Erector{&tableEntries[i]}();
-	}
-
 	// manually set up other alternates (temporary)
 	for (auto info : alternateInfo)
 	{
@@ -1502,13 +1492,35 @@ Table::Table()
 //  TABLE ENTRY FUNCTIONS
 //========================
 
-int TableEntry::index() const
+Table::Table(Code code, const std::string name, const std::string name2,
+	const std::string option, unsigned flags, int precedence,
+	ExprInfo *exprInfo, TranslateFunction _translate, EncodeFunction _encode,
+	OperandTextFunction _operandText, RemoveFunction _remove,
+	RecreateFunction _recreate) :
+	m_code {code},
+	m_name {name},
+	m_name2 {name2},
+	m_option {option},
+	m_flags {flags},
+	m_precedence {precedence},
+	m_exprInfo {exprInfo},
+	translate {_translate},
+	encode {_encode},
+	operandText {_operandText},
+	remove {_remove},
+	recreate {_recreate}
+{
+	Erector{this}();
+}
+
+
+int Table::index() const
 {
 	return this - tableEntries;
 }
 
 
-std::string TableEntry::commandName() const
+std::string Table::commandName() const
 {
 	std::string string {m_name};
 	if (isTwoWordCommand())
@@ -1518,23 +1530,19 @@ std::string TableEntry::commandName() const
 	return string;
 }
 
-DataType TableEntry::expectedDataType()
+
+DataType Table::expectedDataType()
 {
-	return Table::s_expectedDataType.at(this);
+	return s_expectedDataType.at(this);
 }
 
-// function to get an alternate table entry for the data type specified
-//
-//   - if the data type does not match the return data type of the entry,
-//     then searches its alternates if there are any
-//   - if no matching alternate entry found, then returns the entry
 
-TableEntry *TableEntry::alternate(DataType returnDataType)
+Table *Table::alternate(DataType returnDataType)
 {
 	if (returnDataType != m_exprInfo->m_returnDataType
-		&& Table::s_alternate.find(this) != Table::s_alternate.end())
+		&& s_alternate.find(this) != s_alternate.end())
 	{
-		for (TableEntry *alternateEntry : Table::s_alternate[this][0])
+		for (Table *alternateEntry : s_alternate[this][0])
 		{
 			if (returnDataType == alternateEntry->returnDataType())
 			{
@@ -1545,46 +1553,37 @@ TableEntry *TableEntry::alternate(DataType returnDataType)
 	return this;  // use entry if no alternate
 }
 
-// function to get count of alternate codes for an operand index
-int TableEntry::alternateCount(int operandIndex)
+
+int Table::alternateCount(int operand)
 {
-	return Table::s_alternate[this][operandIndex].size();
+	return s_alternate[this][operand].size();
 }
 
-// function to get first alternate entry for an operand index
-TableEntry *TableEntry::alternate(int operandIndex)
+
+Table *Table::alternate(int operand)
 {
-    return Table::s_alternate[this][operandIndex].front();
+    return s_alternate[this][operand].front();
 }
 
-// function to get alternate entry for specified operand index and data type
-//
-//   - if the data type does not match the operand data type of the code,
-//     then the alternate codes are searched for a matching code
-//   - if there are no alternate codes, or none is found, returns null
-//   - upon success, returns alternate code table entry
 
-TableEntry *TableEntry::alternate(int operandIndex, DataType operandDataType)
+Table *Table::alternate(int operand, DataType operandDataType)
 {
-	// first check if data type already matches data type of code
-	if (operandDataType == m_exprInfo->m_operandDataType[operandIndex])
+	if (operandDataType == m_exprInfo->m_operandDataType[operand])
 	{
 		return this;
 	}
-	// if not, see if data type of any alternate code matches
-	if (Table::s_alternate.find(this) != Table::s_alternate.end())
+
+	if (s_alternate.find(this) != s_alternate.end())
 	{
-		for (TableEntry *alternateEntry
-			: Table::s_alternate[this][operandIndex])
+		for (Table *alternate : s_alternate[this][operand])
 		{
-			if (operandDataType
-				== alternateEntry->m_exprInfo->m_operandDataType[operandIndex])
+			if (operandDataType == alternate->operandDataType(operand))
 			{
-				return alternateEntry;
+				return alternate;
 			}
 		}
 	}
-	return {};  // did not find an alternate code for data type
+	return {};
 }
 
 
@@ -1592,30 +1591,25 @@ TableEntry *TableEntry::alternate(int operandIndex, DataType operandDataType)
 //  STATIC TABLE FUNCTIONS
 //==========================
 
-TableEntry *Table::entry(Code code)
+Table *Table::entry(Code code)
 {
 	return s_codeToEntry[code];
 }
 
 
-TableEntry *Table::entry(Code code, DataType dataType)
+Table *Table::entry(Code code, DataType dataType)
 {
 	return s_codeToEntry[code]->alternate(dataType);
 }
 
 
-TableEntry *Table::entry(int index)
+Table *Table::entry(int index)
 {
 	return &tableEntries[index];
 }
 
 
-// find function to look for a string in the table
-//
-//   - returns the index of the entry that is found
-//   - returns Invalid_Code if the string was not found in the table
-
-TableEntry *Table::find(const std::string &string)
+Table *Table::find(const std::string &string)
 {
 	auto iterator = s_nameToEntry.find(string);
 	if (iterator != s_nameToEntry.end())

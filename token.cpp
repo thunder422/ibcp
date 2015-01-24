@@ -84,9 +84,9 @@ std::string Token::stringWithDataType() const
 }
 
 
-TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
+Table *Token::convert(TokenPtr &operandToken, int operand)
 {
-	DataType expectedDataType {m_entry->operandDataType(operandIndex)};
+	DataType expectedDataType {m_entry->operandDataType(operand)};
 
 	if (operandToken->dataType() == expectedDataType)
 	{
@@ -94,13 +94,12 @@ TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
 		return {};
 	}
 
-	if (isLastOperand(operandIndex) && !hasFlag(UseConstAsIs_Flag))
+	if (isLastOperand(operand) && !hasFlag(UseConstAsIs_Flag))
 	{
 		operandToken->changeConstantIgnoreError(expectedDataType);
 	}
 
-	if (TableEntry *entry = m_entry->alternate(operandIndex,
-		operandToken->dataType()))
+	if (Table *entry = m_entry->alternate(operand, operandToken->dataType()))
 	{
 		setTableEntry(entry);
 		return {};
@@ -110,7 +109,7 @@ TableEntry *Token::convert(TokenPtr &operandToken, int operandIndex)
 }
 
 
-TableEntry *Token::convertCodeEntry(DataType toDataType)
+Table *Token::convertCodeEntry(DataType toDataType)
 {
 	if (!changeConstant(toDataType) && m_entry->returnDataType() != toDataType)
 	{

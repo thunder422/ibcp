@@ -33,7 +33,7 @@ void inputTranslate(Translator &translator)
 {
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	TokenPtr token;
-	TableEntry *entry = commandToken->alternate(0);
+	Table *entry = commandToken->alternate(0);
 	if (commandToken->name2().empty())
 	{
 		token = std::make_shared<Token>(entry);

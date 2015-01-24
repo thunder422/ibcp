@@ -228,7 +228,7 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	}
 	string.append(recreator.popString());
 
-	TableEntry *entry {rpnItem->token()->tableEntry()};
+	Table *entry {rpnItem->token()->tableEntry()};
 	if (entry->hasFlag(SubStr_Flag))
 	{
 		// for sub-string assignments, treat as function to recreate

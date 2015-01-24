@@ -28,7 +28,7 @@
 class Erector
 {
 public:
-	Erector(TableEntry *entry) : m_entry {entry} {}
+	Erector(Table *entry) : m_entry {entry} {}
 	void operator()();
 
 private:
@@ -42,17 +42,16 @@ private:
 	bool addAlternateWithDifferentOperandDataType() noexcept;
 	bool addAlternate() noexcept;
 	bool sameOperandDataTypeOrShouldBeFirstAlternate() noexcept;
-	bool replaceFirstAlternateIfHomogeneousOperator(TableEntry *alternate)
-		noexcept;
-	void replaceExpectedDataType(TableEntry *alternate) noexcept;
+	bool replaceFirstAlternateIfHomogeneousOperator(Table *alternate) noexcept;
+	void replaceExpectedDataType(Table *alternate) noexcept;
 	void addAlternateToPrimary() noexcept;
 	void checkIfFunctionIsMulipleEntry();
-	void addToExpectedDataType(TableEntry *entry, int operand) noexcept;
-	void addToExpectedDataType(TableEntry *entry, DataType dataType) noexcept;
+	void addToExpectedDataType(Table *entry, int operand) noexcept;
+	void addToExpectedDataType(Table *entry, DataType dataType) noexcept;
 
-	TableEntry *m_entry;
-	TableEntry *m_alternate;
-	TableEntry *m_primary;
+	Table *m_entry;
+	Table *m_alternate;
+	Table *m_primary;
 	int m_operand;
 };
 
@@ -138,7 +137,7 @@ inline void Erector::addToNameMap() noexcept
 
 inline void Erector::replacePrimary() noexcept
 {
-	TableEntry *alternate = m_primary;
+	Table *alternate = m_primary;
 	m_primary = m_entry;
 	Table::s_alternate[m_entry][alternate->lastOperand()].push_back(alternate);
 	if (m_entry->isFunction())
@@ -202,7 +201,7 @@ inline bool Erector::addAlternate() noexcept
 
 inline bool Erector::sameOperandDataTypeOrShouldBeFirstAlternate() noexcept
 {
-	for (TableEntry *&alternate : Table::s_alternate[m_primary][m_operand])
+	for (Table *&alternate : Table::s_alternate[m_primary][m_operand])
 	{
 		if (m_entry->hasSameOperandDataType(alternate, m_operand))
 		{
@@ -218,7 +217,7 @@ inline bool Erector::sameOperandDataTypeOrShouldBeFirstAlternate() noexcept
 
 
 inline bool Erector::replaceFirstAlternateIfHomogeneousOperator(
-	TableEntry *alternate) noexcept
+	Table *alternate) noexcept
 {
 	if (m_entry->isHomogeneousOperator())
 	{
@@ -231,7 +230,7 @@ inline bool Erector::replaceFirstAlternateIfHomogeneousOperator(
 }
 
 
-inline void Erector::replaceExpectedDataType(TableEntry *alternate)
+inline void Erector::replaceExpectedDataType(Table *alternate)
 	noexcept
 {
 	Table::s_expectedDataType.erase(alternate);
@@ -271,7 +270,7 @@ inline void Erector::checkIfFunctionIsMulipleEntry()
 }
 
 
-inline void Erector::addToExpectedDataType(TableEntry *entry, int operand)
+inline void Erector::addToExpectedDataType(Table *entry, int operand)
 	noexcept
 {
 	addToExpectedDataType(entry, entry->operandDataType(operand));

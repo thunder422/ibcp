@@ -39,7 +39,7 @@
 // overloaded output stream operator for contents of an instruction word
 std::ostream &operator<<(std::ostream &os, ProgramWord word)
 {
-	TableEntry *entry {Table::entry(word.instructionCode())};
+	Table *entry {Table::entry(word.instructionCode())};
 	os << entry->debugName();
 
 	if (word.instructionHasSubCode(ProgramMask_SubCode))
@@ -114,7 +114,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		}
 		oss << i << ':' << line[i];
 
-		TableEntry *entry {Table::entry(line[i].instructionCode())};
+		Table *entry {Table::entry(line[i].instructionCode())};
 		if (auto operandText = entry->operandTextFunction())
 		{
 			SubCode subCode {line[i].instructionSubCode()};
@@ -604,7 +604,7 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 	auto line = m_code.begin() + lineInfo.offset;
 	for (int i {}; i < lineInfo.size; i++)
 	{
-		TableEntry *entry {Table::entry(line[i].instructionCode())};
+		Table *entry {Table::entry(line[i].instructionCode())};
 		if (auto remove = entry->removeFunction())
 		{
 			remove(this, line[++i].operand());
@@ -620,7 +620,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 	auto line = m_code.begin() + lineInfo.offset;
 	for (int i {}; i < lineInfo.size; i++)
 	{
-		TableEntry *entry {Table::entry(line[i].instructionCode())};
+		Table *entry {Table::entry(line[i].instructionCode())};
 		TokenPtr token {std::make_shared<Token>(entry)};
 		token->addSubCode(line[i].instructionSubCode());
 

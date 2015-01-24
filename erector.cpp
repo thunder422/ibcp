@@ -29,7 +29,7 @@ void Erector::checkIfNotHomogeneousOperator() const
 }
 
 
-void Erector::addToExpectedDataType(TableEntry *entry, DataType dataType)
+void Erector::addToExpectedDataType(Table *entry, DataType dataType)
 	noexcept
 {
 	auto iterator = Table::s_expectedDataType.find(entry);

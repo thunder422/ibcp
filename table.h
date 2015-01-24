@@ -83,28 +83,22 @@ struct ExprInfo
 };
 
 // table entry structure with information for a single code
-class TableEntry
+class Table
 {
 public:
-	TableEntry(Code code, const std::string name, const std::string name2,
+	Table();
+	Table(Code code, const std::string name, const std::string name2,
 		const std::string option, unsigned flags, int precedence,
 		ExprInfo *exprInfo, TranslateFunction _translate,
 		EncodeFunction _encode, OperandTextFunction _operandText,
-		RemoveFunction _remove, RecreateFunction _recreate) :
-		m_code {code},
-		m_name {name},
-		m_name2 {name2},
-		m_option {option},
-		m_flags {flags},
-		m_precedence {precedence},
-		m_exprInfo {exprInfo},
-		translate {_translate},
-		encode {_encode},
-		operandText {_operandText},
-		remove {_remove},
-		recreate {_recreate}
-		{}
+		RemoveFunction _remove, RecreateFunction _recreate);
 
+	Table &operator=(const Table &) = delete;
+	Table(const Table &) = delete;
+	Table &operator=(Table &&) = delete;
+	Table(Table &&) = delete;
+
+	// TABLE ENTRY FUNCTIONS
 	int index() const;
 	Code code() const
 	{
@@ -160,9 +154,9 @@ public:
 	{
 		return m_exprInfo->m_operandCount;
 	}
-	DataType operandDataType(int operandIndex) const
+	DataType operandDataType(int operand) const
 	{
-		return m_exprInfo->m_operandDataType[operandIndex];
+		return m_exprInfo->m_operandDataType[operand];
 	}
 	DataType expectedDataType();
 
@@ -183,10 +177,10 @@ public:
 		return isOperator() && hasOperands();
 	}
 
-	TableEntry *alternate(DataType returnDataType);
-	int alternateCount(int operandIndex);
-	TableEntry *alternate(int operandIndex = 0);
-	TableEntry *alternate(int operandIndex, DataType operandDataType);
+	Table *alternate(DataType returnDataType);
+	int alternateCount(int operand);
+	Table *alternate(int operand = 0);
+	Table *alternate(int operand, DataType operandDataType);
 
 	TranslateFunction translateFunction() const
 	{
@@ -212,7 +206,17 @@ public:
 	{
 		return recreate;
 	}
-	friend class Table;
+
+	// STATIC TABLE FUNCTIONS
+	static Table *entry(Code code);
+	static Table *entry(Code code, DataType dataType);
+	static Table *entry(int index);
+	static Table *find(const std::string &string);
+	static Table *find(const std::string &word1, const std::string &word2)
+	{
+		return find(word1 + ' ' + word2);
+	}
+
 	friend class Erector;
 
 private:
@@ -246,38 +250,49 @@ private:
 	}
 	bool isHomogeneousOperator() const
 	{
-		return isBinaryOperator()
-			&& m_exprInfo->m_operandDataType[0]
-			== m_exprInfo->m_operandDataType[1];
+		return isBinaryOperator() && operandDataType(0) == operandDataType(1);
 	}
 	bool isNotHomogeneousOperator() const
 	{
-		return isBinaryOperator()
-			&& m_exprInfo->m_operandDataType[0]
-			!= m_exprInfo->m_operandDataType[1];
+		return isBinaryOperator() && operandDataType(0) != operandDataType(1);
 	}
-	bool hasLessOperandsThan(TableEntry *other)
+	bool hasLessOperandsThan(Table *other)
 	{
 		return operandCount() < other->operandCount();
 	}
-	bool hasMoreOperandsThan(TableEntry *other)
+	bool hasMoreOperandsThan(Table *other)
 	{
 		return operandCount() > other->operandCount();
 	}
-	bool isOperaratorWithMoreOperandsThan(TableEntry *other)
+	bool isOperaratorWithMoreOperandsThan(Table *other)
 	{
 		return isOperator() && hasMoreOperandsThan(other);
 	}
-	bool hasSameOperandDataType(TableEntry *other, int operandIndex)
+	bool hasSameOperandDataType(Table *other, int operand)
 	{
-		return operandDataType(operandIndex)
-			== other->operandDataType(operandIndex);
+		return operandDataType(operand) == other->operandDataType(operand);
 	}
-	bool hasDifferentOperandDataType(TableEntry *other, int operandIndex)
+	bool hasDifferentOperandDataType(Table *other, int operand)
 	{
-		return !hasSameOperandDataType(other, operandIndex);
+		return not hasSameOperandDataType(other, operand);
 	}
 
+	// STATIC MEMBERS
+	using NameMap = std::unordered_map<std::string, Table *,
+		CaseOptionalHash, CaseOptionalEqual>;
+	static NameMap s_nameToEntry;
+
+	using CodeMap = std::unordered_map<Code, Table *, EnumClassHash>;
+	static CodeMap s_codeToEntry;
+
+	// entry to alternate entries arrays
+	using EntryVector = std::vector<Table *>;
+	using EntryVectorArray = std::array<EntryVector, 3>;
+	static std::unordered_map<Table *, EntryVectorArray> s_alternate;
+
+	static std::unordered_map<Table *, DataType> s_expectedDataType;
+
+	// INSTANCE MEMBERS
 	Code m_code;					// code type of table entry
 	const std::string m_name;		// name for table entry
 	const std::string m_name2;		// name of second word of command
@@ -290,49 +305,6 @@ private:
 	OperandTextFunction operandText;// pointer to operand text function
 	RemoveFunction remove;			// pointer to remove function
 	RecreateFunction recreate;		// pointer to recreate function
-};
-
-
-class Table
-{
-public:
-	Table();
-
-	// TABLE SPECIFIC FUNCTIONS
-	static TableEntry *entry(Code code);
-	static TableEntry *entry(Code code, DataType dataType);
-	static TableEntry *entry(int index);
-	static TableEntry *find(const std::string &string);
-	static TableEntry *find(const std::string &word1, const std::string &word2)
-	{
-		return find(word1 + ' ' + word2);
-	}
-
-	friend class TableEntry;
-	friend class Erector;
-
-private:
-	// these functions private to prevent multiple instances
-	Table(Table const &) {}
-	Table &operator=(Table const &) {return *this;}
-
-	// case insensitive unordered map alias
-	using NameMap = std::unordered_map<std::string, TableEntry *,
-		CaseOptionalHash, CaseOptionalEqual>;
-
-	static NameMap s_nameToEntry;	// name to code table map
-
-	using CodeMap = std::unordered_map<Code, TableEntry *, EnumClassHash>;
-
-	static CodeMap s_codeToEntry;
-
-	// entry to alternate entries arrays
-	using EntryVector = std::vector<TableEntry *>;
-	using EntryVectorArray = std::array<EntryVector, 3>;
-	static std::unordered_map<TableEntry *, EntryVectorArray> s_alternate;
-
-	// entry to expected data type map
-	static std::unordered_map<TableEntry *, DataType> s_expectedDataType;
 };
 
 

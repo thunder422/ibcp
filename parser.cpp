@@ -87,7 +87,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 
 	// check to see if this is the start of a remark
 	// (need to check separately since a space not required after 'REM')
-	TableEntry *remEntry = Table::entry(Code::Rem);
+	Table *remEntry = Table::entry(Code::Rem);
 	std::string name {remEntry->name()};
 	if (noCaseStringBeginsWith(word.string, name))
 	{
@@ -101,7 +101,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 			std::move(word.string)};
 	}
 
-	TableEntry *entry;
+	Table *entry;
 	// defined function?  (must also have a letter after "FN")
 	if (word.string.length() >= 3 && toupper(word.string[0]) == 'F'
 		&& toupper(word.string[1]) == 'N' && isalpha(word.string[2]))
@@ -182,7 +182,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 		if (!word2.string.empty())
 		{
 			// pos2 was not -1
-			if (TableEntry *entry2 = Table::find(word.string, word2.string))
+			if (Table *entry2 = Table::find(word.string, word2.string))
 			{
 				// double word command found
 				entry = entry2;
@@ -482,7 +482,7 @@ Token *Parser::getOperator() noexcept
 	std::string string;
 	string.push_back(m_input.peek());
 	// search table for current character to see if it is a valid operator
-	TableEntry *entry {Table::find(string)};
+	Table *entry {Table::find(string)};
 	if (!entry)
 	{
 		// character(s) at current position not a valid operator
@@ -504,7 +504,7 @@ Token *Parser::getOperator() noexcept
 	{
 		// operator could be a two-character operator
 		string.push_back(m_input.peek());
-		if (TableEntry *entry2 = Table::find(string))
+		if (Table *entry2 = Table::find(string))
 		{
 			// two-character operator found
 			entry = entry2;

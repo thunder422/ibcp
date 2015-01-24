@@ -194,7 +194,7 @@ void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 // function to recreate an internal function
 void internalFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
-	TableEntry *entry {rpnItem->token()->tableEntry()};
+	Table *entry {rpnItem->token()->tableEntry()};
 	recreator.pushWithOperands(entry->name(), entry->operandCount());
 }
 

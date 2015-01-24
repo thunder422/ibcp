@@ -36,12 +36,12 @@ class Token
 {
 public:
 	// constructor for table entries
-	Token(TableEntry *entry, int column = -1, int length = -1,
+	Token(Table *entry, int column = -1, int length = -1,
 		const std::string string = {}) : m_column{column}, m_length{length},
 		m_string{string}, m_entry{entry}, m_reference{}, m_subCode{} {}
 
 	// constructor for codes with operands
-	Token(TableEntry *entry, DataType dataType, int column, int length,
+	Token(Table *entry, DataType dataType, int column, int length,
 		const std::string string = {}, bool reference = {},
 		SubCode subCode = {}) : m_column{column}, m_length{length},
 		m_string{string}, m_entry{entry->alternate(dataType)},
@@ -100,11 +100,11 @@ public:
 		return m_string.length();
 	}
 
-	TableEntry *tableEntry() const
+	Table *tableEntry() const
 	{
 		return m_entry;
 	}
-	void setTableEntry(TableEntry *entry)
+	void setTableEntry(Table *entry)
 	{
 		m_entry = entry;
 	}
@@ -240,9 +240,9 @@ public:
 	{
 		return m_entry->operandCount();
 	}
-	DataType operandDataType(int operandIndex) const
+	DataType operandDataType(int operand) const
 	{
-		return m_entry->operandDataType(operandIndex);
+		return m_entry->operandDataType(operand);
 	}
 	DataType expectedDataType() const
 	{
@@ -252,9 +252,9 @@ public:
 	{
 		return m_entry->lastOperand();
 	}
-	bool isLastOperand(int operandIndex) const
+	bool isLastOperand(int operand) const
 	{
-		return operandIndex == lastOperand();
+		return operand == lastOperand();
 	}
 	bool isUnaryOperator() const
 	{
@@ -269,22 +269,22 @@ public:
 		return m_entry->isCodeWithOperand();
 	}
 
-	int alternateCount(int operandIndex) const
+	int alternateCount(int operand) const
 	{
-		return m_entry->alternateCount(operandIndex);
+		return m_entry->alternateCount(operand);
 	}
-	TableEntry *alternate(int operandIndex = 0) const
+	Table *alternate(int operand = 0) const
 	{
-		return m_entry->alternate(operandIndex);
+		return m_entry->alternate(operand);
 	}
-	void setFirstAlternate(int operandIndex)
+	void setFirstAlternate(int operand)
 	{
-		m_entry = m_entry->alternate(operandIndex);
+		m_entry = m_entry->alternate(operand);
 	}
 
 	// other functions
-	TableEntry *convert(TokenPtr &operandToken, int operandIndex);
-	TableEntry *convertCodeEntry(DataType dataType);
+	Table *convert(TokenPtr &operandToken, int operand);
+	Table *convertCodeEntry(DataType dataType);
 	void changeConstantIgnoreError(DataType toDataType) noexcept;
 	bool changeConstant(DataType toDataType);
 
@@ -293,7 +293,7 @@ private:
 	int m_column;			// start column of token
 	int m_length;			// length of token
 	std::string m_string;	// pointer to string of token
-	TableEntry *m_entry;	// pointer to table entry of token
+	Table *m_entry;			// pointer to table entry of token
 	bool m_reference;		// token is a reference flag
 	uint16_t m_subCode;		// sub-code flags of token
 	double m_value;			// double value for constant token

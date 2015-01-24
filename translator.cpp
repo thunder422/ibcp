@@ -298,7 +298,7 @@ void Translator::getExpression(DataType dataType, int level)
 			try
 			{
 				TokenPtr doneToken {m_doneStack.top().rpnItem->token()};
-				if (TableEntry *convert = doneToken->convertCodeEntry(dataType))
+				if (Table *convert = doneToken->convertCodeEntry(dataType))
 				{
 					m_output.append(std::make_shared<Token>(convert));
 				}
@@ -772,7 +772,7 @@ void Translator::processFinalOperand(TokenPtr &token, TokenPtr &&first)
 
 
 Translator::Operands Translator::processDoneStackTop(TokenPtr &token,
-	int operandIndex)
+	int operand)
 {
 	if (m_doneStack.empty())
 	{
@@ -793,7 +793,7 @@ Translator::Operands Translator::processDoneStackTop(TokenPtr &token,
 
 	try
 	{
-		if (TableEntry *convert = token->convert(topToken, operandIndex))
+		if (Table *convert = token->convert(topToken, operand))
 		{
 			m_output.append(std::make_shared<Token>(convert));
 		}
@@ -919,7 +919,7 @@ Status Translator::expectedErrorStatus(DataType dataType, Reference reference)
 
 // function to determine error status for an expression error
 Status Translator::expressionErrorStatus(bool lastOperand, bool unaryOperator,
-	TableEntry *entry) noexcept
+	Table *entry) noexcept
 {
 	if (!lastOperand)
 	{
