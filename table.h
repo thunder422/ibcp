@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2012-11-03	initial version (parts removed from ibcp.h)
 
 #ifndef TABLE_H
 #define TABLE_H
@@ -34,6 +29,7 @@
 
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
+class Erector;
 
 
 // bit definitions for flags field
@@ -217,29 +213,9 @@ public:
 		return recreate;
 	}
 	friend class Table;
+	friend class Erector;
 
 private:
-	void addToTable() noexcept;
-	void addToCodeMap() noexcept;
-	void ifTwoWordCommandAddToNameMap();
-	TableEntry *getPrimaryOrAddToNameMap() noexcept;
-	void addToNameMap();
-	TableEntry *setNewPrimaryOrGetPrimary(TableEntry *primary);
-	TableEntry *addAlternateOrGetNewPrimary(TableEntry *primary);
-	void checkIfBinaryOperatorAndOperandsNotSameDataType() const;
-	bool iterateOperandsAndAddAlternate(TableEntry *primary) noexcept;
-	bool addAlternate(TableEntry *primary, int operand) noexcept;
-	bool updatePrimaryAndAlternate(TableEntry *&primary, TableEntry *&alternate,
-		int operand) noexcept;
-	void addAlternateToPrimary(TableEntry *primary, int operand,
-		TableEntry *alternate) noexcept;
-	void replaceExpectedDataTypeWithEntry(TableEntry *oldAlternate,
-		int operand) noexcept;
-	TableEntry *swapAlternateWithEntry(TableEntry *&alternateIterator) noexcept;
-	void addToExpectedDataType(int operandIndex) noexcept;
-	void addToExpectedDataType(DataType dataType) noexcept;
-	void checkIfFunctionIsMulipleEntry(TableEntry *primary);
-
 	bool hasName() const
 	{
 		return !m_name.empty();
@@ -260,17 +236,21 @@ private:
 	{
 		return m_exprInfo->m_operandCount > 0;
 	}
+	bool hasOperandsAndIsNotAssignmentOperator()
+	{
+		return hasOperands() && isNotAssignmentOperator();
+	}
 	bool isBinaryOperator() const
 	{
 		return isOperator() && m_exprInfo->m_operandCount == 2;
 	}
-	bool isBinaryOperatorAndHomogeneous() const
+	bool isHomogeneousOperator() const
 	{
 		return isBinaryOperator()
 			&& m_exprInfo->m_operandDataType[0]
 			== m_exprInfo->m_operandDataType[1];
 	}
-	bool isBinaryOperatorAndNotHomogeneous() const
+	bool isNotHomogeneousOperator() const
 	{
 		return isBinaryOperator()
 			&& m_exprInfo->m_operandDataType[0]
@@ -283,6 +263,10 @@ private:
 	bool hasMoreOperandsThan(TableEntry *other)
 	{
 		return operandCount() > other->operandCount();
+	}
+	bool isOperaratorWithMoreOperandsThan(TableEntry *other)
+	{
+		return isOperator() && hasMoreOperandsThan(other);
 	}
 	bool hasSameOperandDataType(TableEntry *other, int operandIndex)
 	{
@@ -325,6 +309,7 @@ public:
 	}
 
 	friend class TableEntry;
+	friend class Erector;
 
 private:
 	// these functions private to prevent multiple instances

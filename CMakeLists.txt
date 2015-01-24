@@ -168,6 +168,7 @@ set(ibcp_SOURCES
 	basic/print.cpp
 	commandline.cpp
 	dictionary.cpp
+	erector.cpp
 	errorlist.cpp
 	editbox.cpp
 	main.cpp

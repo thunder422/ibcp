@@ -1,5 +1,5 @@
 // vim:ts=4:sw=4:
-
+//
 //	Interactive BASIC Compiler Project
 //	File: table.cpp - operator/command/function table source file
 //	Copyright (C) 2010-2015  Thunder422
@@ -16,17 +16,13 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2010-02-18	initial version
 
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "erector.h"
 #include "table.h"
 #include "token.h"
 #include "utility.h"
@@ -1486,7 +1482,7 @@ Table::Table()
 	// iterate entries and build alternate code map
 	for (unsigned i = 0; i < sizeof(tableEntries) / sizeof(TableEntry); i++)
 	{
-		tableEntries[i].addToTable();
+		Erector{&tableEntries[i]}();
 	}
 
 	// manually set up other alternates (temporary)
@@ -1509,250 +1505,6 @@ Table::Table()
 int TableEntry::index() const
 {
 	return this - tableEntries;
-}
-
-
-struct Done {};
-
-inline void TableEntry::addToTable() noexcept
-try
-{
-	addToCodeMap();
-	ifTwoWordCommandAddToNameMap();
-	if (hasName())
-	{
-		if (TableEntry *primary = getPrimaryOrAddToNameMap())
-		{
-			if (hasOperands() && isNotAssignmentOperator())
-			{
-				primary = setNewPrimaryOrGetPrimary(primary);
-
-				if (isOperator() && hasMoreOperandsThan(primary))
-				{
-					primary = addAlternateOrGetNewPrimary(primary);
-				}
-				if (!iterateOperandsAndAddAlternate(primary))
-				{
-					checkIfFunctionIsMulipleEntry(primary);
-				}
-			}
-		}
-	}
-}
-catch (Done) {}
-catch (std::string &error)
-{
-	std::cerr << "Table Error: " << error << std::endl;
-	abort();
-}
-
-
-inline void TableEntry::addToCodeMap() noexcept
-{
-	if (m_code != Code{}
-		&& Table::s_codeToEntry.find(m_code) == Table::s_codeToEntry.end())
-	{
-		Table::s_codeToEntry[m_code] = this;
-	}
-}
-
-
-inline void TableEntry::ifTwoWordCommandAddToNameMap()
-{
-	if (isTwoWordCommand())
-	{
-		if (Table::find(m_name, m_name2))
-		{
-			throw "Multiple two-word command '" + commandName() + '\'';
-		}
-		Table::s_nameToEntry.emplace(commandName(), this);
-		throw Done{};
-	}
-}
-
-
-inline TableEntry *TableEntry::getPrimaryOrAddToNameMap() noexcept
-{
-	if (TableEntry *primary = Table::find(m_name))
-	{
-		return primary;
-	}
-	addToNameMap();
-	return {};
-}
-
-
-inline void TableEntry::addToNameMap()
-{
-	checkIfBinaryOperatorAndOperandsNotSameDataType();
-	Table::s_nameToEntry.emplace(m_name, this);
-	if (hasOperands())
-	{
-		addToExpectedDataType(isOperator() ? lastOperand() : firstOperand());
-	}
-}
-
-
-inline TableEntry *TableEntry::setNewPrimaryOrGetPrimary(TableEntry *primary)
-{
-	if (hasLessOperandsThan(primary))
-	{
-		TableEntry *alternate = primary;
-		primary = this;
-		Table::s_alternate[this][alternate->lastOperand()].push_back(alternate);
-		if (isFunction())
-		{
-			setMultipleFlag();
-			Table::s_expectedDataType.erase(alternate);
-		}
-		addToExpectedDataType(firstOperand());
-		throw Done{};
-	}
-	return primary;
-}
-
-
-inline TableEntry *TableEntry::addAlternateOrGetNewPrimary(TableEntry *primary)
-{
-	Table::EntryVector &vector = Table::s_alternate[primary][lastOperand()];
-	if (vector.empty())
-	{
-		checkIfBinaryOperatorAndOperandsNotSameDataType();
-		vector.push_back(this);
-		addToExpectedDataType(firstOperand());
-		throw Done{};
-	}
-	return vector.front();
-}
-
-
-void TableEntry::checkIfBinaryOperatorAndOperandsNotSameDataType() const
-{
-	if (isBinaryOperatorAndNotHomogeneous())
-	{
-		throw "Binary operator '" + m_name + m_name2 + "' not homogeneous";
-	}
-}
-
-
-inline bool TableEntry::iterateOperandsAndAddAlternate(TableEntry *primary)
-	noexcept
-{
-	for (int operand = firstOperand(); operand <= primary->lastOperand();
-		++operand)
-	{
-		if (hasDifferentOperandDataType(primary, operand)
-			&& addAlternate(primary, operand))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-
-inline bool TableEntry::addAlternate(TableEntry *primary, int operand) noexcept
-{
-	TableEntry *alternate = this;
-	do
-	{
-		if (!updatePrimaryAndAlternate(primary, alternate, operand))
-		{
-			addAlternateToPrimary(primary, operand, alternate);
-			return true;
-		}
-	}
-	while (++operand <= lastOperand());
-	return false;
-}
-
-
-inline bool TableEntry::updatePrimaryAndAlternate(TableEntry *&primary,
-	TableEntry *&alternate, int operand) noexcept
-{
-	for (TableEntry *&alternateIterator : Table::s_alternate[primary][operand])
-	{
-		if (hasSameOperandDataType(alternateIterator, operand))
-		{
-			if (isBinaryOperatorAndHomogeneous())
-			{
-				replaceExpectedDataTypeWithEntry(alternateIterator, operand);
-				alternate = swapAlternateWithEntry(alternateIterator);
-			}
-			primary = alternateIterator;
-			return true;
-		}
-	}
-	return false;
-}
-
-
-inline void TableEntry::addAlternateToPrimary(TableEntry *primary, int operand,
-	TableEntry *alternate) noexcept
-{
-	Table::s_alternate[primary][operand].push_back(alternate);
-	if (operand == firstOperand() && isBinaryOperator())
-	{
-		alternate->addToExpectedDataType(operand);
-	}
-	else
-	{
-		primary->addToExpectedDataType(alternate->operandDataType(operand));
-	}
-}
-
-
-inline void TableEntry::replaceExpectedDataTypeWithEntry(
-	TableEntry *oldAlternate, int operand) noexcept
-{
-	Table::s_expectedDataType.erase(oldAlternate);
-	addToExpectedDataType(operand);
-}
-
-
-inline TableEntry *TableEntry::swapAlternateWithEntry(
-	TableEntry *&alternateIterator) noexcept
-{
-	TableEntry *alternate = alternateIterator;
-	alternateIterator = this;
-	return alternate;
-}
-
-
-inline void TableEntry::addToExpectedDataType(int operandIndex) noexcept
-{
-	addToExpectedDataType(operandDataType(operandIndex));
-}
-
-
-void TableEntry::addToExpectedDataType(DataType dataType) noexcept
-{
-	auto iterator = Table::s_expectedDataType.find(this);
-	if (iterator == Table::s_expectedDataType.end())
-	{
-		Table::s_expectedDataType[this] = dataType;
-	}
-	else if (iterator->second == DataType::Double
-		|| iterator->second == DataType::Integer)
-	{
-		iterator->second = DataType::Number;
-	}
-}
-
-
-inline void TableEntry::checkIfFunctionIsMulipleEntry(TableEntry *primary)
-{
-	if (isFunction() && hasMoreOperandsThan(primary))
-	{
-		primary->setMultipleFlag();
-		Table::s_alternate[primary][lastOperand()].push_back(this);
-	}
-	else
-	{
-		throw "Multiple entries with same operand data types ("
-			+ std::to_string(this - tableEntries) + ','
-			+ std::to_string(primary - tableEntries) + ')';
-	}
 }
 
 
