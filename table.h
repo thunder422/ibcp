@@ -107,7 +107,6 @@ public:
 	Table(Table &&) = delete;
 
 	// INSTANCE ACCESS FUNCTIONS
-	int index() const;
 	Code code() const
 	{
 		return m_code;
@@ -157,6 +156,10 @@ public:
 	int precedence() const
 	{
 		return m_precedence;
+	}
+	int index() const
+	{
+		return m_index;
 	}
 	DataType returnDataType() const
 	{
@@ -222,7 +225,10 @@ public:
 	// STATIC ACCESS FUNCTIONS
 	static Table *entry(Code code);
 	static Table *entry(Code code, DataType dataType);
-	static Table *entry(int index);
+	static Table *entry(int index)
+	{
+		return s_indexToEntry[index];
+	}
 	static Table *find(const std::string &string);
 	static Table *find(const std::string &word1, const std::string &word2)
 	{
@@ -290,13 +296,15 @@ private:
 	}
 
 	// INSTANCE MEMBERS
-	Code m_code;					// code type of table entry
-	const std::string m_name;		// name for table entry
-	const std::string m_name2;		// name of second word of command
-	const std::string m_option;		// name of option sub-code
-	unsigned m_flags;				// flags for entry
-	int m_precedence;				// precedence of code
-	ExprInfo *m_exprInfo;			// expression info pointer (NULL for none)
+	Code m_code;
+	const std::string m_name;
+	const std::string m_name2;
+	const std::string m_option;
+	unsigned m_flags;
+	int m_precedence;
+	u_int16_t m_index;
+	ExprInfo *m_exprInfo;
+
 	TranslateFunction translate;	// pointer to translate function
 	EncodeFunction encode;			// pointer to encode function
 	OperandTextFunction operandText;// pointer to operand text function
@@ -304,6 +312,13 @@ private:
 	RecreateFunction recreate;		// pointer to recreate function
 
 	// STATIC ACCESS FUNCTIONS
+	using EntryVector  = std::vector<Table *>;
+	void setIndexAndAddEntry()
+	{
+		m_index = s_indexToEntry.size();
+		s_indexToEntry.push_back(this);
+	}
+
 	using NameMap = std::unordered_map<std::string, Table *,
 		CaseOptionalHash, CaseOptionalEqual>;
 	void addCommandNameToNameMap()
@@ -336,14 +351,13 @@ private:
 		}
 	}
 
-	using AlternateVector = std::vector<Table *>;
-	using AlternateVectorArray = std::array<AlternateVector, 3>;
-	using AlternateMap = std::unordered_map<Table *, AlternateVectorArray>;
+	using EntryVectorArray = std::array<EntryVector, 3>;
+	using AlternateMap = std::unordered_map<Table *, EntryVectorArray>;
 	void appendAlternate(int operand, Table *alternate)
 	{
 		s_alternate[this][operand].push_back(alternate);
 	}
-	AlternateVector &alternateVector(int operand)
+	EntryVector &alternateVector(int operand)
 	{
 		return s_alternate[this][operand];
 	}
@@ -380,6 +394,7 @@ private:
 	}
 
 	// STATIC MEMBERS
+	static EntryVector s_indexToEntry;
 	static NameMap s_nameToEntry;
 	static CodeMap s_codeToEntry;
 	static AlternateMap s_alternate;

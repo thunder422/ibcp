@@ -85,6 +85,7 @@ static ExprInfo None_Int_ExprInfo(DataType::None, Operands_Int);
 static ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
 
 
+Table::EntryVector Table::s_indexToEntry;
 Table::NameMap Table::s_nameToEntry;
 Table::CodeMap Table::s_codeToEntry;
 Table::AlternateMap Table::s_alternate;
@@ -1514,12 +1515,6 @@ Table::Table(Code code, const std::string name, const std::string name2,
 }
 
 
-int Table::index() const
-{
-	return this - tableEntries;
-}
-
-
 std::string Table::commandName() const
 {
 	std::string string {m_name};
@@ -1615,12 +1610,6 @@ Table *Table::entry(Code code)
 Table *Table::entry(Code code, DataType dataType)
 {
 	return s_codeToEntry[code]->alternateForReturn(dataType);
-}
-
-
-Table *Table::entry(int index)
-{
-	return &tableEntries[index];
 }
 
 

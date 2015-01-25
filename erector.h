@@ -60,6 +60,7 @@ private:
 inline void Erector::operator()()
 try
 {
+	m_entry->setIndexAndAddEntry();
 	m_entry->addToCodeMap();
 	if (not addTwoWordCommandToNameMap()
 		&& m_entry->hasName() && not addNewPrimaryToNameMap()
