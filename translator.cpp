@@ -275,13 +275,12 @@ void Translator::getExpression(DataType dataType, int level)
 				// for print functions return now with token as terminator
 				break;
 			}
-			// check for unary operator (token should be a binary operator)
+
 			if (m_token->isUnaryOperator())
 			{
-				// check if code has a binary operator
-				if (m_token->alternateCount(1) > 0)
+				if (m_token->hasBinaryOperator())
 				{
-					m_token->setFirstAlternate(1);  // change to binary operator
+					m_token->setToFirstAlternate(BinaryOperator);
 				}
 				else
 				{
@@ -528,7 +527,7 @@ void Translator::processInternalFunction(Reference reference)
 			TokenPtr &token = m_doneStack.top().rpnItem->token();
 			if (token->dataType() != topToken->operandDataType(0))
 			{
-				topToken->setFirstAlternate(0);
+				topToken->setToFirstAlternate(FirstOperand);
 			}
 			token->removeSubCode(IntConst_SubCode);  // safe for all tokens
 		}
@@ -544,7 +543,7 @@ void Translator::processInternalFunction(Reference reference)
 					throw TokenError {Status::ExpOpOrParen, m_token};
 				}
 				// get second alternate code; update code and last operand
-				topToken->setFirstAlternate(++lastOperand);
+				topToken->setToFirstAlternate(++lastOperand);
 			}
 			m_token.reset();  // delete comma token, it's not needed
 			m_doneStack.pop();

@@ -32,7 +32,6 @@ public:
 	void operator()();
 
 private:
-	void addToCodeMap() noexcept;
 	bool addTwoWordCommandToNameMap();
 	bool addNewPrimaryToNameMap() noexcept;
 	void addToNameMap() noexcept;
@@ -46,8 +45,6 @@ private:
 	void replaceExpectedDataType(Table *alternate) noexcept;
 	void addAlternateToPrimary() noexcept;
 	void checkIfFunctionIsMulipleEntry();
-	void addToExpectedDataType(Table *entry, int operand) noexcept;
-	void addToExpectedDataType(Table *entry, DataType dataType) noexcept;
 
 	Table *m_entry;
 	Table *m_alternate;
@@ -63,7 +60,7 @@ private:
 inline void Erector::operator()()
 try
 {
-	addToCodeMap();
+	m_entry->addToCodeMap();
 	if (not addTwoWordCommandToNameMap()
 		&& m_entry->hasName() && not addNewPrimaryToNameMap()
 		&& m_entry->hasOperandsAndIsNotAssignmentOperator())
@@ -86,35 +83,24 @@ catch (std::string &error)
 }
 
 
-inline void Erector::addToCodeMap() noexcept
-{
-	if (m_entry->code() != Code{}
-		&& Table::s_codeToEntry.find(m_entry->code())
-		== Table::s_codeToEntry.end())
-	{
-		Table::s_codeToEntry[m_entry->code()] = m_entry;
-	}
-}
-
-
 inline bool Erector::addTwoWordCommandToNameMap()
 {
 	if (not m_entry->isTwoWordCommand())
 	{
 		return false;
 	}
-	if (Table::find(m_entry->name(), m_entry->name2()))
+	if (m_entry->findTwoName())
 	{
 		throw "Multiple two-word command '" + m_entry->commandName() + '\'';
 	}
-	Table::s_nameToEntry.emplace(m_entry->commandName(), m_entry);
+	m_entry->addCommandNameToNameMap();
 	return true;
 }
 
 
 inline bool Erector::addNewPrimaryToNameMap() noexcept
 {
-	if ((m_primary = Table::find(m_entry->name())))
+	if ((m_primary = m_entry->findName()))
 	{
 		return false;
 	}
@@ -126,10 +112,10 @@ inline bool Erector::addNewPrimaryToNameMap() noexcept
 inline void Erector::addToNameMap() noexcept
 {
 	checkIfNotHomogeneousOperator();
-	Table::s_nameToEntry.emplace(m_entry->name(), m_entry);
+	m_entry->addNameToNameMap();
 	if (m_entry->hasOperands())
 	{
-		addToExpectedDataType(m_entry, m_entry->isOperator()
+		m_entry->addToExpectedDataType(m_entry->isOperator()
 			? m_entry->lastOperand() : m_entry->firstOperand());
 	}
 }
@@ -139,13 +125,13 @@ inline void Erector::replacePrimary() noexcept
 {
 	Table *alternate = m_primary;
 	m_primary = m_entry;
-	Table::s_alternate[m_entry][alternate->lastOperand()].push_back(alternate);
+	m_entry->appendAlternate(alternate->lastOperand(), alternate);
 	if (m_entry->isFunction())
 	{
 		m_entry->setMultipleFlag();
-		Table::s_expectedDataType.erase(alternate);
+		alternate->eraseExpectedDataType();
 	}
-	addToExpectedDataType(m_entry, m_entry->firstOperand());
+	m_entry->addToExpectedDataType(m_entry->firstOperand());
 }
 
 
@@ -153,13 +139,12 @@ inline bool Erector::addAlternateForOperatorWithMoreOperands()
 {
 	if (m_entry->isOperaratorWithMoreOperandsThan(m_primary))
 	{
-		Table::EntryVector &vector = Table::s_alternate[m_primary]
-			[m_entry->lastOperand()];
+		auto &vector = m_primary->alternateVector(m_entry->lastOperand());
 		if (vector.empty())
 		{
 			checkIfNotHomogeneousOperator();
 			vector.push_back(m_entry);
-			addToExpectedDataType(m_entry, m_entry->firstOperand());
+			m_entry->addToExpectedDataType(m_entry->firstOperand());
 			return true;
 		}
 		m_primary = vector.front();
@@ -201,7 +186,7 @@ inline bool Erector::addAlternate() noexcept
 
 inline bool Erector::sameOperandDataTypeOrShouldBeFirstAlternate() noexcept
 {
-	for (Table *&alternate : Table::s_alternate[m_primary][m_operand])
+	for (Table *&alternate : m_primary->alternateVector(m_operand))
 	{
 		if (m_entry->hasSameOperandDataType(alternate, m_operand))
 		{
@@ -233,21 +218,21 @@ inline bool Erector::replaceFirstAlternateIfHomogeneousOperator(
 inline void Erector::replaceExpectedDataType(Table *alternate)
 	noexcept
 {
-	Table::s_expectedDataType.erase(alternate);
-	addToExpectedDataType(m_entry, m_operand);
+	alternate->eraseExpectedDataType();
+	m_entry->addToExpectedDataType(m_operand);
 }
 
 
 inline void Erector::addAlternateToPrimary() noexcept
 {
-	Table::s_alternate[m_primary][m_operand].push_back(m_alternate);
+	m_primary->appendAlternate(m_operand, m_alternate);
 	if (m_operand == m_entry->firstOperand() && m_entry->isBinaryOperator())
 	{
-		addToExpectedDataType(m_alternate, m_operand);
+		m_alternate->addToExpectedDataType(m_operand);
 	}
 	else
 	{
-		addToExpectedDataType(m_primary,
+		m_primary->addToExpectedDataType(
 			m_alternate->operandDataType(m_operand));
 	}
 }
@@ -258,8 +243,7 @@ inline void Erector::checkIfFunctionIsMulipleEntry()
 	if (m_entry->isFunction() && m_entry->hasMoreOperandsThan(m_primary))
 	{
 		m_primary->setMultipleFlag();
-		Table::s_alternate[m_primary][m_entry->lastOperand()]
-			.push_back(m_entry);
+		m_primary->appendAlternate(m_entry->lastOperand(), m_entry);
 	}
 	else
 	{
@@ -267,13 +251,6 @@ inline void Erector::checkIfFunctionIsMulipleEntry()
 			+ std::to_string(m_entry->index()) + ','
 			+ std::to_string(m_primary->index()) + ')';
 	}
-}
-
-
-inline void Erector::addToExpectedDataType(Table *entry, int operand)
-	noexcept
-{
-	addToExpectedDataType(entry, entry->operandDataType(operand));
 }
 
 

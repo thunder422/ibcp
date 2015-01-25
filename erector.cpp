@@ -29,20 +29,4 @@ void Erector::checkIfNotHomogeneousOperator() const
 }
 
 
-void Erector::addToExpectedDataType(Table *entry, DataType dataType)
-	noexcept
-{
-	auto iterator = Table::s_expectedDataType.find(entry);
-	if (iterator == Table::s_expectedDataType.end())
-	{
-		Table::s_expectedDataType[entry] = dataType;
-	}
-	else if (iterator->second == DataType::Double
-			 || iterator->second == DataType::Integer)
-	{
-		iterator->second = DataType::Number;
-	}
-}
-
-
 // end: erector.cpp

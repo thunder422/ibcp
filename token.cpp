@@ -99,7 +99,8 @@ Table *Token::convert(TokenPtr &operandToken, int operand)
 		operandToken->changeConstantIgnoreError(expectedDataType);
 	}
 
-	if (Table *entry = m_entry->alternate(operand, operandToken->dataType()))
+	if (Table *entry = m_entry->alternateForOperand(operand,
+		operandToken->dataType()))
 	{
 		setTableEntry(entry);
 		return {};

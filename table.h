@@ -51,6 +51,14 @@ enum TableFlag : unsigned
 };
 
 
+constexpr int FirstOperand = 0;
+constexpr int KeepString = 0;
+constexpr int SecondOperand = 1;
+constexpr int SubStringAssignment = 1;
+constexpr int ListAssignment = 1;
+constexpr int BinaryOperator = 1;
+
+
 struct ExprInfo;
 class Translator;
 class ProgramModel;
@@ -98,7 +106,7 @@ public:
 	Table &operator=(Table &&) = delete;
 	Table(Table &&) = delete;
 
-	// TABLE ENTRY FUNCTIONS
+	// INSTANCE ACCESS FUNCTIONS
 	int index() const;
 	Code code() const
 	{
@@ -106,7 +114,11 @@ public:
 	}
 	bool isCode(Code code)
 	{
-		return code == m_code;
+		return m_code == code;
+	}
+	bool hasCode()
+	{
+		return m_code != Code{};
 	}
 	std::string name() const
 	{
@@ -176,11 +188,11 @@ public:
 	{
 		return isOperator() && hasOperands();
 	}
+	int hasBinaryOperator();
 
-	Table *alternate(DataType returnDataType);
-	int alternateCount(int operand);
-	Table *alternate(int operand = 0);
-	Table *alternate(int operand, DataType operandDataType);
+	Table *alternateForReturn(DataType returnDataType);
+	Table *firstAlternate(int operand = FirstOperand);
+	Table *alternateForOperand(int operand, DataType operandDataType);
 
 	TranslateFunction translateFunction() const
 	{
@@ -207,7 +219,7 @@ public:
 		return recreate;
 	}
 
-	// STATIC TABLE FUNCTIONS
+	// STATIC ACCESS FUNCTIONS
 	static Table *entry(Code code);
 	static Table *entry(Code code, DataType dataType);
 	static Table *entry(int index);
@@ -277,21 +289,6 @@ private:
 		return not hasSameOperandDataType(other, operand);
 	}
 
-	// STATIC MEMBERS
-	using NameMap = std::unordered_map<std::string, Table *,
-		CaseOptionalHash, CaseOptionalEqual>;
-	static NameMap s_nameToEntry;
-
-	using CodeMap = std::unordered_map<Code, Table *, EnumClassHash>;
-	static CodeMap s_codeToEntry;
-
-	// entry to alternate entries arrays
-	using EntryVector = std::vector<Table *>;
-	using EntryVectorArray = std::array<EntryVector, 3>;
-	static std::unordered_map<Table *, EntryVectorArray> s_alternate;
-
-	static std::unordered_map<Table *, DataType> s_expectedDataType;
-
 	// INSTANCE MEMBERS
 	Code m_code;					// code type of table entry
 	const std::string m_name;		// name for table entry
@@ -305,6 +302,88 @@ private:
 	OperandTextFunction operandText;// pointer to operand text function
 	RemoveFunction remove;			// pointer to remove function
 	RecreateFunction recreate;		// pointer to recreate function
+
+	// STATIC ACCESS FUNCTIONS
+	using NameMap = std::unordered_map<std::string, Table *,
+		CaseOptionalHash, CaseOptionalEqual>;
+	void addCommandNameToNameMap()
+	{
+		s_nameToEntry.emplace(commandName(), this);
+	}
+	void addNameToNameMap()
+	{
+		s_nameToEntry.emplace(m_name, this);
+	}
+	Table *findName()
+	{
+		return find(m_name);
+	}
+	Table *findTwoName()
+	{
+		return find(m_name, m_name2);
+	}
+
+	using CodeMap = std::unordered_map<Code, Table *, EnumClassHash>;
+	bool isNotInCodeMap()
+	{
+		return s_codeToEntry.find(m_code) == s_codeToEntry.end();
+	}
+	void addToCodeMap()
+	{
+		if (hasCode() && isNotInCodeMap())
+		{
+			s_codeToEntry[code()] = this;
+		}
+	}
+
+	using AlternateVector = std::vector<Table *>;
+	using AlternateVectorArray = std::array<AlternateVector, 3>;
+	using AlternateMap = std::unordered_map<Table *, AlternateVectorArray>;
+	void appendAlternate(int operand, Table *alternate)
+	{
+		s_alternate[this][operand].push_back(alternate);
+	}
+	AlternateVector &alternateVector(int operand)
+	{
+		return s_alternate[this][operand];
+	}
+	AlternateMap::const_iterator findAlternate()
+	{
+		return s_alternate.find(this);
+	}
+	AlternateMap::const_iterator alternateNotFound()
+	{
+		return s_alternate.end();
+	}
+
+	using ExpectedDataTypeMap = std::unordered_map<Table *, DataType> ;
+	ExpectedDataTypeMap::iterator findExpectedDataType()
+	{
+		return s_expectedDataType.find(this);
+	}
+	ExpectedDataTypeMap::iterator expectedDataTypeNotFound()
+	{
+		return s_expectedDataType.end();
+	}
+	void setExpectedDataType(DataType dataType)
+	{
+		s_expectedDataType[this] = dataType;
+	}
+	void eraseExpectedDataType()
+	{
+		s_expectedDataType.erase(this);
+	}
+	void addToExpectedDataType(DataType dataType) noexcept;
+	void addToExpectedDataType(int operand) noexcept
+	{
+		addToExpectedDataType(operandDataType(operand));
+	}
+
+	// STATIC MEMBERS
+	static NameMap s_nameToEntry;
+	static CodeMap s_codeToEntry;
+	static AlternateMap s_alternate;
+	static ExpectedDataTypeMap s_expectedDataType;
 };
 
 

@@ -99,7 +99,7 @@ void letTranslate(Translator &translator)
 			token = translator.doneStackTopToken();
 			translator.doneStackPop();
 
-			token->setFirstAlternate(1);  // change to sub-string assignment
+			token->setToFirstAlternate(SubStringAssignment);
 
 			translator.resetToken();  // don't need comma/equal token
 			haveSubStr = true;
@@ -108,7 +108,7 @@ void letTranslate(Translator &translator)
 		{
 			token = translator.moveToken();
 			// change token to appropriate assign code
-			token->setTableEntry(Table::entry(Code::Let)->alternate(0));
+			token->setTableEntry(Table::entry(Code::Let)->firstAlternate(0));
 			translator.processDoneStackTop(token);
 		}
 
@@ -151,8 +151,7 @@ void letTranslate(Translator &translator)
 			// add each token saved in let stack except the last
 			do
 			{
-				// change to keep code (first alternate)
-				token->setTableEntry(token->alternate());
+				token->setTableEntry(token->firstAlternate(KeepString));
 
 				// append to output and pop next token from let stack
 				translator.outputAppend(std::move(token));
@@ -163,7 +162,7 @@ void letTranslate(Translator &translator)
 		}
 		else  // have a multiple assignment
 		{
-			token->setFirstAlternate(1);  // change to list assignment
+			token->setToFirstAlternate(ListAssignment);
 		}
 	}
 

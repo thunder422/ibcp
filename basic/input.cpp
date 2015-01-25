@@ -33,7 +33,7 @@ void inputTranslate(Translator &translator)
 {
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	TokenPtr token;
-	Table *entry = commandToken->alternate(0);
+	Table *entry = commandToken->firstAlternate(FirstOperand);
 	if (commandToken->name2().empty())
 	{
 		token = std::make_shared<Token>(entry);
@@ -104,13 +104,13 @@ void inputTranslate(Translator &translator)
 		}
 
 		// change token to appropriate assign code and append to output
-		token->setTableEntry(commandToken->alternate(1));
+		token->setTableEntry(commandToken->firstAlternate(SecondOperand));
 		translator.processFinalOperand(token);
 
 		// create and insert input parse code at insert point
 		// (inserted in reverse order for each input variable)
 		insertPoint = translator.outputInsert(insertPoint,
-			std::make_shared<Token>(token->alternate(1)));
+			std::make_shared<Token>(token->firstAlternate(SecondOperand)));
 	}
 	while (!done);
 

@@ -123,7 +123,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 				entry = Table::entry(Code::Variable);
 				if (reference != Reference::None)
 				{
-					entry = entry->alternate(1);
+					entry = entry->firstAlternate(1);
 					reference = Reference::None;  // don't need flag in token
 				}
 			}

@@ -85,10 +85,10 @@ static ExprInfo None_Int_ExprInfo(DataType::None, Operands_Int);
 static ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
 
 
-Table::NameMap Table::s_nameToEntry;		// name to code table map
+Table::NameMap Table::s_nameToEntry;
 Table::CodeMap Table::s_codeToEntry;
-std::unordered_map<Table *, Table::EntryVectorArray> Table::s_alternate;
-std::unordered_map<Table *, DataType> Table::s_expectedDataType;
+Table::AlternateMap Table::s_alternate;
+Table::ExpectedDataTypeMap Table::s_expectedDataType;
 
 
 // TODO temporary code index enumeration
@@ -1482,7 +1482,7 @@ Table::Table()
 		for (CodeIndex codeIndex : info.codes)
 		{
 			auto alternate = &tableEntries[codeIndex];
-			s_alternate[primary][info.index].push_back(alternate);
+			primary->appendAlternate(info.index, alternate);
 		}
 	}
 }
@@ -1531,18 +1531,39 @@ std::string Table::commandName() const
 }
 
 
+int Table::hasBinaryOperator()
+{
+	return s_alternate[this][BinaryOperator].size() > 0;
+}
+
+
+void Table::addToExpectedDataType(DataType dataType) noexcept
+{
+	auto iterator = findExpectedDataType();
+	if (iterator == expectedDataTypeNotFound())
+	{
+		setExpectedDataType(dataType);
+	}
+	else if (iterator->second == DataType::Double
+			 || iterator->second == DataType::Integer)
+	{
+		iterator->second = DataType::Number;
+	}
+}
+
+
 DataType Table::expectedDataType()
 {
 	return s_expectedDataType.at(this);
 }
 
 
-Table *Table::alternate(DataType returnDataType)
+Table *Table::alternateForReturn(DataType returnDataType)
 {
 	if (returnDataType != m_exprInfo->m_returnDataType
-		&& s_alternate.find(this) != s_alternate.end())
+		&& findAlternate() != alternateNotFound())
 	{
-		for (Table *alternateEntry : s_alternate[this][0])
+		for (Table *alternateEntry : alternateVector(0))
 		{
 			if (returnDataType == alternateEntry->returnDataType())
 			{
@@ -1554,28 +1575,22 @@ Table *Table::alternate(DataType returnDataType)
 }
 
 
-int Table::alternateCount(int operand)
+Table *Table::firstAlternate(int operand)
 {
-	return s_alternate[this][operand].size();
+	return s_alternate[this][operand].front();
 }
 
 
-Table *Table::alternate(int operand)
-{
-    return s_alternate[this][operand].front();
-}
-
-
-Table *Table::alternate(int operand, DataType operandDataType)
+Table *Table::alternateForOperand(int operand, DataType operandDataType)
 {
 	if (operandDataType == m_exprInfo->m_operandDataType[operand])
 	{
 		return this;
 	}
 
-	if (s_alternate.find(this) != s_alternate.end())
+	if (findAlternate() != alternateNotFound())
 	{
-		for (Table *alternate : s_alternate[this][operand])
+		for (Table *alternate : alternateVector(operand))
 		{
 			if (operandDataType == alternate->operandDataType(operand))
 			{
@@ -1599,7 +1614,7 @@ Table *Table::entry(Code code)
 
 Table *Table::entry(Code code, DataType dataType)
 {
-	return s_codeToEntry[code]->alternate(dataType);
+	return s_codeToEntry[code]->alternateForReturn(dataType);
 }
 
 

@@ -44,7 +44,7 @@ public:
 	Token(Table *entry, DataType dataType, int column, int length,
 		const std::string string = {}, bool reference = {},
 		SubCode subCode = {}) : m_column{column}, m_length{length},
-		m_string{string}, m_entry{entry->alternate(dataType)},
+		m_string{string}, m_entry{entry->alternateForReturn(dataType)},
 		m_reference{reference}, m_subCode{subCode} {}
 
 	// constructor for integer constants
@@ -269,17 +269,17 @@ public:
 		return m_entry->isCodeWithOperand();
 	}
 
-	int alternateCount(int operand) const
+	int hasBinaryOperator() const
 	{
-		return m_entry->alternateCount(operand);
+		return m_entry->hasBinaryOperator();
 	}
-	Table *alternate(int operand = 0) const
+	Table *firstAlternate(int operand = FirstOperand) const
 	{
-		return m_entry->alternate(operand);
+		return m_entry->firstAlternate(operand);
 	}
-	void setFirstAlternate(int operand)
+	void setToFirstAlternate(int operand)
 	{
-		m_entry = m_entry->alternate(operand);
+		m_entry = m_entry->firstAlternate(operand);
 	}
 
 	// other functions
