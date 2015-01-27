@@ -50,7 +50,7 @@ constexpr auto Operands_StrStrInt = {
 };
 
 // expression information structure instances
-static ExprInfo Null_ExprInfo;
+ExprInfo Null_ExprInfo;
 static ExprInfo Dbl_None_ExprInfo(DataType::Double);
 static ExprInfo Dbl_Dbl_ExprInfo(DataType::Double, Operands_Dbl);
 static ExprInfo Dbl_DblDbl_ExprInfo(DataType::Double, Operands_DblDbl);
@@ -99,26 +99,7 @@ enum CodeIndex
 	Print_Code,
 	Input_Code,
 	InputPrompt_Code,
-	Dim_Code,
-	Def_Code,
 	Rem_Code,
-	If_Code,
-	Then_Code,
-	Else_Code,
-	End_Code,
-	EndIf_Code,
-	For_Code,
-	To_Code,
-	Step_Code,
-	Next_Code,
-	Do_Code,
-	DoWhile_Code,
-	DoUntil_Code,
-	While_Code,
-	Until_Code,
-	Loop_Code,
-	LoopWhile_Code,
-	LoopUntil_Code,
 	Rnd_Code,
 	Mod_Code,
 	And_Code,
@@ -370,144 +351,11 @@ static Table tableEntries[] =
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
-	{	// Dim_Code
-		Code{},
-		"DIM", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Def_Code
-		Code{},
-		"DEF", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
 	{	// Rem_Code
 		Code::Rem,
 		"REM", "", "",
 		Command_Flag, 4, &Null_ExprInfo,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
-	},
-	{	// If_Code
-		Code{},
-		"IF", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Then_Code
-		Code{},
-		"THEN", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Else_Code
-		Code{},
-		"ELSE", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// End_Code
-		Code{},
-		"END", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// EndIf_Code
-		Code{},
-		"END", "IF", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// For_Code
-		Code{},
-		"FOR", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// To_Code
-		Code{},
-		"TO", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Step_Code
-		Code{},
-		"STEP", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Next_Code
-		Code{},
-		"NEXT", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Do_Code
-		Code{},
-		"DO", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// DoWhile_Code
-		Code{},
-		"DO", "WHILE", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// DoUntil_Code
-		Code{},
-		"DO", "UNTIL", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// While_Code
-		Code{},
-		"WHILE", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Until_Code
-		Code{},
-		"UNTIL", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// Loop_Code
-		Code{},
-		"LOOP", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// LoopWhile_Code
-		Code{},
-		"LOOP", "WHILE", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
-	},
-	{	// LoopUntil_Code
-		Code{},
-		"LOOP", "UNTIL", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, NULL
-
 	},
 	//-----------------------------------------
 	//   Internal Functions (No Parentheses)
@@ -1493,9 +1341,9 @@ Table::Table()
 //  TABLE ENTRY FUNCTIONS
 //========================
 
-Table::Table(Code code, const std::string name, const std::string name2,
-	const std::string option, unsigned flags, int precedence,
-	ExprInfo *exprInfo, TranslateFunction _translate, EncodeFunction _encode,
+Table::Table(Code code, const char *name, const char *name2, const char *option,
+	unsigned flags, int precedence, ExprInfo *exprInfo,
+	TranslateFunction _translate, EncodeFunction _encode,
 	OperandTextFunction _operandText, RemoveFunction _remove,
 	RecreateFunction _recreate) :
 	m_code {code},

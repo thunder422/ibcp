@@ -162,10 +162,6 @@ set(ibcp_HEADERS
 
 # list the main program sources
 set(ibcp_SOURCES
-	basic/basic.cpp
-	basic/input.cpp
-	basic/let.cpp
-	basic/print.cpp
 	commandline.cpp
 	dictionary.cpp
 	erector.cpp
@@ -186,6 +182,11 @@ set(ibcp_SOURCES
 	translator.cpp
 	test_ibcp.cpp
 	utility.cpp
+	basic/basic.cpp
+	basic/command.cpp
+	basic/input.cpp
+	basic/let.cpp
+	basic/print.cpp
 )
 
 # list the header files containing QOBJECT

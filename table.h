@@ -95,11 +95,11 @@ class Table
 {
 public:
 	Table();
-	Table(Code code, const std::string name, const std::string name2,
-		const std::string option, unsigned flags, int precedence,
-		ExprInfo *exprInfo, TranslateFunction _translate,
-		EncodeFunction _encode, OperandTextFunction _operandText,
-		RemoveFunction _remove, RecreateFunction _recreate);
+	Table(Code code, const char *name, const char *name2, const char *option,
+		unsigned flags, int precedence, ExprInfo *exprInfo,
+		TranslateFunction _translate, EncodeFunction _encode,
+		OperandTextFunction _operandText, RemoveFunction _remove,
+		RecreateFunction _recreate);
 
 	Table &operator=(const Table &) = delete;
 	Table(const Table &) = delete;
