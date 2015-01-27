@@ -1,0 +1,313 @@
+
+Input: A = NOT B
+Output: A<ref> B CvtInt NOT CvtDbl Assign 
+
+Input: A = -B
+Output: A<ref> B -U Assign 
+
+Input: A% = NOT B%
+Output: A%<ref> B% NOT Assign% 
+
+Input: A% = -B%
+Output: A%<ref> B% -U% Assign% 
+
+Input: A = B + C
+Output: A<ref> B C + Assign 
+
+Input: A = B - C
+Output: A<ref> B C - Assign 
+
+Input: A = B * C
+Output: A<ref> B C * Assign 
+
+Input: A = B / C
+Output: A<ref> B C / Assign 
+
+Input: A = B MOD C
+Output: A<ref> B C MOD Assign 
+
+Input: A = B ^ C
+Output: A<ref> B C ^ Assign 
+
+Input: A% = B \ C
+Output: A%<ref> B C \ Assign% 
+
+Input: A = B = C
+Output: A<ref> B C = CvtDbl Assign 
+
+Input: A = B <> C
+Output: A<ref> B C <> CvtDbl Assign 
+
+Input: A = B < C
+Output: A<ref> B C < CvtDbl Assign 
+
+Input: A = B <= C
+Output: A<ref> B C <= CvtDbl Assign 
+
+Input: A = B > C
+Output: A<ref> B C > CvtDbl Assign 
+
+Input: A = B >= C
+Output: A<ref> B C >= CvtDbl Assign 
+
+Input: A = B AND C
+Output: A<ref> B CvtInt C CvtInt AND CvtDbl Assign 
+
+Input: A = B OR C
+Output: A<ref> B CvtInt C CvtInt OR CvtDbl Assign 
+
+Input: A = B EQV C
+Output: A<ref> B CvtInt C CvtInt EQV CvtDbl Assign 
+
+Input: A = B IMP C
+Output: A<ref> B CvtInt C CvtInt IMP CvtDbl Assign 
+
+Input: A = B XOR C
+Output: A<ref> B CvtInt C CvtInt XOR CvtDbl Assign 
+
+Input: A = B% + C
+Output: A<ref> B% C +%1 Assign 
+
+Input: A = B% - C
+Output: A<ref> B% C -%1 Assign 
+
+Input: A = B% * C
+Output: A<ref> B% C *%1 Assign 
+
+Input: A = B% / C
+Output: A<ref> B% C /%1 Assign 
+
+Input: A = B% MOD C
+Output: A<ref> B% C MOD%1 Assign 
+
+Input: A = B% ^ C
+Output: A<ref> B% C ^%1 Assign 
+
+Input: A% = B% \ C
+Output: A%<ref> B% CvtDbl C \ Assign% 
+
+Input: A% = B% = C
+Output: A%<ref> B% C =%1 Assign% 
+
+Input: A% = B% <> C
+Output: A%<ref> B% C <>%1 Assign% 
+
+Input: A% = B% < C
+Output: A%<ref> B% C <%1 Assign% 
+
+Input: A% = B% <= C
+Output: A%<ref> B% C <=%1 Assign% 
+
+Input: A% = B% > C
+Output: A%<ref> B% C >%1 Assign% 
+
+Input: A% = B% >= C
+Output: A%<ref> B% C >=%1 Assign% 
+
+Input: A% = B% AND C
+Output: A%<ref> B% C CvtInt AND Assign% 
+
+Input: A% = B% OR C
+Output: A%<ref> B% C CvtInt OR Assign% 
+
+Input: A% = B% EQV C
+Output: A%<ref> B% C CvtInt EQV Assign% 
+
+Input: A% = B% IMP C
+Output: A%<ref> B% C CvtInt IMP Assign% 
+
+Input: A% = B% XOR C
+Output: A%<ref> B% C CvtInt XOR Assign% 
+
+Input: A = B + C%
+Output: A<ref> B C% +%2 Assign 
+
+Input: A = B - C%
+Output: A<ref> B C% -%2 Assign 
+
+Input: A = B * C%
+Output: A<ref> B C% *%2 Assign 
+
+Input: A = B / C%
+Output: A<ref> B C% /%2 Assign 
+
+Input: A = B MOD C%
+Output: A<ref> B C% MOD%2 Assign 
+
+Input: A = B ^ C%
+Output: A<ref> B C% ^* Assign 
+
+Input: A% = B \ C%
+Output: A%<ref> B C% CvtDbl \ Assign% 
+
+Input: A% = B = C%
+Output: A%<ref> B C% =%2 Assign% 
+
+Input: A% = B <> C%
+Output: A%<ref> B C% <>%2 Assign% 
+
+Input: A% = B < C%
+Output: A%<ref> B C% <%2 Assign% 
+
+Input: A% = B <= C%
+Output: A%<ref> B C% <=%2 Assign% 
+
+Input: A% = B > C%
+Output: A%<ref> B C% >%2 Assign% 
+
+Input: A% = B >= C%
+Output: A%<ref> B C% >=%2 Assign% 
+
+Input: A% = B AND C%
+Output: A%<ref> B CvtInt C% AND Assign% 
+
+Input: A% = B OR C%
+Output: A%<ref> B CvtInt C% OR Assign% 
+
+Input: A% = B EQV C%
+Output: A%<ref> B CvtInt C% EQV Assign% 
+
+Input: A% = B IMP C%
+Output: A%<ref> B CvtInt C% IMP Assign% 
+
+Input: A% = B XOR C%
+Output: A%<ref> B CvtInt C% XOR Assign% 
+
+Input: A% = B% + C%
+Output: A%<ref> B% C% +% Assign% 
+
+Input: A% = B% - C%
+Output: A%<ref> B% C% -% Assign% 
+
+Input: A% = B% * C%
+Output: A%<ref> B% C% *% Assign% 
+
+Input: A% = B% / C%
+Output: A%<ref> B% C% /% Assign% 
+
+Input: A% = B% MOD C%
+Output: A%<ref> B% C% MOD% Assign% 
+
+Input: A% = B% ^ C%
+Output: A%<ref> B% C% ^% Assign% 
+
+Input: A% = B% \ C%
+Output: A%<ref> B% CvtDbl C% CvtDbl \ Assign% 
+
+Input: A% = B% = C%
+Output: A%<ref> B% C% =% Assign% 
+
+Input: A% = B% <> C%
+Output: A%<ref> B% C% <>% Assign% 
+
+Input: A% = B% < C%
+Output: A%<ref> B% C% <% Assign% 
+
+Input: A% = B% <= C%
+Output: A%<ref> B% C% <=% Assign% 
+
+Input: A% = B% > C%
+Output: A%<ref> B% C% >% Assign% 
+
+Input: A% = B% >= C%
+Output: A%<ref> B% C% >=% Assign% 
+
+Input: A% = B% AND C%
+Output: A%<ref> B% C% AND Assign% 
+
+Input: A% = B% OR C%
+Output: A%<ref> B% C% OR Assign% 
+
+Input: A% = B% EQV C%
+Output: A%<ref> B% C% EQV Assign% 
+
+Input: A% = B% IMP C%
+Output: A%<ref> B% C% IMP Assign% 
+
+Input: A% = B% XOR C%
+Output: A%<ref> B% C% XOR Assign% 
+
+Input: A$ = B$ + C$
+Output: A$<ref> B$ C$ +$ Assign$ 
+
+Input: A% = B$ = C$
+Output: A%<ref> B$ C$ =$ Assign% 
+
+Input: A% = B$ <> C$
+Output: A%<ref> B$ C$ <>$ Assign% 
+
+Input: A% = B$ < C$
+Output: A%<ref> B$ C$ <$ Assign% 
+
+Input: A% = B$ <= C$
+Output: A%<ref> B$ C$ <=$ Assign% 
+
+Input: A% = B$ > C$
+Output: A%<ref> B$ C$ >$ Assign% 
+
+Input: A% = B$ >= C$
+Output: A%<ref> B$ C$ >=$ Assign% 
+
+Input: A$ = LEFT$(B$, 1) + C$
+Output: A$<ref> B$ 1% LEFT$( C$ +$ Assign$ 
+
+Input: A% = LEFT$(B$, 1) = C$
+Output: A%<ref> B$ 1% LEFT$( C$ =$ Assign% 
+
+Input: A% = LEFT$(B$, 1) <> C$
+Output: A%<ref> B$ 1% LEFT$( C$ <>$ Assign% 
+
+Input: A% = LEFT$(B$, 1) < C$
+Output: A%<ref> B$ 1% LEFT$( C$ <$ Assign% 
+
+Input: A% = LEFT$(B$, 1) <= C$
+Output: A%<ref> B$ 1% LEFT$( C$ <=$ Assign% 
+
+Input: A% = LEFT$(B$, 1) > C$
+Output: A%<ref> B$ 1% LEFT$( C$ >$ Assign% 
+
+Input: A% = LEFT$(B$, 1) >= C$
+Output: A%<ref> B$ 1% LEFT$( C$ >=$ Assign% 
+
+Input: A$ = B$ + RIGHT$(C$, 1)
+Output: A$<ref> B$ C$ 1% RIGHT$( +$ Assign$ 
+
+Input: A% = B$ = RIGHT$(C$, 1)
+Output: A%<ref> B$ C$ 1% RIGHT$( =$ Assign% 
+
+Input: A% = B$ <> RIGHT$(C$, 1)
+Output: A%<ref> B$ C$ 1% RIGHT$( <>$ Assign% 
+
+Input: A% = B$ < RIGHT$(C$, 1)
+Output: A%<ref> B$ C$ 1% RIGHT$( <$ Assign% 
+
+Input: A% = B$ <= RIGHT$(C$, 1)
+Output: A%<ref> B$ C$ 1% RIGHT$( <=$ Assign% 
+
+Input: A% = B$ > RIGHT$(C$, 1)
+Output: A%<ref> B$ C$ 1% RIGHT$( >$ Assign% 
+
+Input: A% = B$ >= RIGHT$(C$, 1)
+Output: A%<ref> B$ C$ 1% RIGHT$( >=$ Assign% 
+
+Input: A$ = MID$(B$, 1) + MID$(C$, 1, 2)
+Output: A$<ref> B$ 1% MID$(2 C$ 1% 2% MID$(3 +$ Assign$ 
+
+Input: A% = MID$(B$, 1) = MID$(C$, 1, 2)
+Output: A%<ref> B$ 1% MID$(2 C$ 1% 2% MID$(3 =$ Assign% 
+
+Input: A% = MID$(B$, 1) <> MID$(C$, 1, 2)
+Output: A%<ref> B$ 1% MID$(2 C$ 1% 2% MID$(3 <>$ Assign% 
+
+Input: A% = MID$(B$, 1) < MID$(C$, 1, 2)
+Output: A%<ref> B$ 1% MID$(2 C$ 1% 2% MID$(3 <$ Assign% 
+
+Input: A% = MID$(B$, 1) <= MID$(C$, 1, 2)
+Output: A%<ref> B$ 1% MID$(2 C$ 1% 2% MID$(3 <=$ Assign% 
+
+Input: A% = MID$(B$, 1) > MID$(C$, 1, 2)
+Output: A%<ref> B$ 1% MID$(2 C$ 1% 2% MID$(3 >$ Assign% 
+
+Input: A% = MID$(B$, 1) >= MID$(C$, 1, 2)
+Output: A%<ref> B$ 1% MID$(2 C$ 1% 2% MID$(3 >=$ Assign% 
+

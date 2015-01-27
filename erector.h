@@ -33,7 +33,9 @@ public:
 
 private:
 	bool addTwoWordCommandToNameMap();
+	void setTwoFlagOnOneWordCommand();
 	bool addNewPrimaryToNameMap() noexcept;
+	void setTwoFlagOnOneCharacterOperator();
 	void addToNameMap() noexcept;
 	void replacePrimary() noexcept;
 	bool addAlternateForOperatorWithMoreOperands();
@@ -95,7 +97,17 @@ inline bool Erector::addTwoWordCommandToNameMap()
 		throw "Multiple two-word command '" + m_entry->commandName() + '\'';
 	}
 	m_entry->addCommandNameToNameMap();
+	setTwoFlagOnOneWordCommand();
 	return true;
+}
+
+
+inline void Erector::setTwoFlagOnOneWordCommand()
+{
+	if (Table *oneWordCommand = m_entry->findName())
+	{
+		oneWordCommand->setTwoWordFlag();
+	}
 }
 
 
@@ -106,7 +118,20 @@ inline bool Erector::addNewPrimaryToNameMap() noexcept
 		return false;
 	}
 	addToNameMap();
+	if (m_entry->isTwoCharacterOperator())
+	{
+		setTwoFlagOnOneCharacterOperator();
+	}
 	return true;
+}
+
+
+inline void Erector::setTwoFlagOnOneCharacterOperator()
+{
+	if (Table *oneCharacterOperator = Table::find(m_entry->name().substr(0, 1)))
+	{
+		oneCharacterOperator->setTwoWordFlag();
+	}
 }
 
 

@@ -1,0 +1,117 @@
+#####################################################
+#  Translator Test #18: Complete Operator Coverage  #
+#####################################################
+
+A = NOT B
+A = -B
+
+A% = NOT B%
+A% = -B%
+
+A = B + C
+A = B - C
+A = B * C
+A = B / C
+A = B MOD C
+A = B ^ C
+A% = B \ C
+A = B = C
+A = B <> C
+A = B < C
+A = B <= C
+A = B > C
+A = B >= C
+A = B AND C
+A = B OR C
+A = B EQV C
+A = B IMP C
+A = B XOR C
+
+A = B% + C
+A = B% - C
+A = B% * C
+A = B% / C
+A = B% MOD C
+A = B% ^ C
+A% = B% \ C
+A% = B% = C
+A% = B% <> C
+A% = B% < C
+A% = B% <= C
+A% = B% > C
+A% = B% >= C
+A% = B% AND C
+A% = B% OR C
+A% = B% EQV C
+A% = B% IMP C
+A% = B% XOR C
+
+A = B + C%
+A = B - C%
+A = B * C%
+A = B / C%
+A = B MOD C%
+A = B ^ C%
+A% = B \ C%
+A% = B = C%
+A% = B <> C%
+A% = B < C%
+A% = B <= C%
+A% = B > C%
+A% = B >= C%
+A% = B AND C%
+A% = B OR C%
+A% = B EQV C%
+A% = B IMP C%
+A% = B XOR C%
+
+A% = B% + C%
+A% = B% - C%
+A% = B% * C%
+A% = B% / C%
+A% = B% MOD C%
+A% = B% ^ C%
+A% = B% \ C%
+A% = B% = C%
+A% = B% <> C%
+A% = B% < C%
+A% = B% <= C%
+A% = B% > C%
+A% = B% >= C%
+A% = B% AND C%
+A% = B% OR C%
+A% = B% EQV C%
+A% = B% IMP C%
+A% = B% XOR C%
+
+A$ = B$ + C$
+A% = B$ = C$
+A% = B$ <> C$
+A% = B$ < C$
+A% = B$ <= C$
+A% = B$ > C$
+A% = B$ >= C$
+
+A$ = LEFT$(B$, 1) + C$
+A% = LEFT$(B$, 1) = C$
+A% = LEFT$(B$, 1) <> C$
+A% = LEFT$(B$, 1) < C$
+A% = LEFT$(B$, 1) <= C$
+A% = LEFT$(B$, 1) > C$
+A% = LEFT$(B$, 1) >= C$
+
+A$ = B$ + RIGHT$(C$, 1)
+A% = B$ = RIGHT$(C$, 1)
+A% = B$ <> RIGHT$(C$, 1)
+A% = B$ < RIGHT$(C$, 1)
+A% = B$ <= RIGHT$(C$, 1)
+A% = B$ > RIGHT$(C$, 1)
+A% = B$ >= RIGHT$(C$, 1)
+
+A$ = MID$(B$, 1) + MID$(C$, 1, 2)
+A% = MID$(B$, 1) = MID$(C$, 1, 2)
+A% = MID$(B$, 1) <> MID$(C$, 1, 2)
+A% = MID$(B$, 1) < MID$(C$, 1, 2)
+A% = MID$(B$, 1) <= MID$(C$, 1, 2)
+A% = MID$(B$, 1) > MID$(C$, 1, 2)
+A% = MID$(B$, 1) >= MID$(C$, 1, 2)

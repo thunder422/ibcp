@@ -1,0 +1,313 @@
+
+Input: A = NOT B
+Output: A = NOT B 
+
+Input: A = -B
+Output: A = -B 
+
+Input: A% = NOT B%
+Output: A% = NOT B% 
+
+Input: A% = -B%
+Output: A% = -B% 
+
+Input: A = B + C
+Output: A = B + C 
+
+Input: A = B - C
+Output: A = B - C 
+
+Input: A = B * C
+Output: A = B * C 
+
+Input: A = B / C
+Output: A = B / C 
+
+Input: A = B MOD C
+Output: A = B MOD C 
+
+Input: A = B ^ C
+Output: A = B ^ C 
+
+Input: A% = B \ C
+Output: A% = B \ C 
+
+Input: A = B = C
+Output: A = B = C 
+
+Input: A = B <> C
+Output: A = B <> C 
+
+Input: A = B < C
+Output: A = B < C 
+
+Input: A = B <= C
+Output: A = B <= C 
+
+Input: A = B > C
+Output: A = B > C 
+
+Input: A = B >= C
+Output: A = B >= C 
+
+Input: A = B AND C
+Output: A = B AND C 
+
+Input: A = B OR C
+Output: A = B OR C 
+
+Input: A = B EQV C
+Output: A = B EQV C 
+
+Input: A = B IMP C
+Output: A = B IMP C 
+
+Input: A = B XOR C
+Output: A = B XOR C 
+
+Input: A = B% + C
+Output: A = B% + C 
+
+Input: A = B% - C
+Output: A = B% - C 
+
+Input: A = B% * C
+Output: A = B% * C 
+
+Input: A = B% / C
+Output: A = B% / C 
+
+Input: A = B% MOD C
+Output: A = B% MOD C 
+
+Input: A = B% ^ C
+Output: A = B% ^ C 
+
+Input: A% = B% \ C
+Output: A% = B% \ C 
+
+Input: A% = B% = C
+Output: A% = B% = C 
+
+Input: A% = B% <> C
+Output: A% = B% <> C 
+
+Input: A% = B% < C
+Output: A% = B% < C 
+
+Input: A% = B% <= C
+Output: A% = B% <= C 
+
+Input: A% = B% > C
+Output: A% = B% > C 
+
+Input: A% = B% >= C
+Output: A% = B% >= C 
+
+Input: A% = B% AND C
+Output: A% = B% AND C 
+
+Input: A% = B% OR C
+Output: A% = B% OR C 
+
+Input: A% = B% EQV C
+Output: A% = B% EQV C 
+
+Input: A% = B% IMP C
+Output: A% = B% IMP C 
+
+Input: A% = B% XOR C
+Output: A% = B% XOR C 
+
+Input: A = B + C%
+Output: A = B + C% 
+
+Input: A = B - C%
+Output: A = B - C% 
+
+Input: A = B * C%
+Output: A = B * C% 
+
+Input: A = B / C%
+Output: A = B / C% 
+
+Input: A = B MOD C%
+Output: A = B MOD C% 
+
+Input: A = B ^ C%
+Output: A = B ^ C% 
+
+Input: A% = B \ C%
+Output: A% = B \ C% 
+
+Input: A% = B = C%
+Output: A% = B = C% 
+
+Input: A% = B <> C%
+Output: A% = B <> C% 
+
+Input: A% = B < C%
+Output: A% = B < C% 
+
+Input: A% = B <= C%
+Output: A% = B <= C% 
+
+Input: A% = B > C%
+Output: A% = B > C% 
+
+Input: A% = B >= C%
+Output: A% = B >= C% 
+
+Input: A% = B AND C%
+Output: A% = B AND C% 
+
+Input: A% = B OR C%
+Output: A% = B OR C% 
+
+Input: A% = B EQV C%
+Output: A% = B EQV C% 
+
+Input: A% = B IMP C%
+Output: A% = B IMP C% 
+
+Input: A% = B XOR C%
+Output: A% = B XOR C% 
+
+Input: A% = B% + C%
+Output: A% = B% + C% 
+
+Input: A% = B% - C%
+Output: A% = B% - C% 
+
+Input: A% = B% * C%
+Output: A% = B% * C% 
+
+Input: A% = B% / C%
+Output: A% = B% / C% 
+
+Input: A% = B% MOD C%
+Output: A% = B% MOD C% 
+
+Input: A% = B% ^ C%
+Output: A% = B% ^ C% 
+
+Input: A% = B% \ C%
+Output: A% = B% \ C% 
+
+Input: A% = B% = C%
+Output: A% = B% = C% 
+
+Input: A% = B% <> C%
+Output: A% = B% <> C% 
+
+Input: A% = B% < C%
+Output: A% = B% < C% 
+
+Input: A% = B% <= C%
+Output: A% = B% <= C% 
+
+Input: A% = B% > C%
+Output: A% = B% > C% 
+
+Input: A% = B% >= C%
+Output: A% = B% >= C% 
+
+Input: A% = B% AND C%
+Output: A% = B% AND C% 
+
+Input: A% = B% OR C%
+Output: A% = B% OR C% 
+
+Input: A% = B% EQV C%
+Output: A% = B% EQV C% 
+
+Input: A% = B% IMP C%
+Output: A% = B% IMP C% 
+
+Input: A% = B% XOR C%
+Output: A% = B% XOR C% 
+
+Input: A$ = B$ + C$
+Output: A$ = B$ + C$ 
+
+Input: A% = B$ = C$
+Output: A% = B$ = C$ 
+
+Input: A% = B$ <> C$
+Output: A% = B$ <> C$ 
+
+Input: A% = B$ < C$
+Output: A% = B$ < C$ 
+
+Input: A% = B$ <= C$
+Output: A% = B$ <= C$ 
+
+Input: A% = B$ > C$
+Output: A% = B$ > C$ 
+
+Input: A% = B$ >= C$
+Output: A% = B$ >= C$ 
+
+Input: A$ = LEFT$(B$, 1) + C$
+Output: A$ = LEFT$(B$, 1) + C$ 
+
+Input: A% = LEFT$(B$, 1) = C$
+Output: A% = LEFT$(B$, 1) = C$ 
+
+Input: A% = LEFT$(B$, 1) <> C$
+Output: A% = LEFT$(B$, 1) <> C$ 
+
+Input: A% = LEFT$(B$, 1) < C$
+Output: A% = LEFT$(B$, 1) < C$ 
+
+Input: A% = LEFT$(B$, 1) <= C$
+Output: A% = LEFT$(B$, 1) <= C$ 
+
+Input: A% = LEFT$(B$, 1) > C$
+Output: A% = LEFT$(B$, 1) > C$ 
+
+Input: A% = LEFT$(B$, 1) >= C$
+Output: A% = LEFT$(B$, 1) >= C$ 
+
+Input: A$ = B$ + RIGHT$(C$, 1)
+Output: A$ = B$ + RIGHT$(C$, 1) 
+
+Input: A% = B$ = RIGHT$(C$, 1)
+Output: A% = B$ = RIGHT$(C$, 1) 
+
+Input: A% = B$ <> RIGHT$(C$, 1)
+Output: A% = B$ <> RIGHT$(C$, 1) 
+
+Input: A% = B$ < RIGHT$(C$, 1)
+Output: A% = B$ < RIGHT$(C$, 1) 
+
+Input: A% = B$ <= RIGHT$(C$, 1)
+Output: A% = B$ <= RIGHT$(C$, 1) 
+
+Input: A% = B$ > RIGHT$(C$, 1)
+Output: A% = B$ > RIGHT$(C$, 1) 
+
+Input: A% = B$ >= RIGHT$(C$, 1)
+Output: A% = B$ >= RIGHT$(C$, 1) 
+
+Input: A$ = MID$(B$, 1) + MID$(C$, 1, 2)
+Output: A$ = MID$(B$, 1) + MID$(C$, 1, 2) 
+
+Input: A% = MID$(B$, 1) = MID$(C$, 1, 2)
+Output: A% = MID$(B$, 1) = MID$(C$, 1, 2) 
+
+Input: A% = MID$(B$, 1) <> MID$(C$, 1, 2)
+Output: A% = MID$(B$, 1) <> MID$(C$, 1, 2) 
+
+Input: A% = MID$(B$, 1) < MID$(C$, 1, 2)
+Output: A% = MID$(B$, 1) < MID$(C$, 1, 2) 
+
+Input: A% = MID$(B$, 1) <= MID$(C$, 1, 2)
+Output: A% = MID$(B$, 1) <= MID$(C$, 1, 2) 
+
+Input: A% = MID$(B$, 1) > MID$(C$, 1, 2)
+Output: A% = MID$(B$, 1) > MID$(C$, 1, 2) 
+
+Input: A% = MID$(B$, 1) >= MID$(C$, 1, 2)
+Output: A% = MID$(B$, 1) >= MID$(C$, 1, 2) 
+

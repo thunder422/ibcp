@@ -359,14 +359,14 @@ static Table tableEntries[] =
 	{	// Input_Code
 		Code{},
 		"INPUT", "", "Keep",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
 	{	// InputPrompt_Code
 		Code{},
 		"INPUT", "PROMPT", "Keep",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
 	},
@@ -414,14 +414,14 @@ static Table tableEntries[] =
 	{	// End_Code
 		Code{},
 		"END", "", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// EndIf_Code
 		Code{},
 		"END", "IF", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -456,56 +456,56 @@ static Table tableEntries[] =
 	{	// Do_Code
 		Code{},
 		"DO", "", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoWhile_Code
 		Code{},
 		"DO", "WHILE", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// DoUntil_Code
 		Code{},
 		"DO", "UNTIL", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// While_Code
 		Code{},
 		"WHILE", "", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Until_Code
 		Code{},
 		"UNTIL", "", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// Loop_Code
 		Code{},
 		"LOOP", "", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopWhile_Code
 		Code{},
 		"LOOP", "WHILE", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
 	{	// LoopUntil_Code
 		Code{},
 		"LOOP", "UNTIL", "",
-		Command_Flag | Two_Flag, 4, &Null_ExprInfo,
+		Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
 	},
@@ -801,7 +801,7 @@ static Table tableEntries[] =
 	{	// Gt_Code
 		Code{},
 		">", "", "",
-		Operator_Flag | Two_Flag, 32, &Int_DblDbl_ExprInfo,
+		Operator_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// GtEq_Code
@@ -813,7 +813,7 @@ static Table tableEntries[] =
 	{	// Lt_Code
 		Code{},
 		"<", "", "",
-		Operator_Flag | Two_Flag, 32, &Int_DblDbl_ExprInfo,
+		Operator_Flag, 32, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// LtEq_Code
@@ -825,7 +825,7 @@ static Table tableEntries[] =
 	{	// NotEq_Code
 		Code{},
 		"<>", "", "",
-		Operator_Flag | Two_Flag, 30, &Int_DblDbl_ExprInfo,
+		Operator_Flag, 30, &Int_DblDbl_ExprInfo,
 		NULL, NULL, NULL, NULL, binaryOperatorRecreate
 	},
 	{	// OpenParen_Code

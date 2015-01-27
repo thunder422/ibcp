@@ -240,11 +240,16 @@ public:
 private:
 	bool hasName() const
 	{
-		return !m_name.empty();
+		return not m_name.empty();
 	}
 	bool isTwoWordCommand() const
 	{
-		return hasFlag(Two_Flag) && !m_name2.empty();
+		return isCommand() && not m_name2.empty();
+	}
+	bool isTwoCharacterOperator() const
+	{
+		return isOperator() && not isalpha(m_name.front())
+			&& m_name.length() == 2;
 	}
 	bool isNotAssignmentOperator() const
 	{
@@ -253,6 +258,10 @@ private:
 	void setMultipleFlag()
 	{
 		m_flags |= Multiple_Flag;
+	}
+	void setTwoWordFlag()
+	{
+		m_flags |= Two_Flag;
 	}
 	bool hasOperands() const
 	{

@@ -59,17 +59,17 @@ Output: Z%<ref> A$ B$ C$ +$ >$ Assign%
 Input: Z% = A$ + B$ > C$ + D$
 Output: Z%<ref> A$ B$ +$ C$ D$ +$ >$ Assign% 
 
-Input: Z% = A$ <= B$
-Output: Z%<ref> A$ B$ <=$ Assign% 
+Input: Z% = A$ >= B$
+Output: Z%<ref> A$ B$ >=$ Assign% 
 
-Input: Z% = A$ + B$ <= C$
-Output: Z%<ref> A$ B$ +$ C$ <=$ Assign% 
+Input: Z% = A$ + B$ >= C$
+Output: Z%<ref> A$ B$ +$ C$ >=$ Assign% 
 
-Input: Z% = A$ <= B$ + C$
-Output: Z%<ref> A$ B$ C$ +$ <=$ Assign% 
+Input: Z% = A$ >= B$ + C$
+Output: Z%<ref> A$ B$ C$ +$ >=$ Assign% 
 
-Input: Z% = A$ + B$ <= C$ + D$
-Output: Z%<ref> A$ B$ +$ C$ D$ +$ <=$ Assign% 
+Input: Z% = A$ + B$ >= C$ + D$
+Output: Z%<ref> A$ B$ +$ C$ D$ +$ >=$ Assign% 
 
 Input: Z% = A$ <> B$
 Output: Z%<ref> A$ B$ <>$ Assign% 

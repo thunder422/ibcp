@@ -71,3 +71,28 @@ Input: fn fn( fn1 fn1( fn_ fn_(
 	16: Variable     Double  |fn_|
 	20: UserFunc  () Double  |fn_(|
 	24: Operator  Op None    EOL
+
+Input: dim DEF If Then eLSE end end if for to step next
+	 0: Command   Op DIM
+	 4: Command   Op DEF
+	 8: Command   Op IF
+	11: Command   Op THEN
+	16: Command   Op ELSE
+	21: Command   Op END
+	25: Command   Op ENDIF
+	32: Command   Op FOR
+	36: Command   Op TO
+	39: Command   Op STEP
+	44: Command   Op NEXT
+	48: Operator  Op None    EOL
+
+Input: do Do While DO UNTIL While unTIL Loop looP WHILE LOOP until
+	 0: Command   Op DO
+	 3: Command   Op DOWHILE
+	12: Command   Op DOUNTIL
+	21: Command   Op WHILE
+	27: Command   Op UNTIL
+	33: Command   Op LOOP
+	38: Command   Op LOOPWHILE
+	49: Command   Op LOOPUNTIL
+	59: Operator  Op None    EOL

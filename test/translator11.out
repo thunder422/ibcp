@@ -59,17 +59,17 @@ Output: Z% = A$ > B$ + C$
 Input: Z% = A$ + B$ > C$ + D$
 Output: Z% = A$ + B$ > C$ + D$ 
 
-Input: Z% = A$ <= B$
-Output: Z% = A$ <= B$ 
+Input: Z% = A$ >= B$
+Output: Z% = A$ >= B$ 
 
-Input: Z% = A$ + B$ <= C$
-Output: Z% = A$ + B$ <= C$ 
+Input: Z% = A$ + B$ >= C$
+Output: Z% = A$ + B$ >= C$ 
 
-Input: Z% = A$ <= B$ + C$
-Output: Z% = A$ <= B$ + C$ 
+Input: Z% = A$ >= B$ + C$
+Output: Z% = A$ >= B$ + C$ 
 
-Input: Z% = A$ + B$ <= C$ + D$
-Output: Z% = A$ + B$ <= C$ + D$ 
+Input: Z% = A$ + B$ >= C$ + D$
+Output: Z% = A$ + B$ >= C$ + D$ 
 
 Input: Z% = A$ <> B$
 Output: Z% = A$ <> B$ 

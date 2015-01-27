@@ -18,3 +18,6 @@ rem-this should be a comment
 
 # more 'FN' tests (these should be plain identifiers)
 fn fn( fn1 fn1( fn_ fn_(
+
+dim DEF If Then eLSE end end if for to step next
+do Do While DO UNTIL While unTIL Loop looP WHILE LOOP until
