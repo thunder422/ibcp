@@ -47,6 +47,7 @@ enum TableFlag : unsigned
 	Command_Flag		= 1u << 8,	// code is a command
 	Operator_Flag		= 1u << 9,	// code is an operator
 	Function_Flag		= 1u << 10,	// code is a BASIC function
+	Operand_Flag		= 1u << 11,	// code has an operand word
 	EndStmt_Flag		= 1u << 31	// end statement
 };
 
@@ -106,6 +107,39 @@ public:
 	Table &operator=(Table &&) = delete;
 	Table(Table &&) = delete;
 
+	// TODO temporarily defined functions; will be pure virtual
+	virtual void translate(Translator &translator)
+	{
+		auto translate = m_translate;
+		if (!translate)
+		{
+			translate = Table::entry(Code::Let)->m_translate;
+		}
+		(*translate)(translator);
+	}
+	virtual u_int16_t encode(ProgramModel *programUnit, const TokenPtr &token)
+	{
+		return (*m_encode)(programUnit, token);
+	}
+	virtual const std::string operandText(const ProgramModel *programUnit,
+		uint16_t operand, SubCode subCode)
+	{
+		return (*m_operandText)(programUnit, operand, subCode);
+	}
+	virtual void remove(ProgramModel *programUnit, uint16_t operand)
+	{
+		(*m_remove)(programUnit, operand);
+	}
+	virtual bool recreate(Recreator &recreator, RpnItemPtr &rpnItem)
+	{
+		if (m_recreate)
+		{
+			(*m_recreate)(recreator, rpnItem);
+			return true;
+		}
+		return false;
+	}
+
 	// INSTANCE ACCESS FUNCTIONS
 	Code code() const
 	{
@@ -153,6 +187,10 @@ public:
 	{
 		return hasFlag(Function_Flag);
 	}
+	bool isCodeWithOperand() const
+	{
+		return hasFlag(Operand_Flag);
+	}
 	int precedence() const
 	{
 		return m_precedence;
@@ -199,27 +237,23 @@ public:
 
 	TranslateFunction translateFunction() const
 	{
-		return translate;
+		return m_translate;
 	}
 	EncodeFunction encodeFunction() const
 	{
-		return encode;
-	}
-	bool isCodeWithOperand() const
-	{
-		return operandText;
+		return m_encode;
 	}
 	OperandTextFunction operandTextFunction() const
 	{
-		return operandText;
+		return m_operandText;
 	}
 	RemoveFunction removeFunction() const
 	{
-		return remove;
+		return m_remove;
 	}
 	RecreateFunction recreateFunction() const
 	{
-		return recreate;
+		return m_recreate;
 	}
 
 	// STATIC ACCESS FUNCTIONS
@@ -314,11 +348,12 @@ private:
 	u_int16_t m_index;
 	ExprInfo *m_exprInfo;
 
-	TranslateFunction translate;	// pointer to translate function
-	EncodeFunction encode;			// pointer to encode function
-	OperandTextFunction operandText;// pointer to operand text function
-	RemoveFunction remove;			// pointer to remove function
-	RecreateFunction recreate;		// pointer to recreate function
+	// TODO temporary function pointers; to be replaced with virtual functions
+	TranslateFunction m_translate;
+	EncodeFunction m_encode;
+	OperandTextFunction m_operandText;
+	RemoveFunction m_remove;
+	RecreateFunction m_recreate;
 
 	// STATIC ACCESS FUNCTIONS
 	using EntryVector  = std::vector<Table *>;

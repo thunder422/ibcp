@@ -354,7 +354,7 @@ static Table tableEntries[] =
 	{	// Rem_Code
 		Code::Rem,
 		"REM", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
+		Command_Flag | Operand_Flag, 4, &Null_ExprInfo,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	//-----------------------------------------
@@ -711,7 +711,7 @@ static Table tableEntries[] =
 	{	// RemOp_Code
 		Code::RemOp,
 		"'", "", "",
-		Operator_Flag | EndStmt_Flag, 2, &Null_ExprInfo,
+		Operator_Flag | Operand_Flag | EndStmt_Flag, 2, &Null_ExprInfo,
 		NULL, remEncode, remOperandText, remRemove, remRecreate
 	},
 	//***************************
@@ -1188,58 +1188,58 @@ static Table tableEntries[] =
 	{	// Const_Code
 		Code::Constant,
 		"", "Const", "",
-		TableFlag{}, 2, &Dbl_None_ExprInfo,
+		Operand_Flag, 2, &Dbl_None_ExprInfo,
 		NULL, constNumEncode, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstInt_Code
 		Code::Constant,
 		"", "ConstInt", "",
-		TableFlag{}, 2, &Int_None_ExprInfo,
+		Operand_Flag, 2, &Int_None_ExprInfo,
 		NULL, constNumEncode, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstStr_Code
 		Code::Constant,
 		"", "ConstStr", "",
-		TableFlag{}, 2, &Str_None_ExprInfo,
+		Operand_Flag, 2, &Str_None_ExprInfo,
 		NULL, constStrEncode, constStrOperandText, constStrRemove,
 		constStrRecreate
 	},
 	{	// Var_Code
 		Code::Variable,
 		"", "Var", "",
-		TableFlag{}, 2, &Dbl_None_ExprInfo,
+		Operand_Flag, 2, &Dbl_None_ExprInfo,
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarInt_Code
 		Code::Variable,
 		"", "VarInt", "",
-		TableFlag{}, 2, &Int_None_ExprInfo,
+		Operand_Flag, 2, &Int_None_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarStr_Code
 		Code::Variable,
 		"", "VarStr", "",
-		TableFlag{}, 2, &Str_None_ExprInfo,
+		Operand_Flag, 2, &Str_None_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// VarRef_Code
 		Code::Variable,
 		"", "VarRef", "",
-		Reference_Flag, 2, &Dbl_None_ExprInfo,
+		Operand_Flag | Reference_Flag, 2, &Dbl_None_ExprInfo,
 		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarRefInt_Code
 		Code::Variable,
 		"", "VarRefInt", "",
-		Reference_Flag, 2, &Int_None_ExprInfo,
+		Operand_Flag | Reference_Flag, 2, &Int_None_ExprInfo,
 		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarRefStr_Code
 		Code::Variable,
 		"", "VarRefStr", "",
-		Reference_Flag, 2, &Str_None_ExprInfo,
+		Operand_Flag | Reference_Flag, 2, &Str_None_ExprInfo,
 		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// Array_Code
@@ -1353,11 +1353,11 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 	m_flags {flags},
 	m_precedence {precedence},
 	m_exprInfo {exprInfo},
-	translate {_translate},
-	encode {_encode},
-	operandText {_operandText},
-	remove {_remove},
-	recreate {_recreate}
+	m_translate {_translate},
+	m_encode {_encode},
+	m_operandText {_operandText},
+	m_remove {_remove},
+	m_recreate {_recreate}
 {
 	Erector{this}();
 }

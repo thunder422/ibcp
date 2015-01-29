@@ -182,7 +182,7 @@ const std::string varIntOperandText(const ProgramModel *programUnit,
 	uint16_t operand, SubCode subCode)
 {
 	std::string string = programUnit->varIntDictionary()->string(operand);
-	if (!(subCode & Ignore_SubCode))
+	if (!(subCode & NoDataTypeChar_SubCode))
 	{
 		string.push_back('%');
 	}
@@ -193,7 +193,7 @@ const std::string varStrOperandText(const ProgramModel *programUnit,
 	uint16_t operand, SubCode subCode)
 {
 	std::string string = programUnit->varStrDictionary()->string(operand);
-	if (!(subCode & Ignore_SubCode))
+	if (!(subCode & NoDataTypeChar_SubCode))
 	{
 		string.push_back('$');
 	}

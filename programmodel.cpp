@@ -115,11 +115,11 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << i << ':' << line[i];
 
 		Table *entry {Table::entry(line[i].instructionCode())};
-		if (auto operandText = entry->operandTextFunction())
+		if (entry->isCodeWithOperand())
 		{
 			SubCode subCode {line[i].instructionSubCode()};
-			const std::string operand {operandText(this, line[++i].operand(),
-				subCode)};
+			const std::string operand {entry->operandText(this,
+				line[++i].operand(), subCode)};
 			oss << ' ' << i << ":|" << line[i].operand() << ':' << operand
 				<< '|';
 		}
@@ -589,9 +589,9 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 	{
 		TokenPtr token {rpnItem->token()};
 		programLine.emplace_back(token->index(), token->subCodes());
-		if (auto encode = token->tableEntry()->encodeFunction())
+		if (token->isCodeWithOperand())
 		{
-			programLine.emplace_back(encode(this, token));
+			programLine.emplace_back(token->tableEntry()->encode(this, token));
 		}
 	}
 	return programLine;
@@ -605,9 +605,9 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 	for (int i {}; i < lineInfo.size; i++)
 	{
 		Table *entry {Table::entry(line[i].instructionCode())};
-		if (auto remove = entry->removeFunction())
+		if (entry->isCodeWithOperand())
 		{
-			remove(this, line[++i].operand());
+			entry->remove(this, line[++i].operand());
 		}
 	}
 }
@@ -624,10 +624,10 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 		TokenPtr token {std::make_shared<Token>(entry)};
 		token->addSubCode(line[i].instructionSubCode());
 
-		if (auto operandText = token->tableEntry()->operandTextFunction())
+		if (token->tableEntry()->isCodeWithOperand())
 		{
-			token->setString(operandText(this, line[++i].operand(),
-				Ignore_SubCode));  // don't add data type character to token
+			token->setString(token->tableEntry()->operandText(this,
+				line[++i].operand(), NoDataTypeChar_SubCode));
 		}
 		rpnList.append(token);
 	}

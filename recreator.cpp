@@ -41,15 +41,10 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 {
 	for (RpnItemPtr rpnItem : rpnList)
 	{
-		RecreateFunction recreate;
-		if (!(recreate = rpnItem->token()->tableEntry()->recreateFunction()))
+		if (not rpnItem->token()->tableEntry()->recreate(*this, rpnItem))
 		{
 			// if no recreate function, then it is missing from table
 			emplace('?' + rpnItem->token()->string() + '?');
-		}
-		else  // call recreate function for code
-		{
-			recreate(*this, rpnItem);
 		}
 		if (!rpnItem->token()->hasFlag(Command_Flag)
 			&& rpnItem->token()->hasSubCode(Paren_SubCode))

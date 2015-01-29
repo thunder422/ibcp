@@ -31,6 +31,8 @@ public:
 	Command(const char *name, const char *name2 = "") :
 		Table(Code{}, name, name2, "", Command_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL) {}
+
+	virtual void translate(Translator &translator) override;
 };
 
 

@@ -150,16 +150,7 @@ void Translator::getCommands()
 		}
 
 		// process command (assume assignment statement if not command token)
-		if (TranslateFunction translate = m_token->isCommand()
-			? m_token->tableEntry()->translateFunction()
-			: Table::entry(Code::Let)->translateFunction())
-		{
-			(*translate)(*this);
-		}
-		else
-		{
-			throw TokenError {Status::BUG_NotYetImplemented, m_token};
-		}
+		m_token->tableEntry()->translate(*this);
 
 		if (m_token->isCode(Code::RemOp))
 		{

@@ -18,6 +18,14 @@
 //	see <http://www.gnu.org/licenses/>.
 
 #include "command.h"
+#include "token.h"
+#include "translator.h"
+
+
+void Command::translate(Translator &translator)
+{
+	throw TokenError {Status::BUG_NotYetImplemented, translator.token()};
+}
 
 
 static Command Dim("DIM");

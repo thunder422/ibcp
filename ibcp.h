@@ -164,7 +164,7 @@ enum SubCode : uint16_t
 	// note: for constants in translator only (not encoded in program)
 	//       recreate '#' on double identifiers
 
-	Ignore_SubCode		= 0x0001,	// ignore subcode in operand text functions
+	NoDataTypeChar_SubCode = 0x0001,
 	IntConst_SubCode	= 0x0002,	// double constant convertible to integer
 
 	// code program mask
