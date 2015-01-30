@@ -31,6 +31,7 @@
 
 #include "ibcp.h"
 #include "dictionary.h"
+#include "programcode.h"
 
 class Translator;
 class Token;
@@ -47,8 +48,8 @@ class ConstNumInfo : public AbstractInfo
 {
 public:
 	void clear(void) override;
-	void addElement(const TokenPtr &token) override;
-	void setElement(int index, const TokenPtr &token) override;
+	void addElement(Token *token) override;
+	void setElement(int index, Token *token) override;
 
 	std::vector<double> &array(void)
 	{
@@ -88,8 +89,8 @@ class ConstStrInfo : public AbstractInfo
 public:
 	~ConstStrInfo(void) override;
 	void clear(void) override;
-	void addElement(const TokenPtr &token) override;
-	void setElement(int index, const TokenPtr &token) override;
+	void addElement(Token *token) override;
+	void setElement(int index, Token *token) override;
 	void clearElement(int index) override;
 
 	std::vector<std::string *> &array(void)
@@ -123,12 +124,18 @@ void printTranslate(Translator &translator);
 
 
 // encode functions
-uint16_t remEncode(ProgramModel *programUnit, const TokenPtr &token);
-uint16_t constNumEncode(ProgramModel *programUnit, const TokenPtr &token);
-uint16_t constStrEncode(ProgramModel *programUnit, const TokenPtr &token);
-uint16_t varDblEncode(ProgramModel *programUnit, const TokenPtr &token);
-uint16_t varIntEncode(ProgramModel *programUnit, const TokenPtr &token);
-uint16_t varStrEncode(ProgramModel *programUnit, const TokenPtr &token);
+void remEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token);
+void constNumEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token);
+void constStrEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token);
+void varDblEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token);
+void varIntEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token);
+void varStrEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token);
 
 
 // operand text functions

@@ -70,19 +70,25 @@ private:
 class ProgramCode
 {
 public:
-	using const_iterator = std::vector<ProgramWord>::const_iterator;
-	using reference = std::vector<ProgramWord>::reference;
+	using Vector = std::vector<ProgramWord>;
+	using ConstIterator = Vector::const_iterator;
+	using Reference = Vector::reference;
+	using BackInserter = std::back_insert_iterator<Vector>;
 
 	ProgramCode() {}
 
 	// code vector pass through access functions
-	const_iterator begin() const
+	ConstIterator begin() const
 	{
 		return m_code.begin();
 	}
-	const_iterator end() const
+	ConstIterator end() const
 	{
 		return m_code.end();
+	}
+	BackInserter backInserter()
+	{
+		return std::back_inserter(m_code);
 	}
 	bool empty() const
 	{
@@ -96,7 +102,7 @@ public:
 	{
 		m_code.clear();
 	}
-	reference operator[](size_t index)
+	Reference operator[](size_t index)
 	{
 		return m_code[index];
 	}
@@ -156,7 +162,7 @@ public:
 	}
 
 private:
-	std::vector<ProgramWord> m_code;	// vector of program words
+	Vector m_code;
 };
 
 

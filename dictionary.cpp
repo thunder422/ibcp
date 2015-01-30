@@ -41,8 +41,7 @@ void Dictionary::clear(void)
 }
 
 
-uint16_t Dictionary::add(const TokenPtr &token,
-	Dictionary::EntryType *returnNewEntry)
+uint16_t Dictionary::add(Token *token, Dictionary::EntryType *returnNewEntry)
 {
 	EntryType newEntry;
 
@@ -111,7 +110,7 @@ void InfoDictionary::clear(void)
 
 
 // function to possibly add a new dictionary entry and return its index
-uint16_t InfoDictionary::add(const TokenPtr &token)
+uint16_t InfoDictionary::add(Token *token)
 {
 	EntryType returnNewEntry;
 	int index {Dictionary::add(token, &returnNewEntry)};

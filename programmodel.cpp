@@ -587,12 +587,7 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 
 	for (RpnItemPtr rpnItem : input)
 	{
-		TokenPtr token {rpnItem->token()};
-		programLine.emplace_back(token->index(), token->subCodes());
-		if (token->isCodeWithOperand())
-		{
-			programLine.emplace_back(token->tableEntry()->encode(this, token));
-		}
+		rpnItem->token()->encode(this, programLine.backInserter());
 	}
 	return programLine;
 }

@@ -29,6 +29,7 @@
 #include <string>
 
 #include "ibcp.h"
+#include "programcode.h"
 #include "table.h"
 
 
@@ -287,6 +288,7 @@ public:
 	Table *convertCodeEntry(DataType dataType);
 	void changeConstantIgnoreError(DataType toDataType) noexcept;
 	bool changeConstant(DataType toDataType);
+	void encode(ProgramModel *programUnit, ProgramCode::BackInserter backInserter);
 
 private:
 	// instance members

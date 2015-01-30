@@ -30,9 +30,10 @@
 
 // REM FUNCTIONS
 
-uint16_t remEncode(ProgramModel *programUnit, const TokenPtr &token)
+void remEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token)
 {
-	return programUnit->remDictionary()->add(token);
+	*backInserter = programUnit->remDictionary()->add(token);
 }
 
 const std::string remOperandText(const ProgramModel *programUnit,
@@ -56,21 +57,22 @@ void ConstNumInfo::clear(void)
 	m_valueInt.clear();
 }
 
-void ConstNumInfo::addElement(const TokenPtr &token)
+void ConstNumInfo::addElement(Token *token)
 {
 	m_value.emplace_back(token->value());
 	m_valueInt.emplace_back(token->valueInt());
 }
 
-void ConstNumInfo::setElement(int index, const TokenPtr &token)
+void ConstNumInfo::setElement(int index, Token *token)
 {
 	m_value[index] = token->value();
 	m_valueInt[index] = token->valueInt();
 }
 
-uint16_t constNumEncode(ProgramModel *programUnit, const TokenPtr &token)
+void constNumEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token)
 {
-	return programUnit->constNumDictionary()->add(token);
+	*backInserter = programUnit->constNumDictionary()->add(token);
 }
 
 const std::string constNumOperandText(const ProgramModel *programUnit,
@@ -91,12 +93,12 @@ void ConstStrInfo::clear(void)
 	m_value.clear();
 }
 
-void ConstStrInfo::addElement(const TokenPtr &token)
+void ConstStrInfo::addElement(Token *token)
 {
 	m_value.emplace_back(new std::string {token->string()});
 }
 
-void ConstStrInfo::setElement(int index, const TokenPtr &token)
+void ConstStrInfo::setElement(int index, Token *token)
 {
 	*m_value[index] = token->string();
 }
@@ -115,9 +117,10 @@ ConstStrInfo::~ConstStrInfo(void)
 }
 
 
-uint16_t constStrEncode(ProgramModel *programUnit, const TokenPtr &token)
+void constStrEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token)
 {
-	return programUnit->constStrDictionary()->add(token);
+	*backInserter = programUnit->constStrDictionary()->add(token);
 }
 
 const std::string constStrOperandText(const ProgramModel *programUnit,
@@ -151,19 +154,22 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 // VARIABLE FUNCTIONS
 
-uint16_t varDblEncode(ProgramModel *programUnit, const TokenPtr &token)
+void varDblEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token)
 {
-	return programUnit->varDblDictionary()->add(token);
+	*backInserter = programUnit->varDblDictionary()->add(token);
 }
 
-uint16_t varIntEncode(ProgramModel *programUnit, const TokenPtr &token)
+void varIntEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token)
 {
-	return programUnit->varIntDictionary()->add(token);
+	*backInserter = programUnit->varIntDictionary()->add(token);
 }
 
-uint16_t varStrEncode(ProgramModel *programUnit, const TokenPtr &token)
+void varStrEncode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token)
 {
-	return programUnit->varStrDictionary()->add(token);
+	*backInserter = programUnit->varStrDictionary()->add(token);
 }
 
 

@@ -51,7 +51,7 @@ public:
 		CaseOptionalEqual {caseSensitive}} {}
 
 	void clear(void);
-	uint16_t add(const TokenPtr &token, EntryType *returnNewEntry = nullptr);
+	uint16_t add(Token *token, EntryType *returnNewEntry = {});
 	int remove(uint16_t index);
 	std::string string(int index) const
 	{
@@ -86,11 +86,11 @@ class AbstractInfo
 public:
 	virtual ~AbstractInfo(void) {}
 	virtual void clear(void) {}
-	virtual void addElement(const TokenPtr &token)
+	virtual void addElement(Token *token)
 	{
 		(void)token;
 	}
-	virtual void setElement(int index, const TokenPtr &token)
+	virtual void setElement(int index, Token *token)
 	{
 		(void)index;
 		(void)token;
@@ -109,7 +109,7 @@ public:
 		Dictionary {caseSensitive} {}
 
 	void clear(void);
-	uint16_t add(const TokenPtr &token);
+	uint16_t add(Token *token);
 	void remove(uint16_t index);
 
 protected:

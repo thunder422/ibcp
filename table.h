@@ -25,6 +25,7 @@
 #include <unordered_map>
 
 #include "ibcp.h"
+#include "programcode.h"
 #include "utility.h"
 
 class Token;
@@ -68,8 +69,8 @@ class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 
 typedef void (*TranslateFunction)(Translator &translator);
-typedef uint16_t (*EncodeFunction)(ProgramModel *programUnit,
-	const TokenPtr &token);
+typedef void (*EncodeFunction)(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter, Token *token);
 typedef const std::string (*OperandTextFunction)
 	(const ProgramModel *programUnit, uint16_t operand, SubCode subCode);
 typedef void (*RemoveFunction)(ProgramModel *programUnit, uint16_t operand);
@@ -117,9 +118,13 @@ public:
 		}
 		(*translate)(translator);
 	}
-	virtual u_int16_t encode(ProgramModel *programUnit, const TokenPtr &token)
+	virtual void encode(ProgramModel *programUnit,
+		ProgramCode::BackInserter backInserter, Token *token)
 	{
-		return (*m_encode)(programUnit, token);
+		if (m_encode)
+		{
+			(*m_encode)(programUnit, backInserter, token);
+		}
 	}
 	virtual const std::string operandText(const ProgramModel *programUnit,
 		uint16_t operand, SubCode subCode)

@@ -53,6 +53,29 @@ Token::Token(DataType dataType, int column, int length,
 }
 
 
+bool Token::operator==(const Token &other) const
+{
+	if (m_entry != other.m_entry)
+	{
+		return false;
+	}
+	if ((m_subCode & ProgramMask_SubCode)
+		!= (other.m_subCode & ProgramMask_SubCode))
+	{
+		return false;
+	}
+	if (isCode(Code::Rem) || isCode(Code::RemOp)
+		|| (isCode(Code::Constant) && isDataType(DataType::String)))
+	{
+		return m_string == other.m_string;
+	}
+	else
+	{
+		return noCaseStringEqual(m_string, other.m_string);
+	}
+}
+
+
 // function to append data type if applicable
 std::string Token::stringWithDataType() const
 {
@@ -203,27 +226,11 @@ bool Token::changeConstant(DataType toDataType)
 }
 
 
-// function to overload the comparison operator
-bool Token::operator==(const Token &other) const
+void Token::encode(ProgramModel *programUnit,
+	ProgramCode::BackInserter backInserter)
 {
-	if (m_entry != other.m_entry)
-	{
-		return false;
-	}
-	if ((m_subCode & ProgramMask_SubCode)
-		!= (other.m_subCode & ProgramMask_SubCode))
-	{
-		return false;
-	}
-	if (isCode(Code::Rem) || isCode(Code::RemOp)
-		|| (isCode(Code::Constant) && isDataType(DataType::String)))
-	{
-		return m_string == other.m_string;
-	}
-	else
-	{
-		return noCaseStringEqual(m_string, other.m_string);
-	}
+	*backInserter = ProgramWord(m_entry->index(), m_subCode);
+	m_entry->encode(programUnit, backInserter, this);
 }
 
 
