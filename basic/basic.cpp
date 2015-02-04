@@ -37,9 +37,9 @@ void remEncode(ProgramModel *programUnit,
 }
 
 const std::string remOperandText(const ProgramModel *programUnit,
-	uint16_t operand, SubCode subCode)
+	ProgramLineReader &programLineReader)
 {
-	(void)subCode;
+	uint16_t operand {programLineReader()};
 	return programUnit->remDictionary()->string(operand);
 }
 
@@ -76,9 +76,9 @@ void constNumEncode(ProgramModel *programUnit,
 }
 
 const std::string constNumOperandText(const ProgramModel *programUnit,
-	uint16_t operand, SubCode subCode)
+	ProgramLineReader &programLineReader)
 {
-	(void)subCode;
+	uint16_t operand {programLineReader()};
 	return programUnit->constNumDictionary()->string(operand);
 }
 
@@ -124,9 +124,9 @@ void constStrEncode(ProgramModel *programUnit,
 }
 
 const std::string constStrOperandText(const ProgramModel *programUnit,
-	uint16_t operand, SubCode subCode)
+	ProgramLineReader &programLineReader)
 {
-	(void)subCode;
+	uint16_t operand {programLineReader()};
 	return programUnit->constStrDictionary()->string(operand);
 }
 
@@ -174,35 +174,26 @@ void varStrEncode(ProgramModel *programUnit,
 
 
 const std::string varDblOperandText(const ProgramModel *programUnit,
-	uint16_t operand, SubCode subCode)
+	ProgramLineReader &programLineReader)
 {
+	uint16_t operand {programLineReader()};
 	std::string string = programUnit->varDblDictionary()->string(operand);
-	if (subCode & Double_SubCode)
-	{
-		string.push_back('#');
-	}
 	return string;
 }
 
 const std::string varIntOperandText(const ProgramModel *programUnit,
-	uint16_t operand, SubCode subCode)
+	ProgramLineReader &programLineReader)
 {
+	uint16_t operand {programLineReader()};
 	std::string string = programUnit->varIntDictionary()->string(operand);
-	if (!(subCode & NoDataTypeChar_SubCode))
-	{
-		string.push_back('%');
-	}
 	return string;
 }
 
 const std::string varStrOperandText(const ProgramModel *programUnit,
-	uint16_t operand, SubCode subCode)
+	ProgramLineReader &programLineReader)
 {
+	uint16_t operand {programLineReader()};
 	std::string string = programUnit->varStrDictionary()->string(operand);
-	if (!(subCode & NoDataTypeChar_SubCode))
-	{
-		string.push_back('$');
-	}
 	return string;
 }
 

@@ -58,7 +58,11 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 		if (entry->hasFlag(Command_Flag)
 			&& word.instructionHasSubCode(Colon_SubCode))
 		{
-			os << ":";
+			os << ':';
+		}
+		if (word.instructionHasSubCode(Double_SubCode))
+		{
+			os << '#';
 		}
 		os << '\'';
 	}
@@ -104,24 +108,38 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << ']';
 	}
 
-	auto line = m_code.begin() + m_lineInfo.offset(lineIndex);
-	int size {m_lineInfo.size(lineIndex)};
-	for (int i {}; i < size; i++)
+	ProgramLineReader programLineReader {m_code.begin(),
+		m_lineInfo.offset(lineIndex), m_lineInfo.size(lineIndex)};
+	for (int i {}; programLineReader.hasMoreWords(); i++)
 	{
+		ProgramWord word {programLineReader()};
 		if (i > 0 || fullInfo)
 		{
 			oss << ' ';
 		}
-		oss << i << ':' << line[i];
+		oss << i << ':' << word;
 
-		Table *entry {Table::entry(line[i].instructionCode())};
-		if (entry->isCodeWithOperand())
+		Table *entry {Table::entry(word.instructionCode())};
+		std::string operand {entry->operandText(this, programLineReader)};
+		if (not operand.empty())
 		{
-			SubCode subCode {line[i].instructionSubCode()};
-			const std::string operand {entry->operandText(this,
-				line[++i].operand(), subCode)};
-			oss << ' ' << i << ":|" << line[i].operand() << ':' << operand
-				<< '|';
+			if (word.instructionHasSubCode(Double_SubCode))
+			{
+				operand.push_back('#');
+			}
+			else if (not entry->isCode(Code::Constant))
+			{
+				if (entry->returnDataType() == DataType::Integer)
+				{
+					operand.push_back('%');
+				}
+				else if (entry->returnDataType() == DataType::String)
+				{
+					operand.push_back('$');
+				}
+			}
+			oss << ' ' << ++i << ":|" << programLineReader.previous() << ':'
+				<< operand << '|';
 		}
 	}
 
@@ -612,19 +630,11 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 RpnList ProgramModel::decode(const LineInfo &lineInfo)
 {
 	RpnList rpnList;
-	auto line = m_code.begin() + lineInfo.offset;
-	for (int i {}; i < lineInfo.size; i++)
+	ProgramLineReader programLineReader {m_code.begin(), lineInfo.offset,
+		lineInfo.size};
+	while (programLineReader.hasMoreWords())
 	{
-		Table *entry {Table::entry(line[i].instructionCode())};
-		TokenPtr token {std::make_shared<Token>(entry)};
-		token->addSubCode(line[i].instructionSubCode());
-
-		if (token->tableEntry()->isCodeWithOperand())
-		{
-			token->setString(token->tableEntry()->operandText(this,
-				line[++i].operand(), NoDataTypeChar_SubCode));
-		}
-		rpnList.append(token);
+		rpnList.append(std::make_shared<Token>(this, programLineReader));
 	}
 	return rpnList;
 }

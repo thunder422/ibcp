@@ -65,6 +65,9 @@ public:
 		m_entry{Table::entry(Code::Constant, DataType::String)},
 		m_reference{}, m_subCode{} {}
 
+	// constructor for program word
+	Token(const ProgramModel *programUnit, ProgramLineReader &programLineReader);
+
 	Token(const Token &token)  // copy constructor
 	{
 		*this = token;

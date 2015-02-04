@@ -11,7 +11,7 @@ PRINT C$' not much to see here
 
 INPUT PROMPT "Enter:";D%:LET E=SQR(D%):PRINT D%,E' comment
 
-A=A+B+C
+A#=A+B#+C
 PRINT A,B,C
 A$="Test"+CHR$(B%+48)
 PRINT B%;A$
