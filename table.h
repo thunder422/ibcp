@@ -73,7 +73,8 @@ typedef void (*EncodeFunction)(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token);
 typedef const std::string (*OperandTextFunction)
 	(const ProgramModel *programUnit, ProgramLineReader &programLineReader);
-typedef void (*RemoveFunction)(ProgramModel *programUnit, uint16_t operand);
+typedef void (*RemoveFunction)(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 // expression information for operators and internal functions
@@ -135,9 +136,13 @@ public:
 		}
 		return {};
 	}
-	virtual void remove(ProgramModel *programUnit, uint16_t operand)
+	virtual void remove(ProgramModel *programUnit,
+		ProgramLineReader &programLineReader)
 	{
-		(*m_remove)(programUnit, operand);
+		if (m_operandText)
+		{
+			(*m_remove)(programUnit, programLineReader);
+		}
 	}
 	virtual bool recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{

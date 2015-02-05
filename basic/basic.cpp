@@ -43,9 +43,9 @@ const std::string remOperandText(const ProgramModel *programUnit,
 	return programUnit->remDictionary()->string(operand);
 }
 
-void remRemove(ProgramModel *programUnit, uint16_t operand)
+void remRemove(ProgramModel *programUnit, ProgramLineReader &programLineReader)
 {
-	programUnit->remDictionary()->remove(operand);
+	programUnit->remDictionary()->remove(programLineReader());
 }
 
 
@@ -82,9 +82,10 @@ const std::string constNumOperandText(const ProgramModel *programUnit,
 	return programUnit->constNumDictionary()->string(operand);
 }
 
-void constNumRemove(ProgramModel *programUnit, uint16_t operand)
+void constNumRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader)
 {
-	programUnit->constNumDictionary()->remove(operand);
+	programUnit->constNumDictionary()->remove(programLineReader());
 }
 
 
@@ -130,9 +131,10 @@ const std::string constStrOperandText(const ProgramModel *programUnit,
 	return programUnit->constStrDictionary()->string(operand);
 }
 
-void constStrRemove(ProgramModel *programUnit, uint16_t operand)
+void constStrRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader)
 {
-	programUnit->constStrDictionary()->remove(operand);
+	programUnit->constStrDictionary()->remove(programLineReader());
 }
 
 void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
@@ -198,19 +200,22 @@ const std::string varStrOperandText(const ProgramModel *programUnit,
 }
 
 
-void varDblRemove(ProgramModel *programUnit, uint16_t operand)
+void varDblRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader)
 {
-	programUnit->varDblDictionary()->remove(operand);
+	programUnit->varDblDictionary()->remove(programLineReader());
 }
 
-void varIntRemove(ProgramModel *programUnit, uint16_t operand)
+void varIntRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader)
 {
-	programUnit->varIntDictionary()->remove(operand);
+	programUnit->varIntDictionary()->remove(programLineReader());
 }
 
-void varStrRemove(ProgramModel *programUnit, uint16_t operand)
+void varStrRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader)
 {
-	programUnit->varStrDictionary()->remove(operand);
+	programUnit->varStrDictionary()->remove(programLineReader());
 }
 
 

@@ -154,12 +154,17 @@ const std::string varStrOperandText(const ProgramModel *programUnit,
 
 
 // remove functions
-void remRemove(ProgramModel *programUnit, uint16_t operand);
-void constNumRemove(ProgramModel *programUnit, uint16_t operand);
-void constStrRemove(ProgramModel *programUnit, uint16_t operand);
-void varDblRemove(ProgramModel *programUnit, uint16_t operand);
-void varIntRemove(ProgramModel *programUnit, uint16_t operand);
-void varStrRemove(ProgramModel *programUnit, uint16_t operand);
+void remRemove(ProgramModel *programUnit, ProgramLineReader &programLineReader);
+void constNumRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader);
+void constStrRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader);
+void varDblRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader);
+void varIntRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader);
+void varStrRemove(ProgramModel *programUnit,
+	ProgramLineReader &programLineReader);
 
 
 // recreate functions

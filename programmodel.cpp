@@ -614,14 +614,13 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 // function to dereference contents of line to prepare for its removal
 void ProgramModel::dereference(const LineInfo &lineInfo)
 {
-	auto line = m_code.begin() + lineInfo.offset;
-	for (int i {}; i < lineInfo.size; i++)
+	ProgramLineReader programLineReader {m_code.begin(), lineInfo.offset,
+		lineInfo.size};
+	while (programLineReader.hasMoreWords())
 	{
-		Table *entry {Table::entry(line[i].instructionCode())};
-		if (entry->isCodeWithOperand())
-		{
-			entry->remove(this, line[++i].operand());
-		}
+		ProgramWord word {programLineReader()};
+		auto entry = Table::entry(word.instructionCode());
+		entry->remove(this, programLineReader);
 	}
 }
 
