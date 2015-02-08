@@ -205,6 +205,12 @@ private:
 	void dereference(const LineInfo &lineInfo);
 	RpnList decode(const LineInfo &lineInfo);
 
+	ProgramLineReader createProgramLineReader(const LineInfo &lineInfo) const
+	{
+		return ProgramLineReader {m_code.begin(), lineInfo.offset,
+			lineInfo.size};
+	}
+
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list
 	ProgramCode m_code;					// code for program unit lines

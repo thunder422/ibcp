@@ -108,8 +108,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << ']';
 	}
 
-	ProgramLineReader programLineReader {m_code.begin(),
-		m_lineInfo.offset(lineIndex), m_lineInfo.size(lineIndex)};
+	auto programLineReader = createProgramLineReader(lineInfo);
 	for (int i {}; programLineReader.hasMoreWords(); i++)
 	{
 		ProgramWord word {programLineReader()};
@@ -614,8 +613,7 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 // function to dereference contents of line to prepare for its removal
 void ProgramModel::dereference(const LineInfo &lineInfo)
 {
-	ProgramLineReader programLineReader {m_code.begin(), lineInfo.offset,
-		lineInfo.size};
+	auto programLineReader = createProgramLineReader(lineInfo);
 	while (programLineReader.hasMoreWords())
 	{
 		ProgramWord word {programLineReader()};
@@ -629,8 +627,7 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 RpnList ProgramModel::decode(const LineInfo &lineInfo)
 {
 	RpnList rpnList;
-	ProgramLineReader programLineReader {m_code.begin(), lineInfo.offset,
-		lineInfo.size};
+	auto programLineReader = createProgramLineReader(lineInfo);
 	while (programLineReader.hasMoreWords())
 	{
 		rpnList.append(std::make_shared<Token>(this, programLineReader));
