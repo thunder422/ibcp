@@ -139,32 +139,21 @@ void varStrEncode(ProgramModel *programUnit,
 
 
 // operand text functions
-const std::string remOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-const std::string constNumOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-const std::string constStrOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-const std::string varDblOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-const std::string varIntOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-const std::string varStrOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
+const std::string remOperandText(ProgramLineReader &programLineReader);
+const std::string constNumOperandText(ProgramLineReader &programLineReader);
+const std::string constStrOperandText(ProgramLineReader &programLineReader);
+const std::string varDblOperandText(ProgramLineReader &programLineReader);
+const std::string varIntOperandText(ProgramLineReader &programLineReader);
+const std::string varStrOperandText(ProgramLineReader &programLineReader);
 
 
 // remove functions
-void remRemove(ProgramModel *programUnit, ProgramLineReader &programLineReader);
-void constNumRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-void constStrRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-void varDblRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-void varIntRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
-void varStrRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader);
+void remRemove(ProgramLineReader &programLineReader);
+void constNumRemove(ProgramLineReader &programLineReader);
+void constStrRemove(ProgramLineReader &programLineReader);
+void varDblRemove(ProgramLineReader &programLineReader);
+void varIntRemove(ProgramLineReader &programLineReader);
+void varStrRemove(ProgramLineReader &programLineReader);
 
 
 // recreate functions

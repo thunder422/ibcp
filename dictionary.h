@@ -53,7 +53,7 @@ public:
 	void clear(void);
 	uint16_t add(Token *token, EntryType *returnNewEntry = {});
 	int remove(uint16_t index);
-	std::string string(int index) const
+	std::string string(uint16_t index) const
 	{
 		return m_iterator[index]->first;
 	}

@@ -166,10 +166,13 @@ private:
 };
 
 
+class ProgramModel;
+
 class ProgramLineReader
 {
 public:
-	ProgramLineReader(ProgramCode::ConstIterator begin, int offset, int size) :
+	ProgramLineReader(const ProgramModel *unit,
+		ProgramCode::ConstIterator begin, int offset, int size) : m_unit {unit},
 		m_iterator {begin + offset}, m_end {m_iterator + size} {}
 
 	uint16_t operator()()
@@ -184,8 +187,13 @@ public:
 	{
 		return m_iterator != m_end;
 	}
+	const ProgramModel *unit() const
+	{
+		return m_unit;
+	}
 
 private:
+	const ProgramModel *m_unit;
 	ProgramCode::ConstIterator m_iterator;
 	ProgramCode::ConstIterator m_end;
 };

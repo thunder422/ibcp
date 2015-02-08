@@ -207,7 +207,7 @@ private:
 
 	ProgramLineReader createProgramLineReader(const LineInfo &lineInfo) const
 	{
-		return ProgramLineReader {m_code.begin(), lineInfo.offset,
+		return ProgramLineReader {this, m_code.begin(), lineInfo.offset,
 			lineInfo.size};
 	}
 

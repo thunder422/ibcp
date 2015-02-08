@@ -36,16 +36,15 @@ void remEncode(ProgramModel *programUnit,
 	*backInserter = programUnit->remDictionary()->add(token);
 }
 
-const std::string remOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+const std::string remOperandText(ProgramLineReader &programLineReader)
 {
-	uint16_t operand {programLineReader()};
-	return programUnit->remDictionary()->string(operand);
+	auto operand = programLineReader();
+	return programLineReader.unit()->remDictionary()->string(operand);
 }
 
-void remRemove(ProgramModel *programUnit, ProgramLineReader &programLineReader)
+void remRemove(ProgramLineReader &programLineReader)
 {
-	programUnit->remDictionary()->remove(programLineReader());
+	programLineReader.unit()->remDictionary()->remove(programLineReader());
 }
 
 
@@ -75,17 +74,15 @@ void constNumEncode(ProgramModel *programUnit,
 	*backInserter = programUnit->constNumDictionary()->add(token);
 }
 
-const std::string constNumOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+const std::string constNumOperandText(ProgramLineReader &programLineReader)
 {
-	uint16_t operand {programLineReader()};
-	return programUnit->constNumDictionary()->string(operand);
+	auto operand = programLineReader();
+	return programLineReader.unit()->constNumDictionary()->string(operand);
 }
 
-void constNumRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+void constNumRemove(ProgramLineReader &programLineReader)
 {
-	programUnit->constNumDictionary()->remove(programLineReader());
+	programLineReader.unit()->constNumDictionary()->remove(programLineReader());
 }
 
 
@@ -124,17 +121,15 @@ void constStrEncode(ProgramModel *programUnit,
 	*backInserter = programUnit->constStrDictionary()->add(token);
 }
 
-const std::string constStrOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+const std::string constStrOperandText(ProgramLineReader &programLineReader)
 {
-	uint16_t operand {programLineReader()};
-	return programUnit->constStrDictionary()->string(operand);
+	auto operand = programLineReader();
+	return programLineReader.unit()->constStrDictionary()->string(operand);
 }
 
-void constStrRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+void constStrRemove(ProgramLineReader &programLineReader)
 {
-	programUnit->constStrDictionary()->remove(programLineReader());
+	programLineReader.unit()->constStrDictionary()->remove(programLineReader());
 }
 
 void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
@@ -175,47 +170,38 @@ void varStrEncode(ProgramModel *programUnit,
 }
 
 
-const std::string varDblOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+const std::string varDblOperandText(ProgramLineReader &programLineReader)
 {
-	uint16_t operand {programLineReader()};
-	std::string string = programUnit->varDblDictionary()->string(operand);
-	return string;
+	auto operand = programLineReader();
+	return programLineReader.unit()->varDblDictionary()->string(operand);
 }
 
-const std::string varIntOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+const std::string varIntOperandText(ProgramLineReader &programLineReader)
 {
-	uint16_t operand {programLineReader()};
-	std::string string = programUnit->varIntDictionary()->string(operand);
-	return string;
+	auto operand = programLineReader();
+	return programLineReader.unit()->varIntDictionary()->string(operand);
 }
 
-const std::string varStrOperandText(const ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+const std::string varStrOperandText(ProgramLineReader &programLineReader)
 {
-	uint16_t operand {programLineReader()};
-	std::string string = programUnit->varStrDictionary()->string(operand);
-	return string;
+	auto operand = programLineReader();
+	return programLineReader.unit()->varStrDictionary()->string(operand);
 }
 
 
-void varDblRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+void varDblRemove(ProgramLineReader &programLineReader)
 {
-	programUnit->varDblDictionary()->remove(programLineReader());
+	programLineReader.unit()->varDblDictionary()->remove(programLineReader());
 }
 
-void varIntRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+void varIntRemove(ProgramLineReader &programLineReader)
 {
-	programUnit->varIntDictionary()->remove(programLineReader());
+	programLineReader.unit()->varIntDictionary()->remove(programLineReader());
 }
 
-void varStrRemove(ProgramModel *programUnit,
-	ProgramLineReader &programLineReader)
+void varStrRemove(ProgramLineReader &programLineReader)
 {
-	programUnit->varStrDictionary()->remove(programLineReader());
+	programLineReader.unit()->varStrDictionary()->remove(programLineReader());
 }
 
 

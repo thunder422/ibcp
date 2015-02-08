@@ -119,7 +119,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << i << ':' << word;
 
 		Table *entry {Table::entry(word.instructionCode())};
-		std::string operand {entry->operandText(this, programLineReader)};
+		std::string operand {entry->operandText(programLineReader)};
 		if (not operand.empty())
 		{
 			if (word.instructionHasSubCode(Double_SubCode))
@@ -618,7 +618,7 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 	{
 		ProgramWord word {programLineReader()};
 		auto entry = Table::entry(word.instructionCode());
-		entry->remove(this, programLineReader);
+		entry->remove(programLineReader);
 	}
 }
 
@@ -630,7 +630,7 @@ RpnList ProgramModel::decode(const LineInfo &lineInfo)
 	auto programLineReader = createProgramLineReader(lineInfo);
 	while (programLineReader.hasMoreWords())
 	{
-		rpnList.append(std::make_shared<Token>(this, programLineReader));
+		rpnList.append(std::make_shared<Token>(programLineReader));
 	}
 	return rpnList;
 }

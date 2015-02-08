@@ -53,13 +53,13 @@ Token::Token(DataType dataType, int column, int length,
 }
 
 
-Token::Token(const ProgramModel *programUnit, ProgramLineReader &programLineReader) :
+Token::Token(ProgramLineReader &programLineReader) :
 	m_column {-1}, m_length {-1}, m_reference {}
 {
 	ProgramWord word {programLineReader()};
 	m_entry = Table::entry(word.instructionCode());
 	m_subCode = word.instructionSubCode();
-	m_string = m_entry->operandText(programUnit, programLineReader);
+	m_string = m_entry->operandText(programLineReader);
 }
 
 
