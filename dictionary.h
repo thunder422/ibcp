@@ -50,10 +50,10 @@ public:
 		m_keyMap {10, CaseOptionalHash {caseSensitive},
 		CaseOptionalEqual {caseSensitive}} {}
 
-	void clear(void);
-	uint16_t add(Token *token, EntryType *returnNewEntry = {});
-	int remove(uint16_t index);
-	std::string string(uint16_t index) const
+	virtual void clear(void);
+	virtual std::pair<uint16_t, EntryType> add(Token *token);
+	virtual bool remove(uint16_t index);
+	virtual std::string string(uint16_t index) const
 	{
 		return m_iterator[index]->first;
 	}
@@ -108,9 +108,9 @@ public:
 	InfoDictionary(CaseSensitive caseSensitive = CaseSensitive::No) :
 		Dictionary {caseSensitive} {}
 
-	void clear(void);
-	uint16_t add(Token *token);
-	void remove(uint16_t index);
+	void clear(void) override;
+	std::pair<uint16_t, EntryType> add(Token *token) override;
+	bool remove(uint16_t index) override;
 
 protected:
 	std::unique_ptr<AbstractInfo> m_info;	// pointer to additional information

@@ -33,7 +33,7 @@
 void remEncode(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token)
 {
-	*backInserter = programUnit->remDictionary()->add(token);
+	backInserter = programUnit->remDictionary()->add(token).first;
 }
 
 const std::string remOperandText(ProgramLineReader &programLineReader)
@@ -71,7 +71,7 @@ void ConstNumInfo::setElement(int index, Token *token)
 void constNumEncode(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token)
 {
-	*backInserter = programUnit->constNumDictionary()->add(token);
+	backInserter = programUnit->constNumDictionary()->add(token).first;
 }
 
 const std::string constNumOperandText(ProgramLineReader &programLineReader)
@@ -118,7 +118,7 @@ ConstStrInfo::~ConstStrInfo(void)
 void constStrEncode(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token)
 {
-	*backInserter = programUnit->constStrDictionary()->add(token);
+	backInserter = programUnit->constStrDictionary()->add(token).first;
 }
 
 const std::string constStrOperandText(ProgramLineReader &programLineReader)
@@ -154,19 +154,19 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 void varDblEncode(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token)
 {
-	*backInserter = programUnit->varDblDictionary()->add(token);
+	backInserter = programUnit->varDblDictionary()->add(token).first;
 }
 
 void varIntEncode(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token)
 {
-	*backInserter = programUnit->varIntDictionary()->add(token);
+	backInserter = programUnit->varIntDictionary()->add(token).first;
 }
 
 void varStrEncode(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token)
 {
-	*backInserter = programUnit->varStrDictionary()->add(token);
+	backInserter = programUnit->varStrDictionary()->add(token).first;
 }
 
 

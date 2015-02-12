@@ -35,13 +35,13 @@
 
 void Dictionary::clear(void)
 {
-	m_freeStack = {};
+	m_freeStack = std::stack<uint16_t>{};
 	m_iterator.clear();
 	m_keyMap.clear();
 }
 
 
-uint16_t Dictionary::add(Token *token, Dictionary::EntryType *returnNewEntry)
+std::pair<uint16_t, Dictionary::EntryType> Dictionary::add(Token *token)
 {
 	EntryType newEntry;
 
@@ -72,15 +72,11 @@ uint16_t Dictionary::add(Token *token, Dictionary::EntryType *returnNewEntry)
 		iterator->second.m_useCount++;
 		newEntry = EntryType::Exists;
 	}
-	if (returnNewEntry)
-	{
-		*returnNewEntry = newEntry;
-	}
-	return index;
+	return std::make_pair(index, newEntry);
 }
 
 
-int Dictionary::remove(uint16_t index)
+bool Dictionary::remove(uint16_t index)
 {
 	auto iterator = m_iterator[index];
 	if (iterator != m_keyMap.end() && --iterator->second.m_useCount == 0)
@@ -110,34 +106,35 @@ void InfoDictionary::clear(void)
 
 
 // function to possibly add a new dictionary entry and return its index
-uint16_t InfoDictionary::add(Token *token)
+std::pair<uint16_t, Dictionary::EntryType> InfoDictionary::add(Token *token)
 {
-	EntryType returnNewEntry;
-	int index {Dictionary::add(token, &returnNewEntry)};
-	if (returnNewEntry == EntryType::New)
+	auto indexEntryType = Dictionary::add(token);
+	if (indexEntryType.second == EntryType::New)
 	{
 		// a new entry was added to the dictionary
 		// so add a new element to the additional information
 		m_info->addElement(token);
 	}
-	else if (returnNewEntry == EntryType::Reused)
+	else if (indexEntryType.second == EntryType::Reused)
 	{
 		// for a new entry or a reused entry,
 		// set the additional information from the token
-		m_info->setElement(index, token);
+		m_info->setElement(indexEntryType.first, token);
 	}
-	return index;
+	return indexEntryType;
 }
 
 
 // function to remove an entry from the dictionary
-void InfoDictionary::remove(uint16_t index)
+bool InfoDictionary::remove(uint16_t index)
 {
 	if (Dictionary::remove(index))
 	{
 		// clear the additional information if the entry was removed
 		m_info->clearElement(index);
+		return true;
 	}
+	return false;
 }
 
 
