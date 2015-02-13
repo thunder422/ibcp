@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
-
+//
 //	Interactive BASIC Compiler Project
 //	File: dictionary.cpp - dictionary class source file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2013-09-27	initial version
 
 #include "dictionary.h"
 #include "token.h"
@@ -43,36 +38,30 @@ void Dictionary::clear(void)
 
 std::pair<uint16_t, Dictionary::EntryType> Dictionary::add(Token *token)
 {
-	EntryType newEntry;
-
-	// if requested, store upper case of key in hash to make search case
-	// insensitive (actual string will be stored in key list)
-	std::string key {token->string()};
-	auto iterator = m_keyMap.find(key);
-	int index;
-	if (iterator == m_keyMap.end())  // string not present?
+	int index = m_freeStack.empty() ? m_iterator.size() : m_freeStack.top();
+	auto iteratorAndIsNew = m_keyMap.emplace(token->string(), index);
+	EntryType entryType;
+	if (iteratorAndIsNew.second)
 	{
-		if (m_freeStack.empty())  // no free indexes available?
+		if (m_freeStack.empty())
 		{
-			index = m_iterator.size();
-			newEntry = EntryType::New;
-			m_iterator.emplace_back(m_keyMap.emplace(key, index).first);
+			m_iterator.emplace_back(iteratorAndIsNew.first);
+			entryType = EntryType::New;
 		}
-		else  // use a previously freed index
+		else
 		{
-			index = m_freeStack.top();
 			m_freeStack.pop();
-			newEntry = EntryType::Reused;
-			m_iterator[index] = m_keyMap.emplace(key, index).first;
+			m_iterator[index] = iteratorAndIsNew.first;
+			entryType = EntryType::Reused;
 		}
 	}
-	else  // string already present, update use count
+	else
 	{
-		index = iterator->second.m_index;
-		iterator->second.m_useCount++;
-		newEntry = EntryType::Exists;
+		iteratorAndIsNew.first->second.m_useCount++;
+		index = iteratorAndIsNew.first->second.m_index;
+		entryType = EntryType::Exists;
 	}
-	return std::make_pair(index, newEntry);
+	return std::make_pair(index, entryType);
 }
 
 
@@ -97,7 +86,6 @@ bool Dictionary::remove(uint16_t index)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-// function to reset the dictionary
 void InfoDictionary::clear(void)
 {
 	m_info->clear();
@@ -105,32 +93,25 @@ void InfoDictionary::clear(void)
 }
 
 
-// function to possibly add a new dictionary entry and return its index
 std::pair<uint16_t, Dictionary::EntryType> InfoDictionary::add(Token *token)
 {
 	auto indexEntryType = Dictionary::add(token);
 	if (indexEntryType.second == EntryType::New)
 	{
-		// a new entry was added to the dictionary
-		// so add a new element to the additional information
 		m_info->addElement(token);
 	}
 	else if (indexEntryType.second == EntryType::Reused)
 	{
-		// for a new entry or a reused entry,
-		// set the additional information from the token
 		m_info->setElement(indexEntryType.first, token);
 	}
 	return indexEntryType;
 }
 
 
-// function to remove an entry from the dictionary
 bool InfoDictionary::remove(uint16_t index)
 {
 	if (Dictionary::remove(index))
 	{
-		// clear the additional information if the entry was removed
 		m_info->clearElement(index);
 		return true;
 	}

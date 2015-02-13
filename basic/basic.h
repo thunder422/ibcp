@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: basic.h - basic directory definitions header file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2013-07-06	initial version
 
 #ifndef BASIC_H
 #define BASIC_H
@@ -42,8 +37,6 @@ class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 
 
-// constant definitions
-
 class ConstNumInfo : public AbstractInfo
 {
 public:
@@ -61,8 +54,8 @@ public:
 	}
 
 private:
-	std::vector<double> m_value;			// vector of double values
-	std::vector<int> m_valueInt;			// vector of integer values
+	std::vector<double> m_value;
+	std::vector<int> m_valueInt;
 };
 
 class ConstNumDictionary : public InfoDictionary
@@ -99,7 +92,7 @@ public:
 	}
 
 private:
-	std::vector<std::string *> m_value;		// vector of string instances
+	std::vector<std::string *> m_value;
 };
 
 class ConstStrDictionary : public InfoDictionary
