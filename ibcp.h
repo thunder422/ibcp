@@ -2,7 +2,7 @@
 //
 //	Interactive BASIC Compiler Project
 //	File: ibcp.h - main header file
-//	Copyright (C) 2010-2012  Thunder422
+//	Copyright (C) 2010-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2010-02-18	initial version
 
 #ifndef IBCP_H
 #define IBCP_H
@@ -178,6 +173,20 @@ enum class Reference {
 	VarDefFn,						// variable and defined function
 	All								// any reference
 };
+
+
+enum OperandType
+{
+	Rem_OperandType,
+	ConstNum_OperandType,
+	ConstStr_OperandType,
+	VarDbl_OperandType,
+	VarInt_OperandType,
+	VarStr_OperandType,
+	NumberOf_OperandType,
+	No_OperandType
+};
+
 
 // provide generic hash for enum class with std::unordered_map
 struct EnumClassHash

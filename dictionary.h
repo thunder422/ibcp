@@ -42,6 +42,7 @@ public:
 	};
 
 	Dictionary(CaseSensitive caseSensitive = CaseSensitive::No);
+	virtual ~Dictionary();
 
 	virtual void clear(void);
 	virtual std::pair<uint16_t, EntryType> add(Token *token);
@@ -71,6 +72,10 @@ private:
 inline Dictionary::Dictionary(CaseSensitive caseSensitive) :
 	m_keyMap {10, CaseOptionalHash {caseSensitive},
 		CaseOptionalEqual {caseSensitive}} {}
+
+inline Dictionary::~Dictionary()
+{
+}
 
 inline std::string Dictionary::string(uint16_t index) const
 {

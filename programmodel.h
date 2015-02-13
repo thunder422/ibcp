@@ -16,14 +16,11 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2013-03-15	initial version
 
 #ifndef PROGRAMMODEL_H
 #define PROGRAMMODEL_H
+
+#include <array>
 
 #include <QAbstractListModel>
 
@@ -61,29 +58,29 @@ public:
 
 	Dictionary *remDictionary(void) const
 	{
-		return m_remDictionary.get();
+		return m_dictionary[Rem_OperandType].get();
 	}
 
-	InfoDictionary *constNumDictionary(void) const
+	Dictionary *constNumDictionary(void) const
 	{
-		return m_constNumDictionary.get();
+		return m_dictionary[ConstNum_OperandType].get();
 	}
-	InfoDictionary *constStrDictionary(void) const
+	Dictionary *constStrDictionary(void) const
 	{
-		return m_constStrDictionary.get();
+		return m_dictionary[ConstStr_OperandType].get();
 	}
 
 	Dictionary *varDblDictionary(void) const
 	{
-		return m_varDblDictionary.get();
+		return m_dictionary[VarDbl_OperandType].get();
 	}
 	Dictionary *varIntDictionary(void) const
 	{
-		return m_varIntDictionary.get();
+		return m_dictionary[VarInt_OperandType].get();
 	}
 	Dictionary *varStrDictionary(void) const
 	{
-		return m_varStrDictionary.get();
+		return m_dictionary[VarStr_OperandType].get();
 	}
 
 	// NOTE temporary functions for testing
@@ -216,15 +213,7 @@ private:
 	ProgramCode m_code;					// code for program unit lines
 	ErrorList m_errors;					// list of program errors
 
-	// pointers to the global program dictionaries
-	std::unique_ptr<Dictionary> m_remDictionary;
-	std::unique_ptr<ConstNumDictionary> m_constNumDictionary;
-	std::unique_ptr<ConstStrDictionary> m_constStrDictionary;
-
-	// pointers to the local unit dictionaries
-	std::unique_ptr<Dictionary> m_varDblDictionary;
-	std::unique_ptr<Dictionary> m_varIntDictionary;
-	std::unique_ptr<Dictionary> m_varStrDictionary;
+	std::array<std::unique_ptr<Dictionary>, NumberOf_OperandType> m_dictionary;
 };
 
 

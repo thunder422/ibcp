@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2013-03-15	initial version
 
 #include "programmodel.h"
 #include "rpnlist.h"
@@ -78,17 +73,14 @@ std::ostream &operator<<(std::ostream &os, ProgramWord word)
 
 
 ProgramModel::ProgramModel(QObject *parent) :
-	QAbstractListModel(parent),
-
-	m_remDictionary {new Dictionary(CaseSensitive::Yes)},
-	m_constNumDictionary {new ConstNumDictionary},
-	m_constStrDictionary {new ConstStrDictionary},
-
-	m_varDblDictionary {new Dictionary},
-	m_varIntDictionary {new Dictionary},
-	m_varStrDictionary {new Dictionary}
+	QAbstractListModel {parent}
 {
-
+	m_dictionary[Rem_OperandType].reset(new Dictionary(CaseSensitive::Yes));
+	m_dictionary[ConstNum_OperandType].reset(new ConstNumDictionary);
+	m_dictionary[ConstStr_OperandType].reset(new ConstStrDictionary);
+	m_dictionary[VarDbl_OperandType].reset(new Dictionary);
+	m_dictionary[VarInt_OperandType].reset(new Dictionary);
+	m_dictionary[VarStr_OperandType].reset(new Dictionary);
 }
 
 
@@ -199,13 +191,10 @@ void ProgramModel::clear(void)
 	m_code.clear();
 	m_errors.clear();
 
-	m_remDictionary->clear();
-	m_constNumDictionary->clear();
-	m_constStrDictionary->clear();
-
-	m_varDblDictionary->clear();
-	m_varIntDictionary->clear();
-	m_varStrDictionary->clear();
+	for (int i = 0; i < NumberOf_OperandType; ++i)
+	{
+		m_dictionary[i]->clear();
+	}
 
 	emit programCleared();
 }
