@@ -56,6 +56,10 @@ public:
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 	void clear(void);
 
+	Dictionary *dictionary(OperandType operandType) const
+	{
+		return m_dictionary[operandType].get();
+	}
 	Dictionary *remDictionary(void) const
 	{
 		return m_dictionary[Rem_OperandType].get();

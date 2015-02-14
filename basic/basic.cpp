@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
-
+//
 //	Interactive BASIC Compiler Project
 //	File: basic.cpp - miscellaneous basic functions source file
-//	Copyright (C) 2013  Thunder422
+//	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2013-10-05	initial version
 
 #include "programmodel.h"
 #include "recreator.h"
@@ -28,13 +23,19 @@
 #include "token.h"
 
 
-// REM FUNCTIONS
-
-void remEncode(ProgramModel *programUnit,
+// TODO do nothing vitual encode will be default table virtual encode function
+void Table::encode(ProgramModel *programUnit,
 	ProgramCode::BackInserter backInserter, Token *token)
 {
-	backInserter = programUnit->remDictionary()->add(token).first;
+	if (isCodeWithOperand())
+	{
+		// TODO move to code with operands class virtual encode function
+		backInserter = programUnit->dictionary(m_operandType)->add(token).first;
+	}
 }
+
+
+// REM FUNCTIONS
 
 const std::string remOperandText(ProgramLineReader &programLineReader)
 {
@@ -66,12 +67,6 @@ void ConstNumInfo::setElement(int index, Token *token)
 {
 	m_value[index] = token->value();
 	m_valueInt[index] = token->valueInt();
-}
-
-void constNumEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token)
-{
-	backInserter = programUnit->constNumDictionary()->add(token).first;
 }
 
 const std::string constNumOperandText(ProgramLineReader &programLineReader)
@@ -115,12 +110,6 @@ ConstStrInfo::~ConstStrInfo(void)
 }
 
 
-void constStrEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token)
-{
-	backInserter = programUnit->constStrDictionary()->add(token).first;
-}
-
 const std::string constStrOperandText(ProgramLineReader &programLineReader)
 {
 	auto operand = programLineReader();
@@ -150,25 +139,6 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 
 
 // VARIABLE FUNCTIONS
-
-void varDblEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token)
-{
-	backInserter = programUnit->varDblDictionary()->add(token).first;
-}
-
-void varIntEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token)
-{
-	backInserter = programUnit->varIntDictionary()->add(token).first;
-}
-
-void varStrEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token)
-{
-	backInserter = programUnit->varStrDictionary()->add(token).first;
-}
-
 
 const std::string varDblOperandText(ProgramLineReader &programLineReader)
 {

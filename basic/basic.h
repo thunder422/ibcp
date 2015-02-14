@@ -116,21 +116,6 @@ void letTranslate(Translator &translator);
 void printTranslate(Translator &translator);
 
 
-// encode functions
-void remEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token);
-void constNumEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token);
-void constStrEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token);
-void varDblEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token);
-void varIntEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token);
-void varStrEncode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token);
-
-
 // operand text functions
 const std::string remOperandText(ProgramLineReader &programLineReader);
 const std::string constNumOperandText(ProgramLineReader &programLineReader);

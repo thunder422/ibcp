@@ -354,8 +354,8 @@ static Table tableEntries[] =
 	{	// Rem_Code
 		Code::Rem,
 		"REM", "", "",
-		Command_Flag | Operand_Flag, 4, &Null_ExprInfo,
-		NULL, remEncode, remOperandText, remRemove, remRecreate
+		Command_Flag, 4, &Null_ExprInfo, Rem_OperandType,
+		NULL, remOperandText, remRemove, remRecreate
 	},
 	//-----------------------------------------
 	//   Internal Functions (No Parentheses)
@@ -711,8 +711,9 @@ static Table tableEntries[] =
 	{	// RemOp_Code
 		Code::RemOp,
 		"'", "", "",
-		Operator_Flag | Operand_Flag | EndStmt_Flag, 2, &Null_ExprInfo,
-		NULL, remEncode, remOperandText, remRemove, remRecreate
+		Operator_Flag | EndStmt_Flag, 2, &Null_ExprInfo,
+		Rem_OperandType,
+		NULL, remOperandText, remRemove, remRecreate
 	},
 	//***************************
 	//   MISCELLANEOUS ENTRIES
@@ -1188,59 +1189,59 @@ static Table tableEntries[] =
 	{	// Const_Code
 		Code::Constant,
 		"", "Const", "",
-		Operand_Flag, 2, &Dbl_None_ExprInfo,
-		NULL, constNumEncode, constNumOperandText, constNumRemove,
+		TableFlag{}, 2, &Dbl_None_ExprInfo, ConstNum_OperandType,
+		NULL, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstInt_Code
 		Code::Constant,
 		"", "ConstInt", "",
-		Operand_Flag, 2, &Int_None_ExprInfo,
-		NULL, constNumEncode, constNumOperandText, constNumRemove,
+		TableFlag{}, 2, &Int_None_ExprInfo, ConstNum_OperandType,
+		NULL, constNumOperandText, constNumRemove,
 		operandRecreate
 	},
 	{	// ConstStr_Code
 		Code::Constant,
 		"", "ConstStr", "",
-		Operand_Flag, 2, &Str_None_ExprInfo,
-		NULL, constStrEncode, constStrOperandText, constStrRemove,
+		TableFlag{}, 2, &Str_None_ExprInfo, ConstStr_OperandType,
+		NULL, constStrOperandText, constStrRemove,
 		constStrRecreate
 	},
 	{	// Var_Code
 		Code::Variable,
 		"", "Var", "",
-		Operand_Flag, 2, &Dbl_None_ExprInfo,
-		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
+		TableFlag{}, 2, &Dbl_None_ExprInfo, VarDbl_OperandType,
+		NULL, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarInt_Code
 		Code::Variable,
 		"", "VarInt", "",
-		Operand_Flag, 2, &Int_None_ExprInfo,
-		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
+		TableFlag{}, 2, &Int_None_ExprInfo, VarInt_OperandType,
+		NULL, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarStr_Code
 		Code::Variable,
 		"", "VarStr", "",
-		Operand_Flag, 2, &Str_None_ExprInfo,
-		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
+		TableFlag{}, 2, &Str_None_ExprInfo, VarStr_OperandType,
+		NULL, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// VarRef_Code
 		Code::Variable,
 		"", "VarRef", "",
-		Operand_Flag | Reference_Flag, 2, &Dbl_None_ExprInfo,
-		NULL, varDblEncode, varDblOperandText, varDblRemove, operandRecreate
+		Reference_Flag, 2, &Dbl_None_ExprInfo, VarDbl_OperandType,
+		NULL, varDblOperandText, varDblRemove, operandRecreate
 	},
 	{	// VarRefInt_Code
 		Code::Variable,
 		"", "VarRefInt", "",
-		Operand_Flag | Reference_Flag, 2, &Int_None_ExprInfo,
-		NULL, varIntEncode, varIntOperandText, varIntRemove, operandRecreate
+		Reference_Flag, 2, &Int_None_ExprInfo, VarInt_OperandType,
+		NULL, varIntOperandText, varIntRemove, operandRecreate
 	},
 	{	// VarRefStr_Code
 		Code::Variable,
 		"", "VarRefStr", "",
-		Operand_Flag | Reference_Flag, 2, &Str_None_ExprInfo,
-		NULL, varStrEncode, varStrOperandText, varStrRemove, operandRecreate
+		Reference_Flag, 2, &Str_None_ExprInfo, VarStr_OperandType,
+		NULL, varStrOperandText, varStrRemove, operandRecreate
 	},
 	{	// Array_Code
 		Code::Array,
@@ -1342,10 +1343,9 @@ Table::Table()
 //========================
 
 Table::Table(Code code, const char *name, const char *name2, const char *option,
-	unsigned flags, int precedence, ExprInfo *exprInfo,
-	TranslateFunction _translate, EncodeFunction _encode,
-	OperandTextFunction _operandText, RemoveFunction _remove,
-	RecreateFunction _recreate) :
+	unsigned flags, int precedence, ExprInfo *exprInfo, OperandType operandType,
+	TranslateFunction _translate, OperandTextFunction _operandText,
+	RemoveFunction _remove, RecreateFunction _recreate) :
 	m_code {code},
 	m_name {name},
 	m_name2 {name2},
@@ -1353,13 +1353,23 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 	m_flags {flags},
 	m_precedence {precedence},
 	m_exprInfo {exprInfo},
+	m_operandType {operandType},
 	m_translate {_translate},
-	m_encode {_encode},
 	m_operandText {_operandText},
 	m_remove {_remove},
 	m_recreate {_recreate}
 {
 	Erector{this}();
+}
+
+
+Table::Table(Code code, const char *name, const char *name2, const char *option,
+	unsigned flags, int precedence, ExprInfo *exprInfo,
+	TranslateFunction _translate, void *, OperandTextFunction _operandText,
+	RemoveFunction _remove, RecreateFunction _recreate) :
+	Table {code, name, name2, option, flags, precedence, exprInfo,
+	No_OperandType, _translate, _operandText, _remove, _recreate}
+{
 }
 
 

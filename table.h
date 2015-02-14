@@ -48,7 +48,6 @@ enum TableFlag : unsigned
 	Command_Flag		= 1u << 8,	// code is a command
 	Operator_Flag		= 1u << 9,	// code is an operator
 	Function_Flag		= 1u << 10,	// code is a BASIC function
-	Operand_Flag		= 1u << 11,	// code has an operand word
 	EndStmt_Flag		= 1u << 31	// end statement
 };
 
@@ -69,8 +68,6 @@ class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 
 typedef void (*TranslateFunction)(Translator &translator);
-typedef void (*EncodeFunction)(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token);
 typedef const std::string (*OperandTextFunction)
 	(ProgramLineReader &programLineReader);
 typedef void (*RemoveFunction)(ProgramLineReader &programLineReader);
@@ -99,9 +96,13 @@ public:
 	Table();
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
-		TranslateFunction _translate, EncodeFunction _encode,
-		OperandTextFunction _operandText, RemoveFunction _remove,
-		RecreateFunction _recreate);
+		OperandType operandType,
+		TranslateFunction _translate, OperandTextFunction _operandText,
+		RemoveFunction _remove, RecreateFunction _recreate);
+	Table(Code code, const char *name, const char *name2, const char *option,
+		unsigned flags, int precedence, ExprInfo *exprInfo,
+		TranslateFunction _translate, void *, OperandTextFunction _operandText,
+		RemoveFunction _remove, RecreateFunction _recreate);
 
 	Table &operator=(const Table &) = delete;
 	Table(const Table &) = delete;
@@ -119,13 +120,7 @@ public:
 		(*translate)(translator);
 	}
 	virtual void encode(ProgramModel *programUnit,
-		ProgramCode::BackInserter backInserter, Token *token)
-	{
-		if (m_encode)
-		{
-			(*m_encode)(programUnit, backInserter, token);
-		}
-	}
+		ProgramCode::BackInserter backInserter, Token *token);
 	virtual const std::string operandText(ProgramLineReader &programLineReader)
 	{
 		if (m_operandText)
@@ -200,7 +195,11 @@ public:
 	}
 	bool isCodeWithOperand() const
 	{
-		return hasFlag(Operand_Flag);
+		return m_operandType != No_OperandType;
+	}
+	OperandType operandType() const
+	{
+		return m_operandType;
 	}
 	int precedence() const
 	{
@@ -249,10 +248,6 @@ public:
 	TranslateFunction translateFunction() const
 	{
 		return m_translate;
-	}
-	EncodeFunction encodeFunction() const
-	{
-		return m_encode;
 	}
 	OperandTextFunction operandTextFunction() const
 	{
@@ -358,10 +353,10 @@ private:
 	int m_precedence;
 	u_int16_t m_index;
 	ExprInfo *m_exprInfo;
+	OperandType m_operandType;
 
 	// TODO temporary function pointers; to be replaced with virtual functions
 	TranslateFunction m_translate;
-	EncodeFunction m_encode;
 	OperandTextFunction m_operandText;
 	RemoveFunction m_remove;
 	RecreateFunction m_recreate;
