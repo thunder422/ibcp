@@ -116,24 +116,6 @@ void letTranslate(Translator &translator);
 void printTranslate(Translator &translator);
 
 
-// operand text functions
-const std::string remOperandText(ProgramLineReader &programLineReader);
-const std::string constNumOperandText(ProgramLineReader &programLineReader);
-const std::string constStrOperandText(ProgramLineReader &programLineReader);
-const std::string varDblOperandText(ProgramLineReader &programLineReader);
-const std::string varIntOperandText(ProgramLineReader &programLineReader);
-const std::string varStrOperandText(ProgramLineReader &programLineReader);
-
-
-// remove functions
-void remRemove(ProgramLineReader &programLineReader);
-void constNumRemove(ProgramLineReader &programLineReader);
-void constStrRemove(ProgramLineReader &programLineReader);
-void varDblRemove(ProgramLineReader &programLineReader);
-void varIntRemove(ProgramLineReader &programLineReader);
-void varStrRemove(ProgramLineReader &programLineReader);
-
-
 // recreate functions
 void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);

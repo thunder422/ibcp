@@ -1,8 +1,8 @@
 // vim:ts=4:sw=4:
-
+//
 //	Interactive BASIC Compiler Project
 //	File: test_ibcp.cpp - tester class source file
-//	Copyright (C) 2010-2014  Thunder422
+//	Copyright (C) 2010-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2010-03-01	initial version
 
 #include <fstream>
 #include <iomanip>
@@ -431,14 +426,17 @@ void Tester::operator()(std::string copyrightStatement)
 				<< m_programUnit->debugText(i, true) << '\n';
 		}
 
-		m_cout << "\nRemarks:\n" << m_programUnit->remDictionary();
+		m_cout << "\nRemarks:\n" << m_programUnit->dictionary(Rem_OperandType);
 		m_cout << "\nNumber Constants:\n"
-			<< m_programUnit->constNumDictionary();
+			<< m_programUnit->dictionary(ConstNum_OperandType);
 		m_cout << "\nString Constants:\n"
-			<< m_programUnit->constStrDictionary();
-		m_cout << "\nDouble Variables:\n" << m_programUnit->varDblDictionary();
-		m_cout << "\nInteger Variables:\n" << m_programUnit->varIntDictionary();
-		m_cout << "\nString Variables:\n" << m_programUnit->varStrDictionary();
+			<< m_programUnit->dictionary(ConstStr_OperandType);
+		m_cout << "\nDouble Variables:\n"
+			<< m_programUnit->dictionary(VarDbl_OperandType);
+		m_cout << "\nInteger Variables:\n"
+			<< m_programUnit->dictionary(VarInt_OperandType);
+		m_cout << "\nString Variables:\n"
+			<< m_programUnit->dictionary(VarStr_OperandType);
 
 		if (m_recreate)
 		{

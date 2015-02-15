@@ -35,17 +35,28 @@ void Table::encode(ProgramModel *programUnit,
 }
 
 
-// REM FUNCTIONS
-
-const std::string remOperandText(ProgramLineReader &programLineReader)
+const std::string Table::operandText(ProgramLineReader &programLineReader)
 {
+	if (not isCodeWithOperand())
+	{
+		// TODO move to be default table virtual operand text function
+		return {};
+	}
+	// TODO move to code with operands class virtual encode function
 	auto operand = programLineReader();
-	return programLineReader.unit()->remDictionary()->string(operand);
+	return programLineReader.unit()->dictionary(m_operandType)->string(operand);
 }
 
-void remRemove(ProgramLineReader &programLineReader)
+
+// TODO do nothing vitual remove will be default table virtual remove function
+void Table::remove(ProgramLineReader &programLineReader)
 {
-	programLineReader.unit()->remDictionary()->remove(programLineReader());
+	if (isCodeWithOperand())
+	{
+		// TODO move to code with operands class virtual remove function
+		auto operand = programLineReader();
+		programLineReader.unit()->dictionary(m_operandType)->remove(operand);
+	}
 }
 
 
@@ -67,17 +78,6 @@ void ConstNumInfo::setElement(int index, Token *token)
 {
 	m_value[index] = token->value();
 	m_valueInt[index] = token->valueInt();
-}
-
-const std::string constNumOperandText(ProgramLineReader &programLineReader)
-{
-	auto operand = programLineReader();
-	return programLineReader.unit()->constNumDictionary()->string(operand);
-}
-
-void constNumRemove(ProgramLineReader &programLineReader)
-{
-	programLineReader.unit()->constNumDictionary()->remove(programLineReader());
 }
 
 
@@ -109,18 +109,6 @@ ConstStrInfo::~ConstStrInfo(void)
 	}
 }
 
-
-const std::string constStrOperandText(ProgramLineReader &programLineReader)
-{
-	auto operand = programLineReader();
-	return programLineReader.unit()->constStrDictionary()->string(operand);
-}
-
-void constStrRemove(ProgramLineReader &programLineReader)
-{
-	programLineReader.unit()->constStrDictionary()->remove(programLineReader());
-}
-
 void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// change all double quote to two double qoutes and surround with quotes
@@ -135,43 +123,6 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	}
 	string += '"';
 	recreator.emplace(string);
-}
-
-
-// VARIABLE FUNCTIONS
-
-const std::string varDblOperandText(ProgramLineReader &programLineReader)
-{
-	auto operand = programLineReader();
-	return programLineReader.unit()->varDblDictionary()->string(operand);
-}
-
-const std::string varIntOperandText(ProgramLineReader &programLineReader)
-{
-	auto operand = programLineReader();
-	return programLineReader.unit()->varIntDictionary()->string(operand);
-}
-
-const std::string varStrOperandText(ProgramLineReader &programLineReader)
-{
-	auto operand = programLineReader();
-	return programLineReader.unit()->varStrDictionary()->string(operand);
-}
-
-
-void varDblRemove(ProgramLineReader &programLineReader)
-{
-	programLineReader.unit()->varDblDictionary()->remove(programLineReader());
-}
-
-void varIntRemove(ProgramLineReader &programLineReader)
-{
-	programLineReader.unit()->varIntDictionary()->remove(programLineReader());
-}
-
-void varStrRemove(ProgramLineReader &programLineReader)
-{
-	programLineReader.unit()->varStrDictionary()->remove(programLineReader());
 }
 
 

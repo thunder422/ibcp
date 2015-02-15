@@ -68,9 +68,6 @@ class RpnItem;
 using RpnItemPtr = std::shared_ptr<RpnItem>;
 
 typedef void (*TranslateFunction)(Translator &translator);
-typedef const std::string (*OperandTextFunction)
-	(ProgramLineReader &programLineReader);
-typedef void (*RemoveFunction)(ProgramLineReader &programLineReader);
 typedef void (*RecreateFunction)(Recreator &recreator, RpnItemPtr &rpnItem);
 
 // expression information for operators and internal functions
@@ -97,12 +94,11 @@ public:
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		OperandType operandType,
-		TranslateFunction _translate, OperandTextFunction _operandText,
-		RemoveFunction _remove, RecreateFunction _recreate);
+		TranslateFunction _translate, RecreateFunction _recreate);
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
-		TranslateFunction _translate, void *, OperandTextFunction _operandText,
-		RemoveFunction _remove, RecreateFunction _recreate);
+		TranslateFunction _translate, void *, void *, void *,
+		RecreateFunction _recreate);
 
 	Table &operator=(const Table &) = delete;
 	Table(const Table &) = delete;
@@ -121,21 +117,8 @@ public:
 	}
 	virtual void encode(ProgramModel *programUnit,
 		ProgramCode::BackInserter backInserter, Token *token);
-	virtual const std::string operandText(ProgramLineReader &programLineReader)
-	{
-		if (m_operandText)
-		{
-			return (*m_operandText)(programLineReader);
-		}
-		return {};
-	}
-	virtual void remove(ProgramLineReader &programLineReader)
-	{
-		if (m_operandText)
-		{
-			(*m_remove)(programLineReader);
-		}
-	}
+	virtual const std::string operandText(ProgramLineReader &programLineReader);
+	virtual void remove(ProgramLineReader &programLineReader);
 	virtual bool recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		if (m_recreate)
@@ -249,14 +232,6 @@ public:
 	{
 		return m_translate;
 	}
-	OperandTextFunction operandTextFunction() const
-	{
-		return m_operandText;
-	}
-	RemoveFunction removeFunction() const
-	{
-		return m_remove;
-	}
 	RecreateFunction recreateFunction() const
 	{
 		return m_recreate;
@@ -357,8 +332,6 @@ private:
 
 	// TODO temporary function pointers; to be replaced with virtual functions
 	TranslateFunction m_translate;
-	OperandTextFunction m_operandText;
-	RemoveFunction m_remove;
 	RecreateFunction m_recreate;
 
 	// STATIC ACCESS FUNCTIONS

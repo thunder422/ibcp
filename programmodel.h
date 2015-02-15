@@ -60,32 +60,6 @@ public:
 	{
 		return m_dictionary[operandType].get();
 	}
-	Dictionary *remDictionary(void) const
-	{
-		return m_dictionary[Rem_OperandType].get();
-	}
-
-	Dictionary *constNumDictionary(void) const
-	{
-		return m_dictionary[ConstNum_OperandType].get();
-	}
-	Dictionary *constStrDictionary(void) const
-	{
-		return m_dictionary[ConstStr_OperandType].get();
-	}
-
-	Dictionary *varDblDictionary(void) const
-	{
-		return m_dictionary[VarDbl_OperandType].get();
-	}
-	Dictionary *varIntDictionary(void) const
-	{
-		return m_dictionary[VarInt_OperandType].get();
-	}
-	Dictionary *varStrDictionary(void) const
-	{
-		return m_dictionary[VarStr_OperandType].get();
-	}
 
 	// NOTE temporary functions for testing
 	const ErrorItem *lineError(int lineIndex) const
