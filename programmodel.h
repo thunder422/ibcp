@@ -32,6 +32,7 @@
 #include "translator.h"
 #include "basic/basic.h"
 
+class ProgramReader;
 class RpnList;
 class Table;
 
@@ -59,6 +60,16 @@ public:
 	Dictionary *dictionary(OperandType operandType) const
 	{
 		return m_dictionary[operandType].get();
+	}
+	std::string getStringFromDictionary(OperandType operandType,
+		uint16_t operand) const
+	{
+		return m_dictionary[operandType]->string(operand);
+	}
+	void removeReferenceFromDictionary(OperandType operandType,
+		uint16_t operand) const
+	{
+		m_dictionary[operandType]->remove(operand);
 	}
 
 	// NOTE temporary functions for testing
@@ -180,11 +191,7 @@ private:
 	void dereference(const LineInfo &lineInfo);
 	RpnList decode(const LineInfo &lineInfo);
 
-	ProgramLineReader createProgramLineReader(const LineInfo &lineInfo) const
-	{
-		return ProgramLineReader {this, m_code.begin(), lineInfo.offset,
-			lineInfo.size};
-	}
+	ProgramReader createProgramReader(const LineInfo &lineInfo) const;
 
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list

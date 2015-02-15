@@ -28,9 +28,10 @@
 #include "programcode.h"
 #include "utility.h"
 
+class Erector;
+class ProgramReader;
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
-class Erector;
 
 
 // bit definitions for flags field
@@ -117,8 +118,8 @@ public:
 	}
 	virtual void encode(ProgramModel *programUnit,
 		ProgramCode::BackInserter backInserter, Token *token);
-	virtual const std::string operandText(ProgramLineReader &programLineReader);
-	virtual void remove(ProgramLineReader &programLineReader);
+	virtual const std::string operandText(ProgramReader &programReader);
+	virtual void remove(ProgramReader &programReader);
 	virtual bool recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		if (m_recreate)

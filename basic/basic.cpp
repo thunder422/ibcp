@@ -18,6 +18,7 @@
 //	see <http://www.gnu.org/licenses/>.
 
 #include "programmodel.h"
+#include "programreader.h"
 #include "recreator.h"
 #include "rpnlist.h"
 #include "token.h"
@@ -35,7 +36,7 @@ void Table::encode(ProgramModel *programUnit,
 }
 
 
-const std::string Table::operandText(ProgramLineReader &programLineReader)
+const std::string Table::operandText(ProgramReader &programReader)
 {
 	if (not isCodeWithOperand())
 	{
@@ -43,19 +44,17 @@ const std::string Table::operandText(ProgramLineReader &programLineReader)
 		return {};
 	}
 	// TODO move to code with operands class virtual encode function
-	auto operand = programLineReader();
-	return programLineReader.unit()->dictionary(m_operandType)->string(operand);
+	return programReader.getStringForOperand(m_operandType);
 }
 
 
 // TODO do nothing vitual remove will be default table virtual remove function
-void Table::remove(ProgramLineReader &programLineReader)
+void Table::remove(ProgramReader &programReader)
 {
 	if (isCodeWithOperand())
 	{
 		// TODO move to code with operands class virtual remove function
-		auto operand = programLineReader();
-		programLineReader.unit()->dictionary(m_operandType)->remove(operand);
+		programReader.removeReferenceToOperand(m_operandType);
 	}
 }
 

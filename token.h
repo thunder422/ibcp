@@ -66,7 +66,7 @@ public:
 		m_reference{}, m_subCode{} {}
 
 	// constructor for program word
-	Token(ProgramLineReader &programLineReader);
+	Token(ProgramReader &programReader);
 
 	Token(const Token &token)  // copy constructor
 	{

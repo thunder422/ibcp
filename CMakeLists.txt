@@ -173,6 +173,7 @@ set(ibcp_SOURCES
 	program.cpp
 	programlinedelegate.cpp
 	programmodel.cpp
+	programreader.cpp
 	recentfiles.cpp
 	recreator.cpp
 	rpnlist.cpp

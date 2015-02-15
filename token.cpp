@@ -24,6 +24,7 @@
 
 #include <limits>
 
+#include "programreader.h"
 #include "table.h"
 #include "token.h"
 #include "utility.h"
@@ -53,13 +54,13 @@ Token::Token(DataType dataType, int column, int length,
 }
 
 
-Token::Token(ProgramLineReader &programLineReader) :
+Token::Token(ProgramReader &programReader) :
 	m_column {-1}, m_length {-1}, m_reference {}
 {
-	ProgramWord word {programLineReader()};
+	ProgramWord word {programReader()};
 	m_entry = Table::entry(word.instructionCode());
 	m_subCode = word.instructionSubCode();
-	m_string = m_entry->operandText(programLineReader);
+	m_string = m_entry->operandText(programReader);
 }
 
 

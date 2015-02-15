@@ -18,6 +18,7 @@
 //	see <http://www.gnu.org/licenses/>.
 
 #include "programmodel.h"
+#include "programreader.h"
 #include "rpnlist.h"
 #include "statusmessage.h"
 #include "table.h"
@@ -100,10 +101,10 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << ']';
 	}
 
-	auto programLineReader = createProgramLineReader(lineInfo);
-	for (int i {}; programLineReader.hasMoreWords(); i++)
+	auto programReader = createProgramReader(lineInfo);
+	for (int i {}; programReader.hasMoreWords(); i++)
 	{
-		ProgramWord word {programLineReader()};
+		ProgramWord word {programReader()};
 		if (i > 0 || fullInfo)
 		{
 			oss << ' ';
@@ -111,7 +112,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 		oss << i << ':' << word;
 
 		Table *entry {Table::entry(word.instructionCode())};
-		std::string operand {entry->operandText(programLineReader)};
+		std::string operand {entry->operandText(programReader)};
 		if (not operand.empty())
 		{
 			if (word.instructionHasSubCode(Double_SubCode))
@@ -129,7 +130,7 @@ std::string ProgramModel::debugText(int lineIndex, bool fullInfo) const
 					operand.push_back('$');
 				}
 			}
-			oss << ' ' << ++i << ":|" << programLineReader.previous() << ':'
+			oss << ' ' << ++i << ":|" << programReader.previous() << ':'
 				<< operand << '|';
 		}
 	}
@@ -602,12 +603,12 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 // function to dereference contents of line to prepare for its removal
 void ProgramModel::dereference(const LineInfo &lineInfo)
 {
-	auto programLineReader = createProgramLineReader(lineInfo);
-	while (programLineReader.hasMoreWords())
+	auto programReader = createProgramReader(lineInfo);
+	while (programReader.hasMoreWords())
 	{
-		ProgramWord word {programLineReader()};
+		ProgramWord word {programReader()};
 		auto entry = Table::entry(word.instructionCode());
-		entry->remove(programLineReader);
+		entry->remove(programReader);
 	}
 }
 
@@ -616,12 +617,19 @@ void ProgramModel::dereference(const LineInfo &lineInfo)
 RpnList ProgramModel::decode(const LineInfo &lineInfo)
 {
 	RpnList rpnList;
-	auto programLineReader = createProgramLineReader(lineInfo);
-	while (programLineReader.hasMoreWords())
+	auto programReader = createProgramReader(lineInfo);
+	while (programReader.hasMoreWords())
 	{
-		rpnList.append(std::make_shared<Token>(programLineReader));
+		rpnList.append(std::make_shared<Token>(programReader));
 	}
 	return rpnList;
+}
+
+
+ProgramReader
+ProgramModel::createProgramReader(const ProgramModel::LineInfo &lineInfo) const
+{
+	return ProgramReader {this, m_code.begin(), lineInfo.offset, lineInfo.size};
 }
 
 
