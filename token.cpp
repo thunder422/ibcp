@@ -16,15 +16,11 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2012-11-03	initial version (parts removed from ibcp.cpp)
 
 #include <limits>
 
 #include "programreader.h"
+#include "programwriter.h"
 #include "table.h"
 #include "token.h"
 #include "utility.h"
@@ -237,11 +233,10 @@ bool Token::changeConstant(DataType toDataType)
 }
 
 
-void Token::encode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter)
+void Token::encode(ProgramWriter &programWriter)
 {
-	*backInserter = ProgramWord(m_entry->index(), m_subCode);
-	m_entry->encode(programUnit, backInserter, this);
+	programWriter.writeCode(m_entry->index(), m_subCode);
+	m_entry->encode(programWriter, this);
 }
 
 

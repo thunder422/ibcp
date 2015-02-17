@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: programreader.cpp - program reader class source file
+//	File: programwriter.cpp - program writer class source file
 //	Copyright (C) 2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
@@ -17,19 +17,16 @@
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
 
+#include "programwriter.h"
 #include "programmodel.h"
-#include "programreader.h"
+#include "token.h"
 
 
-std::string ProgramReader::readOperandAndGetString(OperandType operandType)
+void ProgramWriter::generateAndWriteOperand(Token *token,
+	OperandType operandType)
 {
-	return m_unit->getStringFromDictionary(operandType, readOperand());
-}
-
-void ProgramReader::readOperandAndRemoveReference(OperandType operandType)
-{
-	m_unit->removeReferenceFromDictionary(operandType, readOperand());
+	m_backInserter = m_unit->generateOperandFromDictionary(operandType, token);
 }
 
 
-// end: programreader.cpp
+// end: programwriter.cpp

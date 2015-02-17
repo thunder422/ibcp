@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2012-11-02	initial version (parts removed from ibcp.h)
 
 #ifndef TOKEN_H
 #define TOKEN_H
@@ -291,7 +286,7 @@ public:
 	Table *convertCodeEntry(DataType dataType);
 	void changeConstantIgnoreError(DataType toDataType) noexcept;
 	bool changeConstant(DataType toDataType);
-	void encode(ProgramModel *programUnit, ProgramCode::BackInserter backInserter);
+	void encode(ProgramWriter &programWriter);
 
 private:
 	// instance members

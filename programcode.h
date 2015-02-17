@@ -16,11 +16,6 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2014-11-13	initial version (from parts of programmmodel.h)
 
 #ifndef PROGRAMCODE_H
 #define PROGRAMCODE_H
@@ -65,28 +60,28 @@ private:
 	uint16_t m_word;					// one program word
 };
 
+using ProgramVector = std::vector<ProgramWord>;
+using ProgramReference = ProgramVector::reference;
+using ProgramConstIterator = ProgramVector::const_iterator;
+using ProgramBackInserter = std::back_insert_iterator<ProgramVector>;
+
 
 // class for holding the program code vector
 class ProgramCode
 {
 public:
-	using Vector = std::vector<ProgramWord>;
-	using ConstIterator = Vector::const_iterator;
-	using Reference = Vector::reference;
-	using BackInserter = std::back_insert_iterator<Vector>;
-
 	ProgramCode() {}
 
 	// code vector pass through access functions
-	ConstIterator begin() const
+	ProgramConstIterator begin() const
 	{
 		return m_code.begin();
 	}
-	ConstIterator end() const
+	ProgramConstIterator end() const
 	{
 		return m_code.end();
 	}
-	BackInserter backInserter()
+	ProgramBackInserter backInserter()
 	{
 		return std::back_inserter(m_code);
 	}
@@ -102,7 +97,7 @@ public:
 	{
 		m_code.clear();
 	}
-	Reference operator[](size_t index)
+	ProgramReference operator[](size_t index)
 	{
 		return m_code[index];
 	}
@@ -162,7 +157,7 @@ public:
 	}
 
 private:
-	Vector m_code;
+	ProgramVector m_code;
 };
 
 

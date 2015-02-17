@@ -30,6 +30,7 @@
 
 class Erector;
 class ProgramReader;
+class ProgramWriter;
 class Token;
 using TokenPtr = std::shared_ptr<Token>;
 
@@ -116,8 +117,7 @@ public:
 		}
 		(*translate)(translator);
 	}
-	virtual void encode(ProgramModel *programUnit,
-		ProgramCode::BackInserter backInserter, Token *token);
+	virtual void encode(ProgramWriter &programWriter, Token *token);
 	virtual const std::string operandText(ProgramReader &programReader);
 	virtual void remove(ProgramReader &programReader);
 	virtual bool recreate(Recreator &recreator, RpnItemPtr &rpnItem)
@@ -189,7 +189,7 @@ public:
 	{
 		return m_precedence;
 	}
-	int index() const
+	uint16_t index() const
 	{
 		return m_index;
 	}

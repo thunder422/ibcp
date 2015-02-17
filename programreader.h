@@ -30,26 +30,26 @@ class ProgramModel;
 class ProgramReader
 {
 public:
-	ProgramReader(const ProgramModel *unit, ProgramCode::ConstIterator begin,
+	ProgramReader(const ProgramModel *unit, ProgramConstIterator begin,
 		int offset, int size);
 
 	uint16_t operator()();
 	uint16_t previous() const;
 	bool hasMoreWords() const;
-	std::string getStringForOperand(OperandType operandType);
-	void removeReferenceToOperand(OperandType operandType);
+	std::string readOperandAndGetString(OperandType operandType);
+	void readOperandAndRemoveReference(OperandType operandType);
 
 private:
 	uint16_t readOperand();
 
 	const ProgramModel *m_unit;
-	ProgramCode::ConstIterator m_iterator;
-	ProgramCode::ConstIterator m_end;
+	ProgramConstIterator m_iterator;
+	ProgramConstIterator m_end;
 };
 
 
 inline ProgramReader::ProgramReader(const ProgramModel *unit,
-	ProgramCode::ConstIterator begin, int offset, int size) :
+	ProgramConstIterator begin, int offset, int size) :
 	m_unit {unit},
 	m_iterator {begin + offset},
 	m_end {m_iterator + size}

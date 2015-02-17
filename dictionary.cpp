@@ -95,16 +95,16 @@ void InfoDictionary::clear(void)
 
 std::pair<uint16_t, Dictionary::EntryType> InfoDictionary::add(Token *token)
 {
-	auto indexEntryType = Dictionary::add(token);
-	if (indexEntryType.second == EntryType::New)
+	auto index_entryType = Dictionary::add(token);
+	if (index_entryType.second == EntryType::New)
 	{
 		m_info->addElement(token);
 	}
-	else if (indexEntryType.second == EntryType::Reused)
+	else if (index_entryType.second == EntryType::Reused)
 	{
-		m_info->setElement(indexEntryType.first, token);
+		m_info->setElement(index_entryType.first, token);
 	}
-	return indexEntryType;
+	return index_entryType;
 }
 
 

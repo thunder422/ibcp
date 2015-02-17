@@ -19,6 +19,7 @@
 
 #include "programmodel.h"
 #include "programreader.h"
+#include "programwriter.h"
 #include "rpnlist.h"
 #include "statusmessage.h"
 #include "table.h"
@@ -592,9 +593,10 @@ ProgramCode ProgramModel::encode(RpnList &&input)
 {
 	ProgramCode programLine;
 
-	for (RpnItemPtr rpnItem : input)
+	ProgramWriter programWriter = createProgramWriter(programLine);
+	for (const RpnItemPtr &rpnItem : input)
 	{
-		rpnItem->token()->encode(this, programLine.backInserter());
+		rpnItem->token()->encode(programWriter);
 	}
 	return programLine;
 }
@@ -630,6 +632,12 @@ ProgramReader
 ProgramModel::createProgramReader(const ProgramModel::LineInfo &lineInfo) const
 {
 	return ProgramReader {this, m_code.begin(), lineInfo.offset, lineInfo.size};
+}
+
+
+ProgramWriter ProgramModel::createProgramWriter(ProgramCode &programCode) const
+{
+	return ProgramWriter {this, programCode.backInserter()};
 }
 
 

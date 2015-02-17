@@ -19,19 +19,19 @@
 
 #include "programmodel.h"
 #include "programreader.h"
+#include "programwriter.h"
 #include "recreator.h"
 #include "rpnlist.h"
 #include "token.h"
 
 
 // TODO do nothing vitual encode will be default table virtual encode function
-void Table::encode(ProgramModel *programUnit,
-	ProgramCode::BackInserter backInserter, Token *token)
+void Table::encode(ProgramWriter &programWriter, Token *token)
 {
 	if (isCodeWithOperand())
 	{
 		// TODO move to code with operands class virtual encode function
-		backInserter = programUnit->dictionary(m_operandType)->add(token).first;
+		programWriter.generateAndWriteOperand(token, m_operandType);
 	}
 }
 
@@ -44,7 +44,7 @@ const std::string Table::operandText(ProgramReader &programReader)
 		return {};
 	}
 	// TODO move to code with operands class virtual encode function
-	return programReader.getStringForOperand(m_operandType);
+	return programReader.readOperandAndGetString(m_operandType);
 }
 
 
@@ -54,7 +54,7 @@ void Table::remove(ProgramReader &programReader)
 	if (isCodeWithOperand())
 	{
 		// TODO move to code with operands class virtual remove function
-		programReader.removeReferenceToOperand(m_operandType);
+		programReader.readOperandAndRemoveReference(m_operandType);
 	}
 }
 
@@ -125,4 +125,4 @@ void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 }
 
 
-// end: variable.cpp
+// end: basic.cpp

@@ -33,6 +33,7 @@
 #include "basic/basic.h"
 
 class ProgramReader;
+class ProgramWriter;
 class RpnList;
 class Table;
 
@@ -60,6 +61,11 @@ public:
 	Dictionary *dictionary(OperandType operandType) const
 	{
 		return m_dictionary[operandType].get();
+	}
+	ProgramWord generateOperandFromDictionary(OperandType operandType,
+		Token *token) const
+	{
+		return ProgramWord {m_dictionary[operandType]->add(token).first};
 	}
 	std::string getStringFromDictionary(OperandType operandType,
 		uint16_t operand) const
@@ -192,6 +198,7 @@ private:
 	RpnList decode(const LineInfo &lineInfo);
 
 	ProgramReader createProgramReader(const LineInfo &lineInfo) const;
+	ProgramWriter createProgramWriter(ProgramCode &programCode) const;
 
 	// program code variables
 	LineInfoList m_lineInfo;			// program line information list
