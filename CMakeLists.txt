@@ -184,10 +184,10 @@ set(ibcp_SOURCES
 	translator.cpp
 	test_ibcp.cpp
 	utility.cpp
-	basic/basic.cpp
 	basic/command.cpp
 	basic/input.cpp
 	basic/let.cpp
+	basic/operand.cpp
 	basic/print.cpp
 )
 

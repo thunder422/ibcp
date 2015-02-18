@@ -51,7 +51,7 @@ constexpr auto Operands_StrStrInt = {
 
 // expression information structure instances
 ExprInfo Null_ExprInfo;
-static ExprInfo Dbl_None_ExprInfo(DataType::Double);
+ExprInfo Dbl_None_ExprInfo(DataType::Double);
 static ExprInfo Dbl_Dbl_ExprInfo(DataType::Double, Operands_Dbl);
 static ExprInfo Dbl_DblDbl_ExprInfo(DataType::Double, Operands_DblDbl);
 static ExprInfo Dbl_DblInt_ExprInfo(DataType::Double, Operands_DblInt);
@@ -59,7 +59,7 @@ static ExprInfo Dbl_Int_ExprInfo(DataType::Double, Operands_Int);
 static ExprInfo Dbl_IntDbl_ExprInfo(DataType::Double, Operands_IntDbl);
 static ExprInfo Dbl_Str_ExprInfo(DataType::Double, Operands_Str);
 
-static ExprInfo Int_None_ExprInfo(DataType::Integer);
+ExprInfo Int_None_ExprInfo(DataType::Integer);
 static ExprInfo Int_Dbl_ExprInfo(DataType::Integer, Operands_Dbl);
 static ExprInfo Int_DblDbl_ExprInfo(DataType::Integer, Operands_DblDbl);
 static ExprInfo Int_DblInt_ExprInfo(DataType::Integer, Operands_DblInt);
@@ -71,7 +71,7 @@ static ExprInfo Int_StrInt_ExprInfo(DataType::Integer, Operands_StrInt);
 static ExprInfo Int_StrStr_ExprInfo(DataType::Integer, Operands_StrStr);
 static ExprInfo Int_StrStrInt_ExprInfo(DataType::Integer, Operands_StrStrInt);
 
-static ExprInfo Str_None_ExprInfo(DataType::String);
+ExprInfo Str_None_ExprInfo(DataType::String);
 static ExprInfo Str_Dbl_ExprInfo(DataType::String, Operands_Dbl);
 static ExprInfo Str_Int_ExprInfo(DataType::String, Operands_Int);
 static ExprInfo Str_Str_ExprInfo(DataType::String, Operands_Str);
@@ -99,7 +99,6 @@ enum CodeIndex
 	Print_Code,
 	Input_Code,
 	InputPrompt_Code,
-	Rem_Code,
 	Rnd_Code,
 	Mod_Code,
 	And_Code,
@@ -156,7 +155,6 @@ enum CodeIndex
 	Comma_Code,
 	SemiColon_Code,
 	Colon_Code,
-	RemOp_Code,
 	Assign_Code,
 	AssignInt_Code,
 	AssignStr_Code,
@@ -235,15 +233,6 @@ enum CodeIndex
 	InputParse_Code,
 	InputParseInt_Code,
 	InputParseStr_Code,
-	Const_Code,
-	ConstInt_Code,
-	ConstStr_Code,
-	Var_Code,
-	VarInt_Code,
-	VarStr_Code,
-	VarRef_Code,
-	VarRefInt_Code,
-	VarRefStr_Code,
 	Array_Code,
 	ArrayInt_Code,
 	ArrayStr_Code,
@@ -299,10 +288,6 @@ std::initializer_list<AlternateInfo> alternateInfo =
 	{SemiColon_Code, 0, {Print_Code}},
 
 	// codes with operands alternate codes
-	{Const_Code, 0, {ConstInt_Code, ConstStr_Code}},
-	{Var_Code, 0, {VarInt_Code, VarStr_Code}},
-	{Var_Code, 1, {VarRef_Code}},
-	{VarRef_Code, 0, {VarRefInt_Code, VarRefStr_Code}},
 	{Array_Code, 0, {ArrayInt_Code, ArrayStr_Code}},
 	{DefFuncN_Code, 0, {DefFuncNInt_Code, DefFuncNStr_Code}},
 	{DefFuncP_Code, 0, {DefFuncPInt_Code, DefFuncPStr_Code}},
@@ -350,12 +335,6 @@ static Table tableEntries[] =
 		Command_Flag, 4, &Null_ExprInfo,
 		inputTranslate, NULL, NULL, NULL, inputRecreate
 
-	},
-	{	// Rem_Code
-		Code::Rem,
-		"REM", "", "",
-		Command_Flag, 4, &Null_ExprInfo, Rem_OperandType,
-		NULL, remRecreate
 	},
 	//-----------------------------------------
 	//   Internal Functions (No Parentheses)
@@ -707,13 +686,6 @@ static Table tableEntries[] =
 		Operator_Flag | EndStmt_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
-	},
-	{	// RemOp_Code
-		Code::RemOp,
-		"'", "", "",
-		Operator_Flag | EndStmt_Flag, 2, &Null_ExprInfo,
-		Rem_OperandType,
-		NULL, remRecreate
 	},
 	//***************************
 	//   MISCELLANEOUS ENTRIES
@@ -1186,60 +1158,6 @@ static Table tableEntries[] =
 		TableFlag{}, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
-	{	// Const_Code
-		Code::Constant,
-		"", "Const", "",
-		TableFlag{}, 2, &Dbl_None_ExprInfo, ConstNum_OperandType,
-		NULL, operandRecreate
-	},
-	{	// ConstInt_Code
-		Code::Constant,
-		"", "ConstInt", "",
-		TableFlag{}, 2, &Int_None_ExprInfo, ConstNum_OperandType,
-		NULL, operandRecreate
-	},
-	{	// ConstStr_Code
-		Code::Constant,
-		"", "ConstStr", "",
-		TableFlag{}, 2, &Str_None_ExprInfo, ConstStr_OperandType,
-		NULL, constStrRecreate
-	},
-	{	// Var_Code
-		Code::Variable,
-		"", "Var", "",
-		TableFlag{}, 2, &Dbl_None_ExprInfo, VarDbl_OperandType,
-		NULL, operandRecreate
-	},
-	{	// VarInt_Code
-		Code::Variable,
-		"", "VarInt", "",
-		TableFlag{}, 2, &Int_None_ExprInfo, VarInt_OperandType,
-		NULL, operandRecreate
-	},
-	{	// VarStr_Code
-		Code::Variable,
-		"", "VarStr", "",
-		TableFlag{}, 2, &Str_None_ExprInfo, VarStr_OperandType,
-		NULL, operandRecreate
-	},
-	{	// VarRef_Code
-		Code::Variable,
-		"", "VarRef", "",
-		Reference_Flag, 2, &Dbl_None_ExprInfo, VarDbl_OperandType,
-		NULL, operandRecreate
-	},
-	{	// VarRefInt_Code
-		Code::Variable,
-		"", "VarRefInt", "",
-		Reference_Flag, 2, &Int_None_ExprInfo, VarInt_OperandType,
-		NULL, operandRecreate
-	},
-	{	// VarRefStr_Code
-		Code::Variable,
-		"", "VarRefStr", "",
-		Reference_Flag, 2, &Str_None_ExprInfo, VarStr_OperandType,
-		NULL, operandRecreate
-	},
 	{	// Array_Code
 		Code::Array,
 		"", "Array", "",
@@ -1340,8 +1258,9 @@ Table::Table()
 //========================
 
 Table::Table(Code code, const char *name, const char *name2, const char *option,
-	unsigned flags, int precedence, ExprInfo *exprInfo, OperandType operandType,
-	TranslateFunction _translate, RecreateFunction _recreate) :
+		unsigned flags, int precedence, ExprInfo *exprInfo,
+		OperandType operandType,
+		TranslateFunction _translate, RecreateFunction _recreate) :
 	m_code {code},
 	m_name {name},
 	m_name2 {name2},
@@ -1357,12 +1276,13 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 }
 
 
+// constructor for existing table entry array elements
 Table::Table(Code code, const char *name, const char *name2, const char *option,
-	unsigned flags, int precedence, ExprInfo *exprInfo,
-	TranslateFunction _translate, void *, void *, void *,
-	RecreateFunction _recreate) :
+		unsigned flags, int precedence, ExprInfo *exprInfo,
+		TranslateFunction _translate, void *, void *, void *,
+		RecreateFunction _recreate) :
 	Table {code, name, name2, option, flags, precedence, exprInfo,
-	No_OperandType, _translate, _recreate}
+		No_OperandType, _translate, _recreate}
 {
 }
 

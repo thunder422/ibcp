@@ -117,7 +117,6 @@ void printTranslate(Translator &translator);
 
 
 // recreate functions
-void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void parenRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
@@ -126,8 +125,6 @@ void arrayRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
-void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
-void constStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
 void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);

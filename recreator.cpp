@@ -41,11 +41,8 @@ std::string Recreator::operator()(const RpnList &rpnList, bool exprMode)
 {
 	for (RpnItemPtr rpnItem : rpnList)
 	{
-		if (not rpnItem->token()->tableEntry()->recreate(*this, rpnItem))
-		{
-			// if no recreate function, then it is missing from table
-			emplace('?' + rpnItem->token()->string() + '?');
-		}
+		rpnItem->token()->tableEntry()->recreate(*this, rpnItem);
+
 		if (!rpnItem->token()->hasFlag(Command_Flag)
 			&& rpnItem->token()->hasSubCode(Paren_SubCode))
 		{
@@ -119,13 +116,6 @@ void Recreator::pushWithOperands(std::string &&name, int count)
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-
-// function to recreate an operand
-void operandRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
-{
-	// just push the string of the token
-	recreator.emplace(rpnItem->token()->stringWithDataType());
-}
 
 // function to recreate a unary operator
 void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
@@ -232,25 +222,6 @@ void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	(void)recreator;
 	(void)rpnItem;
-}
-
-
-// function to do nothing (for hidden codes)
-void remRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
-{
-	std::string string {rpnItem->token()->name()};
-	std::string remark {rpnItem->token()->string()};
-	if (islower(remark.front()))
-	{
-		std::transform(string.begin(), string.end(), string.begin(), tolower);
-	}
-	if (rpnItem->token()->isCode(Code::RemOp) && recreator.backIsNotSpace())
-	{
-		// FLAG option: space before rem operator (default=yes)
-		recreator.append(' ');
-	}
-	recreator.append(std::move(string));
-	recreator.append(std::move(remark));
 }
 
 

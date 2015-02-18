@@ -88,7 +88,18 @@ struct ExprInfo
 	}
 };
 
-// table entry structure with information for a single code
+
+class Table;
+struct AlternateItem
+{
+	AlternateItem() : primary {}, operand {} {}
+	AlternateItem(Table *p, int o) : primary {p}, operand {o} {}
+
+	Table *primary;
+	int operand;
+};
+
+
 class Table
 {
 public:
@@ -117,17 +128,26 @@ public:
 		}
 		(*translate)(translator);
 	}
-	virtual void encode(ProgramWriter &programWriter, Token *token);
-	virtual const std::string operandText(ProgramReader &programReader);
-	virtual void remove(ProgramReader &programReader);
-	virtual bool recreate(Recreator &recreator, RpnItemPtr &rpnItem)
+	virtual void encode(ProgramWriter &programWriter, Token *token)
+	{
+		(void)programWriter;
+		(void)token;
+	}
+	virtual const std::string operandText(ProgramReader &programReader)
+	{
+		(void)programReader;
+		return {};
+	}
+	virtual void remove(ProgramReader &programReader)
+	{
+		(void)programReader;
+	}
+	virtual void recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	{
 		if (m_recreate)
 		{
 			(*m_recreate)(recreator, rpnItem);
-			return true;
 		}
-		return false;
 	}
 
 	// INSTANCE ACCESS FUNCTIONS
@@ -225,6 +245,13 @@ public:
 	}
 	int hasBinaryOperator();
 
+	void appendAlternate(const AlternateItem &alternateItem)
+	{
+		if (alternateItem.primary)
+		{
+			alternateItem.primary->appendAlternate(alternateItem.operand, this);
+		}
+	}
 	Table *alternateForReturn(DataType returnDataType);
 	Table *firstAlternate(int operand = FirstOperand);
 	Table *alternateForOperand(int operand, DataType operandDataType);
