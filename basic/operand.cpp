@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: operand.cpp - operand classes and functions source file
+//	File: operand.cpp - operand table classes and functions source file
 //	Copyright (C) 2013-2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
@@ -91,8 +91,8 @@ public:
 		Operand(code, name, "", flags, precedence, &Null_ExprInfo,
 			Rem_OperandType) {}
 
-	virtual void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
 	// TODO virtual run() override function for Rem/RemOp (does nothing)
+	virtual void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
 };
 
 void Rem::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
@@ -141,8 +141,8 @@ class ConstStr : public Const
 public:
 	using Const::Const;
 
-	virtual void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
 	// TODO virtual run() override function for ConstStr
+	virtual void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
 
 private:
 	std::string replaceDoubleQuotesWithTwo(std::string input);
@@ -286,19 +286,19 @@ Rem remOperator {Code::RemOp, "'", Operator_Flag | EndStmt_Flag, 2};
 
 Const constDbl {"Const", ConstNum_OperandType, &Dbl_None_ExprInfo};
 ConstInt constInt {"ConstInt", ConstNum_OperandType, &Int_None_ExprInfo,
-	{&constDbl, 0}};
+	&constDbl};
 ConstStr constStr {"ConstStr", ConstStr_OperandType, &Str_None_ExprInfo,
-	{&constDbl, 0}};
+	&constDbl};
 
 Var var {"Var", VarDbl_OperandType, &Dbl_None_ExprInfo};
-VarInt varInt {"VarInt", VarInt_OperandType, &Int_None_ExprInfo, {&var, 0}};
-VarStr varStr {"VarStr", VarStr_OperandType, &Str_None_ExprInfo, {&var, 0}};
+VarInt varInt {"VarInt", VarInt_OperandType, &Int_None_ExprInfo, &var};
+VarStr varStr {"VarStr", VarStr_OperandType, &Str_None_ExprInfo, &var};
 
 VarRef varRef {"VarRef", VarDbl_OperandType, &Dbl_None_ExprInfo, {&var, 1}};
 VarRefInt varRefInt {"VarRefInt", VarInt_OperandType, &Int_None_ExprInfo,
-	{&varRef, 0}};
+	&varRef};
 VarRefStr varRefStr {"VarRefStr", VarStr_OperandType, &Str_None_ExprInfo,
-	{&varRef, 0}};
+	&varRef};
 
 
 // end: operand.cpp

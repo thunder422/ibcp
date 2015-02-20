@@ -113,7 +113,6 @@ public:
 // translate functions
 void inputTranslate(Translator &translator);
 void letTranslate(Translator &translator);
-void printTranslate(Translator &translator);
 
 
 // recreate functions
@@ -129,11 +128,8 @@ void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
-void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
-void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
 void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);

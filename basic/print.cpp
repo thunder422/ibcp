@@ -23,14 +23,104 @@
 //	2013-08-03	initial version
 
 #include "basic/basic.h"
+#include "command.h"
+#include "operator.h"
 #include "recreator.h"
 #include "table.h"
 #include "token.h"
 #include "translator.h"
 
+extern ExprInfo None_Dbl_ExprInfo;
+extern ExprInfo None_Int_ExprInfo;
+extern ExprInfo None_Str_ExprInfo;
 
-// PRINT command translate function
-void printTranslate(Translator &translator)
+
+//=======================
+//  TABLE ENTRY CLASSES
+//=======================
+
+class Print : public Command
+{
+public:
+	Print(const AlternateItem &alternateItem) :
+		Command {"PRINT"}
+	{
+		appendAlternate(alternateItem);
+	}
+
+	// TODO virtual run() override function for Print
+	void translate(Translator &translator) override;
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+
+class PrintItem : public Internal
+{
+public:
+	PrintItem(const char *name2, ExprInfo *exprInfo,
+			const AlternateItem &alternateItem, unsigned moreFlags = {}) :
+		Internal {name2, exprInfo, Print_Flag | moreFlags}
+	{
+		appendAlternate(alternateItem);
+	}
+
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+class PrintDbl : public PrintItem
+{
+public:
+	PrintDbl(const AlternateItem &alternateItem) :
+		PrintItem {"PrintDbl", &None_Dbl_ExprInfo, alternateItem,
+			UseConstAsIs_Flag} {}
+
+	// TODO virtual run() override function for PrintDbl
+};
+
+class PrintInt : public PrintItem
+{
+public:
+	PrintInt(const AlternateItem &alternateItem) :
+		PrintItem {"PrintInt", &None_Int_ExprInfo, alternateItem} {}
+
+	// TODO virtual run() override function for PrintInt
+};
+
+class PrintStr : public PrintItem
+{
+public:
+	PrintStr(const AlternateItem &alternateItem) :
+		PrintItem {"PrintStr", &None_Str_ExprInfo, alternateItem} {}
+
+	// TODO virtual run() override function for PrintStr
+};
+
+
+class Semicolon : public SpecialOperator
+{
+public:
+	Semicolon() : SpecialOperator {Code::Semicolon, ";", 6, Command_Flag} {}
+
+	// TODO virtual run() override function for Semicolon
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+
+class Comma : public SpecialOperator
+{
+public:
+	Comma() : SpecialOperator {Code::Comma, ",", 6, Command_Flag} {}
+
+	// TODO virtual run() override function for Comma
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+
+//=========================
+//  TABLE ENTRY FUNCTIONS
+//=========================
+
+void Print::translate(Translator &translator)
 {
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	bool printFunction {};
@@ -118,7 +208,6 @@ void printTranslate(Translator &translator)
 }
 
 
-// function to recreate the print item code
 void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	(void)rpnItem;
@@ -154,9 +243,14 @@ void printItemRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	recreator.setSeparator(';');  // set separator for next item
 }
 
+void PrintItem::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
+{
+	// TODO temporary until print functions put into new table model
+	printItemRecreate(recreator, rpnItem);
+}
 
-// function to recreate the print comma code
-void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
+
+void Comma::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	std::string string;
 
@@ -185,8 +279,7 @@ void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 }
 
 
-// function to recreate the print semicolon code
-void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
+void Semicolon::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// append final semicolon to string on top of stack then recreate command
 	std::string name {rpnItem->token()->name()};
@@ -195,12 +288,12 @@ void printSemicolonRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	Table *printEntry = rpnItem->token()->firstAlternate();
 	TokenPtr token {std::make_shared<Token>(printEntry)};
 	RpnItemPtr rpnItemPtr {std::make_shared<RpnItem>(token)};
-	printRecreate(recreator, rpnItemPtr);
+	printEntry->recreate(recreator, rpnItemPtr);
 }
 
 
 // function to recreate the print code
-void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
+void Print::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	// append PRINT keyword
 	std::string name {rpnItem->token()->name()};
@@ -217,5 +310,18 @@ void printRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	recreator.clearSeparator();  // clear separator for next command
 }
 
+
+//=========================
+//  TABLE ENTRY INSTANCES
+//=========================
+
+Semicolon semicolon;
+Comma comma;
+
+Print print {&semicolon};
+
+PrintDbl printDbl {&print};
+PrintInt printInt {&printDbl};
+PrintStr printStr {&printDbl};
 
 // end: print.cpp

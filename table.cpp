@@ -80,9 +80,9 @@ static ExprInfo Str_StrStr_ExprInfo(DataType::String, Operands_StrStr);
 static ExprInfo Str_StrIntInt_ExprInfo(DataType::String, Operands_StrIntInt);
 static ExprInfo Str_StrStrInt_ExprInfo(DataType::String, Operands_StrStrInt);
 
-static ExprInfo None_Dbl_ExprInfo(DataType::None, Operands_Dbl);
-static ExprInfo None_Int_ExprInfo(DataType::None, Operands_Int);
-static ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
+ExprInfo None_Dbl_ExprInfo(DataType::None, Operands_Dbl);
+ExprInfo None_Int_ExprInfo(DataType::None, Operands_Int);
+ExprInfo None_Str_ExprInfo(DataType::None, Operands_Str);
 
 
 Table::EntryVector Table::s_indexToEntry;
@@ -96,7 +96,6 @@ Table::ExpectedDataTypeMap Table::s_expectedDataType;
 enum CodeIndex
 {
 	Let_Code = 1,
-	Print_Code,
 	Input_Code,
 	InputPrompt_Code,
 	Rnd_Code,
@@ -152,8 +151,6 @@ enum CodeIndex
 	NotEq_Code,
 	OpenParen_Code,
 	CloseParen_Code,
-	Comma_Code,
-	SemiColon_Code,
 	Colon_Code,
 	Assign_Code,
 	AssignInt_Code,
@@ -222,9 +219,6 @@ enum CodeIndex
 	CvtInt_Code,
 	CvtDbl_Code,
 	StrInt_Code,
-	PrintDbl_Code,
-	PrintInt_Code,
-	PrintStr_Code,
 	InputBegin_Code,
 	InputBeginStr_Code,
 	InputAssign_Code,
@@ -283,9 +277,6 @@ std::initializer_list<AlternateInfo> alternateInfo =
 	{InputAssign_Code, 1, {InputParse_Code}},
 	{InputAssignInt_Code, 1, {InputParseInt_Code}},
 	{InputAssignStr_Code, 1, {InputParseStr_Code}},
-	{Print_Code, 0, {PrintDbl_Code}},
-	{PrintDbl_Code, 0, {PrintInt_Code, PrintStr_Code}},
-	{SemiColon_Code, 0, {Print_Code}},
 
 	// codes with operands alternate codes
 	{Array_Code, 0, {ArrayInt_Code, ArrayStr_Code}},
@@ -315,12 +306,6 @@ static Table tableEntries[] =
 		"LET", "", "",
 		Command_Flag, 4, &Null_ExprInfo,
 		letTranslate, NULL, NULL, NULL, NULL
-	},
-	{	// Print_Code
-		Code{},
-		"PRINT", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		printTranslate, NULL, NULL, NULL, printRecreate
 	},
 	{	// Input_Code
 		Code{},
@@ -667,18 +652,6 @@ static Table tableEntries[] =
 		")", "", "",
 		Operator_Flag, 4, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, parenRecreate
-	},
-	{	// Comma_Code
-		Code::Comma,
-		",", "", "",
-		Operator_Flag | Command_Flag, 6, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, printCommaRecreate
-	},
-	{	// SemiColon_Code
-		Code::Semicolon,
-		";", "", "",
-		Operator_Flag | Command_Flag, 6, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, printSemicolonRecreate
 	},
 	{	// Colon_Code
 		Code::Colon,
@@ -1091,24 +1064,6 @@ static Table tableEntries[] =
 		"STR$(", "%", "",
 		Function_Flag, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
-	},
-	{	// PrintDbl_Code
-		Code{},
-		"", "PrintDbl", "",
-		Print_Flag | UseConstAsIs_Flag, 2, &None_Dbl_ExprInfo,
-		NULL, NULL, NULL, NULL, printItemRecreate
-	},
-	{	// PrintInt_Code
-		Code{},
-		"", "PrintInt", "",
-		Print_Flag, 2, &None_Int_ExprInfo,
-		NULL, NULL, NULL, NULL, printItemRecreate
-	},
-	{	// PrintStr_Code
-		Code{},
-		"", "PrintStr", "",
-		Print_Flag, 2, &None_Str_ExprInfo,
-		NULL, NULL, NULL, NULL, printItemRecreate
 	},
 	{	// InputBegin_Code
 		Code{},

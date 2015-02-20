@@ -188,6 +188,7 @@ set(ibcp_SOURCES
 	basic/input.cpp
 	basic/let.cpp
 	basic/operand.cpp
+	basic/operator.cpp
 	basic/print.cpp
 )
 

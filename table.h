@@ -93,7 +93,7 @@ class Table;
 struct AlternateItem
 {
 	AlternateItem() : primary {}, operand {} {}
-	AlternateItem(Table *p, int o) : primary {p}, operand {o} {}
+	AlternateItem(Table *p, int o = 0) : primary {p}, operand {o} {}
 
 	Table *primary;
 	int operand;
@@ -107,7 +107,7 @@ public:
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		OperandType operandType,
-		TranslateFunction _translate, RecreateFunction _recreate);
+		TranslateFunction _translate = {}, RecreateFunction _recreate = {});
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		TranslateFunction _translate, void *, void *, void *,

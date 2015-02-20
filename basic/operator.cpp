@@ -1,7 +1,7 @@
 // vim:ts=4:sw=4:
 //
 //	Interactive BASIC Compiler Project
-//	File: command.h - command table intermediate class header file
+//	File: operator.cpp - operator table classes and functions source file
 //	Copyright (C) 2015  Thunder422
 //
 //	This program is free software: you can redistribute it and/or modify
@@ -17,31 +17,15 @@
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
 
-#ifndef COMMAND_H
-#define COMMAND_H
-
-#include "table.h"
-
-extern ExprInfo Null_ExprInfo;
+#include "operator.h"
 
 
-class Command : public Table
+SpecialOperator::SpecialOperator(Code code, const char *name, int precedence,
+		unsigned moreFlags) :
+	Table {code, name, "", "", Operator_Flag | moreFlags, precedence,
+	   &Null_ExprInfo, No_OperandType}
 {
-public:
-	Command(const char *name, const char *name2 = "") :
-		Table {Code{}, name, name2, "", Command_Flag, 4, &Null_ExprInfo,
-			No_OperandType} {}
-
-	virtual void translate(Translator &translator) override;
-};
+}
 
 
-class Internal : public Table
-{
-public:
-	Internal(const char *name2, ExprInfo *exprInfo, unsigned flags = {}) :
-		Table {Code{}, "", name2, "", flags, 2, exprInfo, No_OperandType} {}
-};
-
-
-#endif  // COMMAND_H
+// end: operator.cpp
