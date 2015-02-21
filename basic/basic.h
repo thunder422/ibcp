@@ -111,7 +111,6 @@ public:
 
 
 // translate functions
-void inputTranslate(Translator &translator);
 void letTranslate(Translator &translator);
 
 
@@ -130,10 +129,6 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
 void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
-
-void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
-void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
-void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
 
 #endif // BASIC_H

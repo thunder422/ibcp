@@ -22,14 +22,162 @@
 //
 //	2013-08-17	initial version
 
+#include "command.h"
 #include "recreator.h"
 #include "table.h"
 #include "token.h"
 #include "translator.h"
 
+extern ExprInfo Null_ExprInfo;
+extern ExprInfo None_Dbl_ExprInfo;
+extern ExprInfo None_Int_ExprInfo;
+extern ExprInfo None_Str_ExprInfo;
 
-// INPUT command translate function
-void inputTranslate(Translator &translator)
+
+//=======================
+//  TABLE ENTRY CLASSES
+//=======================
+
+class InputCommand : public Command
+{
+public:
+	InputCommand(const char *name2 = "") : Command {"INPUT", name2, "Keep"} {}
+
+	void translate(Translator &translator) override;
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+class Input : public InputCommand
+{
+public:
+	Input() : InputCommand {} {}
+
+	// TODO virtual run() override function for Input
+};
+
+class InputPrompt : public InputCommand
+{
+public:
+	InputPrompt() : InputCommand {"PROMPT"} {}
+
+	// TODO virtual run() override function for InputPrompt
+};
+
+
+class InputBegin : public Internal
+{
+public:
+	InputBegin(const AlternateItem &alternateItem) :
+		Internal {"InputBegin", &Null_ExprInfo}
+	{
+		appendAlternate(alternateItem);
+	}
+
+	// TODO virtual run() override function for InputBegin
+};
+
+class InputBeginStr : public Internal
+{
+public:
+	InputBeginStr(const AlternateItem &alternateItem) :
+		Internal {"InputBeginStr", &Null_ExprInfo, "Question"}
+	{
+		appendAlternate(alternateItem);
+	}
+
+	// TODO virtual run() override function for InputBegin
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+
+class InputAssign : public Internal
+{
+public:
+	InputAssign(const char *name2, ExprInfo *exprInfo,
+			const AlternateItem &alternateItem) :
+		Internal {name2, exprInfo, Reference_Flag}
+	{
+		appendAlternate(alternateItem);
+	}
+
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+class InputAssignDbl : public InputAssign
+{
+public:
+	InputAssignDbl(const AlternateItem &alternateItem,
+			const AlternateItem &alternateItem2) :
+		InputAssign {"InputAssign", &None_Dbl_ExprInfo, alternateItem}
+	{
+		appendAlternate(alternateItem2);
+	}
+
+	// TODO virtual run() override function for InputAssignDbl
+};
+
+class InputAssignInt : public InputAssign
+{
+public:
+	InputAssignInt(const AlternateItem &alternateItem) :
+		InputAssign {"InputAssignInt", &None_Int_ExprInfo, alternateItem} {}
+
+	// TODO virtual run() override function for InputAssignInt
+};
+
+class InputAssignStr : public InputAssign
+{
+public:
+	InputAssignStr(const AlternateItem &alternateItem) :
+		InputAssign {"InputAssignStr", &None_Str_ExprInfo, alternateItem} {}
+
+	// TODO virtual run() override function for InputAssignStr
+};
+
+
+class InputParse : public Internal
+{
+public:
+	InputParse(const char *name2, const AlternateItem &alternateItem = {}) :
+		Internal {name2, &Null_ExprInfo}
+	{
+		appendAlternate(alternateItem);
+	}
+};
+
+class InputParseDbl : public InputParse
+{
+public:
+	InputParseDbl(const AlternateItem &alternateItem) :
+		InputParse {"InputParse", alternateItem} {}
+
+	// TODO virtual run() override function for InputParseDbl
+};
+
+class InputParseInt : public InputParse
+{
+public:
+	InputParseInt(const AlternateItem &alternateItem) :
+		InputParse {"InputParseInt", alternateItem} {}
+
+	// TODO virtual run() override function for InputParseInt
+};
+
+class InputParseStr : public InputParse
+{
+public:
+	InputParseStr(const AlternateItem &alternateItem) :
+		InputParse {"InputParseStr", alternateItem} {}
+
+	// TODO virtual run() override function for InputParseStr
+};
+
+
+//=========================
+//  TABLE ENTRY FUNCTIONS
+//=========================
+
+void InputCommand::translate(Translator &translator)
 {
 	TokenPtr commandToken = translator.moveToken();  // save command token
 	TokenPtr token;
@@ -119,15 +267,14 @@ void inputTranslate(Translator &translator)
 
 
 // function to recreate the input begin string code (for INPUT PROMPT)
-void inputPromptBeginRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
+void InputBeginStr::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	recreator.setSeparator(rpnItem->token()->hasSubCode(Option_SubCode)
 		? ',' : ';');
 }
 
 
-// function to recreate an input assign type code
-void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
+void InputAssign::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	(void)rpnItem;
 
@@ -145,8 +292,7 @@ void inputAssignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 }
 
 
-// function to recreate the input command code
-void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
+void InputCommand::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	recreator.append(rpnItem->token()->commandName());
 	// FLAG option: all spaces after commands (default=yes)
@@ -158,6 +304,25 @@ void inputRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	}
 	recreator.clearSeparator();
 }
+
+
+//=========================
+//  TABLE ENTRY INSTANCES
+//=========================
+
+Input input;
+InputBegin inputBegin {&input};
+
+InputPrompt inputPrompt;
+InputBeginStr inputBeginStr {&inputPrompt};
+
+InputAssignDbl inputAssignDbl {{&input, 1}, {&inputPrompt, 1}};
+InputAssignInt inputAssignInt {&inputAssignDbl};
+InputAssignStr inputAssignStr {&inputAssignDbl};
+
+InputParseDbl inputParseDbl {{&inputAssignDbl, 1}};
+InputParseInt inputParseInt {{&inputAssignInt, 1}};
+InputParseStr inputParseStr {{&inputAssignStr, 1}};
 
 
 // end: input.cpp

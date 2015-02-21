@@ -96,8 +96,6 @@ Table::ExpectedDataTypeMap Table::s_expectedDataType;
 enum CodeIndex
 {
 	Let_Code = 1,
-	Input_Code,
-	InputPrompt_Code,
 	Rnd_Code,
 	Mod_Code,
 	And_Code,
@@ -219,14 +217,6 @@ enum CodeIndex
 	CvtInt_Code,
 	CvtDbl_Code,
 	StrInt_Code,
-	InputBegin_Code,
-	InputBeginStr_Code,
-	InputAssign_Code,
-	InputAssignInt_Code,
-	InputAssignStr_Code,
-	InputParse_Code,
-	InputParseInt_Code,
-	InputParseStr_Code,
 	Array_Code,
 	ArrayInt_Code,
 	ArrayStr_Code,
@@ -268,16 +258,6 @@ std::initializer_list<AlternateInfo> alternateInfo =
 	{Right_Code, 1, {AssignRight_Code}},
 	{AssignRight_Code, 0, {AssignKeepRight_Code}},
 
-	// internal command alternate codes
-	{Input_Code, 0, {InputBegin_Code}},
-	{Input_Code, 1, {InputAssign_Code}},
-	{InputPrompt_Code, 0, {InputBeginStr_Code}},
-	{InputPrompt_Code, 1, {InputAssign_Code}},
-	{InputAssign_Code, 0, {InputAssignInt_Code, InputAssignStr_Code}},
-	{InputAssign_Code, 1, {InputParse_Code}},
-	{InputAssignInt_Code, 1, {InputParseInt_Code}},
-	{InputAssignStr_Code, 1, {InputParseStr_Code}},
-
 	// codes with operands alternate codes
 	{Array_Code, 0, {ArrayInt_Code, ArrayStr_Code}},
 	{DefFuncN_Code, 0, {DefFuncNInt_Code, DefFuncNStr_Code}},
@@ -306,20 +286,6 @@ static Table tableEntries[] =
 		"LET", "", "",
 		Command_Flag, 4, &Null_ExprInfo,
 		letTranslate, NULL, NULL, NULL, NULL
-	},
-	{	// Input_Code
-		Code{},
-		"INPUT", "", "Keep",
-		Command_Flag, 4, &Null_ExprInfo,
-		inputTranslate, NULL, NULL, NULL, inputRecreate
-
-	},
-	{	// InputPrompt_Code
-		Code{},
-		"INPUT", "PROMPT", "Keep",
-		Command_Flag, 4, &Null_ExprInfo,
-		inputTranslate, NULL, NULL, NULL, inputRecreate
-
 	},
 	//-----------------------------------------
 	//   Internal Functions (No Parentheses)
@@ -1064,54 +1030,6 @@ static Table tableEntries[] =
 		"STR$(", "%", "",
 		Function_Flag, 2, &Str_Int_ExprInfo,
 		NULL, NULL, NULL, NULL, internalFunctionRecreate
-	},
-	{	// InputBegin_Code
-		Code{},
-		"", "InputBegin", "",
-		TableFlag{}, 2, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, blankRecreate
-	},
-	{	// InputBeginStr_Code
-		Code{},
-		"", "InputBeginStr", "Question",
-		TableFlag{}, 2, &None_Int_ExprInfo,
-		NULL, NULL, NULL, NULL, inputPromptBeginRecreate
-	},
-	{	// InputAssign_Code
-		Code{},
-		"", "InputAssign", "",
-		Reference_Flag, 2, &None_Dbl_ExprInfo,
-		NULL, NULL, NULL, NULL, inputAssignRecreate
-	},
-	{	// InputAssignInt_Code
-		Code{},
-		"", "InputAssignInt", "",
-		Reference_Flag, 2, &None_Int_ExprInfo,
-		NULL, NULL, NULL, NULL, inputAssignRecreate
-	},
-	{	// InputAssignStr_Code
-		Code{},
-		"", "InputAssignStr", "",
-		Reference_Flag, 2, &None_Str_ExprInfo,
-		NULL, NULL, NULL, NULL, inputAssignRecreate
-	},
-	{	// InputParse_Code
-		Code{},
-		"", "InputParse", "",
-		TableFlag{}, 2, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, blankRecreate
-	},
-	{	// InputParseInt_Code
-		Code{},
-		"", "InputParseInt", "",
-		TableFlag{}, 2, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, blankRecreate
-	},
-	{	// InputParseStr_Code
-		Code{},
-		"", "InputParseStr", "",
-		TableFlag{}, 2, &Null_ExprInfo,
-		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// Array_Code
 		Code::Array,
