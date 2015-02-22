@@ -1,42 +1,42 @@
 
 Input: A=SQR(17):PRINT A
-Output: A<ref> 17 SQR( Assign':' A PrintDbl PRINT 
+Output: A<ref> 17 SQR( Assign':' A PrintItem PRINT 
 
 Input: PRINT A:PRINT B
-Output: A PrintDbl PRINT':' B PrintDbl PRINT 
+Output: A PrintItem PRINT':' B PrintItem PRINT 
 
 Input: PRINT A;:PRINT B
-Output: A PrintDbl ;':' B PrintDbl PRINT 
+Output: A PrintItem ;':' B PrintItem PRINT 
 
 Input: INPUT A:PRINT A
-Output: InputParse InputBegin A<ref> InputAssign INPUT':' A PrintDbl PRINT 
+Output: InputParse InputBegin A<ref> InputAssign INPUT':' A PrintItem PRINT 
 
 Input: A,B,C=5.0:INPUT D
 Output: A<ref> B<ref> C<ref> 5.0 AssignList':' InputParse InputBegin D<ref> InputAssign INPUT 
 
 Input: A$,LEFT$(B$,1),MID$(C$,2,3)="A":PRINT A$
-Output: A$<ref> B$<ref> 1% C$<ref> 2% 3% "A" MID$(AssignKeep3 LEFT$(AssignKeep Assign$':' A$ PrintStr PRINT 
+Output: A$<ref> B$<ref> 1% C$<ref> 2% 3% "A" MID$(AssignKeep3 LEFT$(AssignKeep Assign$':' A$ PrintItem$ PRINT 
 
 Input: INPUT PROMPT "Number",A:PRINT A
-Output: "Number" InputParse InputBeginStr'Question' A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 
+Output: "Number" InputParse InputBegin$'Question' A<ref> InputAssign INPUT-PROMPT':' A PrintItem PRINT 
 
 Input: INPUT PROMPT "Number";A:PRINT A
-Output: "Number" InputParse InputBeginStr A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 
+Output: "Number" InputParse InputBegin$ A<ref> InputAssign INPUT-PROMPT':' A PrintItem PRINT 
 
 Input: INPUT PROMPT "Number:";A:PRINT A
-Output: "Number:" InputParse InputBeginStr A<ref> InputAssign INPUT-PROMPT':' A PrintDbl PRINT 
+Output: "Number:" InputParse InputBegin$ A<ref> InputAssign INPUT-PROMPT':' A PrintItem PRINT 
 
 Input: INPUT A;:PRINT A
-Output: InputParse InputBegin A<ref> InputAssign INPUT'Keep:' A PrintDbl PRINT 
+Output: InputParse InputBegin A<ref> InputAssign INPUT'Keep:' A PrintItem PRINT 
 
 Input: PRINT A:REM output A
-Output: A PrintDbl PRINT':' REM| output A| 
+Output: A PrintItem PRINT':' REM| output A| 
 
 Input: PRINT A:'output A:test
-Output: A PrintDbl PRINT':' '|output A:test| 
+Output: A PrintItem PRINT':' '|output A:test| 
 
 Input: INPUT A;:R=SQR(A):PRINT"Sqrt(";A;")=";R
-Output: InputParse InputBegin A<ref> InputAssign INPUT'Keep:' R<ref> A SQR( Assign':' "Sqrt(" PrintStr A PrintDbl ")=" PrintStr R PrintDbl PRINT 
+Output: InputParse InputBegin A<ref> InputAssign INPUT'Keep:' R<ref> A SQR( Assign':' "Sqrt(" PrintItem$ A PrintItem ")=" PrintItem$ R PrintItem PRINT 
 
 Input: :
        ^-- expected command or item for assignment

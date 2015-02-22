@@ -68,7 +68,7 @@ class InputBegin : public Internal
 {
 public:
 	InputBegin(const AlternateItem &alternateItem) :
-		Internal {"InputBegin", &Null_ExprInfo}
+		Internal {"InputBegin", "", &Null_ExprInfo}
 	{
 		appendAlternate(alternateItem);
 	}
@@ -80,7 +80,7 @@ class InputBeginStr : public Internal
 {
 public:
 	InputBeginStr(const AlternateItem &alternateItem) :
-		Internal {"InputBeginStr", &Null_ExprInfo, "Question"}
+		Internal {"InputBegin", "$", &Null_ExprInfo, "Question"}
 	{
 		appendAlternate(alternateItem);
 	}
@@ -95,7 +95,7 @@ class InputAssign : public Internal
 public:
 	InputAssign(const char *name2, ExprInfo *exprInfo,
 			const AlternateItem &alternateItem) :
-		Internal {name2, exprInfo, Reference_Flag}
+		Internal {"InputAssign", name2, exprInfo, Reference_Flag}
 	{
 		appendAlternate(alternateItem);
 	}
@@ -108,7 +108,7 @@ class InputAssignDbl : public InputAssign
 public:
 	InputAssignDbl(const AlternateItem &alternateItem,
 			const AlternateItem &alternateItem2) :
-		InputAssign {"InputAssign", &None_Dbl_ExprInfo, alternateItem}
+		InputAssign {"", &None_Dbl_ExprInfo, alternateItem}
 	{
 		appendAlternate(alternateItem2);
 	}
@@ -120,7 +120,7 @@ class InputAssignInt : public InputAssign
 {
 public:
 	InputAssignInt(const AlternateItem &alternateItem) :
-		InputAssign {"InputAssignInt", &None_Int_ExprInfo, alternateItem} {}
+		InputAssign {"%", &None_Int_ExprInfo, alternateItem} {}
 
 	// TODO virtual run() override function for InputAssignInt
 };
@@ -129,7 +129,7 @@ class InputAssignStr : public InputAssign
 {
 public:
 	InputAssignStr(const AlternateItem &alternateItem) :
-		InputAssign {"InputAssignStr", &None_Str_ExprInfo, alternateItem} {}
+		InputAssign {"$", &None_Str_ExprInfo, alternateItem} {}
 
 	// TODO virtual run() override function for InputAssignStr
 };
@@ -139,7 +139,7 @@ class InputParse : public Internal
 {
 public:
 	InputParse(const char *name2, const AlternateItem &alternateItem = {}) :
-		Internal {name2, &Null_ExprInfo}
+		Internal {"InputParse", name2, &Null_ExprInfo}
 	{
 		appendAlternate(alternateItem);
 	}
@@ -149,7 +149,7 @@ class InputParseDbl : public InputParse
 {
 public:
 	InputParseDbl(const AlternateItem &alternateItem) :
-		InputParse {"InputParse", alternateItem} {}
+		InputParse {"", alternateItem} {}
 
 	// TODO virtual run() override function for InputParseDbl
 };
@@ -158,7 +158,7 @@ class InputParseInt : public InputParse
 {
 public:
 	InputParseInt(const AlternateItem &alternateItem) :
-		InputParse {"InputParseInt", alternateItem} {}
+		InputParse {"%", alternateItem} {}
 
 	// TODO virtual run() override function for InputParseInt
 };
@@ -167,7 +167,7 @@ class InputParseStr : public InputParse
 {
 public:
 	InputParseStr(const AlternateItem &alternateItem) :
-		InputParse {"InputParseStr", alternateItem} {}
+		InputParse {"$", alternateItem} {}
 
 	// TODO virtual run() override function for InputParseStr
 };

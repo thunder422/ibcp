@@ -42,7 +42,7 @@ enum TableFlag : unsigned
 	Multiple_Flag		= 1u << 0,	// function has multiple forms
 	Reference_Flag		= 1u << 1,	// code requires a reference
 	SubStr_Flag			= 1u << 2,	// code supports sub-string assignments
-	Hidden_Flag			= 1u << 3,	// code is hidden operator/function
+	NoName_Flag			= 1u << 3,
 	Print_Flag			= 1u << 4,	// print-only function
 	UseConstAsIs_Flag   = 1u << 5,	// use constant data type as is
 	Keep_Flag			= 1u << 6,	// sub-string keep assignment
@@ -111,6 +111,9 @@ public:
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		TranslateFunction _translate, void *, void *, void *,
+		RecreateFunction _recreate);
+	Table(Code code, const char *name, const char *name2, const char *option,
+		unsigned flags, int precedence, ExprInfo *exprInfo,
 		RecreateFunction _recreate);
 
 	Table &operator=(const Table &) = delete;
@@ -283,7 +286,7 @@ public:
 private:
 	bool hasName() const
 	{
-		return not m_name.empty();
+		return not hasFlag(NoName_Flag) && not m_name.empty();
 	}
 	bool isTwoWordCommand() const
 	{

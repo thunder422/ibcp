@@ -132,5 +132,5 @@ Input: Z = VAL(A$) + VAL(B$+C$)
 Output: Z<ref> A$ VAL( B$ C$ +$ VAL( + Assign 
 
 Input: PRINT A$;B$+C$
-Output: A$ PrintStr B$ C$ +$ PrintStr PRINT 
+Output: A$ PrintItem$ B$ C$ +$ PrintItem$ PRINT 
 

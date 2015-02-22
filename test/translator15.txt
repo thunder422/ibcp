@@ -33,13 +33,13 @@ Input: A=3 ' assign A
 Output: A<ref> 3 Assign '| assign A| 
 
 Input: PRINT A 'output value
-Output: A PrintDbl PRINT '|output value| 
+Output: A PrintItem PRINT '|output value| 
 
 Input: PRINT A+3 'comment
-Output: A 3 + PrintDbl PRINT '|comment| 
+Output: A 3 + PrintItem PRINT '|comment| 
 
 Input: PRINT A+3;'comment
-Output: A 3 + PrintDbl ; '|comment| 
+Output: A 3 + PrintItem ; '|comment| 
 
 Input: INPUT A'get value from user
 Output: InputParse InputBegin A<ref> InputAssign INPUT '|get value from user| 

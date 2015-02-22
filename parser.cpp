@@ -142,7 +142,7 @@ Token *Parser::getIdentifier(Reference reference) noexcept
 		}
 	}
 
-	if (entry->name().empty())
+	if (entry->isCodeWithOperand())
 	{
 		if (word.paren)
 		{

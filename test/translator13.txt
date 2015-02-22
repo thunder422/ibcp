@@ -18,7 +18,7 @@ Input: A=B+--1.5
 Output: A<ref> B -1.5 -U + Assign 
 
 Input: PRINT-1;--1;---1;- 1;
-Output: -1% PrintInt -1% -U% PrintInt -1% -U% -U% PrintInt 1% -U% PrintInt ; 
+Output: -1% PrintItem% -1% -U% PrintItem% -1% -U% -U% PrintItem% 1% -U% PrintItem% ; 
 
 Input: A=- 1.0 + -.001 + -0.12
 Output: A<ref> 1.0 -U -.001 + -0.12 + Assign 

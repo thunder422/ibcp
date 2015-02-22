@@ -39,10 +39,14 @@ public:
 class Internal : public Table
 {
 public:
-	Internal(const char *name2, ExprInfo *exprInfo, unsigned flags = {}) :
-		Table {Code{}, "", name2, "", flags, 2, exprInfo, No_OperandType} {}
-	Internal(const char *name2, ExprInfo *exprInfo, const char *option) :
-		Table {Code{}, "", name2, option, TableFlag{}, 2, exprInfo,
+	Internal(const char *name, const char *name2, ExprInfo *exprInfo,
+			unsigned flags = {}) :
+		Table {Code{}, name, name2, "", NoName_Flag | flags, 2, exprInfo,
+			No_OperandType} {}
+
+	Internal(const char *name, const char *name2, ExprInfo *exprInfo,
+			const char *option) :
+		Table {Code{}, name, name2, option, NoName_Flag, 2, exprInfo,
 			No_OperandType} {}
 
 	void recreate(Recreator &, RpnItemPtr &) override {}

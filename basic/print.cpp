@@ -59,7 +59,7 @@ class PrintItem : public Internal
 public:
 	PrintItem(const char *name2, ExprInfo *exprInfo,
 			const AlternateItem &alternateItem, unsigned moreFlags = {}) :
-		Internal {name2, exprInfo, Print_Flag | moreFlags}
+		Internal {"PrintItem", name2, exprInfo, Print_Flag | moreFlags}
 	{
 		appendAlternate(alternateItem);
 	}
@@ -71,7 +71,7 @@ class PrintDbl : public PrintItem
 {
 public:
 	PrintDbl(const AlternateItem &alternateItem) :
-		PrintItem {"PrintDbl", &None_Dbl_ExprInfo, alternateItem,
+		PrintItem {"", &None_Dbl_ExprInfo, alternateItem,
 			UseConstAsIs_Flag} {}
 
 	// TODO virtual run() override function for PrintDbl
@@ -81,7 +81,7 @@ class PrintInt : public PrintItem
 {
 public:
 	PrintInt(const AlternateItem &alternateItem) :
-		PrintItem {"PrintInt", &None_Int_ExprInfo, alternateItem} {}
+		PrintItem {"%", &None_Int_ExprInfo, alternateItem} {}
 
 	// TODO virtual run() override function for PrintInt
 };
@@ -90,7 +90,7 @@ class PrintStr : public PrintItem
 {
 public:
 	PrintStr(const AlternateItem &alternateItem) :
-		PrintItem {"PrintStr", &None_Str_ExprInfo, alternateItem} {}
+		PrintItem {"$", &None_Str_ExprInfo, alternateItem} {}
 
 	// TODO virtual run() override function for PrintStr
 };

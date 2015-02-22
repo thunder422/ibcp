@@ -30,6 +30,23 @@ extern ExprInfo Dbl_None_ExprInfo;
 extern ExprInfo Int_None_ExprInfo;
 extern ExprInfo Str_None_ExprInfo;
 
+struct BaseInfo
+{
+	Code code;
+	const char *name;
+	unsigned flags;
+};
+
+struct TypeInfo
+{
+	const char *name2;
+	ExprInfo *exprInfo;
+};
+
+constexpr TypeInfo Dbl = {"", &Dbl_None_ExprInfo};
+constexpr TypeInfo Int = {"%", &Int_None_ExprInfo};
+constexpr TypeInfo Str = {"$", &Str_None_ExprInfo};
+
 
 //=====================================
 //  CODE WITH OPERAND TABLE SUB-CLASS
@@ -38,8 +55,12 @@ extern ExprInfo Str_None_ExprInfo;
 class Operand : public Table
 {
 public:
-	Operand(Code code, const char *name, const char *name2, unsigned flags,
-			int precedence, ExprInfo *exprInfo, OperandType operandType,
+	// constructor for rem sub-class
+	Operand(Code code, const char *name, int precedence, unsigned flags,
+		OperandType operandType);
+
+	// constructor for no-name sub-classes
+	Operand(BaseInfo baseInfo, TypeInfo typeInfo, OperandType operandType,
 			const AlternateItem &alternateItem = {});
 
 	virtual void encode(ProgramWriter &programWriter, Token *token) override;
@@ -50,11 +71,17 @@ public:
 };
 
 
-Operand::Operand(Code code, const char *name, const char *name2, unsigned flags,
-		int precedence, ExprInfo *exprInfo, OperandType operandType,
+Operand::Operand(Code code, const char *name, int precedence, unsigned flags,
+		OperandType operandType) :
+	Table {code, name, "", "", flags, precedence, &Null_ExprInfo,
+	   operandType}
+{
+}
+
+Operand::Operand(BaseInfo baseInfo, TypeInfo typeInfo, OperandType operandType,
 		const AlternateItem &alternateItem) :
-	Table {code, name, name2, "", flags, precedence, exprInfo,
-		   operandType, nullptr, nullptr}
+	Table {baseInfo.code, baseInfo.name, typeInfo.name2, "",
+		NoName_Flag | baseInfo.flags, 2, typeInfo.exprInfo, operandType}
 {
 	appendAlternate(alternateItem);
 }
@@ -87,9 +114,8 @@ void Operand::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 class Rem : public Operand
 {
 public:
-	Rem(Code code, const char *name, unsigned flags, int precedence) :
-		Operand(code, name, "", flags, precedence, &Null_ExprInfo,
-			Rem_OperandType) {}
+	Rem(Code code, const char *name, int precedence, unsigned flags) :
+		Operand(code, name, precedence, flags, Rem_OperandType) {}
 
 	// TODO virtual run() override function for Rem/RemOp (does nothing)
 	virtual void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
@@ -117,29 +143,33 @@ void Rem::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 //  CONSTANT TABLE SUB-CLASSES
 //==============================
 
-class Const : public Operand
+constexpr BaseInfo constBase = {Code::Constant, "Const", TableFlag{}};
+
+
+class ConstDbl : public Operand
 {
 public:
-	Const(const char *name2, OperandType operandType, ExprInfo *exprInfo,
-			const AlternateItem &alteranteItem = {}) :
-		Operand(Code::Constant, "", name2, TableFlag{}, 2, exprInfo,
-			operandType, alteranteItem) {}
+	ConstDbl() : Operand {constBase, Dbl, ConstNum_OperandType} {}
 
 	// TODO virtual run() override function for ConstDbl
 };
 
-class ConstInt : public Const
+
+class ConstInt : public Operand
 {
 public:
-	using Const::Const;
+	ConstInt(const AlternateItem &alteranteItem = {}) :
+		Operand {constBase, Int, ConstNum_OperandType, alteranteItem} {}
 
 	// TODO virtual run() override function for ConstInt
 };
 
-class ConstStr : public Const
+
+class ConstStr : public Operand
 {
 public:
-	using Const::Const;
+	ConstStr(const AlternateItem &alteranteItem = {}) :
+		Operand {constBase, Str, ConstStr_OperandType, alteranteItem} {}
 
 	// TODO virtual run() override function for ConstStr
 	virtual void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
@@ -173,53 +203,60 @@ std::string ConstStr::replaceDoubleQuotesWithTwo(std::string input)
 //  VARIABLE TABLE SUB-CLASSES
 //==============================
 
-class Var : public Operand
+constexpr BaseInfo varBase = {Code::Variable, "Var", TableFlag{}};
+constexpr BaseInfo varRefBase = {Code::Variable, "VarRef", Reference_Flag};
+
+
+class VarDbl : public Operand
 {
 public:
-	Var(const char *name2, OperandType operandType, ExprInfo *exprInfo,
-			const AlternateItem &alteranteItem = {},
-			unsigned flags = TableFlag{}) :
-		Operand(Code::Variable, "", name2, flags, 2, exprInfo, operandType,
-			alteranteItem) {}
-
-	// TODO virtual run() override function for VarDbl
-};
-
-class VarInt : public Var
-{
-	using Var::Var;
+	VarDbl() : Operand {varBase, Dbl, VarDbl_OperandType} {}
 
 	// TODO virtual run() override function for VarInt
 };
 
-class VarStr : public Var
+class VarInt : public Operand
 {
-	using Var::Var;
+public:
+	VarInt(const AlternateItem &alteranteItem) :
+		Operand {varBase, Int, VarInt_OperandType, alteranteItem} {}
+
+	// TODO virtual run() override function for VarInt
+};
+
+class VarStr : public Operand
+{
+public:
+	VarStr(const AlternateItem &alteranteItem) :
+		Operand {varBase, Str, VarStr_OperandType, alteranteItem} {}
 
 	// TODO virtual run() override function for VarStr
 };
 
 
-class VarRef : public Var
+class VarRefDbl : public Operand
 {
 public:
-	VarRef(const char *name2, OperandType operandType, ExprInfo *exprInfo,
-			const AlternateItem &alteranteItem = {}) :
-		Var(name2, operandType, exprInfo, alteranteItem, Reference_Flag) {}
-
-	// TODO virtual run() override function for VarRefDbl
-};
-
-class VarRefInt : public VarRef
-{
-	using VarRef::VarRef;
+	VarRefDbl(const AlternateItem &alteranteItem) :
+		Operand {varRefBase, Dbl, VarDbl_OperandType, alteranteItem} {}
 
 	// TODO virtual run() override function for VarRefInt
 };
 
-class VarRefStr : public VarRef
+class VarRefInt : public Operand
 {
-	using VarRef::VarRef;
+public:
+	VarRefInt(const AlternateItem &alteranteItem) :
+		Operand {varRefBase, Int, VarInt_OperandType, alteranteItem} {}
+
+	// TODO virtual run() override function for VarRefInt
+};
+
+class VarRefStr : public Operand
+{
+public:
+	VarRefStr(const AlternateItem &alteranteItem) :
+		Operand {varRefBase, Str, VarStr_OperandType, alteranteItem} {}
 
 	// TODO virtual run() override function for VarRefStr
 };
@@ -281,24 +318,20 @@ ConstStrInfo::~ConstStrInfo(void)
 //  TABLE ENTRY INSTANCES
 //=========================
 
-Rem remCommand {Code::Rem, "REM", Command_Flag, 4};
-Rem remOperator {Code::RemOp, "'", Operator_Flag | EndStmt_Flag, 2};
+Rem remCommand {Code::Rem, "REM", 4, Command_Flag};
+Rem remOperator {Code::RemOp, "'", 2, Operator_Flag | EndStmt_Flag};
 
-Const constDbl {"Const", ConstNum_OperandType, &Dbl_None_ExprInfo};
-ConstInt constInt {"ConstInt", ConstNum_OperandType, &Int_None_ExprInfo,
-	&constDbl};
-ConstStr constStr {"ConstStr", ConstStr_OperandType, &Str_None_ExprInfo,
-	&constDbl};
+ConstDbl constDbl;
+ConstInt constInt {&constDbl};
+ConstStr constStr {&constDbl};
 
-Var var {"Var", VarDbl_OperandType, &Dbl_None_ExprInfo};
-VarInt varInt {"VarInt", VarInt_OperandType, &Int_None_ExprInfo, &var};
-VarStr varStr {"VarStr", VarStr_OperandType, &Str_None_ExprInfo, &var};
+VarDbl varDbl;
+VarInt varInt {&varDbl};
+VarStr varStr {&varDbl};
 
-VarRef varRef {"VarRef", VarDbl_OperandType, &Dbl_None_ExprInfo, {&var, 1}};
-VarRefInt varRefInt {"VarRefInt", VarInt_OperandType, &Int_None_ExprInfo,
-	&varRef};
-VarRefStr varRefStr {"VarRefStr", VarStr_OperandType, &Str_None_ExprInfo,
-	&varRef};
+VarRefDbl varRefDbl {{&varDbl, 1}};
+VarRefInt varRefInt {&varRefDbl};
+VarRefStr varRefStr {&varRefDbl};
 
 
 // end: operand.cpp

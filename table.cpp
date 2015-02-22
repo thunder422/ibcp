@@ -1016,13 +1016,13 @@ static Table tableEntries[] =
 	{	// CvtInt_Code
 		Code::CvtInt,
 		"", "CvtInt", "",
-		Function_Flag | Hidden_Flag, 2, &Null_ExprInfo,
+		Function_Flag | NoName_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// CvtDbl_Code
 		Code::CvtDbl,
 		"", "CvtDbl", "",
-		Function_Flag | Hidden_Flag, 2, &Null_ExprInfo,
+		Function_Flag | NoName_Flag, 2, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, blankRecreate
 	},
 	{	// StrInt_Code
@@ -1035,73 +1035,73 @@ static Table tableEntries[] =
 		Code::Array,
 		"", "Array", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
-		NULL, NULL, NULL, NULL, arrayRecreate
+		arrayRecreate
 	},
 	{	// ArrayInt_Code
 		Code::Array,
 		"", "ArrayInt", "",
 		TableFlag{}, 2, &Int_None_ExprInfo,
-		NULL, NULL, NULL, NULL, arrayRecreate
+		arrayRecreate
 	},
 	{	// ArrayStr_Code
 		Code::Array,
 		"", "ArrayStr", "",
 		TableFlag{}, 2, &Str_None_ExprInfo,
-		NULL, NULL, NULL, NULL, arrayRecreate
+		arrayRecreate
 	},
 	{	// DefFuncN_Code
 		Code::DefFuncNoArgs,
 		"", "DefFuncN", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
-		NULL, NULL, NULL, NULL, defineFunctionRecreate
+		defineFunctionRecreate
 	},
 	{	// DefFuncNInt_Code
 		Code::DefFuncNoArgs,
 		"", "DefFuncNInt", "",
 		TableFlag{}, 2, &Int_None_ExprInfo,
-		NULL, NULL, NULL, NULL, defineFunctionRecreate
+		defineFunctionRecreate
 	},
 	{	// DefFuncNStr_Code
 		Code::DefFuncNoArgs,
 		"", "DefFuncNStr", "",
 		TableFlag{}, 2, &Str_None_ExprInfo,
-		NULL, NULL, NULL, NULL, defineFunctionRecreate
+		defineFunctionRecreate
 	},
 	{	// DefFuncP_Code
 		Code::DefFunc,
 		"", "DefFuncP", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
-		NULL, NULL, NULL, NULL, defineFunctionRecreate
+		defineFunctionRecreate
 	},
 	{	// DefFuncPInt_Code
 		Code::DefFunc,
 		"", "DefFuncPInt", "",
 		TableFlag{}, 2, &Int_None_ExprInfo,
-		NULL, NULL, NULL, NULL, defineFunctionRecreate
+		defineFunctionRecreate
 	},
 	{	// DefFuncPStr_Code
 		Code::DefFunc,
 		"", "DefFuncPStr", "",
 		TableFlag{}, 2, &Str_None_ExprInfo,
-		NULL, NULL, NULL, NULL, defineFunctionRecreate
+		defineFunctionRecreate
 	},
 	{	// Function_Code
 		Code::UserFunc,
 		"", "Function", "",
 		TableFlag{}, 2, &Dbl_None_ExprInfo,
-		NULL, NULL, NULL, NULL, functionRecreate
+		functionRecreate
 	},
 	{	// FunctionInt_Code
 		Code::UserFunc,
 		"", "FunctionInt", "",
 		TableFlag{}, 2, &Int_None_ExprInfo,
-		NULL, NULL, NULL, NULL, functionRecreate
+		functionRecreate
 	},
 	{	// FunctionStr_Code
 		Code::UserFunc,
 		"", "FunctionStr", "",
 		TableFlag{}, 2, &Str_None_ExprInfo,
-		NULL, NULL, NULL, NULL, functionRecreate
+		functionRecreate
 	}
 };
 
@@ -1156,6 +1156,14 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 		RecreateFunction _recreate) :
 	Table {code, name, name2, option, flags, precedence, exprInfo,
 		No_OperandType, _translate, _recreate}
+{
+}
+
+Table::Table(Code code, const char *name, const char *name2, const char *option,
+		unsigned flags, int precedence, ExprInfo *exprInfo,
+		RecreateFunction _recreate) :
+	Table {code, name, name2, option, flags, precedence, exprInfo,
+		NumberOf_OperandType, NULL, _recreate}
 {
 }
 
