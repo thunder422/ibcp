@@ -54,15 +54,19 @@ public:
 };
 
 
+constexpr BaseInfo printItemBase = {Code{}, "PrintItem", TableFlag{}};
+
+constexpr TypeInfo Dbl = {"", &None_Dbl_ExprInfo};
+constexpr TypeInfo Int = {"%", &None_Int_ExprInfo};
+constexpr TypeInfo Str = {"$", &None_Str_ExprInfo};
+
 class PrintItem : public Internal
 {
 public:
-	PrintItem(const char *name2, ExprInfo *exprInfo,
-			const AlternateItem &alternateItem, unsigned moreFlags = {}) :
-		Internal {"PrintItem", name2, exprInfo, Print_Flag | moreFlags}
-	{
-		appendAlternate(alternateItem);
-	}
+	PrintItem(TypeInfo typeInfo, const AlternateItem &alternateItem,
+			unsigned moreFlags = {}) :
+		Internal {printItemBase, typeInfo, alternateItem,
+			Print_Flag | moreFlags} {}
 
 	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
 };
@@ -71,8 +75,7 @@ class PrintDbl : public PrintItem
 {
 public:
 	PrintDbl(const AlternateItem &alternateItem) :
-		PrintItem {"", &None_Dbl_ExprInfo, alternateItem,
-			UseConstAsIs_Flag} {}
+		PrintItem {Dbl, alternateItem, UseConstAsIs_Flag} {}
 
 	// TODO virtual run() override function for PrintDbl
 };
@@ -81,7 +84,7 @@ class PrintInt : public PrintItem
 {
 public:
 	PrintInt(const AlternateItem &alternateItem) :
-		PrintItem {"%", &None_Int_ExprInfo, alternateItem} {}
+		PrintItem {Int, alternateItem} {}
 
 	// TODO virtual run() override function for PrintInt
 };
@@ -90,7 +93,7 @@ class PrintStr : public PrintItem
 {
 public:
 	PrintStr(const AlternateItem &alternateItem) :
-		PrintItem {"$", &None_Str_ExprInfo, alternateItem} {}
+		PrintItem {Str, alternateItem} {}
 
 	// TODO virtual run() override function for PrintStr
 };

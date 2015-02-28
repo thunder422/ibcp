@@ -44,6 +44,11 @@ public:
 		Table {Code{}, name, name2, "", NoName_Flag | flags, 2, exprInfo,
 			No_OperandType} {}
 
+	Internal(BaseInfo baseInfo, TypeInfo typeInfo,
+			const AlternateItem &alternateItem, unsigned moreFlags = {}) :
+		Table {baseInfo, typeInfo, 2, No_OperandType, NoName_Flag | moreFlags,
+			alternateItem} {}
+
 	Internal(const char *name, const char *name2, ExprInfo *exprInfo,
 			const char *option) :
 		Table {Code{}, name, name2, option, NoName_Flag, 2, exprInfo,

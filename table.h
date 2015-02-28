@@ -88,6 +88,19 @@ struct ExprInfo
 	}
 };
 
+struct BaseInfo
+{
+	Code code;
+	const char *name;
+	unsigned flags;
+};
+
+struct TypeInfo
+{
+	const char *name2;
+	ExprInfo *exprInfo;
+};
+
 
 class Table;
 struct AlternateItem
@@ -115,6 +128,9 @@ public:
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		RecreateFunction _recreate);
+	Table(BaseInfo baseInfo, TypeInfo typeInfo, int precedence,
+		OperandType operandType, unsigned moreFlags,
+		const AlternateItem &alternateItem);
 
 	Table &operator=(const Table &) = delete;
 	Table(const Table &) = delete;

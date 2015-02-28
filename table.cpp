@@ -1167,6 +1167,15 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 {
 }
 
+Table::Table(BaseInfo baseInfo, TypeInfo typeInfo, int precedence,
+		OperandType operandType, unsigned moreFlags,
+		const AlternateItem &alternateItem = {}) :
+	Table {baseInfo.code, baseInfo.name, typeInfo.name2, "",
+		baseInfo.flags | moreFlags, precedence, typeInfo.exprInfo, operandType}
+{
+	appendAlternate(alternateItem);
+}
+
 
 std::string Table::commandName() const
 {

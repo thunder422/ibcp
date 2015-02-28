@@ -30,19 +30,6 @@ extern ExprInfo Dbl_None_ExprInfo;
 extern ExprInfo Int_None_ExprInfo;
 extern ExprInfo Str_None_ExprInfo;
 
-struct BaseInfo
-{
-	Code code;
-	const char *name;
-	unsigned flags;
-};
-
-struct TypeInfo
-{
-	const char *name2;
-	ExprInfo *exprInfo;
-};
-
 constexpr TypeInfo Dbl = {"", &Dbl_None_ExprInfo};
 constexpr TypeInfo Int = {"%", &Int_None_ExprInfo};
 constexpr TypeInfo Str = {"$", &Str_None_ExprInfo};
@@ -80,10 +67,8 @@ Operand::Operand(Code code, const char *name, int precedence, unsigned flags,
 
 Operand::Operand(BaseInfo baseInfo, TypeInfo typeInfo, OperandType operandType,
 		const AlternateItem &alternateItem) :
-	Table {baseInfo.code, baseInfo.name, typeInfo.name2, "",
-		NoName_Flag | baseInfo.flags, 2, typeInfo.exprInfo, operandType}
+	Table {baseInfo, typeInfo, 2, operandType, NoName_Flag, alternateItem}
 {
-	appendAlternate(alternateItem);
 }
 
 void Operand::encode(ProgramWriter &programWriter, Token *token)

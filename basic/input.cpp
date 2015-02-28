@@ -90,15 +90,18 @@ public:
 };
 
 
+constexpr BaseInfo inputAssignBase = {Code{}, "InputAssign", Reference_Flag};
+
+constexpr TypeInfo Dbl = {"", &None_Dbl_ExprInfo};
+constexpr TypeInfo Int = {"%", &None_Int_ExprInfo};
+constexpr TypeInfo Str = {"$", &None_Str_ExprInfo};
+
+
 class InputAssign : public Internal
 {
 public:
-	InputAssign(const char *name2, ExprInfo *exprInfo,
-			const AlternateItem &alternateItem) :
-		Internal {"InputAssign", name2, exprInfo, Reference_Flag}
-	{
-		appendAlternate(alternateItem);
-	}
+	InputAssign(TypeInfo typeInfo, const AlternateItem &alternateItem) :
+		Internal {inputAssignBase, typeInfo, alternateItem} {}
 
 	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
 };
@@ -108,7 +111,7 @@ class InputAssignDbl : public InputAssign
 public:
 	InputAssignDbl(const AlternateItem &alternateItem,
 			const AlternateItem &alternateItem2) :
-		InputAssign {"", &None_Dbl_ExprInfo, alternateItem}
+		InputAssign {Dbl, alternateItem}
 	{
 		appendAlternate(alternateItem2);
 	}
@@ -120,7 +123,7 @@ class InputAssignInt : public InputAssign
 {
 public:
 	InputAssignInt(const AlternateItem &alternateItem) :
-		InputAssign {"%", &None_Int_ExprInfo, alternateItem} {}
+		InputAssign {Int, alternateItem} {}
 
 	// TODO virtual run() override function for InputAssignInt
 };
@@ -129,45 +132,37 @@ class InputAssignStr : public InputAssign
 {
 public:
 	InputAssignStr(const AlternateItem &alternateItem) :
-		InputAssign {"$", &None_Str_ExprInfo, alternateItem} {}
+		InputAssign {Str, alternateItem} {}
 
 	// TODO virtual run() override function for InputAssignStr
 };
 
 
-class InputParse : public Internal
-{
-public:
-	InputParse(const char *name2, const AlternateItem &alternateItem = {}) :
-		Internal {"InputParse", name2, &Null_ExprInfo}
-	{
-		appendAlternate(alternateItem);
-	}
-};
+constexpr BaseInfo inputParseBase = {Code{}, "InputParse", TableFlag{}};
 
-class InputParseDbl : public InputParse
+class InputParseDbl : public Internal
 {
 public:
 	InputParseDbl(const AlternateItem &alternateItem) :
-		InputParse {"", alternateItem} {}
+		Internal {inputParseBase, Dbl, alternateItem} {}
 
 	// TODO virtual run() override function for InputParseDbl
 };
 
-class InputParseInt : public InputParse
+class InputParseInt : public Internal
 {
 public:
 	InputParseInt(const AlternateItem &alternateItem) :
-		InputParse {"%", alternateItem} {}
+		Internal {inputParseBase, Int, alternateItem} {}
 
 	// TODO virtual run() override function for InputParseInt
 };
 
-class InputParseStr : public InputParse
+class InputParseStr : public Internal
 {
 public:
 	InputParseStr(const AlternateItem &alternateItem) :
-		InputParse {"$", alternateItem} {}
+		Internal {inputParseBase, Str, alternateItem} {}
 
 	// TODO virtual run() override function for InputParseStr
 };
