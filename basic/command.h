@@ -28,9 +28,12 @@ extern ExprInfo Null_ExprInfo;
 class Command : public Table
 {
 public:
-	Command(const char *name, const char *name2 = "", const char *option = "") :
-		Table {Code{}, name, name2, option, Command_Flag, 4, &Null_ExprInfo,
+	Command(const char *name, const char *name2 = "", const char *option = "",
+			Code code = {}) :
+		Table {code, name, name2, option, Command_Flag, 4, &Null_ExprInfo,
 			No_OperandType} {}
+
+	Command(const char *name, Code code) : Command {name, "", "", code} {}
 
 	virtual void translate(Translator &translator) override;
 };
@@ -48,6 +51,11 @@ public:
 			const AlternateItem &alternateItem, unsigned moreFlags = {}) :
 		Table {baseInfo, typeInfo, 2, No_OperandType, NoName_Flag | moreFlags,
 			alternateItem} {}
+
+	Internal(BaseInfo baseInfo, TypeInfo typeInfo, const char *option,
+			const AlternateItem &alternateItem, unsigned moreFlags = {}) :
+		Table {baseInfo, typeInfo, option, 4, No_OperandType,
+			NoName_Flag | moreFlags, alternateItem} {}
 
 	Internal(const char *name, const char *name2, ExprInfo *exprInfo,
 			const char *option) :

@@ -120,14 +120,17 @@ public:
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		OperandType operandType,
-		TranslateFunction _translate = {}, RecreateFunction _recreate = {});
+		RecreateFunction _recreate = {});
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
-		TranslateFunction _translate, void *, void *, void *,
-		RecreateFunction _recreate);
+		void *, void *, void *, void *, RecreateFunction _recreate);
 	Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		RecreateFunction _recreate);
+
+	Table(BaseInfo baseInfo, TypeInfo typeInfo, const char *option,
+		int precedence, OperandType operandType, unsigned moreFlags,
+		const AlternateItem &alternateItem);
 	Table(BaseInfo baseInfo, TypeInfo typeInfo, int precedence,
 		OperandType operandType, unsigned moreFlags,
 		const AlternateItem &alternateItem);
@@ -140,12 +143,7 @@ public:
 	// TODO temporarily defined functions; will be pure virtual
 	virtual void translate(Translator &translator)
 	{
-		auto translate = m_translate;
-		if (!translate)
-		{
-			translate = Table::entry(Code::Let)->m_translate;
-		}
-		(*translate)(translator);
+		Table::entry(Code::Let)->translate(translator);
 	}
 	virtual void encode(ProgramWriter &programWriter, Token *token)
 	{
@@ -275,15 +273,6 @@ public:
 	Table *firstAlternate(int operand = FirstOperand);
 	Table *alternateForOperand(int operand, DataType operandDataType);
 
-	TranslateFunction translateFunction() const
-	{
-		return m_translate;
-	}
-	RecreateFunction recreateFunction() const
-	{
-		return m_recreate;
-	}
-
 	// STATIC ACCESS FUNCTIONS
 	static Table *entry(Code code);
 	static Table *entry(Code code, DataType dataType);
@@ -378,7 +367,6 @@ private:
 	OperandType m_operandType;
 
 	// TODO temporary function pointers; to be replaced with virtual functions
-	TranslateFunction m_translate;
 	RecreateFunction m_recreate;
 
 	// STATIC ACCESS FUNCTIONS

@@ -149,7 +149,6 @@ void Translator::getCommands()
 			break;
 		}
 
-		// process command (assume assignment statement if not command token)
 		m_token->tableEntry()->translate(*this);
 
 		if (m_token->isCode(Code::RemOp))

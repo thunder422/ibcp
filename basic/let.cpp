@@ -1,5 +1,5 @@
 // vim:ts=4:sw=4:
-
+//
 //	Interactive BASIC Compiler Project
 //	File: let.cpp - let command functions source file
 //	Copyright (C) 2013-2015  Thunder422
@@ -16,20 +16,132 @@
 //
 //	For a copy of the GNU General Public License,
 //	see <http://www.gnu.org/licenses/>.
-//
-//
-//	Change History:
-//
-//	2013-07-06	initial version
 
+#include "command.h"
 #include "recreator.h"
 #include "table.h"
 #include "token.h"
 #include "translator.h"
 
 
-// LET command translate function
-void letTranslate(Translator &translator)
+//=======================
+//  TABLE ENTRY CLASSES
+//=======================
+
+class Let : public Command
+{
+public:
+	Let() : Command {"LET", Code::Let} {}
+
+	// TODO virtual run() override function for Let (will do nothing)
+	void translate(Translator &translator) override;
+	void recreate(Recreator &, RpnItemPtr &) override {}
+};
+
+
+constexpr BaseInfo assignBase = {Code{}, "Assign", TableFlag{}};
+constexpr BaseInfo assignListBase = {Code{}, "AssignList", TableFlag{}};
+constexpr BaseInfo assignKeepBase = {Code{}, "AssignKeep", Keep_Flag};
+
+extern  ExprInfo Dbl_Dbl_ExprInfo;
+extern  ExprInfo Int_Int_ExprInfo;
+extern  ExprInfo Str_Str_ExprInfo;
+
+constexpr TypeInfo Dbl = {"", &Dbl_Dbl_ExprInfo};
+constexpr TypeInfo Int = {"%", &Int_Int_ExprInfo};
+constexpr TypeInfo Str = {"$", &Str_Str_ExprInfo};
+
+class Assign : public Internal
+{
+public:
+	Assign(BaseInfo baseInfo, TypeInfo typeInfo,
+			const AlternateItem &alternateItem) :
+		Internal {baseInfo, typeInfo, "LET", alternateItem,
+			Reference_Flag | Command_Flag} {}
+
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+
+public:
+	static void recreateLet(Recreator &recreator, TokenPtr token);
+};
+
+class AssignStrBase : public Assign
+{
+	using Assign::Assign;
+
+	void recreate(Recreator &recreator, RpnItemPtr &rpnItem) override;
+};
+
+class AssignDbl : public Assign
+{
+public:
+	AssignDbl(const AlternateItem &alternateItem) :
+		Assign {assignBase, Dbl, alternateItem} {}
+
+	// TODO virtual run() override function for AssignDbl
+};
+
+class AssignListDbl : public Assign
+{
+public:
+	AssignListDbl(const AlternateItem &alternateItem) :
+		Assign {assignListBase, Dbl, alternateItem} {}
+
+	// TODO virtual run() override function for AssignListDbl
+};
+
+class AssignInt : public Assign
+{
+public:
+	AssignInt(const AlternateItem &alternateItem) :
+		Assign {assignBase, Int, alternateItem} {}
+
+	// TODO virtual run() override function for AssignInt
+};
+
+class AssignListInt : public Assign
+{
+public:
+	AssignListInt(const AlternateItem &alternateItem) :
+		Assign {assignListBase, Int, alternateItem} {}
+
+	// TODO virtual run() override function for AssignListInt
+};
+
+class AssignStr : public AssignStrBase
+{
+public:
+	AssignStr(const AlternateItem &alternateItem) :
+		AssignStrBase {assignBase, Str, alternateItem} {}
+
+	// TODO virtual run() override function for AssignStr
+};
+
+class AssignListStr : public Assign
+{
+public:
+	AssignListStr(const AlternateItem &alternateItem) :
+		Assign {assignListBase, Str, alternateItem} {}
+
+	// TODO virtual run() override function for AssignListStr
+};
+
+class AssignKeepStr : public AssignStrBase
+{
+public:
+	AssignKeepStr(const AlternateItem &alternateItem) :
+		AssignStrBase {assignKeepBase, Str, alternateItem} {}
+
+	// TODO virtual run() override function for AssignKeepStr
+};
+
+
+//=========================
+//  TABLE ENTRY FUNCTIONS
+//=========================
+
+
+void Let::translate(Translator &translator)
 {
 	bool done;
 	std::stack<TokenPtr> letStack;
@@ -178,8 +290,8 @@ void letTranslate(Translator &translator)
 }
 
 
-// function to append LET keyword if the option sub-code is set
-void letRecreate(Recreator &recreator, TokenPtr token)
+// called from assignRecreate and assignStrRecreate
+void Assign::recreateLet(Recreator &recreator, TokenPtr token)
 {
 	if (token->hasSubCode(Option_SubCode))
 	{
@@ -188,8 +300,7 @@ void letRecreate(Recreator &recreator, TokenPtr token)
 }
 
 
-// function to recreate assignment and list assignment statements
-void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
+void Assign::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
 {
 	std::stack<std::string> stack;
 
@@ -200,7 +311,7 @@ void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 		stack.emplace(recreator.popString() + separator);
 		separator = ", ";
 	}
-	letRecreate(recreator, rpnItem->token());
+	recreateLet(recreator, rpnItem->token());
 	while (!stack.empty())
 	{
 		recreator.append(std::move(stack.top()));
@@ -244,12 +355,34 @@ void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem)
 	else
 	{
 		// end of statement, append reference and string so far
-		letRecreate(recreator, rpnItem->token());
+		Assign::recreateLet(recreator, rpnItem->token());
 		recreator.append(recreator.popString());
 		recreator.append(std::move(string));
 		recreator.clearSeparator();  // for next command
 	}
 }
+
+void AssignStrBase::recreate(Recreator &recreator, RpnItemPtr &rpnItem)
+{
+	assignStrRecreate(recreator, rpnItem);
+}
+
+
+//=========================
+//  TABLE ENTRY INSTANCES
+//=========================
+
+Let let;
+
+AssignDbl assignDbl {&let};
+AssignInt assignInt {&assignDbl};
+AssignStr assignStr {&assignDbl};
+
+AssignListDbl assignListDbl {{&assignDbl, 1}};
+AssignListInt assignListInt {{&assignInt, 1}};
+AssignListStr assignListStr {{&assignStr, 1}};
+
+AssignKeepStr assignKeepStr {&assignStr};
 
 
 // end: let.cpp

@@ -110,10 +110,6 @@ public:
 };
 
 
-// translate functions
-void letTranslate(Translator &translator);
-
-
 // recreate functions
 void unaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void binaryOperatorRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
@@ -124,10 +120,8 @@ void functionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void defineFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void blankRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void assignRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void assignStrRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
-void printCommaRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 void printFunctionRecreate(Recreator &recreator, RpnItemPtr &rpnItem);
 
 

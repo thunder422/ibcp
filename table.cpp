@@ -52,7 +52,7 @@ constexpr auto Operands_StrStrInt = {
 // expression information structure instances
 ExprInfo Null_ExprInfo;
 ExprInfo Dbl_None_ExprInfo(DataType::Double);
-static ExprInfo Dbl_Dbl_ExprInfo(DataType::Double, Operands_Dbl);
+ExprInfo Dbl_Dbl_ExprInfo(DataType::Double, Operands_Dbl);
 static ExprInfo Dbl_DblDbl_ExprInfo(DataType::Double, Operands_DblDbl);
 static ExprInfo Dbl_DblInt_ExprInfo(DataType::Double, Operands_DblInt);
 static ExprInfo Dbl_Int_ExprInfo(DataType::Double, Operands_Int);
@@ -63,7 +63,7 @@ ExprInfo Int_None_ExprInfo(DataType::Integer);
 static ExprInfo Int_Dbl_ExprInfo(DataType::Integer, Operands_Dbl);
 static ExprInfo Int_DblDbl_ExprInfo(DataType::Integer, Operands_DblDbl);
 static ExprInfo Int_DblInt_ExprInfo(DataType::Integer, Operands_DblInt);
-static ExprInfo Int_Int_ExprInfo(DataType::Integer, Operands_Int);
+ExprInfo Int_Int_ExprInfo(DataType::Integer, Operands_Int);
 static ExprInfo Int_IntInt_ExprInfo(DataType::Integer, Operands_IntInt);
 static ExprInfo Int_IntDbl_ExprInfo(DataType::Integer, Operands_IntDbl);
 static ExprInfo Int_Str_ExprInfo(DataType::Integer, Operands_Str);
@@ -74,7 +74,7 @@ static ExprInfo Int_StrStrInt_ExprInfo(DataType::Integer, Operands_StrStrInt);
 ExprInfo Str_None_ExprInfo(DataType::String);
 static ExprInfo Str_Dbl_ExprInfo(DataType::String, Operands_Dbl);
 static ExprInfo Str_Int_ExprInfo(DataType::String, Operands_Int);
-static ExprInfo Str_Str_ExprInfo(DataType::String, Operands_Str);
+ExprInfo Str_Str_ExprInfo(DataType::String, Operands_Str);
 static ExprInfo Str_StrInt_ExprInfo(DataType::String, Operands_StrInt);
 static ExprInfo Str_StrStr_ExprInfo(DataType::String, Operands_StrStr);
 static ExprInfo Str_StrIntInt_ExprInfo(DataType::String, Operands_StrIntInt);
@@ -95,8 +95,7 @@ Table::ExpectedDataTypeMap Table::s_expectedDataType;
 // TODO temporary code index enumeration
 enum CodeIndex
 {
-	Let_Code = 1,
-	Rnd_Code,
+	Rnd_Code = 1,
 	Mod_Code,
 	And_Code,
 	Or_Code,
@@ -150,17 +149,10 @@ enum CodeIndex
 	OpenParen_Code,
 	CloseParen_Code,
 	Colon_Code,
-	Assign_Code,
-	AssignInt_Code,
-	AssignStr_Code,
 	AssignLeft_Code,
 	AssignMid2_Code,
 	AssignMid3_Code,
 	AssignRight_Code,
-	AssignList_Code,
-	AssignListInt_Code,
-	AssignListStr_Code,
-	AssignKeepStr_Code,
 	AssignKeepLeft_Code,
 	AssignKeepMid2_Code,
 	AssignKeepMid3_Code,
@@ -240,14 +232,6 @@ struct AlternateInfo
 
 std::initializer_list<AlternateInfo> alternateInfo =
 {
-	// assignment alternate codes
-	{Let_Code, 0, {Assign_Code}},
-	{Assign_Code, 0, {AssignInt_Code, AssignStr_Code}},
-	{Assign_Code, 1, {AssignList_Code}},
-	{AssignInt_Code, 1, {AssignListInt_Code}},
-	{AssignStr_Code, 0, {AssignKeepStr_Code}},
-	{AssignStr_Code, 1, {AssignListStr_Code}},
-
 	// sub-string assignment alternate codes
 	{Left_Code, 1, {AssignLeft_Code}},
 	{AssignLeft_Code, 0, {AssignKeepLeft_Code}},
@@ -277,15 +261,6 @@ static Table tableEntries[] =
 		TableFlag{}, 0, &Null_ExprInfo,
 		NULL, NULL, NULL, NULL, NULL
 
-	},
-	//--------------
-	//   Commands
-	//--------------
-	{	// Let_Code
-		Code::Let,
-		"LET", "", "",
-		Command_Flag, 4, &Null_ExprInfo,
-		letTranslate, NULL, NULL, NULL, NULL
 	},
 	//-----------------------------------------
 	//   Internal Functions (No Parentheses)
@@ -629,94 +604,44 @@ static Table tableEntries[] =
 	//***************************
 	//   MISCELLANEOUS ENTRIES
 	//***************************
-	{	// Assign_Code
-		Code{},
-		"", "Assign", "LET",
-		Reference_Flag | Command_Flag, 4, &Dbl_Dbl_ExprInfo,
-		NULL, NULL, NULL, NULL, assignRecreate
-	},
-	{	// AssignInt_Code
-		Code{},
-		"", "Assign%", "LET",
-		Reference_Flag | Command_Flag, 4, &Int_Int_ExprInfo,
-		NULL, NULL, NULL, NULL, assignRecreate
-	},
-	{	// AssignStr_Code
-		Code{},
-		"", "Assign$", "LET",
-		Reference_Flag | Command_Flag, 4, &Str_Str_ExprInfo,
-		NULL, NULL, NULL, NULL, assignStrRecreate
-	},
 	{	// AssignLeft_Code
-		Code{},
-		"LEFT$(", "Assign", "LET",
-		Reference_Flag | SubStr_Flag | Command_Flag, 4, &Str_StrInt_ExprInfo,
+		Code{}, "LEFT$(", "Assign", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid2_Code
-		Code{},
-		"MID$(", "Assign2", "LET",
-		Reference_Flag | SubStr_Flag | Command_Flag, 4, &Str_StrInt_ExprInfo,
+		Code{}, "MID$(", "Assign2", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignMid3_Code
-		Code{},
-		"MID$(", "Assign3", "LET",
-		Reference_Flag | SubStr_Flag | Command_Flag, 4, &Str_StrIntInt_ExprInfo,
+		Code{}, "MID$(", "Assign3", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag, 4, &Str_StrIntInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignRight_Code
-		Code{},
-		"RIGHT$(", "Assign", "LET",
-		Reference_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
-		NULL, NULL, NULL, NULL, assignStrRecreate
-	},
-	{	// AssignList_Code
-		Code{},
-		"", "AssignList", "LET",
-		Reference_Flag | Command_Flag, 4, &Dbl_Dbl_ExprInfo,
-		NULL, NULL, NULL, NULL, assignRecreate
-	},
-	{	// AssignListInt_Code
-		Code{},
-		"", "AssignList%", "LET",
-		Reference_Flag | Command_Flag, 4, &Int_Int_ExprInfo,
-		NULL, NULL, NULL, NULL, assignRecreate
-	},
-	{	// AssignListStr_Code
-		Code{},
-		"", "AssignList$", "LET",
-		Reference_Flag | Command_Flag, 4, &Str_Str_ExprInfo,
-		NULL, NULL, NULL, NULL, assignRecreate
-	},
-	{	// AssignKeepStr_Code
-		Code{},
-		"", "AssignKeep$", "LET",
-		Reference_Flag | Keep_Flag, 4, &Str_Str_ExprInfo,
+		Code{}, "RIGHT$(", "Assign", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepLeft_Code
-		Code{},
-		"LEFT$(", "AssignKeep", "LET",
-		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
+		Code{}, "LEFT$(", "AssignKeep", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid2_Code
-		Code{},
-		"MID$(", "AssignKeep2", "LET",
-		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
+		Code{}, "MID$(", "AssignKeep2", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepMid3_Code
-		Code{},
-		"MID$(", "AssignKeep3", "LET",
-		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrStrInt_ExprInfo,
+		Code{}, "MID$(", "AssignKeep3", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrStrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// AssignKeepRight_Code
-		Code{},
-		"RIGHT$(", "AssignKeep", "LET",
-		Reference_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
+		Code{}, "RIGHT$(", "AssignKeep", "LET",
+		Reference_Flag | Command_Flag | SubStr_Flag | Keep_Flag, 4, &Str_StrInt_ExprInfo,
 		NULL, NULL, NULL, NULL, assignStrRecreate
 	},
 	{	// EOL_Code
@@ -1133,7 +1058,7 @@ Table::Table()
 Table::Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		OperandType operandType,
-		TranslateFunction _translate, RecreateFunction _recreate) :
+		RecreateFunction _recreate) :
 	m_code {code},
 	m_name {name},
 	m_name2 {name2},
@@ -1142,7 +1067,6 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 	m_precedence {precedence},
 	m_exprInfo {exprInfo},
 	m_operandType {operandType},
-	m_translate {_translate},
 	m_recreate {_recreate}
 {
 	Erector{this}();
@@ -1152,10 +1076,10 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 // constructor for existing table entry array elements
 Table::Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
-		TranslateFunction _translate, void *, void *, void *,
+		void *, void *, void *, void *,
 		RecreateFunction _recreate) :
 	Table {code, name, name2, option, flags, precedence, exprInfo,
-		No_OperandType, _translate, _recreate}
+		No_OperandType, _recreate}
 {
 }
 
@@ -1163,17 +1087,25 @@ Table::Table(Code code, const char *name, const char *name2, const char *option,
 		unsigned flags, int precedence, ExprInfo *exprInfo,
 		RecreateFunction _recreate) :
 	Table {code, name, name2, option, flags, precedence, exprInfo,
-		NumberOf_OperandType, NULL, _recreate}
+		NumberOf_OperandType, _recreate}
 {
+}
+
+Table::Table(BaseInfo baseInfo, TypeInfo typeInfo, const char *option,
+		int precedence, OperandType operandType, unsigned moreFlags,
+		const AlternateItem &alternateItem = {}) :
+	Table {baseInfo.code, baseInfo.name, typeInfo.name2, option,
+		baseInfo.flags | moreFlags, precedence, typeInfo.exprInfo, operandType}
+{
+	appendAlternate(alternateItem);
 }
 
 Table::Table(BaseInfo baseInfo, TypeInfo typeInfo, int precedence,
 		OperandType operandType, unsigned moreFlags,
 		const AlternateItem &alternateItem = {}) :
-	Table {baseInfo.code, baseInfo.name, typeInfo.name2, "",
-		baseInfo.flags | moreFlags, precedence, typeInfo.exprInfo, operandType}
+	Table {baseInfo, typeInfo, "", precedence, operandType, moreFlags,
+		alternateItem}
 {
-	appendAlternate(alternateItem);
 }
 
 
